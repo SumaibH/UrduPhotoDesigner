@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FFFFFF</color>
+    <color name="white">#2B2B2B</color>
+    <color name="whiteText">#FFFFFF</color>
+    <color name="contrast">#23342A</color>
+    <color name="appColor">#005D28</color>
+</resources>

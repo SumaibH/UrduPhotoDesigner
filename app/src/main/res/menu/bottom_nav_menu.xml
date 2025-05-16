@@ -1,0 +1,23 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_text"
+        android:icon="@drawable/ic_text_selector"
+        android:title="@string/text" />
+
+    <item
+        android:id="@+id/nav_background"
+        android:icon="@drawable/ic_background_selector"
+        android:title="@string/backgrounds" />
+
+    <item
+        android:id="@+id/nav_images"
+        android:icon="@drawable/ic_images_selector"
+        android:title="@string/images" />
+
+    <item
+        android:id="@+id/nav_objects"
+        android:icon="@drawable/ic_objects_selector"
+        android:title="@string/objects" />
+
+</menu>

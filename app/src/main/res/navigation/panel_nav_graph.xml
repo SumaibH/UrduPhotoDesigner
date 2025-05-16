@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/panel_nav_graph"
+    app:startDestination="@id/textFragment">
+
+    <fragment
+        android:id="@+id/textFragment"
+        android:name="com.example.urduphotodesigner.ui.editor.panels.text.TextFragment"
+        android:label="fragment_text"
+        tools:layout="@layout/fragment_text" />
+    <fragment
+        android:id="@+id/backgroundsFragment"
+        android:name="com.example.urduphotodesigner.ui.editor.panels.background.BackgroundsFragment"
+        android:label="fragment_backgrounds"
+        tools:layout="@layout/fragment_backgrounds" />
+    <fragment
+        android:id="@+id/imagesFragment"
+        android:name="com.example.urduphotodesigner.ui.editor.panels.images.ImagesFragment"
+        android:label="fragment_images"
+        tools:layout="@layout/fragment_images" />
+    <fragment
+        android:id="@+id/objectsFragment"
+        android:name="com.example.urduphotodesigner.ui.editor.panels.objects.ObjectsFragment"
+        android:label="fragment_objects"
+        tools:layout="@layout/fragment_objects" />
+</navigation>
