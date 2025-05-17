@@ -5,7 +5,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import com.example.urduphotodesigner.common.Constants
+import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.databinding.FragmentColorsListBinding
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -15,6 +17,7 @@ class GradientsListFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var gradientsAdapter: GradientsAdapter
+    private val viewModel: CanvasViewModel by activityViewModels()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -31,7 +34,7 @@ class GradientsListFragment : Fragment() {
 
     private fun setupRecyclerView() {
         gradientsAdapter = GradientsAdapter(Constants.gradientList){ selectedGradient ->
-
+            viewModel.setCanvasBackgroundImage(selectedGradient)
         }
         binding.colors.apply {
             adapter = gradientsAdapter

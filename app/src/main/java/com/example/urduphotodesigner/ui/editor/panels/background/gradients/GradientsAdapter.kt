@@ -1,10 +1,14 @@
 package com.example.urduphotodesigner.ui.editor.panels.background.gradients
 
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.createBitmap
 import androidx.recyclerview.widget.RecyclerView
 import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.data.model.GradientItem
@@ -12,7 +16,7 @@ import com.example.urduphotodesigner.databinding.LayoutColorItemBinding
 
 class GradientsAdapter(
     private val gradientList: List<GradientItem>,
-    private val onGradientSelected: (GradientItem) -> Unit
+    private val onGradientSelected: (Bitmap) -> Unit
 ) : RecyclerView.Adapter<GradientsAdapter.GradientViewHolder>() {
 
     inner class GradientViewHolder(val binding: LayoutColorItemBinding) :
@@ -33,10 +37,22 @@ class GradientsAdapter(
             }
 
             binding.root.setOnClickListener {
+                val bitmap = if (gradientDrawable is BitmapDrawable) {
+                    gradientDrawable.bitmap
+                } else {
+                    val width = if (gradientDrawable.intrinsicWidth > 0) gradientDrawable.intrinsicWidth else 100
+                    val height = if (gradientDrawable.intrinsicHeight > 0) gradientDrawable.intrinsicHeight else 100
+                    val config = Bitmap.Config.ARGB_8888
+                    val bmp = createBitmap(width, height, config)
+                    val canvas = Canvas(bmp)
+                    gradientDrawable.setBounds(0, 0, canvas.width, canvas.height)
+                    gradientDrawable.draw(canvas)
+                    bmp
+                }
                 gradientList.forEach { it.isSelected = false }
                 item.isSelected = true
                 notifyDataSetChanged()
-                onGradientSelected(item)
+                onGradientSelected(bitmap)
             }
         }
     }

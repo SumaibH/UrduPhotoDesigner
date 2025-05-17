@@ -5,10 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Observer
 import com.example.urduphotodesigner.R
+import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.common.enums.ParagraphAlign
 import com.example.urduphotodesigner.databinding.FragmentParagraphOptionsBinding
-import com.example.urduphotodesigner.ui.editor.panels.text.colors.ColorsListFragment
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -16,6 +18,7 @@ class ParagraphOptionsFragment : Fragment() {
     private var _binding: FragmentParagraphOptionsBinding? = null
     private val binding get() = _binding!!
 
+    private val viewModel: CanvasViewModel by activityViewModels()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -28,12 +31,23 @@ class ParagraphOptionsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setEvents()
+        initObservers()
+    }
+
+    private fun initObservers() {
+        viewModel.currentTextSize.observe(viewLifecycleOwner, Observer { textSize ->
+            // Update the SeekBar progress
+            binding.seekBar.value = textSize.toFloat()
+
+            binding.fontTitle.text = "Font Size: ${textSize.toInt()}"
+        })
     }
 
     private fun setEvents() {
+
         binding.seekBar.addOnChangeListener { _, value, _ ->
-            val fontSize = value.toInt()
-            binding.fontTitle.text = getString(R.string.font_size)+": $fontSize"
+            viewModel.setTextSize(value)
+            binding.fontTitle.text = "Font Size: ${value}"
         }
 
         // Alignment selection

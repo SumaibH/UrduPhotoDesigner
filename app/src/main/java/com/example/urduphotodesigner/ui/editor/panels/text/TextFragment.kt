@@ -9,8 +9,10 @@ import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.viewpager2.widget.ViewPager2
 import com.example.urduphotodesigner.R
+import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.databinding.FragmentTextBinding
 import com.example.urduphotodesigner.ui.navigation.templates.TemplatesPagerAdapter
 import com.google.android.material.tabs.TabLayoutMediator
@@ -21,6 +23,8 @@ class TextFragment : Fragment() {
     private var _binding: FragmentTextBinding? = null
     private val binding get() = _binding!!
     private var tabs = emptyList<String>()
+
+    private val viewModel: CanvasViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -63,6 +67,7 @@ class TextFragment : Fragment() {
             }
         })
 
+        binding.addText.setOnClickListener { viewModel.addText("Tap to edit", requireActivity()) }
     }
 
     fun updateTabStyles(selectedPosition: Int) {

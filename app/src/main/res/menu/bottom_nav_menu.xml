@@ -20,4 +20,9 @@
         android:icon="@drawable/ic_objects_selector"
         android:title="@string/objects" />
 
+    <item
+        android:id="@+id/nav_layers"
+        android:icon="@drawable/ic_layers_selector"
+        android:title="@string/layers" />
+
 </menu>

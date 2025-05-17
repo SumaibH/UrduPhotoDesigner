@@ -62,7 +62,6 @@
         android:background="@drawable/button_bg"
         android:fontFamily="@font/regular"
         android:textSize="@dimen/_16sdp"
-        android:paddingVertical="@dimen/_2sdp"
         android:paddingHorizontal="@dimen/_10sdp"
         android:id="@+id/addText"/>
 

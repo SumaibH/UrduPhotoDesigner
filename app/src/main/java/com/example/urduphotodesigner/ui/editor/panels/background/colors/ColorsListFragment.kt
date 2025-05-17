@@ -1,4 +1,4 @@
-package com.example.urduphotodesigner.ui.editor.panels.text.colors
+package com.example.urduphotodesigner.ui.editor.panels.background.colors
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,6 +10,7 @@ import androidx.fragment.app.activityViewModels
 import com.example.urduphotodesigner.common.Constants
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.databinding.FragmentColorsListBinding
+import com.example.urduphotodesigner.ui.editor.panels.text.colors.ColorsAdapter
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -35,7 +36,7 @@ class ColorsListFragment : Fragment() {
 
     private fun setupRecyclerView() {
         colorsAdapter = ColorsAdapter(Constants.colorList){ color ->
-            viewModel.setTextColor(color.colorCode.toColorInt())
+            viewModel.setCanvasBackgroundColor(color.colorCode.toColorInt())
         }
         binding.colors.apply {
             adapter = colorsAdapter

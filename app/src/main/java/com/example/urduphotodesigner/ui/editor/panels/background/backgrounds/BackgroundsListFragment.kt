@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.databinding.FragmentBackgroundsListBinding
 import com.example.urduphotodesigner.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -18,6 +19,7 @@ class BackgroundsListFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val mainViewModel: MainViewModel by activityViewModels()
+    private val viewModel: CanvasViewModel by activityViewModels()
     private lateinit var imagesAdapter: ImagesAdapter
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -36,7 +38,7 @@ class BackgroundsListFragment : Fragment() {
 
     private fun setEvents() {
         imagesAdapter = ImagesAdapter(){ image ->
-
+            viewModel.setCanvasBackgroundImage(image)
         }
         binding.backgrounds.adapter = imagesAdapter
     }

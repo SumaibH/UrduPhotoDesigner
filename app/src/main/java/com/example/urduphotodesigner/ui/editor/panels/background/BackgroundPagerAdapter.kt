@@ -6,9 +6,7 @@ import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.urduphotodesigner.ui.editor.panels.background.backgrounds.BackgroundsListFragment
 import com.example.urduphotodesigner.ui.editor.panels.background.gradients.GradientsListFragment
-import com.example.urduphotodesigner.ui.editor.panels.text.colors.ColorsListFragment
-import com.example.urduphotodesigner.ui.editor.panels.text.fonts.FontsListFragment
-import com.example.urduphotodesigner.ui.editor.panels.text.para.ParagraphOptionsFragment
+import com.example.urduphotodesigner.ui.editor.panels.background.colors.ColorsListFragment
 
 class BackgroundPagerAdapter(
     fragmentManager: FragmentManager,
@@ -23,7 +21,7 @@ class BackgroundPagerAdapter(
             "Image" -> BackgroundsListFragment.newInstance()
             "Color" -> ColorsListFragment.newInstance()
             "Gradient" -> GradientsListFragment.newInstance()
-            else -> FontsListFragment.newInstance()
+            else -> BackgroundsListFragment.newInstance()
         }
     }
 

@@ -52,4 +52,6 @@
     <string name="font_size">Font Size: 10</string>
     <string name="plus">+</string>
     <string name="text_alignment">Text Alignment</string>
+    <string name="search_here">Search here</string>
+    <string name="type_here">Type here</string>
 </resources>

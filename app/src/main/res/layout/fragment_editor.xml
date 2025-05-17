@@ -52,19 +52,6 @@
         android:paddingVertical="@dimen/_10sdp"
         android:paddingEnd="@dimen/_10sdp"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toEndOf="@id/back"
-        app:layout_constraintTop_toTopOf="@id/back"
-        app:layout_constraintBottom_toBottomOf="@id/back"
-        android:layout_marginStart="@dimen/_10sdp"
-        android:text="@string/edit"
-        android:fontFamily="@font/bold"
-        android:textSize="@dimen/_16sdp"
-        android:textColor="@color/black"
-        android:id="@+id/title"/>
-
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -76,14 +63,14 @@
         app:layout_constraintEnd_toStartOf="@id/endGuide"
         app:layout_constraintTop_toTopOf="@id/back"
         app:layout_constraintBottom_toBottomOf="@id/back"
-        android:id="@+id/search"/>
+        android:id="@+id/done"/>
 
     <FrameLayout
         android:id="@+id/canvasContainer"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintTop_toBottomOf="@id/back"
-        app:layout_constraintBottom_toTopOf="@id/layersBox"
+        app:layout_constraintBottom_toTopOf="@id/centerGuide"
         android:layout_marginBottom="@dimen/_5sdp"
         app:layout_constraintStart_toEndOf="@id/startGuide"
         app:layout_constraintEnd_toStartOf="@id/endGuide"/>
@@ -103,54 +90,12 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:id="@+id/layersBox"
-        android:layout_marginBottom="@dimen/_5sdp"
-        android:paddingHorizontal="@dimen/_7sdp"
-        android:paddingVertical="@dimen/_5sdp"
-        app:layout_constraintStart_toEndOf="@id/startGuide"
-        app:layout_constraintEnd_toStartOf="@id/opacityBox"
-        app:layout_constraintBottom_toTopOf="@id/panelNavHost"
-        android:background="@drawable/button_bg"
-        android:backgroundTint="@color/white">
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:text="@string/layers"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/spinner"
-            android:id="@+id/layers"
-            android:fontFamily="@font/regular"
-            android:textSize="@dimen/_10sdp"/>
-
-        <ImageView
-            android:layout_marginTop="@dimen/_1sdp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/button_bg"
-            android:backgroundTint="@color/contrast"
-            app:tint="@color/black"
-            android:src="@drawable/ic_down"
-            android:paddingHorizontal="@dimen/_7sdp"
-            android:paddingVertical="@dimen/_3sdp"
-            android:layout_marginStart="@dimen/_5sdp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:id="@+id/spinner"/>
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
         android:id="@+id/opacityBox"
         android:layout_marginBottom="@dimen/_5sdp"
         android:paddingHorizontal="@dimen/_7sdp"
         android:paddingVertical="@dimen/_5sdp"
-        app:layout_constraintStart_toEndOf="@id/layersBox"
-        app:layout_constraintEnd_toStartOf="@id/redoUndo"
+        app:layout_constraintStart_toEndOf="@id/startGuide"
+        app:layout_constraintEnd_toStartOf="@id/endGuide"
         app:layout_constraintBottom_toTopOf="@id/panelNavHost"
         android:layout_marginHorizontal="@dimen/_10sdp"
         android:background="@drawable/button_bg"
@@ -189,16 +134,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/redoUndo"
-        android:layout_marginBottom="@dimen/_5sdp"
-        android:paddingHorizontal="@dimen/_7sdp"
+        android:paddingHorizontal="@dimen/_5sdp"
         android:paddingVertical="@dimen/_5sdp"
-        app:layout_constraintStart_toEndOf="@id/opacityBox"
-        app:layout_constraintEnd_toStartOf="@id/endGuide"
-        app:layout_constraintBottom_toTopOf="@id/panelNavHost"
+        app:layout_constraintStart_toEndOf="@id/back"
+        app:layout_constraintEnd_toStartOf="@id/done"
+        app:layout_constraintTop_toTopOf="@id/back"
+        app:layout_constraintBottom_toBottomOf="@id/back"
         android:background="@drawable/button_bg"
         android:backgroundTint="@color/white">
         <ImageView
-            android:layout_marginTop="@dimen/_1sdp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/button_bg"
@@ -207,14 +151,12 @@
             android:src="@drawable/ic_undo"
             android:paddingHorizontal="@dimen/_7sdp"
             android:paddingVertical="@dimen/_3sdp"
-            android:layout_marginStart="@dimen/_5sdp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             android:id="@+id/undo"/>
 
         <ImageView
-            android:layout_marginTop="@dimen/_1sdp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/button_bg"

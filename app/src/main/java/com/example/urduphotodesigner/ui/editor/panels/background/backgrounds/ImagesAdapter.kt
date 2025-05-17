@@ -1,6 +1,9 @@
 package com.example.urduphotodesigner.ui.editor.panels.background.backgrounds
 
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.PictureDrawable
 import android.util.Log
@@ -20,9 +23,10 @@ import com.example.urduphotodesigner.common.Constants
 import com.example.urduphotodesigner.data.model.ColorItem
 import com.example.urduphotodesigner.data.model.ImageEntity
 import com.example.urduphotodesigner.databinding.LayoutImagesItemBinding
+import androidx.core.graphics.createBitmap
 
 class ImagesAdapter(
-    private val onImageSelected: (ImageEntity) -> Unit
+    private val onImageSelected: (Bitmap) -> Unit
 ) : RecyclerView.Adapter<ImagesAdapter.ImageViewHolder>() {
 
     private val images = mutableListOf<ImageEntity>()
@@ -62,7 +66,20 @@ class ImagesAdapter(
                 images.forEach { it.is_selected = false }
                 image.is_selected = true
                 notifyDataSetChanged()
-                onImageSelected.invoke(image)
+                val drawable = binding.image.drawable
+                val bitmap = if (drawable is BitmapDrawable) {
+                    drawable.bitmap
+                } else {
+                    val width = drawable.intrinsicWidth
+                    val height = drawable.intrinsicHeight
+                    val config = Bitmap.Config.ARGB_8888
+                    val bmp = createBitmap(width, height, config)
+                    val canvas = Canvas(bmp)
+                    drawable.setBounds(0, 0, canvas.width, canvas.height)
+                    drawable.draw(canvas)
+                    bmp
+                }
+                onImageSelected.invoke(bitmap)
             }
 
             val url = Constants.BASE_URL_GLIDE + image.file_url
@@ -98,7 +115,6 @@ class ImagesAdapter(
                 .thumbnail(0.1f)
                 .skipMemoryCache(false)
                 .into(binding.image)
-
         }
     }
 }
