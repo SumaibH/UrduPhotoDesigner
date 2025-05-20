@@ -1,5 +1,6 @@
 package com.example.urduphotodesigner.ui.editor.panels.images
 
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -42,7 +43,9 @@ class ImagesListFragment : Fragment() {
 
     private fun setEvents() {
         imagesAdapter = ImagesAdapter(){ image ->
-            viewModel.addSticker(image, requireActivity())
+            val resized = bitmapCompress(image)
+
+            viewModel.addSticker(resized, requireActivity())
         }
         binding.backgrounds.adapter = imagesAdapter
     }
@@ -57,6 +60,21 @@ class ImagesListFragment : Fragment() {
                 imagesAdapter.submitList(imageList)
             }
         }
+    }
+
+    private fun bitmapCompress(image: Bitmap): Bitmap {
+        val canvasWidth = 300
+        val canvasHeight = 300
+
+        val widthRatio = canvasWidth.toFloat() / image.width
+        val heightRatio = canvasHeight.toFloat() / image.height
+        val minScale = minOf(1f, widthRatio, heightRatio)
+
+        val newWidth = (image.width * minScale).toInt()
+        val newHeight = (image.height * minScale).toInt()
+
+        val resized = Bitmap.createScaledBitmap(image, newWidth, newHeight, true)
+        return resized
     }
 
     override fun onDestroy() {

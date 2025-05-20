@@ -17,5 +17,18 @@ class FontsRepoImpl @Inject constructor(
     override suspend fun insertFonts(fontEntity: FontEntity) {
         appDatabase.fontsDao().insertFonts(fontEntity)
     }
+
+    override suspend fun updateFont(
+        id: String,
+        isDownloaded: Boolean,
+        isDownloading: Boolean,
+        filePath: String
+    ) {
+        appDatabase.fontsDao().updateFont(id, isDownloaded, isDownloading, filePath)
+    }
+
+    override suspend fun updateStatusFont(id: String, isDownloading: Boolean) {
+        appDatabase.fontsDao().updateFontStatus(id, isDownloading)
+    }
 }
 

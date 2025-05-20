@@ -54,18 +54,69 @@ class CanvasViewModel @Inject constructor() : ViewModel() {
     private var selectedElement: CanvasElement? = null
 
     fun updateElement(updated: CanvasElement) {
-        val updatedList = _canvasElements.value?.map {
-            if (it.id == updated.id) updated else it
-        } ?: listOf(updated)
+        val currentList = _canvasElements.value ?: emptyList()
+        val oldElement = currentList.find { it.id == updated.id }
+
+        if (oldElement != null) {
+            // Replace the entire element with the updated version
+            _canvasElements.value = currentList.map {
+                if (it.id == updated.id) updated else it
+            }
+
+            // Always push to undo stack (since any property could have changed)
+            _canvasActions.push(
+                CanvasAction.UpdateElement(
+                    elementId = updated.id,
+                    newElement = updated.copy(), // Full copy
+                    oldElement = oldElement.copy() // Full copy
+                )
+            )
+            _redoStack.clear()
+            notifyUndoRedoChanged()
+        }
+    }
+
+    fun updateCanvasElementsOrderAndZIndex(reorderedList: List<CanvasElement>) {
+        val oldList = _canvasElements.value ?: emptyList()
+
+        // Create a new list with updated zIndex based on their position in the reorderedList
+        val updatedList = reorderedList.mapIndexed { index, element ->
+            element.copy(zIndex = index) // Assign zIndex based on the new order
+        }
+
         _canvasElements.value = updatedList
+        _canvasActions.push(CanvasAction.UpdateCanvasElementsOrder(oldList, updatedList))
+        _redoStack.clear()
+        notifyUndoRedoChanged()
     }
 
     fun setSelectedElement(element: CanvasElement?) {
-        selectedElement = element
+        val currentList = _canvasElements.value?.toMutableList() ?: mutableListOf()
+
+        // Deselect the previously selected element in the list
+        currentList.find { it.isSelected }?.let { prevSelected ->
+            if (prevSelected.id != element?.id) { // Only deselect if it's not the same element
+                val index = currentList.indexOfFirst { it.id == prevSelected.id }
+                if (index != -1) {
+                    currentList[index] = prevSelected.copy(isSelected = false)
+                }
+            }
+        }
+
+        // Select the new element in the list
+        if (element != null) {
+            val index = currentList.indexOfFirst { it.id == element.id }
+            if (index != -1) {
+                currentList[index] = element.copy(isSelected = true)
+            }
+        }
+
+        this.selectedElement = element // Update the local reference
+        _canvasElements.value = currentList // Emit the updated list to observers
     }
 
     fun getSelectedElement(): CanvasElement? {
-        return selectedElement;
+        return _canvasElements.value?.find { it.isSelected } ?: selectedElement
     }
 
     fun setCanvasBackgroundColor(color: Int) {
@@ -73,6 +124,7 @@ class CanvasViewModel @Inject constructor() : ViewModel() {
         _canvasActions.push(CanvasAction.SetBackgroundColor(color, previousColor))
         _redoStack.clear()
         _backgroundColor.value = color
+        notifyUndoRedoChanged()
     }
 
     fun setCanvasBackgroundImage(bitmap: Bitmap?) {
@@ -80,6 +132,7 @@ class CanvasViewModel @Inject constructor() : ViewModel() {
         _canvasActions.push(CanvasAction.SetBackgroundImage(bitmap, previousBitmap))
         _redoStack.clear()
         _backgroundImage.value = bitmap
+        notifyUndoRedoChanged()
     }
 
     fun setCanvasBackgroundGradient(colors: IntArray?, positions: FloatArray?) {
@@ -95,6 +148,7 @@ class CanvasViewModel @Inject constructor() : ViewModel() {
         )
         _redoStack.clear()
         _backgroundGradient.value = Pair(colors, positions)
+        notifyUndoRedoChanged()
     }
 
     fun addSticker(bitmap: Bitmap?, context: Context) {
@@ -109,6 +163,7 @@ class CanvasViewModel @Inject constructor() : ViewModel() {
         _redoStack.clear()
         val currentList = _canvasElements.value ?: emptyList()
         _canvasElements.value = currentList + element
+        notifyUndoRedoChanged()
     }
 
     fun addText(text: String, context: Context) {
@@ -124,6 +179,7 @@ class CanvasViewModel @Inject constructor() : ViewModel() {
         _redoStack.clear()
         _canvasElements.value = (_canvasElements.value ?: emptyList()) + element
         selectedElement = element
+        notifyUndoRedoChanged()
     }
 
     fun setFont(typeface: Typeface) {
@@ -133,8 +189,8 @@ class CanvasViewModel @Inject constructor() : ViewModel() {
             _redoStack.clear()
             selectedElement?.paint?.typeface = typeface
             _currentFont.value = typeface
+            notifyUndoRedoChanged()
         }
-
     }
 
     fun setTextColor(color: Int) {
@@ -144,6 +200,7 @@ class CanvasViewModel @Inject constructor() : ViewModel() {
             _redoStack.clear()
             selectedElement?.paint?.color = color
             _currentTextColor.value = color
+            notifyUndoRedoChanged()
         }
     }
 
@@ -154,6 +211,7 @@ class CanvasViewModel @Inject constructor() : ViewModel() {
             _redoStack.clear()
             selectedElement?.paint?.textSize = size
             _currentTextSize.value = size
+            notifyUndoRedoChanged()
         }
     }
 
@@ -164,6 +222,7 @@ class CanvasViewModel @Inject constructor() : ViewModel() {
             _redoStack.clear()
             selectedElement?.paint?.textAlign = alignment
             _currentTextAlignment.value = alignment
+            notifyUndoRedoChanged()
         }
     }
 
@@ -174,24 +233,44 @@ class CanvasViewModel @Inject constructor() : ViewModel() {
             _redoStack.clear()
             selectedElement?.paint?.alpha = opacity
             _currentTextOpacity.value = opacity
+            notifyUndoRedoChanged()
         }
     }
 
-    fun updateText(text: String) {
-        val previousText = selectedElement?.text ?: ""
-        if (selectedElement != null) {
-            _canvasActions.push(CanvasAction.UpdateText(text, previousText))
-            _redoStack.clear()
-            selectedElement?.text = text
+    fun updateText(element: CanvasElement) {
+        val currentList = _canvasElements.value ?: emptyList()
+        val textElement = currentList.find { it.id == element.id } ?: return
+        val oldElement = textElement.copy()
+        val updatedElement = textElement.copy(text = element.text)
+
+        _canvasElements.value = currentList.map {
+            if (it.id == element.id) {
+                updatedElement
+            } else {
+                it
+            }
         }
+
+        _canvasActions.push(
+            CanvasAction.UpdateElement(
+                elementId = element.id,
+                newElement = updatedElement,
+                oldElement = oldElement
+            )
+        )
+        _redoStack.clear()
+        notifyUndoRedoChanged()
     }
 
     fun removeElement(element: CanvasElement) {
-        _canvasActions.push(CanvasAction.RemoveElement(element))
-        _redoStack.clear()
         val currentList = _canvasElements.value ?: emptyList()
-        _canvasElements.value = currentList.filter { it != element }
-        selectedElement = null
+        if (currentList.contains(element)) {
+            _canvasActions.push(CanvasAction.RemoveElement(element.copy()))
+            _redoStack.clear()
+            _canvasElements.value = currentList.filter { it.id != element.id }
+            selectedElement = null
+            notifyUndoRedoChanged()
+        }
     }
 
     fun undo() {
@@ -200,6 +279,7 @@ class CanvasViewModel @Inject constructor() : ViewModel() {
         _redoStack.push(action)
         applyAction(action, isRedo = false)
         notifyUndoRedoChanged()
+        notifyUndoRedoChanged()
     }
 
     fun redo() {
@@ -207,6 +287,7 @@ class CanvasViewModel @Inject constructor() : ViewModel() {
         val action = _redoStack.pop()
         _canvasActions.push(action)
         applyAction(action, isRedo = true)
+        notifyUndoRedoChanged()
         notifyUndoRedoChanged()
     }
 
@@ -217,6 +298,15 @@ class CanvasViewModel @Inject constructor() : ViewModel() {
 
     private fun applyAction(action: CanvasAction, isRedo: Boolean) {
         when (action) {
+            is CanvasAction.UpdateElement -> {
+                val updatedList = _canvasElements.value?.map {
+                    if (it.id == action.elementId) {
+                        if (isRedo) action.newElement else action.oldElement
+                    } else it
+                }
+                _canvasElements.value = updatedList ?: emptyList()
+            }
+
             is CanvasAction.SetBackgroundColor -> {
                 _backgroundColor.value = if (isRedo) action.color else action.previousColor
             }
@@ -300,11 +390,17 @@ class CanvasViewModel @Inject constructor() : ViewModel() {
             is CanvasAction.RemoveElement -> {
                 val currentList = _canvasElements.value ?: emptyList()
                 if (isRedo) {
-                    _canvasElements.value = currentList.filter { it != action.element }
+                    // For redo, remove the element (must compare by ID)
+                    _canvasElements.value = currentList.filter { it.id != action.element.id }
                 } else {
-                    _canvasElements.value = currentList + action.element
+                    // For undo, add the element back (only if not already present)
+                    if (!currentList.any { it.id == action.element.id }) {
+                        _canvasElements.value = currentList + action.element.copy()
+                    }
                 }
-
+            }
+            is CanvasAction.UpdateCanvasElementsOrder -> {
+                _canvasElements.value = if (isRedo) action.newList else action.oldList
             }
         }
 

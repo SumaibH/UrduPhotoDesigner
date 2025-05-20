@@ -214,6 +214,7 @@ class CreateFragment : Fragment() {
                 findNavController().navigate(R.id.editorFragment, bundle)
             }
 
+            back.setOnClickListener { findNavController().navigateUp() }
         }
     }
 

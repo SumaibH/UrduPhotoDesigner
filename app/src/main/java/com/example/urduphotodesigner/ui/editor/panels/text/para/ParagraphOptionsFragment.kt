@@ -1,5 +1,6 @@
 package com.example.urduphotodesigner.ui.editor.panels.text.para
 
+import android.graphics.Paint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,7 +10,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
-import com.example.urduphotodesigner.common.enums.ParagraphAlign
 import com.example.urduphotodesigner.databinding.FragmentParagraphOptionsBinding
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -50,25 +50,18 @@ class ParagraphOptionsFragment : Fragment() {
             binding.fontTitle.text = "Font Size: ${value}"
         }
 
-        // Alignment selection
         val alignCards = listOf(
-            binding.left to ParagraphAlign.LEFT_ALIGN,
-            binding.center to ParagraphAlign.CENTER_ALIGN,
-            binding.right to ParagraphAlign.RIGHT_ALIGN,
-            binding.justify to ParagraphAlign.JUSTIFY
+            binding.left to Paint.Align.LEFT,
+            binding.center to Paint.Align.CENTER,
+            binding.right to Paint.Align.RIGHT,
         )
 
         alignCards.forEach { (card, alignType) ->
             card.setOnClickListener {
-                ParagraphAlign.entries.forEach {
-                    it.isSelected = it == alignType
-                }
-
-                // Update stroke styles
                 alignCards.forEach { (c, a) ->
-                    c.strokeWidth = if (a.isSelected) 4 else 0
+                    c.strokeWidth = if (a == alignType) 4 else 0
                 }
-
+                viewModel.setTextAlignment(alignType)
             }
         }
     }

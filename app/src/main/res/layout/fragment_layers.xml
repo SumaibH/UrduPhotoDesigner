@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".ui.editor.panels.objects.ObjectsFragment"
+    tools:context=".ui.editor.panels.layers.LayersFragment"
     android:background="@color/white">
 
     <androidx.constraintlayout.widget.Guideline
@@ -34,47 +34,19 @@
         app:layout_constraintGuide_percent="0.95"
         android:orientation="vertical"
         android:id="@+id/endGuide"/>
-
-    <ImageView
-        android:id="@+id/addImage"
-        android:layout_width="@dimen/_30sdp"
-        android:layout_height="@dimen/_30sdp"
-        android:background="@drawable/button_bg"
-        android:backgroundTint="@color/contrast"
-        android:src="@drawable/ic_import"
-        app:layout_constraintStart_toEndOf="@id/startGuide"
-        app:layout_constraintTop_toBottomOf="@id/topGuide"
-        android:padding="@dimen/_6sdp"
-        app:tint="@color/black"/>
-
-    <EditText
-        android:id="@+id/search"
-        android:layout_width="0dp"
-        android:layout_height="@dimen/_30sdp"
-        app:layout_constraintStart_toEndOf="@id/addImage"
-        app:layout_constraintEnd_toStartOf="@id/endGuide"
-        app:layout_constraintTop_toTopOf="@id/addImage"
-        app:layout_constraintBottom_toBottomOf="@id/addImage"
-        android:layout_marginStart="@dimen/_10sdp"
-        android:paddingHorizontal="@dimen/_10sdp"
-        android:fontFamily="@font/regular"
-        android:textSize="@dimen/_10sdp"
-        android:hint="@string/search_here"
-        android:textColor="@color/black"
-        android:background="@drawable/button_bg"
-        android:backgroundTint="@color/contrast"/>
-
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintStart_toEndOf="@id/startGuide"
         app:layout_constraintEnd_toStartOf="@id/endGuide"
-        app:layout_constraintTop_toBottomOf="@id/search"
+        app:layout_constraintTop_toBottomOf="@id/topGuide"
         app:layout_constraintBottom_toTopOf="@id/bottomGuide"
         android:layout_marginTop="@dimen/_5sdp"
-        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        android:orientation="vertical"
         tools:itemCount="100"
         app:spanCount="7"
-        android:id="@+id/objects"
-        tools:listitem="@layout/layout_images_item"/>
+        android:id="@+id/layers"
+        tools:listitem="@layout/layout_layers_item"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

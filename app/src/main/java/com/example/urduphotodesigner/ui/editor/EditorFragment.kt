@@ -18,7 +18,6 @@ import com.example.urduphotodesigner.common.Converter.inchesToPx
 import com.example.urduphotodesigner.common.canvas.CanvasElement
 import com.example.urduphotodesigner.common.canvas.CanvasManager
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
-import com.example.urduphotodesigner.common.canvas.ElementType
 import com.example.urduphotodesigner.common.enums.UnitType
 import com.example.urduphotodesigner.common.views.SizedCanvasView
 import com.example.urduphotodesigner.data.model.CanvasSize
@@ -56,7 +55,7 @@ class EditorFragment : Fragment() {
         observeViewModel()
     }
 
-    private fun showTextEditDialog(currentText: String) {
+    private fun showTextEditDialog(element: CanvasElement) {
         val builder = AlertDialog.Builder(requireContext())
         val inflater = requireActivity().layoutInflater
         val dialogView =
@@ -64,12 +63,13 @@ class EditorFragment : Fragment() {
         val editText = dialogView.findViewById<EditText>(R.id.edit_text_input)
 
         builder.setView(dialogView)
-        editText.setText(currentText)
+        editText.setText(element.text)
+        builder.setTitle("Add Text")
         builder.setPositiveButton("Save") { dialog, _ ->
             val newText = editText.text.toString()
             if (newText.isNotBlank()) {
-                viewModel.updateText(newText)
-                canvasManager.updateText(newText)
+                element.text = newText
+                viewModel.updateText(element)
             }
             dialog.dismiss()
         }
@@ -90,13 +90,13 @@ class EditorFragment : Fragment() {
             canvasManager.setCanvasBackgroundColor(color)
         })
 
-//        viewModel.canUndo.observe(viewLifecycleOwner) { canUndo ->
-//            binding.undo.isEnabled = canUndo
-//        }
-//
-//        viewModel.canRedo.observe(viewLifecycleOwner) { canRedo ->
-//            binding.redo.isEnabled = canRedo
-//        }
+        viewModel.canUndo.observe(viewLifecycleOwner) { canUndo ->
+            binding.undo.isEnabled = canUndo
+        }
+
+        viewModel.canRedo.observe(viewLifecycleOwner) { canRedo ->
+            binding.redo.isEnabled = canRedo
+        }
 
         viewModel.backgroundImage.observe(viewLifecycleOwner, Observer { bitmap ->
             canvasManager.setCanvasBackgroundImage(bitmap!!)
@@ -153,17 +153,22 @@ class EditorFragment : Fragment() {
                 canvasWidth = widthPx,
                 canvasHeight = heightPx,
                 onEditTextRequested = { element ->
-                    showTextEditDialog(element.text)
+                    showTextEditDialog(element)
                 },
                 onElementChanged = { canvasElement ->
-                    viewModel.updateElement(canvasElement)
+                    viewModel.canvasElements.value?.find { it.id == canvasElement.id }?.let {
+                        viewModel.updateElement(canvasElement)
+                    }
                 },
                 onElementRemoved = { canvasElement ->
-                    viewModel.removeElement(canvasElement)
+                    viewModel.canvasElements.value?.find { it.id == canvasElement.id }?.let {
+                        viewModel.removeElement(it)
+                    }
+                },onElementSelected = { element ->
+                    viewModel.setSelectedElement(element)
                 }
             ).apply {
-                // Add the SizedCanvasView to the fragment's layout.
-                binding.canvasContainer.addView(this) //  to a layout
+                binding.canvasContainer.addView(this)
             }
         )
 
@@ -178,6 +183,7 @@ class EditorFragment : Fragment() {
                 R.id.nav_objects -> navController.navigate(R.id.objectsFragment)
                 R.id.nav_text -> navController.navigate(R.id.textFragment)
                 R.id.nav_images -> navController.navigate(R.id.imagesFragment)
+                R.id.nav_layers -> navController.navigate(R.id.layersFragment)
                 else -> false
             }
             true

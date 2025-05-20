@@ -17,5 +17,8 @@ data class FontEntity(
     val user_id: Int,
     val created_at: String,
     val updated_at: String,
-    var is_selected:Boolean = false
+    var is_selected:Boolean = false,
+    var is_downloaded:Boolean = false,
+    var is_downloading:Boolean = false,
+    var file_path: String? = null
 )

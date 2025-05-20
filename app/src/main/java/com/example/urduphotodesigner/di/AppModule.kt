@@ -83,6 +83,14 @@ object AppModule {
     }
 
     @Provides
+    fun provideOkHttpClient(): OkHttpClient {
+        return OkHttpClient.Builder().build()
+    }
+
+    @Provides
+    fun provideContext(@ApplicationContext context: Context): Context = context
+
+    @Provides
     @Singleton
     fun provideFontsRepo(appDatabase: AppDatabase): FontsRepo {
         return FontsRepoImpl(appDatabase)

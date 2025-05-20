@@ -1,12 +1,16 @@
 package com.example.urduphotodesigner.common.views
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.DashPathEffect
 import android.graphics.LinearGradient
+import android.graphics.Matrix
 import android.graphics.Paint
+import android.graphics.Rect
+import android.graphics.RectF
 import android.graphics.Shader
 import android.graphics.Typeface
 import android.graphics.drawable.BitmapDrawable
@@ -16,12 +20,14 @@ import android.view.MotionEvent
 import android.view.View
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.graphics.createBitmap
+import androidx.core.graphics.withTranslation
 import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.canvas.CanvasElement
 import com.example.urduphotodesigner.common.canvas.ElementType
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.hypot
+import kotlin.math.max
 
 class SizedCanvasView @JvmOverloads constructor(
     context: Context,
@@ -30,24 +36,25 @@ class SizedCanvasView @JvmOverloads constructor(
     attrs: AttributeSet? = null,
     var onEditTextRequested: ((CanvasElement) -> Unit)? = null,
     var onElementChanged: ((CanvasElement) -> Unit)? = null,
-    var onElementRemoved: ((CanvasElement) -> Unit)? = null
+    var onElementRemoved: ((CanvasElement) -> Unit)? = null,
+    var onElementSelected: ((CanvasElement) -> Unit)? = null
 ) : View(context, attrs) {
 
     private val backgroundPaint = Paint().apply {
         color = Color.WHITE
         style = Paint.Style.FILL
     }
+    private val threshold = 20f
 
-    private var iconHitSize = 80f
+    private val desiredIconScreenSizePx = 48f
     private var iconTouched: String? = null
 
     private var backgroundGradient: LinearGradient? = null
     private var backgroundImage: Bitmap? = null
-    private var stickers = mutableListOf<CanvasElement>()
-    private val textElements = mutableListOf<CanvasElement>()
-
-    private val selectedElements = mutableSetOf<CanvasElement>()
-    private var selectedElementForAction: CanvasElement? = null
+    private val canvasElements = mutableListOf<CanvasElement>()
+//
+//    private val selectedElements = mutableSetOf<CanvasElement>()
+//    private var selectedElementForAction: CanvasElement? = null
 
     private var touchStartX = 0f
     private var touchStartY = 0f
@@ -58,9 +65,19 @@ class SizedCanvasView @JvmOverloads constructor(
     private var offsetX = 0f
     private var offsetY = 0f
 
+    private val alignmentPaint = Paint().apply {
+        color = Color.RED
+        strokeWidth = 2f
+        style = Paint.Style.STROKE
+        pathEffect = DashPathEffect(floatArrayOf(10f, 10f), 0f)
+    }
+
+    private var showVerticalGuide = false
+    private var showHorizontalGuide = false
+
     private enum class Mode { NONE, DRAG, ROTATE, RESIZE }
 
-    private val cornerIcon: Bitmap by lazy {
+    private val removeIcon: Bitmap by lazy {
         drawableToBitmap(AppCompatResources.getDrawable(context, R.drawable.ic_cross))
     }
     private val resizeIcon: Bitmap by lazy {
@@ -68,6 +85,9 @@ class SizedCanvasView @JvmOverloads constructor(
     }
     private val rotateIcon: Bitmap by lazy {
         drawableToBitmap(AppCompatResources.getDrawable(context, R.drawable.ic_rotate))
+    }
+    private val editIcon: Bitmap by lazy {
+        drawableToBitmap(AppCompatResources.getDrawable(context, R.drawable.ic_edit_text))
     }
 
     private fun drawableToBitmap(drawable: Drawable?): Bitmap {
@@ -88,64 +108,18 @@ class SizedCanvasView @JvmOverloads constructor(
     }
 
     fun syncElements(newElements: List<CanvasElement>) {
-        val currentElements = (textElements + stickers).associateBy { it.id }
+        canvasElements.clear()
+        canvasElements.addAll(newElements.map { it.copy() }) // Add copies to avoid direct modification issues
+        invalidate()
+    }
 
-        newElements.forEach { new ->
-            val existing = currentElements[new.id]
-            if (existing != null) {
-                // Update properties
-                existing.x = new.x
-                existing.y = new.y
-                existing.rotation = new.rotation
-                existing.scale = new.scale
-                existing.text = new.text
-                existing.paint.set(new.paint) // Deep copy
-            } else {
-                // New element - add to canvas
-                when (new.type) {
-                    ElementType.TEXT -> {
-                        val element = CanvasElement(
-                            context,
-                            ElementType.TEXT,
-                            new.text,
-                            x = new.x,
-                            y = new.y,
-                            id = new.id
-                        )
-                        element.paint.set(new.paint)
-                        textElements.add(element)
-                    }
-                    ElementType.IMAGE -> {
-                        new.bitmap?.let {
-                            val element = CanvasElement(
-                                context,
-                                ElementType.IMAGE,
-                                bitmap = it,
-                                x = new.x,
-                                y = new.y,
-                                id = new.id
-                            )
-                            element.rotation = new.rotation
-                            element.scale = new.scale
-                            stickers.add(element)
-                        }
-                    }
-                }
-            }
-        }
-
-        // Optionally remove stale elements (not in the new list)
-        val newIds = newElements.map { it.id }.toSet()
-        textElements.removeAll { it.id !in newIds }
-        stickers.removeAll { it.id !in newIds }
-
+    fun setLineSpacing(multiplier: Float) {
+        canvasElements.find { it.isSelected }?.lineSpacingMultiplier = multiplier
         invalidate()
     }
 
     fun clearCanvas() {
-        stickers.clear()
-        textElements.clear()
-        selectedElementForAction = null
+        canvasElements.clear()
         backgroundPaint.color = Color.WHITE // Or your default background color
         backgroundGradient = null
         backgroundImage = null
@@ -154,51 +128,61 @@ class SizedCanvasView @JvmOverloads constructor(
 
     fun addText(text: String, context: Context) {
         val element = CanvasElement(
-            context,
-            ElementType.TEXT,
-            text,
+            context = context,
+            type = ElementType.TEXT,
+            text = text,
             x = canvasWidth / 2f,
             y = canvasHeight / 2f
-        )
-        textElements.add(element)
-        selectedElementForAction = element
+        ).apply {
+            // Assign a new zIndex (top of stack)
+            zIndex = (canvasElements.maxByOrNull { it.zIndex }?.zIndex ?: 0) + 1
+        }
+        canvasElements.add(element)
+        invalidate()
+    }
+
+    fun updateElementZIndex(element: CanvasElement, newZIndex: Int) {
+        element.zIndex = newZIndex
         invalidate()
     }
 
     fun removeSelectedElement() {
-        textElements.remove(selectedElementForAction)
-        stickers.remove(selectedElementForAction)
-        selectedElementForAction = null
+        val selected = canvasElements.find { it.isSelected }
+        selected?.let {
+            canvasElements.remove(it)
+            invalidate()
+            onElementRemoved?.invoke(it) // Notify ViewModel to remove
+        }
         invalidate()
     }
 
     fun setFont(typeface: Typeface) {
-        selectedElementForAction?.paint?.typeface = typeface
+        canvasElements.find { it.isSelected }?.paint?.typeface = typeface
         invalidate()
     }
 
     fun setTextColor(color: Int) {
-        selectedElementForAction?.paint?.color = color
+        canvasElements.find { it.isSelected }?.paint?.color = color
         invalidate()
     }
 
     fun setTextSize(size: Float) {
-        selectedElementForAction?.paint?.textSize = size
+        canvasElements.find { it.isSelected }?.paint?.textSize = size
         invalidate()
     }
 
     fun setTextAlignment(alignment: Paint.Align) {
-        selectedElementForAction?.paint?.textAlign = alignment
+        canvasElements.find { it.isSelected }?.paint?.textAlign = alignment
         invalidate()
     }
 
     fun setOpacity(opacity: Int) {
-        selectedElementForAction?.paint?.alpha = opacity
+        canvasElements.find { it.isSelected }?.paint?.alpha = opacity
         invalidate()
     }
 
     fun updateText(text: String) {
-        selectedElementForAction?.text = text
+        canvasElements.find { it.isSelected }?.text = text
         invalidate()
     }
 
@@ -219,32 +203,63 @@ class SizedCanvasView @JvmOverloads constructor(
     }
 
     fun setCanvasBackgroundImage(bitmap: Bitmap) {
-        backgroundImage = Bitmap.createScaledBitmap(bitmap, canvasWidth, canvasHeight, true)
+        // Calculate the scale to maintain aspect ratio and fill the canvas
+        val scale = max(
+            canvasWidth.toFloat() / bitmap.width,
+            canvasHeight.toFloat() / bitmap.height
+        )
+
+        // Calculate the scaled dimensions
+        val scaledWidth = (bitmap.width * scale).toInt()
+        val scaledHeight = (bitmap.height * scale).toInt()
+
+        // Create a scaled bitmap that fills the canvas while maintaining aspect ratio
+        val scaledBitmap = Bitmap.createScaledBitmap(bitmap, scaledWidth, scaledHeight, true)
+
+        // Create a new bitmap with canvas dimensions and draw the scaled bitmap centered
+        val resultBitmap = createBitmap(canvasWidth, canvasHeight)
+        val canvas = Canvas(resultBitmap)
+
+        // Calculate position to center the scaled bitmap
+        val left = (canvasWidth - scaledWidth) / 2f
+        val top = (canvasHeight - scaledHeight) / 2f
+
+        canvas.drawBitmap(scaledBitmap, left, top, null)
+
+        backgroundImage = resultBitmap
         backgroundGradient = null
         invalidate()
     }
 
     fun addSticker(bitmap: Bitmap, context: Context) {
-        val maxDim = 200 // Max width/height in pixels for display
-        val ratio = bitmap.width.toFloat() / bitmap.height
-        val (newWidth, newHeight) = if (ratio >= 1) {
-            maxDim to (maxDim / ratio).toInt()
-        } else {
-            (maxDim * ratio).toInt() to maxDim
-        }
+        val canvasCenterX = canvasWidth / 2f
+        val canvasCenterY = canvasHeight / 2f
 
-        val scaledBitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true)
+        val widthRatio = canvasWidth.toFloat() / bitmap.width
+        val heightRatio = canvasHeight.toFloat() / bitmap.height
+        val minScale = minOf(1f, widthRatio, heightRatio)
 
         val element = CanvasElement(
-            context,
-            ElementType.IMAGE,
-            bitmap = scaledBitmap,
-            x = canvasWidth / 2f,
-            y = canvasHeight / 2f
+            context = context,
+            type = ElementType.IMAGE,
+            bitmap = bitmap,
+            x = canvasCenterX,
+            y = canvasCenterY,
+            scale = minScale
         )
-        stickers.add(element)
-        selectedElementForAction = element
+        element.zIndex = (canvasElements.maxByOrNull { it.zIndex }?.zIndex ?: 0) + 1
+        canvasElements.add(element)
         invalidate()
+    }
+
+    private fun checkAlignment(element: CanvasElement) {
+        val centerThreshold = 5f // pixels within which we consider centered
+
+        // Check horizontal alignment
+        showVerticalGuide = abs(element.x - canvasWidth / 2f) < centerThreshold
+
+        // Check vertical alignment
+        showHorizontalGuide = abs(element.y - canvasHeight / 2f) < centerThreshold
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -258,6 +273,7 @@ class SizedCanvasView @JvmOverloads constructor(
         setMeasuredDimension(parentWidth, parentHeight)
     }
 
+    @SuppressLint("DrawAllocation")
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
@@ -266,152 +282,240 @@ class SizedCanvasView @JvmOverloads constructor(
         offsetX = (width - scaledWidth) / 2f
         offsetY = (height - scaledHeight) / 2f
 
-        canvas.save()
-        canvas.translate(offsetX, offsetY)
-        canvas.scale(scale, scale)
+        canvas.withTranslation(offsetX, offsetY) {
+            scale(scale, scale)
 
-        if (backgroundImage != null) {
-            canvas.drawBitmap(backgroundImage!!, 0f, 0f, null)
-        } else if (backgroundGradient != null) {
-            val gradientPaint = Paint().apply { shader = backgroundGradient }
-            canvas.drawRect(0f, 0f, canvasWidth.toFloat(), canvasHeight.toFloat(), gradientPaint)
-        } else {
-            canvas.drawRect(0f, 0f, canvasWidth.toFloat(), canvasHeight.toFloat(), backgroundPaint)
-        }
-
-        (textElements + stickers).forEach { element ->
-            canvas.save()
-            canvas.translate(element.x, element.y)
-            canvas.rotate(element.rotation)
-            canvas.scale(element.scale, element.scale)
-
-            if (element.type == ElementType.TEXT) {
-                val fm = element.paint.fontMetrics
-                val textHeight = fm.descent - fm.ascent
-                canvas.drawText(element.text, 0f, -fm.ascent - textHeight / 2f, element.paint)
-
+            if (backgroundImage != null) {
+                drawBitmap(backgroundImage!!, 0f, 0f, null)
+            } else if (backgroundGradient != null) {
+                val gradientPaint = Paint().apply { shader = backgroundGradient }
+                drawRect(0f, 0f, canvasWidth.toFloat(), canvasHeight.toFloat(), gradientPaint)
             } else {
-                element.bitmap?.let {
-                    canvas.drawBitmap(it, -it.width / 2f, -it.height / 2f, null)
-                }
+                drawRect(0f, 0f, canvasWidth.toFloat(), canvasHeight.toFloat(), backgroundPaint)
             }
 
-            if (element == selectedElementForAction) {
-                val bounds = element.getBounds()
-                val boxPaint = Paint().apply {
-                    color = Color.GRAY
-                    style = Paint.Style.STROKE
-                    pathEffect = DashPathEffect(floatArrayOf(10f, 10f), 0f)
-                    strokeWidth = 2f
-                }
-                canvas.drawRect(
-                    -bounds.width() / 2,
-                    -bounds.height() / 2,
-                    bounds.width() / 2,
-                    bounds.height() / 2,
-                    boxPaint
+            // Draw alignment guides before elements
+            if (showVerticalGuide) {
+                drawLine(
+                    canvasWidth / 2f, 0f,
+                    canvasWidth / 2f, canvasHeight.toFloat(),
+                    alignmentPaint
                 )
-
-                val iconPositions = element.getIconPositions()
-
-                iconPositions["delete"]?.let {
-                    canvas.drawBitmap(
-                        cornerIcon,
-                        it.x - cornerIcon.width / 2,
-                        it.y - cornerIcon.height / 2,
-                        null
-                    )
-                }
-                iconPositions["rotate"]?.let {
-                    canvas.drawBitmap(
-                        rotateIcon,
-                        it.x - rotateIcon.width / 2,
-                        it.y - rotateIcon.height / 2,
-                        null
-                    )
-                }
-                iconPositions["resize"]?.let {
-                    canvas.drawBitmap(
-                        resizeIcon,
-                        it.x - resizeIcon.width / 3,
-                        it.y - resizeIcon.height / 3,
-                        null
-                    )
-                }
             }
 
-            canvas.restore()
-        }
+            if (showHorizontalGuide) {
+                drawLine(
+                    0f, canvasHeight / 2f,
+                    canvasWidth.toFloat(), canvasHeight / 2f,
+                    alignmentPaint
+                )
+            }
 
-        canvas.restore()
+            canvasElements.sortedBy { it.zIndex }.forEach { element ->
+                withTranslation(element.x, element.y) {
+                    rotate(element.rotation)
+                    scale(element.scale, element.scale)
+
+                    if (element.type == ElementType.TEXT) {
+                        val lines = element.text.split("\n")
+                        val fm = element.paint.fontMetrics
+                        val lineHeight = (fm.bottom - fm.top) * element.lineSpacingMultiplier
+                        val totalHeight = lineHeight * lines.size
+                        lines.forEachIndexed { i, line ->
+                            val yOffset = -totalHeight / 2 + i * lineHeight - fm.top
+                            drawText(line, 0f, yOffset, element.paint)
+                        }
+
+                    } else {
+                        element.bitmap?.let {
+                            drawBitmap(it, -it.width / 2f, -it.height / 2f, null)
+                        }
+                    }
+
+                    if (element.isSelected) {
+                        val localContentW = element.getLocalContentWidth()
+                        val localContentH = element.getLocalContentHeight()
+
+                        val desiredScreenPadding = 10f
+                        val localSpacePadding = desiredScreenPadding / element.scale
+
+                        val desiredScreenStrokeWidth = 2f
+                        val localSpaceStrokeWidth = desiredScreenStrokeWidth / element.scale
+
+                        val dashLengthOnScreen = 10f
+                        val gapLengthOnScreen = 10f
+                        val localDashLength = dashLengthOnScreen / element.scale
+                        val localGapLength = gapLengthOnScreen / element.scale
+
+                        val boxPaint = Paint().apply {
+                            color = Color.GRAY
+                            style = Paint.Style.STROKE
+                            pathEffect =
+                                DashPathEffect(floatArrayOf(localDashLength, localGapLength), 0f)
+                            strokeWidth = localSpaceStrokeWidth
+                        }
+
+                        drawRect(
+                            (-localContentW / 2f) - localSpacePadding,
+                            (-localContentH / 2f) - localSpacePadding,
+                            (localContentW / 2f) + localSpacePadding,
+                            (localContentH / 2f) + localSpacePadding,
+                            boxPaint
+                        )
+
+                        if (!element.isLocked) {
+                            val iconPositions = element.getIconPositions()
+
+                            iconPositions.forEach { (iconName, position) ->
+                                val iconBitmap = when (iconName) {
+                                    "delete" -> removeIcon
+                                    "rotate" -> rotateIcon
+                                    "resize" -> resizeIcon
+                                    "edit" -> editIcon
+                                    else -> null
+                                }
+
+                                iconBitmap?.let { bmp ->
+                                    val localIconDrawWidth = desiredIconScreenSizePx / element.scale
+                                    val localIconDrawHeight =
+                                        desiredIconScreenSizePx / element.scale // Assuming square icons
+
+                                    val srcRect = Rect(0, 0, bmp.width, bmp.height)
+                                    val dstRect = RectF(
+                                        position.x - localIconDrawWidth / 2f,
+                                        position.y - localIconDrawHeight / 2f,
+                                        position.x + localIconDrawWidth / 2f,
+                                        position.y + localIconDrawHeight / 2f
+                                    )
+                                    drawBitmap(bmp, srcRect, dstRect, null)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private fun removeElement(element: CanvasElement) {
-        textElements.remove(element)
-        stickers.remove(element)
-        selectedElements.remove(element)
-        invalidate()  // Redraw the view
+        canvasElements.remove(element)
+        invalidate()
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         val x = (event.x - offsetX) / scale
         val y = (event.y - offsetY) / scale
 
+        val currentSelectedElement = canvasElements.find { it.isSelected }
+
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
-                selectedElementForAction?.let { element ->
-                    val iconPositions = element.getIconPositions()
-                    val localX = x - element.x
-                    val localY = y - element.y
+                currentSelectedElement?.let { element ->
+                    if (!element.isLocked) {
+                        val iconPositions = element.getIconPositions()
+                        val matrix = Matrix()
 
-                    val touchedIcon = iconPositions.entries.firstOrNull { (_, pos) ->
-                        abs(localX - pos.x) < iconHitSize / 2 && abs(localY - pos.y) < iconHitSize / 2
-                    }?.key
 
-                    if (touchedIcon != null) {
-                        iconTouched = touchedIcon
-                        currentMode = when (touchedIcon) {
-                            "delete" -> Mode.NONE
-                            "rotate" -> Mode.ROTATE
-                            "resize" -> Mode.RESIZE
-                            else -> Mode.NONE
+                        // Create transformation matrix for the element
+                        matrix.postTranslate(-element.x, -element.y) // Move to origin
+                        matrix.postRotate(-element.rotation) // Undo rotation
+                        matrix.postScale(1f / element.scale, 1f / element.scale) // Undo scale
+
+                        // Transform touch point to element's local coordinate system
+                        val touchPoint = floatArrayOf(x, y)
+                        matrix.mapPoints(touchPoint)
+                        val localTouchX = touchPoint[0]
+                        val localTouchY = touchPoint[1]
+
+                        val adjustedIconHitSize = 60f / element.scale
+
+                        val touchedIconInfo = iconPositions.entries.firstOrNull { (_, iconPos) ->
+                            val dx = localTouchX - iconPos.x
+                            val dy = localTouchY - iconPos.y
+                            val distance = hypot(dx, dy)
+                            distance < adjustedIconHitSize / 2f
                         }
-                        touchStartX = x
-                        touchStartY = y
-                        return true
+
+                        if (touchedIconInfo != null) {
+                            iconTouched = touchedIconInfo.key
+                            when (iconTouched) {
+                                "delete" -> {
+                                    onElementRemoved?.invoke(element)
+                                    removeElement(element)
+                                    return true // Consume the event immediately
+                                }
+
+                                "rotate" -> {
+                                    currentMode = Mode.ROTATE
+                                    touchStartX = x
+                                    touchStartY = y
+                                    lastRotation = element.rotation
+                                }
+
+                                "resize" -> {
+                                    currentMode = Mode.RESIZE
+                                    touchStartX = x
+                                    touchStartY = y
+                                }
+
+                                "edit" -> {
+                                    onEditTextRequested?.invoke(element) // Invoke edit callback
+                                    return true // Consume the touch event
+                                }
+                            }
+                            invalidate()
+                            return true
+                        }
                     }
                 }
 
                 // Check topmost element under touch
-                val touchedElement =
-                    (textElements + stickers).lastOrNull { it.getBounds().contains(x, y) }
+                val touchedElement = canvasElements.sortedByDescending { it.zIndex }.firstOrNull {
+                    val matrix = Matrix()
+                    matrix.postTranslate(-it.x, -it.y)
+                    matrix.postRotate(-it.rotation)
+                    matrix.postScale(1f / it.scale, 1f / it.scale)
+
+                    val touchPoint = floatArrayOf(x, y)
+                    matrix.mapPoints(touchPoint)
+
+                    val bounds = RectF(
+                        -it.getLocalContentWidth() / 2f,
+                        -it.getLocalContentHeight() / 2f,
+                        it.getLocalContentWidth() / 2f,
+                        it.getLocalContentHeight() / 2f
+                    )
+                    bounds.contains(touchPoint[0], touchPoint[1])
+                }
 
                 if (touchedElement != null) {
-                    if (touchedElement == selectedElementForAction) {
-                        // Already selected - start drag
+                    if (currentSelectedElement != touchedElement) {
+                        onElementSelected?.invoke(touchedElement)
+                        onElementSelected?.invoke(touchedElement)
+                        currentMode = Mode.NONE
+                        invalidate()
+                    } else if (!touchedElement.isLocked) {  // Only allow drag if unlocked
                         currentMode = Mode.DRAG
                         touchStartX = x
                         touchStartY = y
-                    } else {
-                        // Select new element
-                        selectedElementForAction = touchedElement
-                        currentMode = Mode.NONE
                     }
-                    invalidate()
                     return true
                 } else {
-                    // Click outside all elements - deselect
-                    if (selectedElementForAction != null) {
-                        selectedElementForAction = null
+                    if (currentSelectedElement != null) {
+                        currentMode = Mode.NONE
                         invalidate()
                     }
-                    currentMode = Mode.NONE
                     return true
                 }
             }
 
             MotionEvent.ACTION_MOVE -> {
-                selectedElementForAction?.let { element ->
+                currentSelectedElement?.let { element ->
+                    if (element.isLocked) {
+                        return true
+                    }
+
                     when (currentMode) {
                         Mode.DRAG -> {
                             val dx = x - touchStartX
@@ -437,10 +541,10 @@ class SizedCanvasView @JvmOverloads constructor(
 
                             element.x = clampedX
                             element.y = clampedY
-
-                            onElementChanged?.invoke(element)
+                            checkAlignment(element)
                             touchStartX = x
                             touchStartY = y
+                            onElementChanged?.invoke(element)
                             invalidate()
                         }
 
@@ -451,10 +555,7 @@ class SizedCanvasView @JvmOverloads constructor(
                             val currentAngle = atan2(y - centerY, x - centerX)
                             val deltaAngle =
                                 Math.toDegrees((currentAngle - startAngle).toDouble()).toFloat()
-                            element.rotation += deltaAngle
-                            onElementChanged?.invoke(element)
-                            touchStartX = x
-                            touchStartY = y
+                            element.rotation = (lastRotation + deltaAngle) % 360
                             invalidate()
                         }
 
@@ -463,40 +564,38 @@ class SizedCanvasView @JvmOverloads constructor(
                             val centerY = element.y
                             val startDist = hypot(touchStartX - centerX, touchStartY - centerY)
                             val currentDist = hypot(x - centerX, y - centerY)
-                            val scaleChange = currentDist / startDist
-                            element.scale = (element.scale * scaleChange).coerceIn(0.1f, 3f)
-                            onElementChanged?.invoke(element)
+                            if (startDist > 0) {
+                                val scaleChange = currentDist / startDist
+                                element.scale = (element.scale * scaleChange).coerceIn(0.1f, 5f)
+                            }
                             touchStartX = x
                             touchStartY = y
                             invalidate()
                         }
 
-                        else -> {}
+                        Mode.NONE -> {
+                            val dx = x - touchStartX
+                            val dy = y - touchStartY
+                            val distance = hypot(dx, dy)
+                            if (distance > threshold) {
+                                currentMode = Mode.DRAG
+                                touchStartX = x
+                                touchStartY = y
+                                return true
+                            }
+                        }
                     }
                 }
                 return true
             }
 
             MotionEvent.ACTION_UP -> {
-                if (iconTouched == "delete") {
-                    selectedElementForAction?.let {
-                        onElementRemoved?.invoke(it)
-                        removeElement(it)
-                    }
-                    iconTouched = null
-                    currentMode = Mode.NONE
-                    return true
-                }
+                showVerticalGuide = false
+                showHorizontalGuide = false
 
-                // If clicked on selected element but NOT on icon, trigger edit callback
-                selectedElementForAction?.let { element ->
-                    val bounds = element.getBounds()
-                    if (bounds.contains(x, y) && iconTouched == null) {
-                        if (element.type == ElementType.TEXT) { // Only for text
-                            onEditTextRequested?.invoke(element)
-                        }
-                        currentMode = Mode.NONE
-                        return true
+                if (currentMode == Mode.DRAG || currentMode == Mode.ROTATE || currentMode == Mode.RESIZE) {
+                    canvasElements.find { it.isSelected }?.let {
+                        onElementChanged?.invoke(it) // Notify ViewModel of final change
                     }
                 }
 
@@ -505,7 +604,6 @@ class SizedCanvasView @JvmOverloads constructor(
                 return true
             }
         }
-
         return super.onTouchEvent(event)
     }
 }

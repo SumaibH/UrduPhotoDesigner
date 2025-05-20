@@ -12,12 +12,12 @@ sealed class CanvasAction {
     data class SetFont(val typeface: Typeface, val previousTypeface: Typeface?) : CanvasAction()
     data class SetTextColor(val color: Int, val previousColor: Int) : CanvasAction()
     data class SetTextSize(val size: Float, val previousSize: Float) : CanvasAction()
-    data class SetTextAlignment(val alignment: Paint.Align, val previousAlignment: Paint.Align) :
-        CanvasAction()
-
+    data class SetTextAlignment(val alignment: Paint.Align, val previousAlignment: Paint.Align) : CanvasAction()
+    data class UpdateElement(val elementId: String, val newElement: CanvasElement, val oldElement: CanvasElement) : CanvasAction()
     data class SetOpacity(val opacity: Int, val previousOpacity: Int) : CanvasAction()
     data class UpdateText(val text: String, val previousText: String) : CanvasAction()
     data class RemoveElement(val element: CanvasElement) : CanvasAction()
+    data class UpdateCanvasElementsOrder(val oldList: List<CanvasElement>, val newList: List<CanvasElement>) : CanvasAction()
     data class SetBackgroundGradient(
         val colors: IntArray,
         val positions: FloatArray?,

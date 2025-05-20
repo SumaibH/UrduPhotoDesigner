@@ -21,8 +21,14 @@ import com.example.urduphotodesigner.data.model.FontEntity
 import com.example.urduphotodesigner.databinding.LayoutFontItemBinding
 
 class FontsAdapter(
-    private val onFontSelected: (FontEntity) -> Unit
+    private val onFontSelected: (FontEntity, isDownloaded: Boolean) -> Unit
 ) : RecyclerView.Adapter<FontsAdapter.FontViewHolder>() {
+
+    var selectedFontId: String? = null
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
 
     private val fonts = mutableListOf<FontEntity>()
 
@@ -47,7 +53,9 @@ class FontsAdapter(
     inner class FontViewHolder(private val binding: LayoutFontItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(font: FontEntity) {
-            if (font.is_selected) {
+            val isSelected = font.id.toString() == selectedFontId
+
+            if (isSelected) {
                 binding.root.strokeWidth = 4
                 binding.root.setCardBackgroundColor(Color.WHITE)
                 binding.root.strokeColor =
@@ -57,11 +65,29 @@ class FontsAdapter(
                 binding.root.setCardBackgroundColor(Color.WHITE)
             }
 
+            // Handle download state
+            if (font.is_downloaded) {
+                binding.download.visibility = View.GONE
+                binding.progressBar.visibility = View.GONE
+            } else {
+                if (font.is_downloading) {
+                    binding.download.visibility = View.GONE
+                    binding.progressBar.visibility = View.VISIBLE
+                } else {
+                    binding.download.visibility = View.VISIBLE
+                    binding.progressBar.visibility = View.GONE
+                }
+            }
+
             binding.root.setOnClickListener {
-                fonts.forEach { it.is_selected = false }
-                font.is_selected = true
-                notifyDataSetChanged()
-                onFontSelected.invoke(font)
+                if (font.is_downloaded){
+                    fonts.forEach { it.is_selected = false }
+                    notifyDataSetChanged()
+                    onFontSelected.invoke(font, true)
+                }else{
+                    notifyItemChanged(adapterPosition)
+                    onFontSelected.invoke(font, false)
+                }
             }
 
             val url = Constants.BASE_URL_GLIDE+font.image_url

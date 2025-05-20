@@ -25,4 +25,9 @@
         android:name="com.example.urduphotodesigner.ui.editor.panels.objects.ObjectsFragment"
         android:label="fragment_objects"
         tools:layout="@layout/fragment_objects" />
+    <fragment
+        android:id="@+id/layersFragment"
+        android:name="com.example.urduphotodesigner.ui.editor.panels.layers.LayersFragment"
+        android:label="fragment_layers"
+        tools:layout="@layout/fragment_layers" />
 </navigation>
