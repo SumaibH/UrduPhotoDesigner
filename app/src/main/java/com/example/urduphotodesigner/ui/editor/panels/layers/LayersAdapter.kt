@@ -1,5 +1,6 @@
 package com.example.urduphotodesigner.ui.editor.panels.layers
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -57,6 +58,8 @@ class LayersAdapter(
                             else -> R.drawable.ic_objects
                         }
                     )
+
+                    root.setBackgroundColor(if (element.isSelected) Color.LTGRAY else Color.TRANSPARENT)
 
                     // Set lock state
                     lock.setImageResource(

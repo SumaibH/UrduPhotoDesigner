@@ -35,19 +35,30 @@ class ParagraphOptionsFragment : Fragment() {
     }
 
     private fun initObservers() {
-        viewModel.currentTextSize.observe(viewLifecycleOwner, Observer { textSize ->
+        viewModel.currentTextSize.observe(viewLifecycleOwner) { textSize ->
             // Update the SeekBar progress
-            binding.seekBar.value = textSize.toFloat()
-
+            binding.seekBar.value = textSize!!
             binding.fontTitle.text = "Font Size: ${textSize.toInt()}"
-        })
+        }
+
+        viewModel.currentTextAlignment.observe(viewLifecycleOwner) { alignment ->
+            val alignCards = listOf(
+                binding.left to Paint.Align.LEFT,
+                binding.center to Paint.Align.CENTER,
+                binding.right to Paint.Align.RIGHT,
+            )
+
+            alignCards.forEach { (card, alignType) ->
+                card.strokeWidth = if (alignType == alignment) 4 else 0
+            }
+        }
     }
 
     private fun setEvents() {
 
         binding.seekBar.addOnChangeListener { _, value, _ ->
             viewModel.setTextSize(value)
-            binding.fontTitle.text = "Font Size: ${value}"
+            binding.fontTitle.text = "Font Size: ${value.toInt()}" // Update title dynamically
         }
 
         val alignCards = listOf(
@@ -58,9 +69,7 @@ class ParagraphOptionsFragment : Fragment() {
 
         alignCards.forEach { (card, alignType) ->
             card.setOnClickListener {
-                alignCards.forEach { (c, a) ->
-                    c.strokeWidth = if (a == alignType) 4 else 0
-                }
+                // This part is already handled by the observer, but we keep it to trigger the ViewModel update
                 viewModel.setTextAlignment(alignType)
             }
         }

@@ -5,4 +5,5 @@
     <color name="whiteText">#FFFFFF</color>
     <color name="contrast">#23342A</color>
     <color name="appColor">#005D28</color>
+    <color name="selection">#00FF6E</color>
 </resources>

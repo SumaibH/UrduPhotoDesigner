@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.core.graphics.toColorInt
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Observer
 import com.example.urduphotodesigner.common.Constants
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.databinding.FragmentColorsListBinding
@@ -31,14 +32,27 @@ class ColorsListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupRecyclerView()
+        initObservers()
     }
 
     private fun setupRecyclerView() {
-        colorsAdapter = ColorsAdapter(Constants.colorList){ color ->
+        colorsAdapter = ColorsAdapter(Constants.colorList) { color ->
             viewModel.setTextColor(color.colorCode.toColorInt())
+            // No need to manually update adapter.selectedColor or call notifyDataSetChanged() here.
+            // The observer in initObservers() will handle updating the adapter's state
+            // and triggering the precise UI update.
         }
         binding.colors.apply {
             adapter = colorsAdapter
+        }
+    }
+
+    private fun initObservers() {
+        viewModel.currentTextColor.observe(viewLifecycleOwner) { color ->
+            // When the ViewModel's current text color changes (e.g., due to canvas selection),
+            // update the adapter's selectedColor. This will trigger the efficient
+            // notifyItemChanged calls within the adapter's setter.
+            colorsAdapter.selectedColor = color!!
         }
     }
 

@@ -1,6 +1,5 @@
 package com.example.urduphotodesigner.ui.editor.panels.text.fonts
 
-import android.graphics.Color
 import android.graphics.drawable.PictureDrawable
 import android.util.Log
 import android.view.LayoutInflater
@@ -16,7 +15,6 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.Constants
-import com.example.urduphotodesigner.data.model.ColorItem
 import com.example.urduphotodesigner.data.model.FontEntity
 import com.example.urduphotodesigner.databinding.LayoutFontItemBinding
 
@@ -26,8 +24,23 @@ class FontsAdapter(
 
     var selectedFontId: String? = null
         set(value) {
-            field = value
-            notifyDataSetChanged()
+            // Only update if the ID actually changed
+            if (field != value) {
+                val oldSelectedId = field
+                field = value // Update the backing field
+
+                // Find the positions of the old and new selected items
+                val oldSelectedPosition = fonts.indexOfFirst { it.id.toString() == oldSelectedId }
+                val newSelectedPosition = fonts.indexOfFirst { it.id.toString() == value }
+
+                // Notify only the items whose selection state has changed
+                if (oldSelectedPosition != -1) {
+                    notifyItemChanged(oldSelectedPosition)
+                }
+                if (newSelectedPosition != -1 && newSelectedPosition != oldSelectedPosition) {
+                    notifyItemChanged(newSelectedPosition)
+                }
+            }
         }
 
     private val fonts = mutableListOf<FontEntity>()
@@ -56,13 +69,19 @@ class FontsAdapter(
             val isSelected = font.id.toString() == selectedFontId
 
             if (isSelected) {
-                binding.root.strokeWidth = 4
-                binding.root.setCardBackgroundColor(Color.WHITE)
-                binding.root.strokeColor =
-                    ContextCompat.getColor(binding.root.context, R.color.appColor)
+                binding.root.setCardBackgroundColor(
+                    ContextCompat.getColor(
+                        binding.root.context,
+                        R.color.selection
+                    )
+                )
             } else {
-                binding.root.strokeWidth = 0
-                binding.root.setCardBackgroundColor(Color.WHITE)
+                binding.root.setCardBackgroundColor(
+                    ContextCompat.getColor(
+                        binding.root.context,
+                        R.color.whiteText
+                    )
+                )
             }
 
             // Handle download state
@@ -80,17 +99,15 @@ class FontsAdapter(
             }
 
             binding.root.setOnClickListener {
-                if (font.is_downloaded){
-                    fonts.forEach { it.is_selected = false }
-                    notifyDataSetChanged()
+                if (font.is_downloaded) {
+                    selectedFontId = font.id.toString()
                     onFontSelected.invoke(font, true)
-                }else{
-                    notifyItemChanged(adapterPosition)
+                } else {
                     onFontSelected.invoke(font, false)
                 }
             }
 
-            val url = Constants.BASE_URL_GLIDE+font.image_url
+            val url = Constants.BASE_URL_GLIDE + font.image_url
             Glide.with(binding.root.context)
                 .`as`(PictureDrawable::class.java)
                 .load(url)

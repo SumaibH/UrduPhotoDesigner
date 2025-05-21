@@ -1,11 +1,21 @@
 package com.example.urduphotodesigner.ui.editor
 
 import android.app.AlertDialog
+import android.app.Dialog
+import android.os.Build
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
+import android.view.inputmethod.EditorInfo
 import android.widget.EditText
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
@@ -48,6 +58,15 @@ class EditorFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.bottomNavigation) { view, insets ->
+            if (Build.MANUFACTURER.equals("realme", ignoreCase = true)) {
+                val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+                view.updatePadding(bottom = systemBars.bottom)
+            }
+            insets
+        }
+
         canvasSize = arguments?.getSerializable("canvas_size") as CanvasSize
         currentUnit = (arguments?.getSerializable("unit_type") as? UnitType)!!
 
@@ -56,16 +75,16 @@ class EditorFragment : Fragment() {
     }
 
     private fun showTextEditDialog(element: CanvasElement) {
-        val builder = AlertDialog.Builder(requireContext())
-        val inflater = requireActivity().layoutInflater
-        val dialogView =
-            inflater.inflate(R.layout.dialog_edit_text, null)
-        val editText = dialogView.findViewById<EditText>(R.id.edit_text_input)
+        val dialog = Dialog(requireContext())
+        dialog.setContentView(R.layout.dialog_edit_text)
 
-        builder.setView(dialogView)
+        val editText = dialog.findViewById<EditText>(R.id.edit_text_input)
+        val done = dialog.findViewById<ImageView>(R.id.done)
         editText.setText(element.text)
-        builder.setTitle("Add Text")
-        builder.setPositiveButton("Save") { dialog, _ ->
+        editText.requestFocus()
+        dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
+
+        done.setOnClickListener {
             val newText = editText.text.toString()
             if (newText.isNotBlank()) {
                 element.text = newText
@@ -73,10 +92,17 @@ class EditorFragment : Fragment() {
             }
             dialog.dismiss()
         }
-        builder.setNegativeButton("Cancel") { dialog, _ ->
-            dialog.cancel()
+
+        // Set dialog window attributes for no dim background
+        dialog.window?.apply {
+            setBackgroundDrawableResource(android.R.color.transparent) // Make background transparent
+            setDimAmount(0f) // No dim
+            setGravity(Gravity.BOTTOM)
+            // You might want to adjust width/height if the layout doesn't fill as expected
+            setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT)
         }
-        val dialog = builder.create()
+
+        // Show the dialog
         dialog.show()
     }
 
@@ -99,7 +125,7 @@ class EditorFragment : Fragment() {
         }
 
         viewModel.backgroundImage.observe(viewLifecycleOwner, Observer { bitmap ->
-            canvasManager.setCanvasBackgroundImage(bitmap!!)
+            bitmap?.let { canvasManager.setCanvasBackgroundImage(it) }
         })
 
         viewModel.backgroundGradient.observe(viewLifecycleOwner, Observer { gradient ->
@@ -115,19 +141,19 @@ class EditorFragment : Fragment() {
         })
 
         viewModel.currentTextColor.observe(viewLifecycleOwner, Observer { color ->
-            canvasManager.setTextColor(color)
+            canvasManager.setTextColor(color!!)
         })
 
         viewModel.currentTextSize.observe(viewLifecycleOwner, Observer { size ->
-            canvasManager.setTextSize(size)
+            canvasManager.setTextSize(size!!)
         })
 
         viewModel.currentTextAlignment.observe(viewLifecycleOwner, Observer { alignment ->
-            canvasManager.setTextAlignment(alignment)
+            canvasManager.setTextAlignment(alignment!!)
         })
 
         viewModel.currentTextOpacity.observe(viewLifecycleOwner, Observer { opacity ->
-            canvasManager.setOpacity(opacity)
+            canvasManager.setOpacity(opacity!!)
         })
     }
 
@@ -164,8 +190,14 @@ class EditorFragment : Fragment() {
                     viewModel.canvasElements.value?.find { it.id == canvasElement.id }?.let {
                         viewModel.removeElement(it)
                     }
-                },onElementSelected = { element ->
-                    viewModel.setSelectedElement(element)
+                },onElementSelected = { elements ->
+                    viewModel.setSelectedElementsFromLayers(elements)
+                    viewModel.onCanvasSelectionChanged(elements)
+                    if (elements.isNotEmpty()) {
+                        binding.opacityBox.visibility = View.VISIBLE // Make opacity panel visible
+                    } else {
+                        binding.opacityBox.visibility = View.GONE // Hide opacity panel
+                    }
                 }
             ).apply {
                 binding.canvasContainer.addView(this)

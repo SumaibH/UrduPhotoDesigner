@@ -1,5 +1,6 @@
 package com.example.urduphotodesigner.ui.editor.panels.text.fonts
 
+import android.graphics.Typeface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -39,41 +40,32 @@ class FontsListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setEvents()
+        setupRecyclerViews()
         initObservers()
     }
 
-    private fun setEvents() {
-        urduAdapter = FontsAdapter { font, isDownloaded ->
-            fontEntity = font
-            if (isDownloaded) {
-                mainViewModel.getTypeface(font)?.let {
-                    viewModel.setFont(it)
-                }
-            } else {
-                mainViewModel.downloadFont(font)
-            }
-            // Unselect all in English adapter
-            englishAdapter.selectedFontId = null
-            urduAdapter.selectedFontId = font.id.toString()
-        }
-
+    private fun setupRecyclerViews() {
         englishAdapter = FontsAdapter { font, isDownloaded ->
-            fontEntity = font
-            if (isDownloaded) {
-                mainViewModel.getTypeface(font)?.let {
-                    viewModel.setFont(it)
-                }
-            } else {
-                mainViewModel.downloadFont(font)
-            }
-            // Unselect all in Urdu adapter
-            urduAdapter.selectedFontId = null
-            englishAdapter.selectedFontId = font.id.toString()
+            handleFontSelection(font, isDownloaded)
+        }
+        urduAdapter = FontsAdapter { font, isDownloaded ->
+            handleFontSelection(font, isDownloaded)
         }
 
-        binding.urduRV.adapter = urduAdapter
         binding.englishRV.adapter = englishAdapter
+        binding.urduRV.adapter = urduAdapter
+    }
+
+    private fun handleFontSelection(font: FontEntity, isDownloaded: Boolean) {
+        if (isDownloaded) {
+            mainViewModel.getTypeface(font)?.let {
+                viewModel.setFont(it)
+            }
+        } else {
+            // Initiate download
+            fontEntity = font // Keep track of the font being downloaded
+            mainViewModel.downloadFont(font)
+        }
     }
 
     // In FontsListFragment.kt
@@ -121,6 +113,31 @@ class FontsListFragment : Fragment() {
                         fontEntity = null
                     }
                     else -> {}
+                }
+            }
+        }
+
+        viewModel.currentFont.observe(viewLifecycleOwner) { currentTypeface ->
+            // Clear previous selections
+            urduAdapter.selectedFontId = null
+            englishAdapter.selectedFontId = null
+
+            // Find the font that matches the current typeface by comparing file paths
+            mainViewModel.localFonts.value.forEach { font ->
+                if (font.is_downloaded && font.file_path != null) {
+                    try {
+                        val typeface = Typeface.createFromFile(font.file_path)
+                        if (typeface == currentTypeface) {
+                            if (font.font_category.equals("Urdu", ignoreCase = true)) {
+                                urduAdapter.selectedFontId = font.id.toString()
+                            } else {
+                                englishAdapter.selectedFontId = font.id.toString()
+                            }
+                            return@forEach
+                        }
+                    } catch (e: Exception) {
+                        // Handle error if needed
+                    }
                 }
             }
         }

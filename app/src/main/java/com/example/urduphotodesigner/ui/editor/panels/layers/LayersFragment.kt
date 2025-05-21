@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.example.urduphotodesigner.common.canvas.CanvasElement
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.databinding.FragmentLayersBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -47,7 +48,28 @@ class LayersFragment : Fragment() {
                 viewModel.removeElement(element)
             },
             onItemClick = { element -> // Add this new callback
-                viewModel.setSelectedElement(element) // Set the selected element in the ViewModel
+                val currentElements = viewModel.canvasElements.value?.toMutableList() ?: mutableListOf()
+
+                // Find the actual element object from the ViewModel's list to modify its isSelected state
+                val elementToToggle = currentElements.find { it.id == element.id }
+
+                elementToToggle?.let {
+                    // Toggle its selection state
+                    it.isSelected = !it.isSelected
+
+                    // If the clicked element is now selected, and it's the only one selected,
+                    // or if it was previously the only one selected and we're deselecting it,
+                    // we need to ensure other elements are deselected if not explicitly multi-selecting.
+                    // However, the requirement is that multi-selection is *only* from LayersFragment.
+                    // So, if an item is clicked, its selection state is simply toggled.
+                    // The SizedCanvasView will handle single-selection on canvas interaction.
+
+                    // Collect all currently selected elements after the toggle
+                    val selectedElements = currentElements.filter { it.isSelected }
+
+                    // Inform the ViewModel about the new selection state of all elements
+                    viewModel.setSelectedElementsFromLayers(selectedElements)
+                }
             }
         )
 
@@ -65,7 +87,7 @@ class LayersFragment : Fragment() {
             ): Boolean {
                 val fromPos = viewHolder.adapterPosition
                 val toPos = target.adapterPosition
-                // Get a mutable copy of the current elements from the ViewModel
+
                 val currentElements = viewModel.canvasElements.value?.toMutableList() ?: return false
 
                 if (fromPos < 0 || fromPos >= currentElements.size ||
@@ -73,15 +95,57 @@ class LayersFragment : Fragment() {
                     return false
                 }
 
-                // Perform the reordering on the mutable list
-                val movedElement = currentElements.removeAt(fromPos)
-                currentElements.add(toPos, movedElement)
+                val draggedElement = currentElements[fromPos]
 
-                // Update the ViewModel with the reordered list.
-                // The ViewModel will then update zIndex based on the new positions and emit.
-                viewModel.updateCanvasElementsOrderAndZIndex(currentElements)
+                // Get all currently selected elements, sorted by their original zIndex (which corresponds to list order)
+                val selectedElementsInOrder = currentElements.filter { it.isSelected }.sortedBy { currentElements.indexOf(it) }
 
-                return true
+                // If the dragged element is part of the current selection, move the entire block
+                if (selectedElementsInOrder.contains(draggedElement)) {
+                    val finalReorderedList = mutableListOf<CanvasElement>()
+                    val nonSelectedElements = currentElements.filter { !it.isSelected }.toMutableList()
+
+                    // Calculate the effective target position for the *start* of the selected block.
+                    // This is based on where the dragged element is moved to,
+                    // relative to its position within the selected block.
+                    val indexOfDraggedInSelected = selectedElementsInOrder.indexOf(draggedElement)
+                    var blockTargetStartPos = toPos - indexOfDraggedInSelected
+
+                    // Clamp the blockTargetStartPos to valid range within the final list size
+                    blockTargetStartPos = blockTargetStartPos.coerceIn(0, currentElements.size - selectedElementsInOrder.size)
+
+                    // Build the new list by inserting selected elements at their calculated block start position
+                    var selectedIndex = 0
+                    var nonSelectedIndex = 0
+
+                    for (i in 0 until currentElements.size) {
+                        if (i >= blockTargetStartPos && selectedIndex < selectedElementsInOrder.size) {
+                            // Insert selected elements at the calculated block start position
+                            finalReorderedList.add(selectedElementsInOrder[selectedIndex])
+                            selectedIndex++
+                        } else {
+                            // Insert non-selected elements, ensuring we don't re-add selected ones
+                            if (nonSelectedIndex < nonSelectedElements.size) {
+                                finalReorderedList.add(nonSelectedElements[nonSelectedIndex])
+                                nonSelectedIndex++
+                            }
+                        }
+                    }
+                    // Add any remaining selected elements if they were supposed to go past the end
+                    while (selectedIndex < selectedElementsInOrder.size) {
+                        finalReorderedList.add(selectedElementsInOrder[selectedIndex])
+                        selectedIndex++
+                    }
+
+                    viewModel.updateCanvasElementsOrderAndZIndex(finalReorderedList)
+                    return true
+                } else {
+                    // If the dragged element is not selected, perform single element reordering
+                    val movedElement = currentElements.removeAt(fromPos)
+                    currentElements.add(toPos, movedElement)
+                    viewModel.updateCanvasElementsOrderAndZIndex(currentElements)
+                    return true
+                }
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
@@ -97,7 +161,6 @@ class LayersFragment : Fragment() {
     private fun observeViewModel() {
         viewModel.canvasElements.observe(viewLifecycleOwner) { elements ->
             adapter.submitList(elements.sortedBy { it.zIndex })
-            Log.d(TAG, "observeViewModel: ${elements[0].zIndex}")
         }
     }
 

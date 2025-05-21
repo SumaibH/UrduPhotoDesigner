@@ -25,7 +25,7 @@ class CanvasViewModel @Inject constructor() : ViewModel() {
     private val _canRedo = MutableLiveData(false)
     val canRedo: LiveData<Boolean> get() = _canRedo
 
-    // LiveData to hold the current background color.  Useful for observers.
+    // LiveData to hold the current background color. Useful for observers.
     private val _backgroundColor =
         MutableLiveData<Int>(Color.WHITE) // Initialize with a default color
     val backgroundColor: LiveData<Int> = _backgroundColor
@@ -103,16 +103,75 @@ class CanvasViewModel @Inject constructor() : ViewModel() {
             }
         }
 
-        // Select the new element in the list
+        // Select the new element in the list and update current text properties
         if (element != null) {
             val index = currentList.indexOfFirst { it.id == element.id }
             if (index != -1) {
                 currentList[index] = element.copy(isSelected = true)
+                // Update all current text properties if the selected element is TEXT
+                if (element.type == ElementType.TEXT) {
+                    _currentFont.value = element.paint.typeface
+                    _currentTextColor.value = element.paint.color
+                    _currentTextSize.value = element.paint.textSize
+                    _currentTextAlignment.value = element.paint.textAlign
+                    _currentTextOpacity.value = element.paint.alpha
+                }
             }
+        } else {
+            // If no element is selected, reset current text properties to defaults
+            _currentFont.value = null
+            _currentTextColor.value = Color.BLACK
+            _currentTextSize.value = 40f
+            _currentTextAlignment.value = Paint.Align.CENTER
+            _currentTextOpacity.value = 255
         }
 
         this.selectedElement = element // Update the local reference
         _canvasElements.value = currentList // Emit the updated list to observers
+    }
+
+    fun onCanvasSelectionChanged(selectedListFromCanvas: List<CanvasElement>) {
+        val currentElements = _canvasElements.value?.toMutableList() ?: mutableListOf()
+
+        // Create a set of IDs for the elements that are selected by the canvas
+        val idsSelectedByCanvas = selectedListFromCanvas.map { it.id }.toSet()
+
+        // Update the isSelected flag for all elements based on the canvas's selection
+        val updatedList = currentElements.map { element ->
+            element.copy(isSelected = idsSelectedByCanvas.contains(element.id))
+        }
+        _canvasElements.value = updatedList // Trigger update for SizedCanvasView and other observers
+
+        // Find the first selected text element and update current text properties
+        val firstSelectedTextElement = selectedListFromCanvas.firstOrNull { it.type == ElementType.TEXT }
+        if (firstSelectedTextElement != null) {
+            _currentFont.value = firstSelectedTextElement.paint.typeface
+            _currentTextColor.value = firstSelectedTextElement.paint.color
+            _currentTextSize.value = firstSelectedTextElement.paint.textSize
+            _currentTextAlignment.value = firstSelectedTextElement.paint.textAlign
+            _currentTextOpacity.value = firstSelectedTextElement.paint.alpha
+        } else {
+            // If no text element is selected, reset current text properties to defaults
+            _currentFont.value = null
+            _currentTextColor.value = Color.BLACK
+            _currentTextSize.value = 40f
+            _currentTextAlignment.value = Paint.Align.CENTER
+            _currentTextOpacity.value = 255
+        }
+    }
+
+    fun setSelectedElementsFromLayers(elementsToSelect: List<CanvasElement>) {
+        val currentElements = _canvasElements.value?.toMutableList() ?: mutableListOf()
+
+        // Create a set of IDs for the elements that should be selected
+        val idsToSelect = elementsToSelect.map { it.id }.toSet()
+
+        // Update the isSelected flag for all elements based on the provided list
+        val updatedList = currentElements.map { element ->
+            element.copy(isSelected = idsToSelect.contains(element.id))
+        }
+
+        _canvasElements.value = updatedList // Emit the updated list to SizedCanvasView
     }
 
     fun getSelectedElement(): CanvasElement? {
@@ -183,56 +242,146 @@ class CanvasViewModel @Inject constructor() : ViewModel() {
     }
 
     fun setFont(typeface: Typeface) {
-        val previousTypeface = selectedElement?.paint?.typeface
-        if (selectedElement != null) {
-            _canvasActions.push(CanvasAction.SetFont(typeface, previousTypeface))
+        val currentList = _canvasElements.value?.toMutableList() ?: mutableListOf()
+        var changed = false
+        var oldTypeface: Typeface? = null
+        var targetElementId: String? = null
+
+        val updatedList = currentList.map { element ->
+            if (element.isSelected && element.type == ElementType.TEXT) {
+                if (!changed) {
+                    oldTypeface = element.paint.typeface
+                    targetElementId = element.id
+                }
+                changed = true
+                element.copy().apply { paint.typeface = typeface }
+            } else {
+                element
+            }
+        }
+        if (changed) {
+            _currentFont.value = typeface // Update UI state
+            _canvasElements.value = updatedList // Trigger observers to redraw
+            // Add to undo stack with the captured elementId
+            _canvasActions.push(CanvasAction.SetFont(typeface, oldTypeface, targetElementId!!))
             _redoStack.clear()
-            selectedElement?.paint?.typeface = typeface
-            _currentFont.value = typeface
             notifyUndoRedoChanged()
         }
     }
 
     fun setTextColor(color: Int) {
-        val previousColor = selectedElement?.paint?.color ?: Color.BLACK
-        if (selectedElement != null) {
-            _canvasActions.push(CanvasAction.SetTextColor(color, previousColor))
+        val currentList = _canvasElements.value?.toMutableList() ?: mutableListOf()
+        var changed = false
+        var oldColor: Int? = null
+        var targetElementId: String? = null
+
+        val updatedList = currentList.map { element ->
+            if (element.isSelected && element.type == ElementType.TEXT) {
+                if (!changed) {
+                    oldColor = element.paint.color
+                    targetElementId = element.id
+                }
+                changed = true
+                element.copy().apply { paint.color = color }
+            } else {
+                element
+            }
+        }
+        if (changed) {
+            _currentTextColor.value = color // Update UI state
+            _canvasElements.value = updatedList // Trigger observers to redraw
+            _canvasActions.push(CanvasAction.SetTextColor(color, oldColor ?: Color.BLACK, targetElementId ?: ""))
             _redoStack.clear()
-            selectedElement?.paint?.color = color
-            _currentTextColor.value = color
             notifyUndoRedoChanged()
         }
     }
 
+    /**
+     * Applies text size to all currently selected text elements.
+     */
     fun setTextSize(size: Float) {
-        val previousSize = selectedElement?.paint?.textSize ?: 40f
-        if (selectedElement != null) {
-            _canvasActions.push(CanvasAction.SetTextSize(size, previousSize))
+        val currentList = _canvasElements.value?.toMutableList() ?: mutableListOf()
+        var changed = false
+        var oldSize: Float? = null
+        var targetElementId: String? = null
+
+        val updatedList = currentList.map { element ->
+            if (element.isSelected && element.type == ElementType.TEXT) {
+                if (!changed) {
+                    oldSize = element.paint.textSize
+                    targetElementId = element.id
+                }
+                changed = true
+                element.copy().apply { paint.textSize = size }
+            } else {
+                element
+            }
+        }
+        if (changed) {
+            _currentTextSize.value = size // Update UI state
+            _canvasElements.value = updatedList // Trigger observers to redraw
+            _canvasActions.push(CanvasAction.SetTextSize(size, oldSize ?: 40f, targetElementId ?: ""))
             _redoStack.clear()
-            selectedElement?.paint?.textSize = size
-            _currentTextSize.value = size
             notifyUndoRedoChanged()
         }
     }
 
+    /**
+     * Applies text alignment to all currently selected text elements.
+     */
     fun setTextAlignment(alignment: Paint.Align) {
-        val previousAlignment = selectedElement?.paint?.textAlign ?: Paint.Align.CENTER
-        if (selectedElement != null) {
-            _canvasActions.push(CanvasAction.SetTextAlignment(alignment, previousAlignment))
+        val currentList = _canvasElements.value?.toMutableList() ?: mutableListOf()
+        var changed = false
+        var oldAlignment: Paint.Align? = null
+        var targetElementId: String? = null
+
+        val updatedList = currentList.map { element ->
+            if (element.isSelected && element.type == ElementType.TEXT) {
+                if (!changed) {
+                    oldAlignment = element.paint.textAlign
+                    targetElementId = element.id
+                }
+                changed = true
+                element.copy().apply { paint.textAlign = alignment }
+            } else {
+                element
+            }
+        }
+        if (changed) {
+            _currentTextAlignment.value = alignment // Update UI state
+            _canvasElements.value = updatedList // Trigger observers to redraw
+            _canvasActions.push(CanvasAction.SetTextAlignment(alignment, oldAlignment ?: Paint.Align.CENTER, targetElementId ?: ""))
             _redoStack.clear()
-            selectedElement?.paint?.textAlign = alignment
-            _currentTextAlignment.value = alignment
             notifyUndoRedoChanged()
         }
     }
 
+    /**
+     * Applies opacity to all currently selected elements.
+     */
     fun setOpacity(opacity: Int) {
-        val previousOpacity = selectedElement?.paint?.alpha ?: 255
-        if (selectedElement != null) {
-            _canvasActions.push(CanvasAction.SetOpacity(opacity, previousOpacity))
+        val currentList = _canvasElements.value?.toMutableList() ?: mutableListOf()
+        var changed = false
+        var oldOpacity: Int? = null
+        var targetElementId: String? = null
+
+        val updatedList = currentList.map { element ->
+            if (element.isSelected) {
+                if (!changed) {
+                    oldOpacity = element.paint.alpha
+                    targetElementId = element.id
+                }
+                changed = true
+                element.copy().apply { paint.alpha = opacity }
+            } else {
+                element
+            }
+        }
+        if (changed) {
+            _currentTextOpacity.value = opacity // Update UI state
+            _canvasElements.value = updatedList // Trigger observers to redraw
+            _canvasActions.push(CanvasAction.SetOpacity(opacity, oldOpacity ?: 255, targetElementId ?: ""))
             _redoStack.clear()
-            selectedElement?.paint?.alpha = opacity
-            _currentTextOpacity.value = opacity
             notifyUndoRedoChanged()
         }
     }
@@ -279,7 +428,6 @@ class CanvasViewModel @Inject constructor() : ViewModel() {
         _redoStack.push(action)
         applyAction(action, isRedo = false)
         notifyUndoRedoChanged()
-        notifyUndoRedoChanged()
     }
 
     fun redo() {
@@ -287,7 +435,6 @@ class CanvasViewModel @Inject constructor() : ViewModel() {
         val action = _redoStack.pop()
         _canvasActions.push(action)
         applyAction(action, isRedo = true)
-        notifyUndoRedoChanged()
         notifyUndoRedoChanged()
     }
 
@@ -342,49 +489,87 @@ class CanvasViewModel @Inject constructor() : ViewModel() {
             }
 
             is CanvasAction.SetFont -> {
-                if (selectedElement != null) {
-                    selectedElement?.paint?.typeface =
-                        if (isRedo) action.typeface else action.previousTypeface
-                    _currentFont.value = selectedElement?.paint?.typeface
+                val currentList = _canvasElements.value?.toMutableList() ?: mutableListOf()
+                val updatedList = currentList.map { element ->
+                    // Apply to all selected text elements, regardless of the stored elementId
+                    if (element.isSelected && element.type == ElementType.TEXT) {
+                        element.copy().apply { paint.typeface = if (isRedo) action.typeface else action.previousTypeface }
+                    } else {
+                        element
+                    }
                 }
+                _canvasElements.value = updatedList
+                _currentFont.value = if (isRedo) action.typeface else action.previousTypeface
             }
 
             is CanvasAction.SetTextColor -> {
-                if (selectedElement != null) {
-                    selectedElement?.paint?.color =
-                        if (isRedo) action.color else action.previousColor
-                    _currentTextColor.value = selectedElement?.paint?.color
+                val currentList = _canvasElements.value?.toMutableList() ?: mutableListOf()
+                val updatedList = currentList.map { element ->
+                    // Apply to all selected text elements, regardless of the stored elementId
+                    if (element.isSelected && element.type == ElementType.TEXT) {
+                        element.copy().apply { paint.color = if (isRedo) action.color else action.previousColor }
+                    } else {
+                        element
+                    }
                 }
+                _canvasElements.value = updatedList
+                _currentTextColor.value = if (isRedo) action.color else action.previousColor
             }
 
             is CanvasAction.SetTextSize -> {
-                if (selectedElement != null) {
-                    selectedElement?.paint?.textSize =
-                        if (isRedo) action.size else action.previousSize
-                    _currentTextSize.value = selectedElement?.paint?.textSize
+                val currentList = _canvasElements.value?.toMutableList() ?: mutableListOf()
+                val updatedList = currentList.map { element ->
+                    // Apply to all selected text elements, regardless of the stored elementId
+                    if (element.isSelected && element.type == ElementType.TEXT) {
+                        element.copy().apply { paint.textSize = if (isRedo) action.size else action.previousSize }
+                    } else {
+                        element
+                    }
                 }
+                _canvasElements.value = updatedList
+                _currentTextSize.value = if (isRedo) action.size else action.previousSize
             }
 
             is CanvasAction.SetTextAlignment -> {
-                if (selectedElement != null) {
-                    selectedElement?.paint?.textAlign =
-                        if (isRedo) action.alignment else action.previousAlignment
-                    _currentTextAlignment.value = selectedElement?.paint?.textAlign
+                val currentList = _canvasElements.value?.toMutableList() ?: mutableListOf()
+                val updatedList = currentList.map { element ->
+                    // Apply to all selected text elements, regardless of the stored elementId
+                    if (element.isSelected && element.type == ElementType.TEXT) {
+                        element.copy().apply { paint.textAlign = if (isRedo) action.alignment else action.previousAlignment }
+                    } else {
+                        element
+                    }
                 }
+                _canvasElements.value = updatedList
+                _currentTextAlignment.value = if (isRedo) action.alignment else action.previousAlignment
             }
 
             is CanvasAction.SetOpacity -> {
-                if (selectedElement != null) {
-                    selectedElement?.paint?.alpha =
-                        if (isRedo) action.opacity else action.previousOpacity
-                    _currentTextOpacity.value = selectedElement?.paint?.alpha
+                val currentList = _canvasElements.value?.toMutableList() ?: mutableListOf()
+                val updatedList = currentList.map { element ->
+                    // Apply to all selected elements, regardless of the stored elementId
+                    if (element.isSelected) {
+                        element.copy().apply { paint.alpha = if (isRedo) action.opacity else action.previousOpacity }
+                    } else {
+                        element
+                    }
                 }
+                _canvasElements.value = updatedList
+                _currentTextOpacity.value = if (isRedo) action.opacity else action.previousOpacity
             }
 
             is CanvasAction.UpdateText -> {
-                if (selectedElement != null) {
-                    selectedElement?.text = if (isRedo) action.text else action.previousText
+                // This action is specifically for updating the text content of a single element.
+                // It should use the elementId to target the correct element.
+                val currentList = _canvasElements.value ?: emptyList()
+                val updatedList = currentList.map { element ->
+                    if (element.id == action.elementId) {
+                        element.copy(text = if (isRedo) action.text else action.previousText)
+                    } else {
+                        element
+                    }
                 }
+                _canvasElements.value = updatedList
             }
 
             is CanvasAction.RemoveElement -> {
@@ -421,7 +606,6 @@ class CanvasViewModel @Inject constructor() : ViewModel() {
         _currentTextSize.value = 40f
         _currentTextAlignment.value = Paint.Align.CENTER
         _currentTextOpacity.value = 255
-        selectedElement = null
 
         notifyUndoRedoChanged()
     }

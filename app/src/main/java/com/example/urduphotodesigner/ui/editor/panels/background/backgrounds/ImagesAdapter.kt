@@ -10,6 +10,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -51,6 +52,9 @@ class ImagesAdapter(
 
     inner class ImageViewHolder(private val binding: LayoutImagesItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
+
+        private var currentDrawable: Drawable? = null
+
         fun bind(image: ImageEntity) {
             if (image.is_selected) {
                 binding.root.strokeWidth = 4
@@ -63,23 +67,26 @@ class ImagesAdapter(
             }
 
             binding.root.setOnClickListener {
-                images.forEach { it.is_selected = false }
-                image.is_selected = true
-                notifyDataSetChanged()
-                val drawable = binding.image.drawable
-                val bitmap = if (drawable is BitmapDrawable) {
-                    drawable.bitmap
-                } else {
-                    val width = drawable.intrinsicWidth
-                    val height = drawable.intrinsicHeight
-                    val config = Bitmap.Config.ARGB_8888
-                    val bmp = createBitmap(width, height, config)
-                    val canvas = Canvas(bmp)
-                    drawable.setBounds(0, 0, canvas.width, canvas.height)
-                    drawable.draw(canvas)
-                    bmp
+                // Only proceed if image is loaded
+                currentDrawable?.let { drawable ->
+                    images.forEach { it.is_selected = false }
+                    image.is_selected = true
+                    notifyDataSetChanged()
+
+                    val bitmap = when (drawable) {
+                        is BitmapDrawable -> drawable.bitmap
+                        else -> {
+                            val width = drawable.intrinsicWidth.coerceAtLeast(1)
+                            val height = drawable.intrinsicHeight.coerceAtLeast(1)
+                            val bmp = createBitmap(width, height)
+                            val canvas = Canvas(bmp)
+                            drawable.setBounds(0, 0, width, height)
+                            drawable.draw(canvas)
+                            bmp
+                        }
+                    }
+                    onImageSelected(bitmap)
                 }
-                onImageSelected.invoke(bitmap)
             }
 
             val url = Constants.BASE_URL_GLIDE + image.file_url
@@ -94,7 +101,7 @@ class ImagesAdapter(
                     ): Boolean {
                         Log.e("GlideDebug", "Image load failed: ${e?.message}")
                         binding.progressBar.visibility = View.GONE
-                        // Return false to let Glide handle error placeholder
+                        currentDrawable = null
                         return false
                     }
 
@@ -107,7 +114,7 @@ class ImagesAdapter(
                     ): Boolean {
                         Log.d("GlideDebug", "Image loaded successfully from: $url")
                         binding.progressBar.visibility = View.GONE
-                        // Return false to let Glide set the image on ImageView
+                        currentDrawable = resource
                         return false
                     }
                 })

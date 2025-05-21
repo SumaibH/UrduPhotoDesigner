@@ -13,7 +13,7 @@ data class FontEntity(
     val file_size: String,
     val font_image: String,
     val image_url: String,
-    val alt_text: String,
+    val alt_text: String? = null,
     val user_id: Int,
     val created_at: String,
     val updated_at: String,
