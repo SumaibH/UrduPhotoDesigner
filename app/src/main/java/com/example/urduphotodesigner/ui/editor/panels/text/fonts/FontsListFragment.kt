@@ -58,9 +58,7 @@ class FontsListFragment : Fragment() {
 
     private fun handleFontSelection(font: FontEntity, isDownloaded: Boolean) {
         if (isDownloaded) {
-            mainViewModel.getTypeface(font)?.let {
-                viewModel.setFont(it)
-            }
+            viewModel.setFont(font)
         } else {
             // Initiate download
             fontEntity = font // Keep track of the font being downloaded
@@ -88,7 +86,7 @@ class FontsListFragment : Fragment() {
                     }
                     is DownloadState.SuccessWithTypeface -> {
                         // Automatically apply the font to canvas
-                        viewModel.setFont(downloadState.typeface)
+                        viewModel.setFont(downloadState.fontEntity)
                         // Update UI to show the font is selected
                         fontEntity?.let { font ->
                             if (font.font_category.equals("Urdu", ignoreCase = true)) {
@@ -97,14 +95,13 @@ class FontsListFragment : Fragment() {
                                 englishAdapter.selectedFontId = font.id.toString()
                             }
                         }
+                        mainViewModel.clearDownloadState()
                     }
                     is DownloadState.Success -> {
                         // This case is for non-font downloads or if typeface creation failed
                         fontEntity?.let { font ->
                             if (font.is_downloaded) {
-                                mainViewModel.getTypeface(font)?.let {
-                                    viewModel.setFont(it)
-                                }
+                                viewModel.setFont(font)
                             }
                         }
                     }
@@ -124,20 +121,13 @@ class FontsListFragment : Fragment() {
 
             // Find the font that matches the current typeface by comparing file paths
             mainViewModel.localFonts.value.forEach { font ->
-                if (font.is_downloaded && font.file_path != null) {
-                    try {
-                        val typeface = Typeface.createFromFile(font.file_path)
-                        if (typeface == currentTypeface) {
-                            if (font.font_category.equals("Urdu", ignoreCase = true)) {
-                                urduAdapter.selectedFontId = font.id.toString()
-                            } else {
-                                englishAdapter.selectedFontId = font.id.toString()
-                            }
-                            return@forEach
-                        }
-                    } catch (e: Exception) {
-                        // Handle error if needed
+                if (font.is_downloaded && font.id.toString() == currentTypeface?.id.toString()) { // Compare font.id with currentTypeface.id
+                    if (font.font_category.equals("Urdu", ignoreCase = true)) {
+                        urduAdapter.selectedFontId = font.id.toString()
+                    } else {
+                        englishAdapter.selectedFontId = font.id.toString()
                     }
+                    return@forEach // Exit the loop once the matching font is found
                 }
             }
         }

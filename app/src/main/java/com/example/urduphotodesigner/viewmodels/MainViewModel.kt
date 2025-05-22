@@ -21,7 +21,6 @@ import com.example.urduphotodesigner.domain.usecase.UpdateFontsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
@@ -47,7 +46,6 @@ class MainViewModel @Inject constructor(
     val localImages: StateFlow<List<ImageEntity>> = _localImages.asStateFlow()
 
     private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
@@ -73,7 +71,7 @@ class MainViewModel @Inject constructor(
 
                     is Response.Error -> {
                         _isLoading.value = false
-                        _error.value = response.message ?: "Unknown error"
+                        _error.value = response.message
                     }
 
                     else -> {}
@@ -95,7 +93,7 @@ class MainViewModel @Inject constructor(
 
                     is Response.Error -> {
                         _isLoading.value = false
-                        _error.value = response.message ?: "Unknown error"
+                        _error.value = response.message
                     }
 
                     else -> {}
@@ -142,34 +140,16 @@ class MainViewModel @Inject constructor(
                 )
 
                 // After successful download, get the typeface and update the canvas
-                getTypeface(font.copy(
+                font.copy(
                     is_downloaded = true,
                     file_path = downloadedFile.absolutePath
-                ))?.let { typeface ->
-                    _downloadState.value = DownloadState.SuccessWithTypeface(downloadedFile, typeface)
-                } ?: run {
-                    _downloadState.value = DownloadState.Success(downloadedFile)
+                ).let {
+                    _downloadState.value = DownloadState.SuccessWithTypeface(downloadedFile, it)
                 }
             } catch (e: Exception) {
                 _downloadState.value = DownloadState.Error(e.message ?: "Download failed")
             }
         }
-    }
-
-    fun getTypeface(font: FontEntity): Typeface? {
-        return if (font.is_downloaded && font.file_path != null) {
-            try {
-                Typeface.createFromFile(font.file_path)
-            } catch (e: Exception) {
-                null
-            }
-        } else {
-            null
-        }
-    }
-
-    fun checkFontDownloaded(font: FontEntity): Boolean {
-        return font.is_downloaded && font.file_path?.let { File(it).exists() } ?: false
     }
 
     fun clearDownloadState() {

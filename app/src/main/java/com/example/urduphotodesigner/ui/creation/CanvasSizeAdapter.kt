@@ -3,7 +3,7 @@ package com.example.urduphotodesigner.ui.creation
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.example.urduphotodesigner.data.model.CanvasSize
+import com.example.urduphotodesigner.common.canvas.CanvasSize
 import com.example.urduphotodesigner.databinding.LayoutSizesItemBinding
 
 class CanvasSizeAdapter(

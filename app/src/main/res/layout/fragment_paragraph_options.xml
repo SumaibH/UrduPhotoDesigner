@@ -19,37 +19,12 @@
         app:layout_constraintTop_toTopOf="parent"/>
 
     <com.google.android.material.card.MaterialCardView
-        android:id="@+id/justify"
-        android:layout_width="@dimen/_24sdp"
-        android:layout_height="@dimen/_24sdp"
-        android:layout_marginEnd="@dimen/_5sdp"
-        android:layout_marginTop="@dimen/_5sdp"
-        app:layout_constraintStart_toStartOf="@id/alignTitle"
-        app:layout_constraintTop_toBottomOf="@id/alignTitle"
-        app:layout_constraintEnd_toStartOf="@id/left"
-        app:cardCornerRadius="@dimen/_5sdp"
-        app:strokeWidth="0dp"
-        app:strokeColor="@color/appColor"
-        android:foreground="?selectableItemBackground"
-        app:cardBackgroundColor="@color/white"
-        app:cardElevation="0dp">
-
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="@dimen/_5sdp"
-            app:tint="@color/black"
-            android:src="@drawable/ic_justify"/>
-
-    </com.google.android.material.card.MaterialCardView>
-
-    <com.google.android.material.card.MaterialCardView
         android:id="@+id/left"
         android:layout_width="@dimen/_24sdp"
         android:layout_height="@dimen/_24sdp"
         android:layout_marginEnd="@dimen/_5sdp"
         android:layout_marginTop="@dimen/_5sdp"
-        app:layout_constraintStart_toEndOf="@id/justify"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/right"
         app:layout_constraintTop_toBottomOf="@id/alignTitle"
         app:cardCornerRadius="@dimen/_5sdp"
@@ -127,17 +102,17 @@
         android:textColor="@color/black"
         android:id="@+id/fontTitle"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/justify"
+        app:layout_constraintTop_toBottomOf="@id/left"
         android:layout_marginTop="@dimen/_5sdp"/>
 
     <com.google.android.material.slider.Slider
         android:id="@+id/seekBar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:valueFrom="0.0"
+        android:valueFrom="10.0"
         android:valueTo="100.0"
         android:stepSize="10.0"
-        android:value="10.0"
+        android:value="20.0"
         app:labelBehavior="floating"
         app:thumbColor="@color/appColor"
         app:tickColorInactive="@color/black"

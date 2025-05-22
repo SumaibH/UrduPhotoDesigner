@@ -1,4 +1,4 @@
-package com.example.urduphotodesigner.data.model
+package com.example.urduphotodesigner.common.canvas
 
 import java.io.Serializable
 

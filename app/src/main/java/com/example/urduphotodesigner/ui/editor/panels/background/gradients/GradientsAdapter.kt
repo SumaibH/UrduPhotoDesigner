@@ -11,7 +11,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.createBitmap
 import androidx.recyclerview.widget.RecyclerView
 import com.example.urduphotodesigner.R
-import com.example.urduphotodesigner.data.model.GradientItem
+import com.example.urduphotodesigner.common.canvas.GradientItem
 import com.example.urduphotodesigner.databinding.LayoutColorItemBinding
 
 class GradientsAdapter(

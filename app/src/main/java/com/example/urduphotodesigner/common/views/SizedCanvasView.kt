@@ -24,6 +24,8 @@ import androidx.core.graphics.withTranslation
 import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.canvas.CanvasElement
 import com.example.urduphotodesigner.common.canvas.ElementType
+import com.example.urduphotodesigner.common.enums.Mode
+import com.example.urduphotodesigner.data.model.FontEntity
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -38,7 +40,9 @@ class SizedCanvasView @JvmOverloads constructor(
     var onEditTextRequested: ((CanvasElement) -> Unit)? = null,
     var onElementChanged: ((CanvasElement) -> Unit)? = null,
     var onElementRemoved: ((CanvasElement) -> Unit)? = null,
-    var onElementSelected: ((List<CanvasElement>) -> Unit)? = null
+    var onElementSelected: ((List<CanvasElement>) -> Unit)? = null,
+    var onStartBatchUpdate: ((String, String) -> Unit)? = null,
+    var onEndBatchUpdate: ((String) -> Unit)? = null
 ) : View(context, attrs) {
 
     private val backgroundPaint = Paint().apply {
@@ -59,10 +63,13 @@ class SizedCanvasView @JvmOverloads constructor(
     private var touchStartX = 0f
     private var touchStartY = 0f
     private var currentMode: Mode = Mode.NONE
+
     // Store initial rotations for group rotation and single element rotation
     private var initialElementRotations = mutableMapOf<String, Float>()
+
     // Store initial positions of elements relative to the group's pivot at ACTION_DOWN
-    private var initialElementPositionsRelativeToGroupPivot = mutableMapOf<String, Pair<Float, Float>>()
+    private var initialElementPositionsRelativeToGroupPivot =
+        mutableMapOf<String, Pair<Float, Float>>()
     private var initialAngle = 0f // For rotation calculation
     private var initialGroupPivotX = 0f // Store the group's pivot X at ACTION_DOWN
     private var initialGroupPivotY = 0f // Store the group's pivot Y at ACTION_DOWN
@@ -90,8 +97,9 @@ class SizedCanvasView @JvmOverloads constructor(
 
     private var showVerticalGuide = false
     private var showHorizontalGuide = false
+    private var showRotationVerticalGuide = false // New guide for 0/180 degree rotation
+    private var showRotationHorizontalGuide = false // New guide for 90/270 degree rotation
 
-    private enum class Mode { NONE, DRAG, ROTATE, RESIZE, MULTI_TOUCH }
 
     private val removeIcon: Bitmap by lazy {
         drawableToBitmap(AppCompatResources.getDrawable(context, R.drawable.ic_cross))
@@ -109,7 +117,8 @@ class SizedCanvasView @JvmOverloads constructor(
     // This list will contain references to elements from canvasElements that are currently selected.
     // We update the 'isSelected' boolean on the CanvasElement directly.
     private var selectedElements: CopyOnWriteArrayList<CanvasElement> = CopyOnWriteArrayList()
-    private var lastTouchedElement: CanvasElement? = null // Keep track of the element that initiated the touch
+    private var lastTouchedElement: CanvasElement? =
+        null // Keep track of the element that initiated the touch
 
     private fun drawableToBitmap(drawable: Drawable?): Bitmap {
         if (drawable == null) {
@@ -134,7 +143,7 @@ class SizedCanvasView @JvmOverloads constructor(
      */
     fun syncElements(newElements: List<CanvasElement>) {
         canvasElements.clear()
-        canvasElements.addAll(newElements.map { it.copy() }) // Add copies to avoid direct modification issues
+        canvasElements.addAll(newElements) // Add copies to avoid direct modification issues
         selectedElements.clear()
         selectedElements.addAll(canvasElements.filter { it.isSelected }) // Rebuild selectedElements based on isSelected flags
         invalidate()
@@ -234,7 +243,8 @@ class SizedCanvasView @JvmOverloads constructor(
 
     fun removeSelectedElement() {
         // Remove all selected elements
-        val elementsToRemove = selectedElements.toList() // Create a copy to avoid concurrent modification
+        val elementsToRemove =
+            selectedElements.toList() // Create a copy to avoid concurrent modification
         elementsToRemove.forEach { element ->
             canvasElements.remove(element)
             onElementRemoved?.invoke(element) // Notify ViewModel to remove for each
@@ -243,9 +253,29 @@ class SizedCanvasView @JvmOverloads constructor(
         invalidate()
     }
 
-    fun setFont(typeface: Typeface) {
+    fun setFont(fontEntity: FontEntity) {
         selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
-            element.paint.typeface = typeface
+            element.fontId = fontEntity.id.toString()
+
+            // Check if the file_path is not blank before attempting to create a typeface
+            if (fontEntity.file_path?.isNotBlank()!!) {
+                try {
+                    element.paint.typeface = Typeface.createFromFile(fontEntity.file_path)
+                } catch (e: Exception) {
+                    // Handle potential errors if the file path is valid but the file itself is corrupt or unreadable
+                    // You might log the error or set a default typeface here if needed
+                    println("Error loading typeface from file: ${fontEntity.file_path}. Error: ${e.message}")
+
+                    element.paint.typeface = Typeface.DEFAULT
+                }
+            } else {
+                // If file_path is blank, do not set the typeface.
+                // The existing typeface on the element will remain, or you could explicitly
+                // set it to a default system typeface if that's desired when no custom font is selected.
+                // For example:
+                // element.paint.typeface = Typeface.DEFAULT
+            }
+
             onElementChanged?.invoke(element)
         }
         invalidate()
@@ -379,6 +409,31 @@ class SizedCanvasView @JvmOverloads constructor(
         showHorizontalGuide = abs(element.y - canvasHeight / 2f) < centerThreshold
     }
 
+    /**
+     * Checks if the element's rotation is close to 0, 90, 180, or 270 degrees
+     * and sets the rotation alignment guide flags accordingly.
+     */
+    private fun checkRotationAlignment(element: CanvasElement) {
+        val rotationThreshold = 5f // degrees within which we consider aligned
+
+        // Normalize rotation to be between 0 and 360
+        val normalizedRotation = (element.rotation % 360 + 360) % 360
+
+        showRotationVerticalGuide = false
+        showRotationHorizontalGuide = false
+
+        // Check for 0 or 180 degrees (vertical alignment)
+        if (abs(normalizedRotation) < rotationThreshold || abs(normalizedRotation - 180) < rotationThreshold) {
+            showRotationVerticalGuide = true
+        }
+
+        // Check for 90 or 270 degrees (horizontal alignment)
+        if (abs(normalizedRotation - 90) < rotationThreshold || abs(normalizedRotation - 270) < rotationThreshold) {
+            showRotationHorizontalGuide = true
+        }
+    }
+
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val parentWidth = MeasureSpec.getSize(widthMeasureSpec)
         val parentHeight = MeasureSpec.getSize(heightMeasureSpec)
@@ -428,6 +483,25 @@ class SizedCanvasView @JvmOverloads constructor(
                 )
             }
 
+            // Draw rotation alignment guides
+            if (showRotationVerticalGuide) {
+                // Draw a vertical line through the center of the canvas
+                drawLine(
+                    canvasWidth / 2f, 0f,
+                    canvasWidth / 2f, canvasHeight.toFloat(),
+                    alignmentPaint
+                )
+            }
+
+            if (showRotationHorizontalGuide) {
+                // Draw a horizontal line through the center of the canvas
+                drawLine(
+                    0f, canvasHeight / 2f,
+                    canvasWidth.toFloat(), canvasHeight / 2f,
+                    alignmentPaint
+                )
+            }
+
             // Draw all elements
             canvasElements.sortedBy { it.zIndex }.forEach { element ->
                 canvas.withTranslation(element.x, element.y) {
@@ -443,10 +517,9 @@ class SizedCanvasView @JvmOverloads constructor(
                             val yOffset = -totalHeight / 2 + i * lineHeight - fm.top
                             canvas.drawText(line, 0f, yOffset, element.paint)
                         }
-
                     } else {
                         element.bitmap?.let {
-                            canvas.drawBitmap(it, -it.width / 2f, -it.height / 2f, null)
+                            canvas.drawBitmap(it, -it.width / 2f, -it.height / 2f, element.paint)
                         }
                     }
                 }
@@ -457,7 +530,8 @@ class SizedCanvasView @JvmOverloads constructor(
                 val combinedBounds = getCombinedSelectedBounds()
 
                 val desiredScreenPadding = 10f
-                val localSpacePadding = desiredScreenPadding / scale // Scale padding based on canvas scale
+                val localSpacePadding =
+                    desiredScreenPadding / scale // Scale padding based on canvas scale
 
                 val desiredScreenStrokeWidth = 2f
                 val localSpaceStrokeWidth = desiredScreenStrokeWidth / scale // Scale stroke width
@@ -494,11 +568,20 @@ class SizedCanvasView @JvmOverloads constructor(
 
                     if (selectedElements.size > 1) { // Multi-selection icons
                         // Remove icon (top-left)
-                        iconMap["delete"] = Pair(combinedBounds.left - localSpacePadding, combinedBounds.top - localSpacePadding)
+                        iconMap["delete"] = Pair(
+                            combinedBounds.left - localSpacePadding,
+                            combinedBounds.top - localSpacePadding
+                        )
                         // Rotate icon (bottom-left)
-                        iconMap["rotate"] = Pair(combinedBounds.left - localSpacePadding, combinedBounds.bottom + localSpacePadding)
+                        iconMap["rotate"] = Pair(
+                            combinedBounds.left - localSpacePadding,
+                            combinedBounds.bottom + localSpacePadding
+                        )
                         // Resize icon (bottom-right)
-                        iconMap["resize"] = Pair(combinedBounds.right + localSpacePadding, combinedBounds.bottom + localSpacePadding)
+                        iconMap["resize"] = Pair(
+                            combinedBounds.right + localSpacePadding,
+                            combinedBounds.bottom + localSpacePadding
+                        )
                         // Edit icon should not be there for multi-selection
                     } else if (selectedElements.size == 1) { // Single element selection icons
                         val element = selectedElements.first()
@@ -518,7 +601,8 @@ class SizedCanvasView @JvmOverloads constructor(
 
                             val iconCenterInCanvasCords = floatArrayOf(position.x, position.y)
                             matrix.mapPoints(iconCenterInCanvasCords)
-                            iconMap[iconName] = Pair(iconCenterInCanvasCords[0], iconCenterInCanvasCords[1])
+                            iconMap[iconName] =
+                                Pair(iconCenterInCanvasCords[0], iconCenterInCanvasCords[1])
                         }
                     }
 
@@ -564,23 +648,24 @@ class SizedCanvasView @JvmOverloads constructor(
             val x = (e.x - offsetX) / scale
             val y = (e.y - offsetY) / scale
 
-            val touchedElement = canvasElements.sortedByDescending { it.zIndex }.firstOrNull { element ->
-                val matrix = Matrix()
-                matrix.postTranslate(-element.x, -element.y)
-                matrix.postRotate(-element.rotation)
-                matrix.postScale(1f / element.scale, 1f / element.scale)
+            val touchedElement =
+                canvasElements.sortedByDescending { it.zIndex }.firstOrNull { element ->
+                    val matrix = Matrix()
+                    matrix.postTranslate(-element.x, -element.y)
+                    matrix.postRotate(-element.rotation)
+                    matrix.postScale(1f / element.scale, 1f / element.scale)
 
-                val touchPoint = floatArrayOf(x, y)
-                matrix.mapPoints(touchPoint)
+                    val touchPoint = floatArrayOf(x, y)
+                    matrix.mapPoints(touchPoint)
 
-                val bounds = RectF(
-                    -element.getLocalContentWidth() / 2f,
-                    -element.getLocalContentHeight() / 2f,
-                    element.getLocalContentWidth() / 2f,
-                    element.getLocalContentHeight() / 2f
-                )
-                bounds.contains(touchPoint[0], touchPoint[1])
-            }
+                    val bounds = RectF(
+                        -element.getLocalContentWidth() / 2f,
+                        -element.getLocalContentHeight() / 2f,
+                        element.getLocalContentWidth() / 2f,
+                        element.getLocalContentHeight() / 2f
+                    )
+                    bounds.contains(touchPoint[0], touchPoint[1])
+                }
 
             if (touchedElement != null && touchedElement.type == ElementType.TEXT) {
                 // Deselect all existing elements before selecting the new one
@@ -610,8 +695,10 @@ class SizedCanvasView @JvmOverloads constructor(
                     currentMode = Mode.MULTI_TOUCH
                     initialPinchDistance = getPinchDistance(event)
                     initialPinchAngle = getPinchAngle(event)
-                    initialScale = selectedElements.firstOrNull()?.scale ?: 1f // Get initial scale of the first selected element
-                    initialRotation = selectedElements.firstOrNull()?.rotation ?: 0f // Get initial rotation
+                    initialScale = selectedElements.firstOrNull()?.scale
+                        ?: 1f // Get initial scale of the first selected element
+                    initialRotation =
+                        selectedElements.firstOrNull()?.rotation ?: 0f // Get initial rotation
                 }
             }
 
@@ -620,6 +707,8 @@ class SizedCanvasView @JvmOverloads constructor(
                 lastTouchedElement = null // Reset last touched element
                 showVerticalGuide = false
                 showHorizontalGuide = false
+                showRotationVerticalGuide = false // Reset rotation guides
+                showRotationHorizontalGuide = false // Reset rotation guides
 
 
                 // 1. Check for icon touch (regardless of single or multi-selection, based on combined bounds)
@@ -656,7 +745,8 @@ class SizedCanvasView @JvmOverloads constructor(
                         // No edit icon for multi-selection
                     } else { // Single element selection icon hit areas
                         val element = selectedElements.first()
-                        val elementIconPositions = element.getIconPositions() // These are element-local positions
+                        val elementIconPositions =
+                            element.getIconPositions() // These are element-local positions
 
                         // Convert element-local icon positions to canvas coordinates for hit testing
                         val elementMatrix = Matrix()
@@ -697,12 +787,14 @@ class SizedCanvasView @JvmOverloads constructor(
 
                             "rotate" -> {
                                 currentMode = Mode.ROTATE
-                                touchStartX = x // Store the initial touch point for angle calculation
+                                touchStartX =
+                                    x // Store the initial touch point for angle calculation
                                 touchStartY = y
 
                                 initialElementRotations.clear()
                                 initialElementPositionsRelativeToGroupPivot.clear() // Clear previous initial positions
-                                val combinedBoundsAtStart = getCombinedSelectedBounds() // Get bounds at start of interaction
+                                val combinedBoundsAtStart =
+                                    getCombinedSelectedBounds() // Get bounds at start of interaction
                                 initialGroupPivotX = combinedBoundsAtStart.centerX()
                                 initialGroupPivotY = combinedBoundsAtStart.centerY()
 
@@ -710,9 +802,18 @@ class SizedCanvasView @JvmOverloads constructor(
                                     initialElementRotations[element.id] = element.rotation
                                     // Store initial position relative to the group's center
                                     initialElementPositionsRelativeToGroupPivot[element.id] =
-                                        Pair(element.x - initialGroupPivotX, element.y - initialGroupPivotY)
+                                        Pair(
+                                            element.x - initialGroupPivotX,
+                                            element.y - initialGroupPivotY
+                                        )
                                 }
-                                initialAngle = atan2(touchStartY - initialGroupPivotY, touchStartX - initialGroupPivotX) // Initial angle for rotation calculation
+                                initialAngle = atan2(
+                                    touchStartY - initialGroupPivotY,
+                                    touchStartX - initialGroupPivotX
+                                ) // Initial angle for rotation calculation
+                                selectedElements.firstOrNull()?.let { element ->
+                                    onStartBatchUpdate?.invoke(element.id, "rotate")
+                                }
                                 return true
                             }
 
@@ -720,6 +821,9 @@ class SizedCanvasView @JvmOverloads constructor(
                                 currentMode = Mode.RESIZE
                                 touchStartX = x
                                 touchStartY = y
+                                selectedElements.firstOrNull()?.let { element ->
+                                    onStartBatchUpdate?.invoke(element.id, "resize")
+                                }
                                 return true
                             }
 
@@ -734,23 +838,24 @@ class SizedCanvasView @JvmOverloads constructor(
                 }
 
                 // 2. If no icon was touched, check for element touch (single or multi-selection)
-                val touchedElement = canvasElements.sortedByDescending { it.zIndex }.firstOrNull { element ->
-                    val matrix = Matrix()
-                    matrix.postTranslate(-element.x, -element.y)
-                    matrix.postRotate(-element.rotation)
-                    matrix.postScale(1f / element.scale, 1f / element.scale)
+                val touchedElement =
+                    canvasElements.sortedByDescending { it.zIndex }.firstOrNull { element ->
+                        val matrix = Matrix()
+                        matrix.postTranslate(-element.x, -element.y)
+                        matrix.postRotate(-element.rotation)
+                        matrix.postScale(1f / element.scale, 1f / element.scale)
 
-                    val touchPoint = floatArrayOf(x, y)
-                    matrix.mapPoints(touchPoint)
+                        val touchPoint = floatArrayOf(x, y)
+                        matrix.mapPoints(touchPoint)
 
-                    val bounds = RectF(
-                        -element.getLocalContentWidth() / 2f,
-                        -element.getLocalContentHeight() / 2f,
-                        element.getLocalContentWidth() / 2f,
-                        element.getLocalContentHeight() / 2f
-                    )
-                    bounds.contains(touchPoint[0], touchPoint[1])
-                }
+                        val bounds = RectF(
+                            -element.getLocalContentWidth() / 2f,
+                            -element.getLocalContentHeight() / 2f,
+                            element.getLocalContentWidth() / 2f,
+                            element.getLocalContentHeight() / 2f
+                        )
+                        bounds.contains(touchPoint[0], touchPoint[1])
+                    }
 
                 if (touchedElement != null) {
                     if (touchedElement.isSelected) {
@@ -760,8 +865,6 @@ class SizedCanvasView @JvmOverloads constructor(
                         currentMode = Mode.DRAG
                         touchStartX = x
                         touchStartY = y
-                        // No change to selectedElements list, just notify that current selection is active
-                        onElementSelected?.invoke(selectedElements)
                     } else {
                         // If an unselected element is tapped, deselect all others and select only this one
                         canvasElements.forEach { it.isSelected = false } // Deselect all
@@ -772,8 +875,9 @@ class SizedCanvasView @JvmOverloads constructor(
                         currentMode = Mode.DRAG
                         touchStartX = x
                         touchStartY = y
-                        onElementSelected?.invoke(selectedElements) // Notify ViewModel of the new single selection
                     }
+                    onStartBatchUpdate?.invoke(touchedElement.id, "drag")
+                    onElementSelected?.invoke(selectedElements)
                     invalidate()
                     return true
                 } else {
@@ -863,19 +967,34 @@ class SizedCanvasView @JvmOverloads constructor(
                     Mode.ROTATE -> {
                         if (selectedElements.isEmpty()) return true
 
-                        val currentAngle = atan2(y - initialGroupPivotY, x - initialGroupPivotX) // Calculate angle relative to initial group pivot
-                        val deltaAngle = Math.toDegrees((currentAngle - initialAngle).toDouble()).toFloat()
+                        val currentAngle = atan2(
+                            y - initialGroupPivotY,
+                            x - initialGroupPivotX
+                        ) // Calculate angle relative to initial group pivot
+                        val deltaAngle =
+                            Math.toDegrees((currentAngle - initialAngle).toDouble()).toFloat()
 
                         elementsToModify.forEach { element ->
-                            val initialRotation = initialElementRotations[element.id] ?: element.rotation
-                            element.rotation = (initialRotation + deltaAngle) % 360 // Update element's own rotation
+                            val initialRotation =
+                                initialElementRotations[element.id] ?: element.rotation
+                            element.rotation =
+                                (initialRotation + deltaAngle) % 360 // Update element's own rotation
 
                             // Rotate element's initial position relative to the group pivot
-                            val initialRelativeX = initialElementPositionsRelativeToGroupPivot[element.id]?.first ?: 0f
-                            val initialRelativeY = initialElementPositionsRelativeToGroupPivot[element.id]?.second ?: 0f
+                            val initialRelativeX =
+                                initialElementPositionsRelativeToGroupPivot[element.id]?.first ?: 0f
+                            val initialRelativeY =
+                                initialElementPositionsRelativeToGroupPivot[element.id]?.second
+                                    ?: 0f
 
-                            val rotatedRelativeX = (initialRelativeX * kotlin.math.cos(Math.toRadians(deltaAngle.toDouble()))) - (initialRelativeY * kotlin.math.sin(Math.toRadians(deltaAngle.toDouble())))
-                            val rotatedRelativeY = (initialRelativeX * kotlin.math.sin(Math.toRadians(deltaAngle.toDouble()))) + (initialRelativeY * kotlin.math.cos(Math.toRadians(deltaAngle.toDouble())))
+                            val rotatedRelativeX =
+                                (initialRelativeX * kotlin.math.cos(Math.toRadians(deltaAngle.toDouble()))) - (initialRelativeY * kotlin.math.sin(
+                                    Math.toRadians(deltaAngle.toDouble())
+                                ))
+                            val rotatedRelativeY =
+                                (initialRelativeX * kotlin.math.sin(Math.toRadians(deltaAngle.toDouble()))) + (initialRelativeY * kotlin.math.cos(
+                                    Math.toRadians(deltaAngle.toDouble())
+                                ))
 
                             // Update element's position based on the rotated relative position from the *initial* group pivot
                             element.x = initialGroupPivotX + rotatedRelativeX.toFloat()
@@ -912,6 +1031,14 @@ class SizedCanvasView @JvmOverloads constructor(
                             // Also adjust the initialGroupPivotX and Y to reflect the new clamped position
                             initialGroupPivotX += translationX
                             initialGroupPivotY += translationY
+                        }
+
+                        // Check rotation alignment for the first selected element
+                        if (selectedElements.size == 1) {
+                            checkRotationAlignment(selectedElements.first())
+                        } else {
+                            showRotationVerticalGuide = false
+                            showRotationHorizontalGuide = false
                         }
 
                         invalidate()
@@ -967,10 +1094,14 @@ class SizedCanvasView @JvmOverloads constructor(
             MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_CANCEL -> {
                 showVerticalGuide = false
                 showHorizontalGuide = false
+                showRotationVerticalGuide = false // Reset rotation guides on ACTION_UP
+                showRotationHorizontalGuide = false // Reset rotation guides on ACTION_UP
+
 
                 if (currentMode == Mode.DRAG || currentMode == Mode.ROTATE || currentMode == Mode.RESIZE) {
                     selectedElements.filter { !it.isLocked }.forEach {
                         onElementChanged?.invoke(it)
+                        onEndBatchUpdate?.invoke(it.id)
                     }
                 }
 

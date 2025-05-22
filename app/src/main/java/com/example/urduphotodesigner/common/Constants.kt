@@ -1,15 +1,15 @@
 package com.example.urduphotodesigner.common
 
-import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
-import com.example.urduphotodesigner.data.model.ColorItem
-import com.example.urduphotodesigner.data.model.GradientItem
+import com.example.urduphotodesigner.common.canvas.ColorItem
+import com.example.urduphotodesigner.common.canvas.GradientItem
 import androidx.core.graphics.toColorInt
 
 object Constants {
 
     const val BASE_URL = "https://dashboard.urdufonts.com/api/"
     const val BASE_URL_GLIDE = "https://dashboard.urdufonts.com/"
+    var TEMPLATE = ""
     val colorList = listOf(
         "#FFFFFF", "#000000", "#FF0000", "#00FF00", "#0000FF",
         "#FFFF00", "#00FFFF", "#FF00FF", "#C0C0C0", "#808080",

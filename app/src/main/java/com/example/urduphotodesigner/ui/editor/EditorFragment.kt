@@ -1,6 +1,5 @@
 package com.example.urduphotodesigner.ui.editor
 
-import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Build
 import android.os.Bundle
@@ -9,20 +8,20 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.ImageView
-import android.widget.TextView
+import android.widget.Toast
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import com.example.urduphotodesigner.R
+import com.example.urduphotodesigner.common.Constants
 import com.example.urduphotodesigner.common.Converter.cmToPx
 import com.example.urduphotodesigner.common.Converter.inchesToPx
 import com.example.urduphotodesigner.common.canvas.CanvasElement
@@ -30,9 +29,10 @@ import com.example.urduphotodesigner.common.canvas.CanvasManager
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.common.enums.UnitType
 import com.example.urduphotodesigner.common.views.SizedCanvasView
-import com.example.urduphotodesigner.data.model.CanvasSize
+import com.example.urduphotodesigner.common.canvas.CanvasSize
 import com.example.urduphotodesigner.databinding.FragmentEditorBinding
 import dagger.hilt.android.AndroidEntryPoint
+import kotlin.math.roundToInt
 
 @AndroidEntryPoint
 class EditorFragment : Fragment() {
@@ -47,6 +47,7 @@ class EditorFragment : Fragment() {
     private var currentUnit = UnitType.PIXELS
 
     private val viewModel: CanvasViewModel by activityViewModels()
+    private var currentPanelItemId: Int? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -72,6 +73,11 @@ class EditorFragment : Fragment() {
 
         setEvents()
         observeViewModel()
+
+        if (Constants.TEMPLATE.isNotEmpty()){
+            viewModel.loadTemplate(Constants.TEMPLATE, requireContext())
+            Toast.makeText(requireContext(), "Template loaded!", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun showTextEditDialog(element: CanvasElement) {
@@ -99,7 +105,10 @@ class EditorFragment : Fragment() {
             setDimAmount(0f) // No dim
             setGravity(Gravity.BOTTOM)
             // You might want to adjust width/height if the layout doesn't fill as expected
-            setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT)
+            setLayout(
+                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.WRAP_CONTENT
+            )
         }
 
         // Show the dialog
@@ -107,14 +116,19 @@ class EditorFragment : Fragment() {
     }
 
     private fun observeViewModel() {
-        viewModel.canvasElements.observe(viewLifecycleOwner, Observer { elements ->
+        viewModel.canvasSize.observe(viewLifecycleOwner) { size ->
+            canvasSize = size
+            binding.canvasContainer.invalidate()
+        }
+
+        viewModel.canvasElements.observe(viewLifecycleOwner) { elements ->
             canvasManager.syncElements(elements)
             binding.canvasContainer.invalidate()
-        })
+        }
 
-        viewModel.backgroundColor.observe(viewLifecycleOwner, Observer { color ->
+        viewModel.backgroundColor.observe(viewLifecycleOwner) { color ->
             canvasManager.setCanvasBackgroundColor(color)
-        })
+        }
 
         viewModel.canUndo.observe(viewLifecycleOwner) { canUndo ->
             binding.undo.isEnabled = canUndo
@@ -124,37 +138,38 @@ class EditorFragment : Fragment() {
             binding.redo.isEnabled = canRedo
         }
 
-        viewModel.backgroundImage.observe(viewLifecycleOwner, Observer { bitmap ->
+        viewModel.backgroundImage.observe(viewLifecycleOwner) { bitmap ->
             bitmap?.let { canvasManager.setCanvasBackgroundImage(it) }
-        })
+        }
 
-        viewModel.backgroundGradient.observe(viewLifecycleOwner, Observer { gradient ->
+        viewModel.backgroundGradient.observe(viewLifecycleOwner) { gradient ->
             gradient?.let { (colors, positions) ->
                 canvasManager.setCanvasBackgroundGradient(colors ?: intArrayOf(), positions)
             }
-        })
+        }
 
-        viewModel.currentFont.observe(viewLifecycleOwner, Observer { font ->
+        viewModel.currentFont.observe(viewLifecycleOwner) { font ->
             if (font != null) {
                 canvasManager.setFont(font)
             }
-        })
+        }
 
-        viewModel.currentTextColor.observe(viewLifecycleOwner, Observer { color ->
+        viewModel.currentTextColor.observe(viewLifecycleOwner) { color ->
             canvasManager.setTextColor(color!!)
-        })
+        }
 
-        viewModel.currentTextSize.observe(viewLifecycleOwner, Observer { size ->
+        viewModel.currentTextSize.observe(viewLifecycleOwner) { size ->
             canvasManager.setTextSize(size!!)
-        })
+        }
 
-        viewModel.currentTextAlignment.observe(viewLifecycleOwner, Observer { alignment ->
+        viewModel.currentTextAlignment.observe(viewLifecycleOwner) { alignment ->
             canvasManager.setTextAlignment(alignment!!)
-        })
+        }
 
-        viewModel.currentTextOpacity.observe(viewLifecycleOwner, Observer { opacity ->
-            canvasManager.setOpacity(opacity!!)
-        })
+        viewModel.currentTextOpacity.observe(viewLifecycleOwner) { opacity ->
+            binding.seekBar.value = opacity?.toFloat()!!
+            canvasManager.setOpacity(opacity)
+        }
     }
 
     private fun setEvents() {
@@ -190,14 +205,17 @@ class EditorFragment : Fragment() {
                     viewModel.canvasElements.value?.find { it.id == canvasElement.id }?.let {
                         viewModel.removeElement(it)
                     }
-                },onElementSelected = { elements ->
+                }, onElementSelected = { elements ->
                     viewModel.setSelectedElementsFromLayers(elements)
                     viewModel.onCanvasSelectionChanged(elements)
-                    if (elements.isNotEmpty()) {
-                        binding.opacityBox.visibility = View.VISIBLE // Make opacity panel visible
-                    } else {
-                        binding.opacityBox.visibility = View.GONE // Hide opacity panel
-                    }
+
+                    binding.seekBar.visibility = View.INVISIBLE
+                },
+                onEndBatchUpdate = { elementId ->
+                    viewModel.endBatchUpdate(elementId)
+                },
+                onStartBatchUpdate = { elementId, actionType ->
+                    viewModel.startBatchUpdate(elementId, actionType)
                 }
             ).apply {
                 binding.canvasContainer.addView(this)
@@ -210,19 +228,51 @@ class EditorFragment : Fragment() {
         _navController = navHostFragment.navController
 
         binding.bottomNavigation.setOnItemSelectedListener { menuItem ->
-            when (menuItem.itemId) {
-                R.id.nav_background -> navController.navigate(R.id.backgroundsFragment)
-                R.id.nav_objects -> navController.navigate(R.id.objectsFragment)
-                R.id.nav_text -> navController.navigate(R.id.textFragment)
-                R.id.nav_images -> navController.navigate(R.id.imagesFragment)
-                R.id.nav_layers -> navController.navigate(R.id.layersFragment)
-                else -> false
+            if (currentPanelItemId == menuItem.itemId) {
+                // Reselected the same item, hide the panel
+                binding.panelNavHost.visibility = View.GONE
+                currentPanelItemId = null // Reset current item
+            } else {
+                // New item selected, show the panel and navigate
+                binding.panelNavHost.visibility = View.VISIBLE
+                currentPanelItemId = menuItem.itemId
+
+                when (menuItem.itemId) {
+                    R.id.nav_background -> navController.navigate(R.id.backgroundsFragment)
+                    R.id.nav_objects -> navController.navigate(R.id.objectsFragment)
+                    R.id.nav_text -> navController.navigate(R.id.textFragment)
+                    R.id.nav_images -> navController.navigate(R.id.imagesFragment)
+                    R.id.nav_layers -> navController.navigate(R.id.layersFragment)
+                    else -> false // Should not happen with defined menu items
+                }
             }
             true
         }
 
         binding.undo.setOnClickListener { viewModel.undo() }
         binding.redo.setOnClickListener { viewModel.redo() }
+
+        binding.opacityIcon.setOnClickListener {
+            binding.seekBar.visibility =
+                if (binding.seekBar.isVisible) View.INVISIBLE else View.VISIBLE
+        }
+
+        binding.seekBar.addOnChangeListener { _, value, _ ->
+            viewModel.setOpacity(value.roundToInt())
+        }
+
+        binding.done.setOnClickListener {
+            val templateJson = viewModel.saveTemplate()
+            // In a real app, you would save this `templateJson` to a file, database, etc.
+            // For now, let's just log it and show a Toast message.
+            println("Canvas Template JSON: $templateJson")
+            Constants.TEMPLATE = templateJson
+            Toast.makeText(requireContext(), "Template saved to logcat!", Toast.LENGTH_LONG).show()
+
+            // Example of loading a template (for testing purposes, you might load it from a file)
+            viewModel.clearCanvas()
+            findNavController().navigateUp()
+        }
     }
 
     override fun onDestroy() {

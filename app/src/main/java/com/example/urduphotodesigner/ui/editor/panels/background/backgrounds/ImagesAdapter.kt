@@ -5,12 +5,10 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
-import android.graphics.drawable.PictureDrawable
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -21,7 +19,6 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.Constants
-import com.example.urduphotodesigner.data.model.ColorItem
 import com.example.urduphotodesigner.data.model.ImageEntity
 import com.example.urduphotodesigner.databinding.LayoutImagesItemBinding
 import androidx.core.graphics.createBitmap

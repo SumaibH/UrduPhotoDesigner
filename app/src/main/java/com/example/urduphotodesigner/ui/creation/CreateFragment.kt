@@ -8,16 +8,14 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.PopupMenu
 import androidx.fragment.app.Fragment
-import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import com.example.urduphotodesigner.R
-import com.example.urduphotodesigner.common.Converter
 import com.example.urduphotodesigner.common.Converter.cmToPx
 import com.example.urduphotodesigner.common.Converter.inchesToPx
 import com.example.urduphotodesigner.common.Converter.pxToCm
 import com.example.urduphotodesigner.common.Converter.pxToInches
 import com.example.urduphotodesigner.common.enums.UnitType
-import com.example.urduphotodesigner.data.model.CanvasSize
+import com.example.urduphotodesigner.common.canvas.CanvasSize
 import com.example.urduphotodesigner.databinding.FragmentCreateBinding
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint

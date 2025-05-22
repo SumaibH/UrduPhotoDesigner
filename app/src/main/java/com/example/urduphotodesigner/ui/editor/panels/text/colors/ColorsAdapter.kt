@@ -7,7 +7,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.toColorInt
 import androidx.recyclerview.widget.RecyclerView
 import com.example.urduphotodesigner.R
-import com.example.urduphotodesigner.data.model.ColorItem
+import com.example.urduphotodesigner.common.canvas.ColorItem
 import com.example.urduphotodesigner.databinding.LayoutColorItemBinding
 
 class ColorsAdapter(
