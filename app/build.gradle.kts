@@ -109,4 +109,7 @@ dependencies {
     //SVG Support
     implementation (libs.androidsvg)
 
+    //Google Sign in
+    implementation(libs.play.services.auth)
+
 }

@@ -1,8 +1,8 @@
 package com.example.urduphotodesigner.common
 
 import android.graphics.drawable.GradientDrawable
-import com.example.urduphotodesigner.common.canvas.ColorItem
-import com.example.urduphotodesigner.common.canvas.GradientItem
+import com.example.urduphotodesigner.common.canvas.model.ColorItem
+import com.example.urduphotodesigner.common.canvas.model.GradientItem
 import androidx.core.graphics.toColorInt
 
 object Constants {

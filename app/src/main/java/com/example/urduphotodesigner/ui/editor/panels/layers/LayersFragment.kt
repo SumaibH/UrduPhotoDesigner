@@ -10,7 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import com.example.urduphotodesigner.common.canvas.CanvasElement
+import com.example.urduphotodesigner.common.canvas.model.CanvasElement
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.databinding.FragmentLayersBinding
 import dagger.hilt.android.AndroidEntryPoint

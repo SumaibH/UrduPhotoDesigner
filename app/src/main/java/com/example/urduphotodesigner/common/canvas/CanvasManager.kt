@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Paint
 import android.graphics.Typeface
+import com.example.urduphotodesigner.common.canvas.model.CanvasElement
 import com.example.urduphotodesigner.common.views.SizedCanvasView
 import com.example.urduphotodesigner.data.model.FontEntity
 

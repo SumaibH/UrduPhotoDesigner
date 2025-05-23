@@ -6,8 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.urduphotodesigner.R
-import com.example.urduphotodesigner.common.canvas.CanvasElement
-import com.example.urduphotodesigner.common.canvas.ElementType
+import com.example.urduphotodesigner.common.canvas.model.CanvasElement
+import com.example.urduphotodesigner.common.enums.ElementType
 import com.example.urduphotodesigner.databinding.LayoutLayersItemBinding
 
 class LayersAdapter(

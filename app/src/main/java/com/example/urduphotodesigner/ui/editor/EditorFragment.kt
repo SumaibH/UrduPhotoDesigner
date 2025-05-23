@@ -1,8 +1,15 @@
 package com.example.urduphotodesigner.ui.editor
 
+import android.Manifest
 import android.app.Dialog
+import android.content.ContentValues
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -10,13 +17,18 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.RadioButton
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
@@ -24,14 +36,21 @@ import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.Constants
 import com.example.urduphotodesigner.common.Converter.cmToPx
 import com.example.urduphotodesigner.common.Converter.inchesToPx
-import com.example.urduphotodesigner.common.canvas.CanvasElement
 import com.example.urduphotodesigner.common.canvas.CanvasManager
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
+import com.example.urduphotodesigner.common.canvas.model.CanvasElement
+import com.example.urduphotodesigner.common.canvas.model.CanvasSize
 import com.example.urduphotodesigner.common.enums.UnitType
 import com.example.urduphotodesigner.common.views.SizedCanvasView
-import com.example.urduphotodesigner.common.canvas.CanvasSize
+import com.example.urduphotodesigner.databinding.BottomSheetExportSettingsBinding
 import com.example.urduphotodesigner.databinding.FragmentEditorBinding
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileOutputStream
 import kotlin.math.roundToInt
 
 @AndroidEntryPoint
@@ -48,6 +67,24 @@ class EditorFragment : Fragment() {
 
     private val viewModel: CanvasViewModel by activityViewModels()
     private var currentPanelItemId: Int? = null
+
+    private lateinit var sizedCanvasView: SizedCanvasView
+
+    private var requestPermissionLauncher: ActivityResultLauncher<String> = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // Permission is granted, proceed with export
+            exportCanvasInternal()
+        } else {
+            // Permission denied, show a message to the user
+            Toast.makeText(
+                requireContext(),
+                "Permission denied to save image. Please grant storage permission in settings.",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -74,7 +111,7 @@ class EditorFragment : Fragment() {
         setEvents()
         observeViewModel()
 
-        if (Constants.TEMPLATE.isNotEmpty()){
+        if (Constants.TEMPLATE.isNotEmpty()) {
             viewModel.loadTemplate(Constants.TEMPLATE, requireContext())
             Toast.makeText(requireContext(), "Template loaded!", Toast.LENGTH_SHORT).show()
         }
@@ -110,7 +147,6 @@ class EditorFragment : Fragment() {
                 WindowManager.LayoutParams.WRAP_CONTENT
             )
         }
-
         // Show the dialog
         dialog.show()
     }
@@ -149,7 +185,7 @@ class EditorFragment : Fragment() {
         }
 
         viewModel.currentFont.observe(viewLifecycleOwner) { font ->
-            if (font != null) {
+            if (font != null && viewModel.isExplicitFontChange()) {
                 canvasManager.setFont(font)
             }
         }
@@ -188,39 +224,39 @@ class EditorFragment : Fragment() {
             UnitType.PIXELS -> canvasSize.height.toInt()
         }
 
-        canvasManager = CanvasManager(
-            SizedCanvasView(
-                requireContext(),
-                canvasWidth = widthPx,
-                canvasHeight = heightPx,
-                onEditTextRequested = { element ->
-                    showTextEditDialog(element)
-                },
-                onElementChanged = { canvasElement ->
-                    viewModel.canvasElements.value?.find { it.id == canvasElement.id }?.let {
-                        viewModel.updateElement(canvasElement)
-                    }
-                },
-                onElementRemoved = { canvasElement ->
-                    viewModel.canvasElements.value?.find { it.id == canvasElement.id }?.let {
-                        viewModel.removeElement(it)
-                    }
-                }, onElementSelected = { elements ->
-                    viewModel.setSelectedElementsFromLayers(elements)
-                    viewModel.onCanvasSelectionChanged(elements)
-
-                    binding.seekBar.visibility = View.INVISIBLE
-                },
-                onEndBatchUpdate = { elementId ->
-                    viewModel.endBatchUpdate(elementId)
-                },
-                onStartBatchUpdate = { elementId, actionType ->
-                    viewModel.startBatchUpdate(elementId, actionType)
+        sizedCanvasView = SizedCanvasView(
+            requireContext(),
+            canvasWidth = widthPx,
+            canvasHeight = heightPx,
+            onEditTextRequested = { element ->
+                showTextEditDialog(element)
+            },
+            onElementChanged = { canvasElement ->
+                viewModel.canvasElements.value?.find { it.id == canvasElement.id }?.let {
+                    viewModel.updateElement(canvasElement)
                 }
-            ).apply {
-                binding.canvasContainer.addView(this)
+            },
+            onElementRemoved = { canvasElement ->
+                viewModel.canvasElements.value?.find { it.id == canvasElement.id }?.let {
+                    viewModel.removeElement(it)
+                }
+            }, onElementSelected = { elements ->
+                viewModel.setSelectedElementsFromLayers(elements)
+                viewModel.onCanvasSelectionChanged(elements)
+
+                binding.seekBar.visibility = View.INVISIBLE
+            },
+            onEndBatchUpdate = { elementId ->
+                viewModel.endBatchUpdate(elementId)
+            },
+            onStartBatchUpdate = { elementId, actionType ->
+                viewModel.startBatchUpdate(elementId, actionType)
             }
-        )
+        ).apply {
+            binding.canvasContainer.addView(this)
+        }
+
+        canvasManager = CanvasManager(sizedCanvasView)
 
         // Setup navigation
         val navHostFragment =
@@ -262,16 +298,222 @@ class EditorFragment : Fragment() {
         }
 
         binding.done.setOnClickListener {
-            val templateJson = viewModel.saveTemplate()
-            // In a real app, you would save this `templateJson` to a file, database, etc.
-            // For now, let's just log it and show a Toast message.
-            println("Canvas Template JSON: $templateJson")
-            Constants.TEMPLATE = templateJson
-            Toast.makeText(requireContext(), "Template saved to logcat!", Toast.LENGTH_LONG).show()
+            showExportSettingsDialog()
+        }
+    }
 
-            // Example of loading a template (for testing purposes, you might load it from a file)
-            viewModel.clearCanvas()
-            findNavController().navigateUp()
+    private fun showExportSettingsDialog() {
+        val dialog = BottomSheetDialog(requireContext())
+        val dialogBinding = BottomSheetExportSettingsBinding.inflate(layoutInflater)
+        dialog.setContentView(dialogBinding.root)
+
+        val currentOptions = viewModel.exportOptions.value ?: return
+        val previewBitmap = sizedCanvasView.exportCanvasToBitmap(currentOptions)
+        dialogBinding.previewImage.setImageBitmap(previewBitmap)
+
+        val availableResolutions = viewModel.exportResolutions
+        val currentExportOptions = viewModel.exportOptions.value // Get current (default or selected) options
+
+        // Populate Resolution RadioGroup
+        dialogBinding.radioGroupResolution.removeAllViews()
+        availableResolutions.forEachIndexed { index, resolution ->
+            val radioButton = RadioButton(requireContext()).apply {
+                text = resolution.name
+                id = index // Use index as ID for easy mapping
+                isChecked = resolution == currentExportOptions!!.resolution // Set checked based on current options
+            }
+            dialogBinding.radioGroupResolution.addView(radioButton)
+        }
+
+        // Populate Quality RadioGroup
+        val qualityOptions = mapOf(
+            "High" to 90,
+            "Medium" to 70,
+            "Low" to 50
+        )
+        dialogBinding.radioGroupQuality.removeAllViews()
+        qualityOptions.forEach { (name, value) ->
+            val radioButton = RadioButton(requireContext()).apply {
+                text = name
+                id = value // Use quality value as ID
+                isChecked = value == currentExportOptions!!.quality // Set checked based on current options
+            }
+            dialogBinding.radioGroupQuality.addView(radioButton)
+        }
+
+        // Populate Format RadioGroup
+        val formatOptions = mapOf(
+            "PNG" to Bitmap.CompressFormat.PNG,
+            "JPEG" to Bitmap.CompressFormat.JPEG,
+            "WEBP" to Bitmap.CompressFormat.WEBP
+        )
+        dialogBinding.radioGroupFormat.removeAllViews()
+        formatOptions.forEach { (name, value) ->
+            val radioButton = RadioButton(requireContext()).apply {
+                text = name
+                // Use a unique ID, or directly store the CompressFormat as a tag if using a custom listener
+                id = if (value == Bitmap.CompressFormat.PNG) 0 else 1 // Arbitrary IDs
+                isChecked = value == currentExportOptions!!.format // Set checked based on current options
+            }
+            dialogBinding.radioGroupFormat.addView(radioButton)
+        }
+
+        // Set listeners to update ViewModel's exportOptions
+        dialogBinding.radioGroupResolution.setOnCheckedChangeListener { _, checkedId ->
+            val selectedResolution = availableResolutions[checkedId]
+            viewModel.updateExportOptions(
+                currentExportOptions!!.copy(resolution = selectedResolution)
+            )
+        }
+
+        dialogBinding.radioGroupQuality.setOnCheckedChangeListener { _, checkedId ->
+            // Use checkedId directly as it's the quality value
+            val selectedQuality = checkedId
+            viewModel.updateExportOptions(
+                currentExportOptions!!.copy(quality = selectedQuality)
+            )
+        }
+
+        dialogBinding.radioGroupFormat.setOnCheckedChangeListener { _, checkedId ->
+            val selectedFormat = if (checkedId == 0) Bitmap.CompressFormat.PNG else Bitmap.CompressFormat.JPEG
+            viewModel.updateExportOptions(
+                currentExportOptions!!.copy(format = selectedFormat)
+            )
+        }
+
+        dialogBinding.buttonCancel.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialogBinding.buttonExport.setOnClickListener {
+            exportCanvas()
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+    private suspend fun saveBitmapToGallery(
+        bitmap: Bitmap,
+        fileName: String,
+        format: Bitmap.CompressFormat,
+        quality: Int
+    ): Uri? = withContext(Dispatchers.IO) {
+        val resolver = requireContext().contentResolver
+        val imageCollection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+
+        val imageDetails = ContentValues().apply {
+            put(MediaStore.Images.Media.DISPLAY_NAME, "$fileName.jpg")
+            put(MediaStore.Images.Media.MIME_TYPE, when (format) {
+                Bitmap.CompressFormat.JPEG -> "image/jpeg"
+                Bitmap.CompressFormat.PNG -> "image/png"
+                Bitmap.CompressFormat.WEBP -> "image/webp"
+                else -> "image/png"
+            })
+            put(MediaStore.Images.Media.IS_PENDING, 1)
+        }
+
+        val uri = resolver.insert(imageCollection, imageDetails)
+        if (uri != null) {
+            resolver.openOutputStream(uri)?.use { out ->
+                bitmap.compress(format, quality, out)
+            }
+
+            imageDetails.clear()
+            imageDetails.put(MediaStore.Images.Media.IS_PENDING, 0)
+            resolver.update(uri, imageDetails, null, null)
+        }
+
+        uri
+    }
+
+    private fun exportCanvas() {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) { // Android 9 and below
+            if (ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                exportCanvasInternal()
+            } else {
+                requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            }
+        } else { // Android 10 (API 29) and above: No need for WRITE_EXTERNAL_STORAGE
+            exportCanvasInternal()
+        }
+    }
+
+    private fun exportCanvasInternal() {
+        // Retrieve the current export options from the ViewModel, which now includes the selected quality and format
+        val currentExportOptions = viewModel.exportOptions.value
+
+        lifecycleScope.launch(Dispatchers.IO) { // Use IO dispatcher for file operations
+            val exportedBitmap = currentExportOptions.let { it?.let { it1 ->
+                sizedCanvasView.exportCanvasToBitmap(
+                    it1
+                )
+            } }
+
+            if (exportedBitmap != null) {
+                // Determine output file path and format
+                val fileName = "exported_image_${System.currentTimeMillis()}"
+                val fileExtension = when (currentExportOptions!!.format) {
+                    Bitmap.CompressFormat.JPEG -> ".jpg"
+                    Bitmap.CompressFormat.PNG -> ".png"
+                    else -> ".png" // Default to PNG
+                }
+                val outputPath = File(requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES), "$fileName$fileExtension")
+
+                saveBitmapToGallery(
+                    exportedBitmap,
+                    "exported_image_${System.currentTimeMillis()}",
+                    currentExportOptions.format,
+                    currentExportOptions.quality
+                )
+
+                viewModel.saveTemplate()
+
+                var success = false
+                try {
+                    FileOutputStream(outputPath).use { out ->
+                        exportedBitmap.compress(
+                            currentExportOptions.format, // Use the selected format
+                            currentExportOptions.quality, // Use the selected quality
+                            out
+                        )
+                    }
+                    success = true
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                } finally {
+                    exportedBitmap.recycle()
+                }
+
+                withContext(Dispatchers.Main) {
+                    if (success) {
+                        Toast.makeText(
+                            requireActivity(),
+                            "Canvas exported successfully to ${outputPath.absolutePath} at ${currentExportOptions.resolution.name} with ${currentExportOptions.quality}% ${currentExportOptions.format}!",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        // You might want to show the saved image or offer to share it
+                    } else {
+                        Toast.makeText(
+                            requireActivity(),
+                            "Failed to export canvas.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            } else {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        requireActivity(),
+                        "Failed to export canvas (bitmap null).",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
         }
     }
 

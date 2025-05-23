@@ -1,4 +1,4 @@
-package com.example.urduphotodesigner.common.canvas
+package com.example.urduphotodesigner.common.canvas.model
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -10,6 +10,7 @@ import android.graphics.Typeface
 import android.text.TextPaint
 import androidx.core.content.res.ResourcesCompat
 import com.example.urduphotodesigner.R
+import com.example.urduphotodesigner.common.enums.ElementType
 import java.io.Serializable
 import java.util.UUID
 

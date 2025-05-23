@@ -1,4 +1,4 @@
-package com.example.urduphotodesigner.common.canvas
+package com.example.urduphotodesigner.common.canvas.model
 
 data class CanvasTemplate(
     val canvasElements: List<CanvasElement>,

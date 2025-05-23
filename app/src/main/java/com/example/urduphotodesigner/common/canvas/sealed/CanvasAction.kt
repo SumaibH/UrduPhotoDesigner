@@ -1,7 +1,9 @@
-package com.example.urduphotodesigner.common.canvas
+package com.example.urduphotodesigner.common.canvas.sealed
 
 import android.graphics.Bitmap
 import android.graphics.Paint
+import com.example.urduphotodesigner.common.canvas.model.CanvasElement
+import com.example.urduphotodesigner.common.canvas.model.CanvasSize
 import com.example.urduphotodesigner.data.model.FontEntity
 
 sealed class CanvasAction {

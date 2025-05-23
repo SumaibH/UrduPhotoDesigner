@@ -9,6 +9,7 @@ import android.graphics.DashPathEffect
 import android.graphics.LinearGradient
 import android.graphics.Matrix
 import android.graphics.Paint
+import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Shader
 import android.graphics.Typeface
@@ -22,8 +23,9 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.withTranslation
 import com.example.urduphotodesigner.R
-import com.example.urduphotodesigner.common.canvas.CanvasElement
-import com.example.urduphotodesigner.common.canvas.ElementType
+import com.example.urduphotodesigner.common.canvas.model.CanvasElement
+import com.example.urduphotodesigner.common.canvas.model.ExportOptions
+import com.example.urduphotodesigner.common.enums.ElementType
 import com.example.urduphotodesigner.common.enums.Mode
 import com.example.urduphotodesigner.data.model.FontEntity
 import java.util.concurrent.CopyOnWriteArrayList
@@ -31,6 +33,7 @@ import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.hypot
 import kotlin.math.max
+import androidx.core.graphics.withScale
 
 class SizedCanvasView @JvmOverloads constructor(
     context: Context,
@@ -50,7 +53,7 @@ class SizedCanvasView @JvmOverloads constructor(
         style = Paint.Style.FILL
     }
 
-    private lateinit var gestureDetector: GestureDetector
+    private var gestureDetector: GestureDetector
 
     // Smaller icon size
     private var desiredIconScreenSizePx = 36f // Changed from 48f to make icons smaller
@@ -398,6 +401,100 @@ class SizedCanvasView @JvmOverloads constructor(
         onElementSelected?.invoke(selectedElements) // Notify ViewModel of the new single selection
         invalidate()
     }
+
+    /**
+     * Exports the current canvas content to a Bitmap with specified resolution and quality.
+     * @param options The export options including resolution, quality, and format.
+     * @return A Bitmap representing the exported canvas.
+     */
+    fun exportCanvasToBitmap(options: ExportOptions): Bitmap {
+        val outputWidth: Int
+        val outputHeight: Int
+
+        // Determine the target output dimensions based on the selected resolution
+        if (options.resolution.width == 0 && options.resolution.height == 0) {
+            // "Original Size" resolution: use canvas's current size, apply scaleFactor (which is 1f for Original Size)
+            outputWidth = (canvasWidth * options.resolution.scaleFactor).toInt()
+            outputHeight = (canvasHeight * options.resolution.scaleFactor).toInt()
+        } else {
+            // Specific resolution: use the resolution's width and height directly
+            outputWidth = options.resolution.width
+            outputHeight = options.resolution.height
+        }
+
+        val bitmap = Bitmap.createBitmap(outputWidth, outputHeight, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+
+        // Calculate a single uniform scale factor to maintain aspect ratio
+        // This scale factor will fit the original canvas content into the new output dimensions
+        val scaleFactor = minOf(outputWidth.toFloat() / canvasWidth, outputHeight.toFloat() / canvasHeight)
+
+        // Calculate translation to center the scaled content within the new bitmap
+        val scaledContentWidth = canvasWidth * scaleFactor
+        val scaledContentHeight = canvasHeight * scaleFactor
+        val translateX = (outputWidth - scaledContentWidth) / 2f
+        val translateY = (outputHeight - scaledContentHeight) / 2f
+
+        // Apply global translation and scaling to the canvas before drawing
+        canvas.translate(translateX, translateY)
+        canvas.scale(scaleFactor, scaleFactor)
+
+        // Now, draw the background and elements as if drawing on the original canvas size
+        // The translation and scaling applied above will handle fitting it into the output bitmap.
+
+        // 1. Draw background
+        backgroundImage?.let {
+            // Assuming backgroundImage is already scaled/prepared for canvasWidth x canvasHeight.
+            canvas.drawBitmap(it, 0f, 0f, null)
+        } ?: backgroundGradient?.let {
+            canvas.drawRect(
+                0f,
+                0f,
+                canvasWidth.toFloat(), // Draw at original canvas dimensions
+                canvasHeight.toFloat(),
+                backgroundPaint.apply { shader = it })
+        } ?: run {
+            canvas.drawRect(0f, 0f, canvasWidth.toFloat(), canvasHeight.toFloat(), backgroundPaint)
+        }
+
+        // 2. Draw canvas elements based on their z-index
+        canvasElements.sortedBy { it.zIndex }.forEach { element ->
+            // Elements' positions (x, y) and scale are relative to the original canvas dimensions.
+            // These will be correctly scaled by the global canvas.scale() and translated by canvas.translate().
+            canvas.withTranslation(element.x, element.y) {
+                rotate(element.rotation)
+                scale(element.scale, element.scale)
+
+                when (element.type) {
+                    ElementType.TEXT -> {
+                        val lines = element.text.split("\n")
+                        val fm = element.paint.fontMetrics
+                        val lineHeight = (fm.bottom - fm.top) * element.lineSpacingMultiplier
+                        val totalHeight = lineHeight * lines.size
+                        lines.forEachIndexed { i, line ->
+                            val yOffset = -totalHeight / 2 + i * lineHeight - fm.top
+                            drawText(line, 0f, yOffset, element.paint)
+                        }
+                    }
+
+                    ElementType.IMAGE -> {
+                        element.bitmap?.let { bmp ->
+                            val srcRect = Rect(0, 0, bmp.width, bmp.height)
+                            val dstRect = RectF(
+                                -element.getLocalContentWidth() / 2f,
+                                -element.getLocalContentHeight() / 2f,
+                                element.getLocalContentWidth() / 2f,
+                                element.getLocalContentHeight() / 2f
+                            )
+                            drawBitmap(bmp, srcRect, dstRect, element.paint)
+                        }
+                    }
+                }
+            }
+        }
+        return bitmap
+    }
+
 
     private fun checkAlignment(element: CanvasElement) {
         val centerThreshold = 5f // pixels within which we consider centered
