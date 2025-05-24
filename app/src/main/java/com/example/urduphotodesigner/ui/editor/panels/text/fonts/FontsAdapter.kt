@@ -14,7 +14,7 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.example.urduphotodesigner.R
-import com.example.urduphotodesigner.common.Constants
+import com.example.urduphotodesigner.common.utils.Constants
 import com.example.urduphotodesigner.data.model.FontEntity
 import com.example.urduphotodesigner.databinding.LayoutFontItemBinding
 

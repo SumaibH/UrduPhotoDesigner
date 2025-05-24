@@ -33,9 +33,9 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import com.example.urduphotodesigner.R
-import com.example.urduphotodesigner.common.Constants
-import com.example.urduphotodesigner.common.Converter.cmToPx
-import com.example.urduphotodesigner.common.Converter.inchesToPx
+import com.example.urduphotodesigner.common.utils.Constants
+import com.example.urduphotodesigner.common.utils.Converter.cmToPx
+import com.example.urduphotodesigner.common.utils.Converter.inchesToPx
 import com.example.urduphotodesigner.common.canvas.CanvasManager
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.common.canvas.model.CanvasElement
@@ -460,6 +460,7 @@ class EditorFragment : Fragment() {
                 val fileExtension = when (currentExportOptions!!.format) {
                     Bitmap.CompressFormat.JPEG -> ".jpg"
                     Bitmap.CompressFormat.PNG -> ".png"
+                    Bitmap.CompressFormat.WEBP -> ".webp"
                     else -> ".png" // Default to PNG
                 }
                 val outputPath = File(requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES), "$fileName$fileExtension")
@@ -520,6 +521,7 @@ class EditorFragment : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
         _navController = null
+        viewModel.clearCanvas()
         _binding = null
     }
 }

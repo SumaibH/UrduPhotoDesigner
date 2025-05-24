@@ -1,40 +1,53 @@
 package com.example.urduphotodesigner.ui.auth
 
+import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.Intent
+import android.app.AlertDialog
+import android.content.Context
 import android.os.Bundle
+import android.text.InputType
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.Toast
-import androidx.activity.result.ActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import com.example.urduphotodesigner.R
+import com.example.urduphotodesigner.common.sealed.SignInUiState
 import com.example.urduphotodesigner.databinding.FragmentLoginBinding
-import com.google.android.gms.auth.api.identity.BeginSignInRequest
-import com.google.android.gms.auth.api.identity.Identity
-import com.google.android.gms.auth.api.identity.SignInClient
-import com.google.android.gms.auth.api.identity.SignInCredential
-import com.google.android.gms.common.api.ApiException
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class LoginFragment : Fragment() {
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding!!
 
-    // Google Identity Services components
-    private lateinit var oneTapClient: SignInClient
-    private lateinit var signInRequest: BeginSignInRequest
+    // Inject the ViewModel using the viewModels delegate
+    private val authViewModel: AuthViewModel by activityViewModels()
+    private var progressDialog: AlertDialog? = null
 
     private val oneTapResultLauncher = registerForActivityResult(
         ActivityResultContracts.StartIntentSenderForResult()
     ) { result ->
-        handleSignInResult(result)
+        // Pass the result to the ViewModel for handling
+        if (result.resultCode == Activity.RESULT_OK) {
+            authViewModel.handleGoogleSignInResult(result.data)
+        } else {
+            progressDialog?.dismiss()
+            Log.w(TAG, "Sign-in canceled or failed. resultCode=${result.resultCode}")
+        }
     }
 
     override fun onCreateView(
@@ -48,80 +61,168 @@ class LoginFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupGoogleSignIn()
+
+        setupProgressDialog()
         setClickListeners()
+        observeSignInState()
     }
 
-    private fun setupGoogleSignIn() {
-        oneTapClient = Identity.getSignInClient(requireActivity())
+    private fun setupProgressDialog() {
+        val dialogView =
+            LayoutInflater.from(requireContext()).inflate(R.layout.dialog_progress, null)
+        progressDialog = AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .setCancelable(false)
+            .create()
 
-        signInRequest = BeginSignInRequest.builder()
-            .setGoogleIdTokenRequestOptions(
-                BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
-                    .setSupported(true)
-                    .setServerClientId(getString(R.string.server_client_id)) // From google-services.json
-                    .setFilterByAuthorizedAccounts(false)
-                    .build()
-            )
-            .setAutoSelectEnabled(false)
-            .build()
+        progressDialog?.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        progressDialog?.window?.setDimAmount(0.5f) // Dim background
+        progressDialog?.window?.setLayout(
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun setClickListeners() {
         binding.googleSignIn.setOnClickListener {
-            signInWithGoogle()
+            authViewModel.startGoogleSignIn()
         }
-    }
-
-    private fun signInWithGoogle() {
-        try {
-            oneTapClient.beginSignIn(signInRequest)
-                .addOnSuccessListener { result ->
-                    Log.d(TAG, "One Tap sign-in intent received")
-                    val intentSenderRequest = IntentSenderRequest.Builder(result.pendingIntent.intentSender).build()
-                    oneTapResultLauncher.launch(intentSenderRequest)
-                }
-                .addOnFailureListener { e ->
-                    Log.e(TAG, "One Tap sign-in failed: ${e.localizedMessage}")
-                }
-        } catch (e: Exception) {
-            Log.e(TAG, "Exception in signInWithGoogle: ${e.message}")
+        binding.login.setOnClickListener {
+            validateAndRegister()
         }
-    }
 
-    private fun handleSignInResult(result: ActivityResult) {
-        Log.d(TAG, "handleSignInResult triggered")
+        binding.signup.setOnClickListener {
+            findNavController().navigate(R.id.signupFragment)
+        }
 
-        if (result.resultCode == Activity.RESULT_OK) {
-            try {
-                val credential = oneTapClient.getSignInCredentialFromIntent(result.data)
-                val idToken = credential.googleIdToken
-                when {
-                    idToken != null -> {
-                        Log.d(TAG, "ID Token received: $idToken")
-                        onGoogleSignInSuccess(credential.id, credential.displayName)
-                    }
-                    else -> {
-                        Log.w(TAG, "No ID token!")
+        binding.password.setOnTouchListener { v, event ->
+            if (event.action == MotionEvent.ACTION_UP) {
+                val drawableRight = binding.password.compoundDrawables[2]
+                if (drawableRight != null) {
+                    // Calculate clickable area (right side minus padding)
+                    val clickableStart = binding.password.width -
+                            binding.password.paddingRight -
+                            drawableRight.bounds.width()
+
+                    if (event.x >= clickableStart) {
+                        togglePasswordVisibility(binding.password)
+                        return@setOnTouchListener true
                     }
                 }
-            } catch (e: ApiException) {
-                onGoogleSignInFailure(e)
             }
-        } else {
-            Log.w(TAG, "Sign-in canceled or failed. resultCode=${result.resultCode}")
+            false
         }
     }
 
-    private fun onGoogleSignInSuccess(email: String?, displayName: String?) {
-        Log.d(TAG, "Sign-in successful: $email, $displayName")
-        Toast.makeText(requireContext(), "$email", Toast.LENGTH_SHORT).show()
-        findNavController().navigate(R.id.homeFragment)
+    private fun validateAndRegister() {
+        val email = binding.email.text.toString().trim()
+        val password = binding.password.text.toString().trim()
+
+        when {
+            email.isEmpty() -> {
+                binding.email.error = "Please enter your email"
+                binding.email.requestFocus()
+            }
+
+            password.isEmpty() -> {
+                binding.password.error = "Please enter a password"
+                binding.password.requestFocus()
+            }
+
+            else -> {
+                authViewModel.performApiLogin(email, password)
+            }
+        }
     }
 
-    private fun onGoogleSignInFailure(e: Exception) {
-        Log.w(TAG, "Sign-in failed: ${e.localizedMessage}", e)
-        Toast.makeText(requireContext(), "Sign-in failed: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+
+    private fun togglePasswordVisibility(editText: EditText) {
+        val isCurrentlyHidden = editText.inputType ==
+                (InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD)
+
+        if (isCurrentlyHidden) {
+            // Show password
+            editText.inputType =
+                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            editText.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_hide_pass, 0)
+        } else {
+            // Hide password
+            editText.inputType =
+                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            editText.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_show_pass, 0)
+        }
+
+        // Move cursor to the end
+        editText.setSelection(editText.text.length)
+    }
+
+    private fun observeSignInState() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                authViewModel.signInState.collect { state ->
+                    when (state) {
+                        is SignInUiState.Idle -> {
+                        }
+
+                        is SignInUiState.Loading -> {
+                            Log.d(TAG, "Sign-in state: Loading...")
+                            // Show loading indicator
+                            progressDialog?.show()
+                        }
+
+                        is SignInUiState.GoogleSignInFlow -> {
+                            Log.d(TAG, "Sign-in state: Launching One Tap UI")
+                            val intentSenderRequest =
+                                IntentSenderRequest.Builder(state.beginSignInResult.pendingIntent.intentSender)
+                                    .build()
+                            oneTapResultLauncher.launch(intentSenderRequest)
+                            progressDialog?.dismiss()
+                        }
+
+                        is SignInUiState.Success -> {
+                            Log.d(
+                                TAG,
+                                "Sign-in successful: Email=${state.email}, DisplayName=${state.displayName}, Token=${state.idToken}"
+                            )
+                            Toast.makeText(
+                                requireContext(),
+                                "Welcome, ${state.displayName ?: state.email}",
+                                Toast.LENGTH_LONG
+                            ).show()
+
+                            val navOptions = NavOptions.Builder()
+                                .setPopUpTo(R.id.loginFragment, true)
+                                .build()
+                            hideKeyboard()
+                            findNavController().navigate(R.id.homeFragment, null, navOptions)
+                            authViewModel.clearUserData()
+                            progressDialog?.dismiss()
+                            // Optionally hide loading indicator
+                        }
+
+                        is SignInUiState.Error -> {
+                            Log.e(TAG, "Sign-in error: ${state.message}")
+                            Toast.makeText(
+                                requireContext(),
+                                "Sign-in failed: ${state.message}",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            // Optionally hide loading indicator
+
+                            progressDialog?.dismiss()
+                        }
+
+                        else -> {}
+                    }
+                }
+            }
+        }
+    }
+
+    fun hideKeyboard() {
+        val imm = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(view?.windowToken, 0)
     }
 
     override fun onDestroy() {

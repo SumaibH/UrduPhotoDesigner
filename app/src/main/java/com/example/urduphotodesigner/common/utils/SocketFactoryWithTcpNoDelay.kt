@@ -1,4 +1,4 @@
-package com.example.urduphotodesigner.common
+package com.example.urduphotodesigner.common.utils
 
 import java.net.InetAddress
 import java.net.Socket

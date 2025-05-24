@@ -1,15 +1,13 @@
 package com.example.urduphotodesigner.ui.editor.panels.text.fonts
 
-import android.graphics.Typeface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import com.example.urduphotodesigner.common.DownloadState
+import com.example.urduphotodesigner.common.utils.DownloadState
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.data.model.FontEntity
 import com.example.urduphotodesigner.databinding.FragmentFontsListBinding

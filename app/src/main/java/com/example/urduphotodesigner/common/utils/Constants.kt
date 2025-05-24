@@ -1,4 +1,4 @@
-package com.example.urduphotodesigner.common
+package com.example.urduphotodesigner.common.utils
 
 import android.graphics.drawable.GradientDrawable
 import com.example.urduphotodesigner.common.canvas.model.ColorItem
@@ -8,6 +8,7 @@ import androidx.core.graphics.toColorInt
 object Constants {
 
     const val BASE_URL = "https://dashboard.urdufonts.com/api/"
+    const val X_API_KEY = "21|kxJ7qhe4kjxjhfzQs4JWG34Pv8DeuIy0ZACTFe7Y5672dc67"
     const val BASE_URL_GLIDE = "https://dashboard.urdufonts.com/"
     var TEMPLATE = ""
     val colorList = listOf(

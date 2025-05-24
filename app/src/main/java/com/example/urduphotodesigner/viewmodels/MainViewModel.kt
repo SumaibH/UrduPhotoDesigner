@@ -1,12 +1,11 @@
 package com.example.urduphotodesigner.viewmodels
 
-import android.graphics.Typeface
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.urduphotodesigner.common.Constants
-import com.example.urduphotodesigner.common.DownloadState
-import com.example.urduphotodesigner.common.Response
+import com.example.urduphotodesigner.common.utils.Constants
+import com.example.urduphotodesigner.common.utils.DownloadState
+import com.example.urduphotodesigner.common.sealed.Response
 import com.example.urduphotodesigner.data.model.FontEntity
 import com.example.urduphotodesigner.data.model.ImageEntity
 import com.example.urduphotodesigner.domain.repo.FontRepository

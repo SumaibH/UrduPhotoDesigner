@@ -1,19 +1,26 @@
 package com.example.urduphotodesigner.di
 
 import android.content.Context
-import com.example.urduphotodesigner.common.Constants
-import com.example.urduphotodesigner.common.SocketFactoryWithTcpNoDelay
+import com.example.urduphotodesigner.R
+import com.example.urduphotodesigner.common.utils.Constants
+import com.example.urduphotodesigner.common.utils.SocketFactoryWithTcpNoDelay
+import com.example.urduphotodesigner.common.datastore.PreferenceDataStoreAPI
 import com.example.urduphotodesigner.common.datastore.PreferencesDataStoreHelper
 import com.example.urduphotodesigner.data.local.AppDatabase
 import com.example.urduphotodesigner.data.remote.EndPointsInterface
+import com.example.urduphotodesigner.data.repository.AuthRepositoryImpl
 import com.example.urduphotodesigner.data.repository.FetchFontsRepoImpl
 import com.example.urduphotodesigner.data.repository.FetchImagesRepoImpl
 import com.example.urduphotodesigner.data.repository.FontsRepoImpl
 import com.example.urduphotodesigner.data.repository.ImagesRepoImpl
+import com.example.urduphotodesigner.domain.repo.AuthRepository
 import com.example.urduphotodesigner.domain.repo.FetchFontsRepo
 import com.example.urduphotodesigner.domain.repo.FetchImagesRepo
 import com.example.urduphotodesigner.domain.repo.FontsRepo
 import com.example.urduphotodesigner.domain.repo.ImagesRepo
+import com.google.android.gms.auth.api.identity.BeginSignInRequest
+import com.google.android.gms.auth.api.identity.Identity
+import com.google.android.gms.auth.api.identity.SignInClient
 import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
@@ -107,5 +114,41 @@ object AppModule {
     fun provideImagesRepo(appDatabase: AppDatabase): ImagesRepo {
         return ImagesRepoImpl(appDatabase)
     }
+    @Provides
+    @Singleton
+    fun provideSignInClient(@ApplicationContext context: Context): SignInClient {
+        return Identity.getSignInClient(context)
+    }
 
+    @Provides
+    @Singleton
+    fun provideBeginSignInRequest(@ApplicationContext context: Context): BeginSignInRequest {
+        return BeginSignInRequest.builder()
+            .setGoogleIdTokenRequestOptions(
+                BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
+                    .setSupported(true)
+                    .setServerClientId(context.getString(R.string.server_client_id)) // Ensure this is correctly set in your strings.xml
+                    .setFilterByAuthorizedAccounts(false)
+                    .build()
+            )
+            .setAutoSelectEnabled(false)
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun providePreferenceDataStoreAPI(@ApplicationContext context: Context): PreferenceDataStoreAPI {
+        return PreferencesDataStoreHelper(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAuthRepository(
+        oneTapClient: SignInClient,
+        signInRequest: BeginSignInRequest,
+        preferenceDataStoreAPI: PreferenceDataStoreAPI,
+        authApiService: EndPointsInterface
+    ): AuthRepository {
+        return AuthRepositoryImpl(oneTapClient, signInRequest, preferenceDataStoreAPI, authApiService)
+    }
 }

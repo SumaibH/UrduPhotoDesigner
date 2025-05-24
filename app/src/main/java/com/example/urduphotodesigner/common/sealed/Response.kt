@@ -1,4 +1,4 @@
-package com.example.urduphotodesigner.common
+package com.example.urduphotodesigner.common.sealed
 
 sealed class Response<out T> {
     data object Loading : Response<Nothing>()

@@ -56,4 +56,6 @@
     <string name="search_here">Search here</string>
     <string name="type_here">Type here</string>
     <string name="continue_with_google">Continue with Google</string>
+    <string name="email">Email</string>
+    <string name="name">Name</string>
 </resources>

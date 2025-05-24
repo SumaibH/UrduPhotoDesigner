@@ -50,13 +50,40 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/email_username"
+        android:text="@string/name"
         app:layout_constraintStart_toEndOf="@id/startGuide"
         app:layout_constraintTop_toBottomOf="@id/title"
         android:textSize="@dimen/_10sdp"
         android:fontFamily="@font/medium"
         android:textColor="@color/black"
         android:layout_marginTop="@dimen/_25sdp"
+        android:id="@+id/nameTV"/>
+
+    <EditText
+        android:layout_width="0dp"
+        android:layout_height="@dimen/_40sdp"
+        app:layout_constraintStart_toEndOf="@id/startGuide"
+        app:layout_constraintEnd_toStartOf="@id/endGuide"
+        app:layout_constraintTop_toBottomOf="@id/nameTV"
+        android:background="@drawable/edit_bg_stroke"
+        android:fontFamily="@font/regular"
+        android:textColor="@color/black"
+        android:textSize="@dimen/_10sdp"
+        android:maxLines="1"
+        android:padding="@dimen/_10sdp"
+        android:inputType="textPersonName"
+        android:id="@+id/name"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/email"
+        app:layout_constraintStart_toEndOf="@id/startGuide"
+        app:layout_constraintTop_toBottomOf="@id/name"
+        android:textSize="@dimen/_10sdp"
+        android:fontFamily="@font/medium"
+        android:textColor="@color/black"
+        android:layout_marginTop="@dimen/_10sdp"
         android:id="@+id/emailTV"/>
 
     <EditText
@@ -144,7 +171,7 @@
         android:textColor="@color/whiteText"
         android:gravity="center"
         android:paddingVertical="@dimen/_10sdp"
-        android:id="@+id/verifyEmail"/>
+        android:id="@+id/register"/>
 
     <LinearLayout
         android:layout_width="0dp"
@@ -173,6 +200,6 @@
             android:fontFamily="@font/medium"
             android:textColor="@color/appColor"
             android:paddingVertical="@dimen/_10sdp"
-            android:id="@+id/signup"/>
+            android:id="@+id/login"/>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

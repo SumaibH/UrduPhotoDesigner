@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.core.graphics.toColorInt
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import com.example.urduphotodesigner.common.Constants
+import com.example.urduphotodesigner.common.utils.Constants
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.databinding.FragmentColorsListBinding
 import com.example.urduphotodesigner.ui.editor.panels.text.colors.ColorsAdapter

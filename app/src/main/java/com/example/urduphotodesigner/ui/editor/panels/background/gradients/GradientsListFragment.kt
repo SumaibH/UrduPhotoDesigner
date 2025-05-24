@@ -6,7 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import com.example.urduphotodesigner.common.Constants
+import com.example.urduphotodesigner.common.utils.Constants
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.databinding.FragmentColorsListBinding
 import dagger.hilt.android.AndroidEntryPoint

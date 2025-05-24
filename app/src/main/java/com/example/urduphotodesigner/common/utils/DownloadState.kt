@@ -1,4 +1,4 @@
-package com.example.urduphotodesigner.common
+package com.example.urduphotodesigner.common.utils
 
 import com.example.urduphotodesigner.data.model.FontEntity
 import java.io.File

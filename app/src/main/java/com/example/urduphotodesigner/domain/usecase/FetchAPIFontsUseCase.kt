@@ -1,6 +1,6 @@
 package com.example.urduphotodesigner.domain.usecase
 
-import com.example.urduphotodesigner.common.Response
+import com.example.urduphotodesigner.common.sealed.Response
 import com.example.urduphotodesigner.data.model.FontsResponse
 import com.example.urduphotodesigner.domain.repo.FetchFontsRepo
 import kotlinx.coroutines.flow.Flow

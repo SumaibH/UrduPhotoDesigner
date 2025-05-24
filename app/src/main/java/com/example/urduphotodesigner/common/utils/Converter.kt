@@ -1,4 +1,4 @@
-package com.example.urduphotodesigner.common
+package com.example.urduphotodesigner.common.utils
 
 object Converter {
     fun pxToInches(px: Float): Float = px / 96f

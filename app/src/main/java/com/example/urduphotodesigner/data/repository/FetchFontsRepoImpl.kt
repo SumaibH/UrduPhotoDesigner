@@ -2,7 +2,7 @@ package com.example.urduphotodesigner.data.repository
 
 import android.content.ContentValues.TAG
 import android.util.Log
-import com.example.urduphotodesigner.common.Response
+import com.example.urduphotodesigner.common.sealed.Response
 import com.example.urduphotodesigner.data.model.FontsResponse
 import com.example.urduphotodesigner.data.remote.EndPointsInterface
 import com.example.urduphotodesigner.domain.repo.FetchFontsRepo
