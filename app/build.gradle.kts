@@ -112,4 +112,7 @@ dependencies {
     //Google Sign in
     implementation(libs.play.services.auth)
 
+    //ColorPicker
+    implementation(libs.colorpicker)
+
 }

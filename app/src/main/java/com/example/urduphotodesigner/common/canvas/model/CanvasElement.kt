@@ -10,7 +10,8 @@ import android.graphics.Typeface
 import android.text.TextPaint
 import androidx.core.content.res.ResourcesCompat
 import com.example.urduphotodesigner.R
-import com.example.urduphotodesigner.common.enums.ElementType
+import com.example.urduphotodesigner.common.canvas.enums.ElementType
+import com.example.urduphotodesigner.common.canvas.sealed.ImageFilter
 import java.io.Serializable
 import java.util.UUID
 
@@ -27,6 +28,7 @@ data class CanvasElement(
     @Transient var bitmap: Bitmap? = null,
     // Add bitmapData to store the Base64 encoded string of the bitmap for serialization
     var bitmapData: String? = null,
+    var imageFilter: ImageFilter? = null,
     var x: Float = 0f,
     var y: Float = 0f,
     var scale: Float = 1f,

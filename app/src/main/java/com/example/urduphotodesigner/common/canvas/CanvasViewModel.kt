@@ -18,9 +18,10 @@ import com.example.urduphotodesigner.common.canvas.model.CanvasSize
 import com.example.urduphotodesigner.common.canvas.model.CanvasTemplate
 import com.example.urduphotodesigner.common.canvas.model.ExportOptions
 import com.example.urduphotodesigner.common.canvas.model.ExportResolution
-import com.example.urduphotodesigner.common.enums.ElementType
+import com.example.urduphotodesigner.common.canvas.enums.ElementType
 import com.example.urduphotodesigner.common.canvas.sealed.BatchedCanvasAction
 import com.example.urduphotodesigner.common.canvas.sealed.CanvasAction
+import com.example.urduphotodesigner.common.canvas.sealed.ImageFilter
 import com.example.urduphotodesigner.data.model.FontEntity
 import com.example.urduphotodesigner.domain.usecase.GetFontsUseCase
 import com.google.gson.Gson
@@ -83,9 +84,12 @@ class CanvasViewModel @Inject constructor(
     private val _canvasSize = MutableLiveData<CanvasSize>()
     val canvasSize: LiveData<CanvasSize> = _canvasSize
 
+    private val _currentImageFilter = MutableLiveData<ImageFilter?>(null)
+    val currentImageFilter: LiveData<ImageFilter?> = _currentImageFilter
+
     private var selectedElement: CanvasElement? = null
     private var currentBatchAction: BatchedCanvasAction? = null
-    private var _isExplicitFontChange = false
+    private var _isExplicitChange = false
 
     private val availableResolutions = listOf(
         ExportResolution("Original Size", 0, 0, 1f), // Width and Height 0 indicate use canvas's current size
@@ -459,6 +463,15 @@ class CanvasViewModel @Inject constructor(
                     _currentTextSize.value = selectedElementCopy.paintTextSize
                     _currentTextAlignment.value = selectedElementCopy.paintTextAlign
                     _currentTextOpacity.value = selectedElementCopy.paintAlpha
+                    _currentImageFilter.value = null
+                }else if (element.type == ElementType.IMAGE) {
+                    _currentImageFilter.value = selectedElementCopy.imageFilter
+                    // Clear text properties if image is selected
+                    _currentFont.value = null
+                    _currentTextColor.value = Color.BLACK
+                    _currentTextSize.value = 40f
+                    _currentTextAlignment.value = Paint.Align.CENTER
+                    _currentTextOpacity.value = selectedElementCopy.paint.alpha
                 }
             }
         } else {
@@ -468,6 +481,7 @@ class CanvasViewModel @Inject constructor(
             _currentTextSize.value = 40f
             _currentTextAlignment.value = Paint.Align.CENTER
             _currentTextOpacity.value = 255
+            _currentImageFilter.value = null
         }
 
         this.selectedElement = element // Update the local reference
@@ -523,6 +537,7 @@ class CanvasViewModel @Inject constructor(
             _currentTextSize.value = firstSelectedTextElement.paintTextSize
             _currentTextAlignment.value = firstSelectedTextElement.paintTextAlign
             _currentTextOpacity.value = firstSelectedTextElement.paintAlpha
+            _currentImageFilter.value = null
         } else {
             // If no text element is selected, reset current text properties to defaults
             _currentFont.value = null
@@ -530,6 +545,12 @@ class CanvasViewModel @Inject constructor(
             _currentTextSize.value = 40f
             _currentTextAlignment.value = Paint.Align.CENTER
             _currentTextOpacity.value = 255
+        }
+        val firstSelectedImageElement = selectedListFromCanvas.firstOrNull { it.type == ElementType.IMAGE }
+        if (firstSelectedImageElement != null) {
+            _currentImageFilter.value = firstSelectedImageElement.imageFilter
+        } else if (firstSelectedTextElement == null){ // Only clear if no image or text element is selected
+            _currentImageFilter.value = null
         }
     }
 
@@ -676,7 +697,7 @@ class CanvasViewModel @Inject constructor(
     }
 
     fun setFont(fontEntity: FontEntity, isExplicit: Boolean = true) {
-        _isExplicitFontChange = isExplicit
+        _isExplicitChange = isExplicit
         val currentList = _canvasElements.value?.toMutableList() ?: mutableListOf()
         val affectedElementsData = mutableListOf<Pair<String, String?>>()
         var changed = false
@@ -726,13 +747,13 @@ class CanvasViewModel @Inject constructor(
             _canvasElements.value = updatedList
             _canvasActions.push(CanvasAction.SetFont(fontEntity, affectedElementsData))
             _redoStack.clear()
-            _isExplicitFontChange = false
+            _isExplicitChange = false
             notifyUndoRedoChanged()
         }
     }
 
-    fun isExplicitFontChange(): Boolean {
-        return _isExplicitFontChange
+    fun isExplicitChange(): Boolean {
+        return _isExplicitChange
     }
 
     fun setTextColor(color: Int) {
@@ -1003,6 +1024,51 @@ class CanvasViewModel @Inject constructor(
         )
         _redoStack.clear()
         notifyUndoRedoChanged()
+    }
+
+    /**
+     * Applies an image filter to the specified image element.
+     * @param elementId The ID of the CanvasElement to apply the filter to.
+     * @param newFilter The ImageFilter to apply.
+     */
+    fun applyImageFilter(elementId: String, newFilter: ImageFilter?, isExplicit: Boolean = true) {
+        _isExplicitChange = isExplicit
+        val currentList = _canvasElements.value?.toMutableList() ?: mutableListOf()
+        val targetElement = currentList.find { it.id == elementId && it.type == ElementType.IMAGE }
+
+        if (targetElement != null) {
+            val oldFilter = targetElement.imageFilter // Store the current filter for undo
+            if (oldFilter != newFilter) { // Only apply if the filter is actually changing
+                val context = targetElement.context // Get context for copying
+
+                // Create a copy of the element with the new filter
+                val updatedElement = targetElement.copy(
+                    imageFilter = newFilter,
+                    context = context // Re-apply context
+                )
+
+                _canvasElements.value = currentList.map {
+                    if (it.id == updatedElement.id) updatedElement else it
+                }
+
+                // Update the current image filter LiveData if this element is selected
+                if (updatedElement.isSelected) {
+                    _currentImageFilter.value = newFilter
+                }
+
+                // Push the action to the undo stack
+                _canvasActions.push(
+                    CanvasAction.ApplyImageFilter(
+                        elementId = elementId,
+                        newFilter = newFilter,
+                        oldFilter = oldFilter
+                    )
+                )
+                _redoStack.clear()
+                _isExplicitChange = false
+                notifyUndoRedoChanged()
+            }
+        }
     }
 
     fun removeElement(element: CanvasElement) {
@@ -1495,6 +1561,19 @@ class CanvasViewModel @Inject constructor(
 
             is CanvasAction.SetCanvasSize -> {
                 _canvasSize.value = if (isRedo) action.newSize else action.oldSize
+            }
+
+            is CanvasAction.ApplyImageFilter -> {
+                val currentList = _canvasElements.value ?: emptyList()
+                _canvasElements.value = currentList.map {
+                    if (it.id == action.elementId) {
+                        it.copy(imageFilter = if (isRedo) action.oldFilter else action.newFilter, context = context)
+                    } else it
+                }
+                // Update the current image filter LiveData if it's the selected element
+                _canvasElements.value?.find { it.id == action.elementId && it.isSelected }?.let {
+                    _currentImageFilter.value = if (isRedo) action.oldFilter else action.newFilter
+                }
             }
         }
 

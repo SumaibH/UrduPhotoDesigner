@@ -20,7 +20,38 @@ sealed class CanvasAction {
         val positions: FloatArray?,
         val previousColors: IntArray?,
         val previousPositions: FloatArray?
-    ) : CanvasAction()
+    ) : CanvasAction() {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as SetBackgroundGradient
+
+            if (!colors.contentEquals(other.colors)) return false
+            if (positions != null) {
+                if (other.positions == null) return false
+                if (!positions.contentEquals(other.positions)) return false
+            } else if (other.positions != null) return false
+            if (previousColors != null) {
+                if (other.previousColors == null) return false
+                if (!previousColors.contentEquals(other.previousColors)) return false
+            } else if (other.previousColors != null) return false
+            if (previousPositions != null) {
+                if (other.previousPositions == null) return false
+                if (!previousPositions.contentEquals(other.previousPositions)) return false
+            } else if (other.previousPositions != null) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = colors.contentHashCode()
+            result = 31 * result + (positions?.contentHashCode() ?: 0)
+            result = 31 * result + (previousColors?.contentHashCode() ?: 0)
+            result = 31 * result + (previousPositions?.contentHashCode() ?: 0)
+            return result
+        }
+    }
 
     data class AddSticker(val sticker: CanvasElement) : CanvasAction()
     data class AddText(val text: String, val element: CanvasElement) : CanvasAction()
@@ -56,4 +87,10 @@ sealed class CanvasAction {
     ) : CanvasAction()
 
     data class SetCanvasSize(val newSize: CanvasSize, val oldSize: CanvasSize) : CanvasAction()
+
+    data class ApplyImageFilter(
+        val elementId: String,
+        val newFilter: ImageFilter?,
+        val oldFilter: ImageFilter?
+    ) : CanvasAction()
 }

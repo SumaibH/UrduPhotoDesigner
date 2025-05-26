@@ -1,15 +1,20 @@
 package com.example.urduphotodesigner.ui.editor.panels.text.colors
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.toColorInt
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.utils.Constants
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.databinding.FragmentColorsListBinding
+import com.flask.colorpicker.ColorPickerView
+import com.flask.colorpicker.builder.ColorPickerDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -35,15 +40,38 @@ class ColorsListFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        colorsAdapter = ColorsAdapter(Constants.colorList) { color ->
+        colorsAdapter = ColorsAdapter(Constants.colorList, { color ->
             viewModel.setTextColor(color.colorCode.toColorInt())
-            // No need to manually update adapter.selectedColor or call notifyDataSetChanged() here.
-            // The observer in initObservers() will handle updating the adapter's state
-            // and triggering the precise UI update.
+        }) {
+            // This is the lambda for when the color picker is clicked
+            openColorPickerDialog()
         }
         binding.colors.apply {
             adapter = colorsAdapter
         }
+    }
+
+    private fun openColorPickerDialog() {
+        // Get the current text color from the ViewModel to set as the initial color in the picker
+        val initialColor = viewModel.currentTextColor.value ?: Color.BLACK
+
+        ColorPickerDialogBuilder
+            .with(requireContext())
+            .setTitle("Choose Color")
+            .initialColor(initialColor)
+            .wheelType(ColorPickerView.WHEEL_TYPE.CIRCLE) // You can choose different wheel types
+            .density(6) // Density of the color wheel
+            .lightnessSliderOnly() // If you want only lightness slider
+            .setPositiveButton("Select") { _, selectedColor, _ ->
+                viewModel.setTextColor(selectedColor)
+            }
+            .setNegativeButton("Cancel") { _, _ ->
+                // Do nothing or handle cancellation
+            }
+            .showColorEdit(true) // Show hex/rgb editor
+            .setColorEditTextColor(ContextCompat.getColor(requireContext(), R.color.black)) // Set text color of the editor
+            .build()
+            .show()
     }
 
     private fun initObservers() {

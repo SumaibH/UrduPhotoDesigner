@@ -30,4 +30,9 @@
         android:name="com.example.urduphotodesigner.ui.editor.panels.layers.LayersFragment"
         android:label="fragment_layers"
         tools:layout="@layout/fragment_layers" />
+    <fragment
+        android:id="@+id/filtersFragment"
+        android:name="com.example.urduphotodesigner.ui.editor.panels.filters.FiltersFragment"
+        android:label="fragment_filters"
+        tools:layout="@layout/fragment_filters" />
 </navigation>

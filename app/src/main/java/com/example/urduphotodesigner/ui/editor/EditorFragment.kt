@@ -38,9 +38,10 @@ import com.example.urduphotodesigner.common.utils.Converter.cmToPx
 import com.example.urduphotodesigner.common.utils.Converter.inchesToPx
 import com.example.urduphotodesigner.common.canvas.CanvasManager
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
+import com.example.urduphotodesigner.common.canvas.enums.ElementType
 import com.example.urduphotodesigner.common.canvas.model.CanvasElement
 import com.example.urduphotodesigner.common.canvas.model.CanvasSize
-import com.example.urduphotodesigner.common.enums.UnitType
+import com.example.urduphotodesigner.common.canvas.enums.UnitType
 import com.example.urduphotodesigner.common.views.SizedCanvasView
 import com.example.urduphotodesigner.databinding.BottomSheetExportSettingsBinding
 import com.example.urduphotodesigner.databinding.FragmentEditorBinding
@@ -185,7 +186,7 @@ class EditorFragment : Fragment() {
         }
 
         viewModel.currentFont.observe(viewLifecycleOwner) { font ->
-            if (font != null && viewModel.isExplicitFontChange()) {
+            if (font != null && viewModel.isExplicitChange()) {
                 canvasManager.setFont(font)
             }
         }
@@ -200,6 +201,12 @@ class EditorFragment : Fragment() {
 
         viewModel.currentTextAlignment.observe(viewLifecycleOwner) { alignment ->
             canvasManager.setTextAlignment(alignment!!)
+        }
+
+        viewModel.currentImageFilter.observe(viewLifecycleOwner) { filter ->
+            if (filter != null && viewModel.isExplicitChange()){
+                canvasManager.applyImageFilter(filter)
+            }
         }
 
         viewModel.currentTextOpacity.observe(viewLifecycleOwner) { opacity ->
@@ -223,40 +230,6 @@ class EditorFragment : Fragment() {
             UnitType.CENTIMETERS -> cmToPx(canvasSize.height)
             UnitType.PIXELS -> canvasSize.height.toInt()
         }
-
-        sizedCanvasView = SizedCanvasView(
-            requireContext(),
-            canvasWidth = widthPx,
-            canvasHeight = heightPx,
-            onEditTextRequested = { element ->
-                showTextEditDialog(element)
-            },
-            onElementChanged = { canvasElement ->
-                viewModel.canvasElements.value?.find { it.id == canvasElement.id }?.let {
-                    viewModel.updateElement(canvasElement)
-                }
-            },
-            onElementRemoved = { canvasElement ->
-                viewModel.canvasElements.value?.find { it.id == canvasElement.id }?.let {
-                    viewModel.removeElement(it)
-                }
-            }, onElementSelected = { elements ->
-                viewModel.setSelectedElementsFromLayers(elements)
-                viewModel.onCanvasSelectionChanged(elements)
-
-                binding.seekBar.visibility = View.INVISIBLE
-            },
-            onEndBatchUpdate = { elementId ->
-                viewModel.endBatchUpdate(elementId)
-            },
-            onStartBatchUpdate = { elementId, actionType ->
-                viewModel.startBatchUpdate(elementId, actionType)
-            }
-        ).apply {
-            binding.canvasContainer.addView(this)
-        }
-
-        canvasManager = CanvasManager(sizedCanvasView)
 
         // Setup navigation
         val navHostFragment =
@@ -284,6 +257,46 @@ class EditorFragment : Fragment() {
             }
             true
         }
+
+        sizedCanvasView = SizedCanvasView(
+            requireContext(),
+            canvasWidth = widthPx,
+            canvasHeight = heightPx,
+            onEditTextRequested = { element ->
+                if (element.type == ElementType.IMAGE){
+                    viewModel.canvasElements.value?.find { it.id == element.id }?.let {
+                        navController.navigate(R.id.filtersFragment)
+                    }
+                }else{
+                    showTextEditDialog(element)
+                }
+            },
+            onElementChanged = { canvasElement ->
+                viewModel.canvasElements.value?.find { it.id == canvasElement.id }?.let {
+                    viewModel.updateElement(canvasElement)
+                }
+            },
+            onElementRemoved = { canvasElement ->
+                viewModel.canvasElements.value?.find { it.id == canvasElement.id }?.let {
+                    viewModel.removeElement(it)
+                }
+            }, onElementSelected = { elements ->
+                viewModel.setSelectedElementsFromLayers(elements)
+                viewModel.onCanvasSelectionChanged(elements)
+
+                binding.seekBar.visibility = View.INVISIBLE
+            },
+            onEndBatchUpdate = { elementId ->
+                viewModel.endBatchUpdate(elementId)
+            },
+            onStartBatchUpdate = { elementId, actionType ->
+                viewModel.startBatchUpdate(elementId, actionType)
+            }
+        ).apply {
+            binding.canvasContainer.addView(this)
+        }
+
+        canvasManager = CanvasManager(sizedCanvasView)
 
         binding.undo.setOnClickListener { viewModel.undo() }
         binding.redo.setOnClickListener { viewModel.redo() }

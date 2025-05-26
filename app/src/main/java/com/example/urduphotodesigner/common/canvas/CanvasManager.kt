@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.Paint
 import android.graphics.Typeface
 import com.example.urduphotodesigner.common.canvas.model.CanvasElement
+import com.example.urduphotodesigner.common.canvas.sealed.ImageFilter
 import com.example.urduphotodesigner.common.views.SizedCanvasView
 import com.example.urduphotodesigner.data.model.FontEntity
 
@@ -23,4 +24,7 @@ class CanvasManager(private val canvasView: SizedCanvasView) {
     fun removeSelectedElement() { canvasView.removeSelectedElement() }
     fun clearCanvas() { canvasView.clearCanvas() }
     fun syncElements(newElements: List<CanvasElement>) { canvasView.syncElements(newElements) }
+    fun applyImageFilter(filter: ImageFilter?) {
+        canvasView.applyImageFilter(filter)
+    }
 }

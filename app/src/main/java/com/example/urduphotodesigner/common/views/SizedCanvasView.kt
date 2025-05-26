@@ -5,6 +5,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
 import android.graphics.DashPathEffect
 import android.graphics.LinearGradient
 import android.graphics.Matrix
@@ -25,8 +27,8 @@ import androidx.core.graphics.withTranslation
 import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.canvas.model.CanvasElement
 import com.example.urduphotodesigner.common.canvas.model.ExportOptions
-import com.example.urduphotodesigner.common.enums.ElementType
-import com.example.urduphotodesigner.common.enums.Mode
+import com.example.urduphotodesigner.common.canvas.enums.ElementType
+import com.example.urduphotodesigner.common.canvas.enums.Mode
 import com.example.urduphotodesigner.data.model.FontEntity
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.math.abs
@@ -34,6 +36,8 @@ import kotlin.math.atan2
 import kotlin.math.hypot
 import kotlin.math.max
 import androidx.core.graphics.withScale
+import com.example.urduphotodesigner.common.canvas.sealed.ImageFilter
+import androidx.core.graphics.withMatrix
 
 class SizedCanvasView @JvmOverloads constructor(
     context: Context,
@@ -256,6 +260,18 @@ class SizedCanvasView @JvmOverloads constructor(
         invalidate()
     }
 
+    fun applyImageFilter(filter: ImageFilter?) {
+        val elementsToFilter =
+            selectedElements.toList() // Create a copy to avoid concurrent modification
+        elementsToFilter.forEach { element ->
+            if (element != null && element.type == ElementType.IMAGE) {
+                element.imageFilter = filter
+                onElementChanged?.invoke(element) // Notify ViewModel of change
+                invalidate()
+            }
+        }
+    }
+
     fun setFont(fontEntity: FontEntity) {
         selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
             element.fontId = fontEntity.id.toString()
@@ -410,91 +426,177 @@ class SizedCanvasView @JvmOverloads constructor(
     fun exportCanvasToBitmap(options: ExportOptions): Bitmap {
         val outputWidth: Int
         val outputHeight: Int
-
-        // Determine the target output dimensions based on the selected resolution
         if (options.resolution.width == 0 && options.resolution.height == 0) {
-            // "Original Size" resolution: use canvas's current size, apply scaleFactor (which is 1f for Original Size)
-            outputWidth = (canvasWidth * options.resolution.scaleFactor).toInt()
-            outputHeight = (canvasHeight * options.resolution.scaleFactor).toInt()
+            outputWidth = width
+            outputHeight = height
         } else {
-            // Specific resolution: use the resolution's width and height directly
             outputWidth = options.resolution.width
             outputHeight = options.resolution.height
         }
 
-        val bitmap = Bitmap.createBitmap(outputWidth, outputHeight, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
+        val outputBitmap = createBitmap(outputWidth, outputHeight, Bitmap.Config.ARGB_8888)
+        val outputCanvas = Canvas(outputBitmap)
 
-        // Calculate a single uniform scale factor to maintain aspect ratio
-        // This scale factor will fit the original canvas content into the new output dimensions
-        val scaleFactor = minOf(outputWidth.toFloat() / canvasWidth, outputHeight.toFloat() / canvasHeight)
+        // Draw background
+        outputCanvas.drawRect(0f, 0f, outputWidth.toFloat(), outputHeight.toFloat(), backgroundPaint)
 
-        // Calculate translation to center the scaled content within the new bitmap
-        val scaledContentWidth = canvasWidth * scaleFactor
-        val scaledContentHeight = canvasHeight * scaleFactor
-        val translateX = (outputWidth - scaledContentWidth) / 2f
-        val translateY = (outputHeight - scaledContentHeight) / 2f
-
-        // Apply global translation and scaling to the canvas before drawing
-        canvas.translate(translateX, translateY)
-        canvas.scale(scaleFactor, scaleFactor)
-
-        // Now, draw the background and elements as if drawing on the original canvas size
-        // The translation and scaling applied above will handle fitting it into the output bitmap.
-
-        // 1. Draw background
-        backgroundImage?.let {
-            // Assuming backgroundImage is already scaled/prepared for canvasWidth x canvasHeight.
-            canvas.drawBitmap(it, 0f, 0f, null)
-        } ?: backgroundGradient?.let {
-            canvas.drawRect(
-                0f,
-                0f,
-                canvasWidth.toFloat(), // Draw at original canvas dimensions
-                canvasHeight.toFloat(),
-                backgroundPaint.apply { shader = it })
-        } ?: run {
-            canvas.drawRect(0f, 0f, canvasWidth.toFloat(), canvasHeight.toFloat(), backgroundPaint)
+        // Draw background gradient if exists
+        backgroundGradient?.let {
+            val gradientMatrix = Matrix()
+            // Scale gradient to fill the output canvas dimensions
+            gradientMatrix.setScale(
+                outputWidth.toFloat() / canvasWidth,
+                outputHeight.toFloat() / canvasHeight
+            )
+            it.setLocalMatrix(gradientMatrix)
+            outputCanvas.drawRect(0f, 0f, outputWidth.toFloat(), outputHeight.toFloat(), Paint().apply { shader = it })
         }
 
-        // 2. Draw canvas elements based on their z-index
+        // Draw background image if exists
+        backgroundImage?.let {
+            val imagePaint = Paint(Paint.ANTI_ALIAS_FLAG)
+            val srcRect = Rect(0, 0, it.width, it.height)
+            val destRect = Rect(0, 0, outputWidth, outputHeight)
+            outputCanvas.drawBitmap(it, srcRect, destRect, imagePaint)
+        }
+
+        // Calculate scaling factor for elements
+        val scaleFactorX = outputWidth.toFloat() / canvasWidth
+        val scaleFactorY = outputHeight.toFloat() / canvasHeight
+
+        // Draw elements to the output canvas
         canvasElements.sortedBy { it.zIndex }.forEach { element ->
-            // Elements' positions (x, y) and scale are relative to the original canvas dimensions.
-            // These will be correctly scaled by the global canvas.scale() and translated by canvas.translate().
-            canvas.withTranslation(element.x, element.y) {
-                rotate(element.rotation)
-                scale(element.scale, element.scale)
+            val elementMatrix = Matrix()
+            // Translate to element's scaled position
+            elementMatrix.postTranslate(element.x * scaleFactorX, element.y * scaleFactorY)
+            // Apply element's rotation
+            elementMatrix.postRotate(element.rotation)
+            // Apply element's scale (combined with canvas scale)
+            elementMatrix.postScale(element.scale * scaleFactorX, element.scale * scaleFactorY)
+
+
+            outputCanvas.withMatrix(elementMatrix) {
+                val elementPaint = Paint(element.paint) // Create a copy of the element's paint
+
+                // Apply filter to the elementPaint if it's an image
+                if (element.type == ElementType.IMAGE && element.bitmap != null) {
+                    elementPaint.colorFilter = when (element.imageFilter) {
+                        ImageFilter.Grayscale -> ColorMatrixColorFilter(ColorMatrix().apply {
+                            setSaturation(0f)
+                        })
+
+                        ImageFilter.Sepia -> ColorMatrixColorFilter(ColorMatrix().apply {
+                            set(floatArrayOf(
+                                0.393f, 0.769f, 0.189f, 0f, 0f,
+                                0.349f, 0.686f, 0.168f, 0f, 0f,
+                                0.272f, 0.534f, 0.131f, 0f, 0f,
+                                0f, 0f, 0f, 1f, 0f
+                            ))
+                        })
+
+                        ImageFilter.Invert -> ColorMatrixColorFilter(ColorMatrix().apply {
+                            set(floatArrayOf(
+                                -1f, 0f, 0f, 0f, 255f,
+                                0f, -1f, 0f, 0f, 255f,
+                                0f, 0f, -1f, 0f, 255f,
+                                0f, 0f, 0f, 1f, 0f
+                            ))
+                        })
+
+                        ImageFilter.CoolTint -> ColorMatrixColorFilter(ColorMatrix().apply {
+                            set(floatArrayOf(
+                                1.1f, 0f, 0f, 0f, -20f,  // Red decrease
+                                0f, 1f, 0f, 0f, 0f,      // Green
+                                0f, 0f, 1.3f, 0f, 20f,   // Blue boost
+                                0f, 0f, 0f, 1f, 0f
+                            ))
+                        })
+
+                        ImageFilter.WarmTint -> ColorMatrixColorFilter(ColorMatrix().apply {
+                            set(floatArrayOf(
+                                1.3f, 0f, 0f, 0f, 30f,   // Red boost
+                                0f, 1f, 0f, 0f, 0f,      // Green
+                                0f, 0f, 0.8f, 0f, -20f,  // Blue reduce
+                                0f, 0f, 0f, 1f, 0f
+                            ))
+                        })
+
+                        ImageFilter.Vintage -> ColorMatrixColorFilter(ColorMatrix().apply {
+                            set(floatArrayOf(
+                                0.9f, 0.3f, 0.1f, 0f, 5f,
+                                0.2f, 0.8f, 0.2f, 0f, 5f,
+                                0.1f, 0.2f, 0.7f, 0f, -10f,
+                                0f, 0f, 0f, 1f, 0f
+                            ))
+                        })
+
+                        ImageFilter.Film -> ColorMatrixColorFilter(ColorMatrix().apply {
+                            // High red + green, faded blue for a film-like tone
+                            set(floatArrayOf(
+                                1.2f, 0.1f, 0.1f, 0f, 15f,
+                                0.1f, 1.2f, 0.1f, 0f, 10f,
+                                0.1f, 0.1f, 0.9f, 0f, -10f,
+                                0f, 0f, 0f, 1f, 0f
+                            ))
+                        })
+
+                        ImageFilter.TealOrange -> ColorMatrixColorFilter(ColorMatrix().apply {
+                            // Teal shadows, orange highlights – a Hollywood-style grade
+                            set(floatArrayOf(
+                                1.2f, 0f, 0f, 0f, 20f,
+                                0f, 1.0f, 0f, 0f, 0f,
+                                0f, 0f, 0.8f, 0f, -10f,
+                                0f, 0f, 0f, 1f, 0f
+                            ))
+                        })
+
+                        ImageFilter.HighContrast -> ColorMatrixColorFilter(ColorMatrix().apply {
+                            set(floatArrayOf(
+                                1.5f, 0f, 0f, 0f, -50f,
+                                0f, 1.5f, 0f, 0f, -50f,
+                                0f, 0f, 1.5f, 0f, -50f,
+                                0f, 0f, 0f, 1f, 0f
+                            ))
+                        })
+
+                        ImageFilter.BlackWhite -> ColorMatrixColorFilter(ColorMatrix().apply {
+                            setSaturation(0f)
+                            val contrast = ColorMatrix().apply {
+                                set(floatArrayOf(
+                                    1.4f, 0f, 0f, 0f, -50f,
+                                    0f, 1.4f, 0f, 0f, -50f,
+                                    0f, 0f, 1.4f, 0f, -50f,
+                                    0f, 0f, 0f, 1f, 0f
+                                ))
+                            }
+                            postConcat(contrast)
+                        })
+
+                        else -> null
+                    }
+                }
 
                 when (element.type) {
                     ElementType.TEXT -> {
-                        val lines = element.text.split("\n")
-                        val fm = element.paint.fontMetrics
-                        val lineHeight = (fm.bottom - fm.top) * element.lineSpacingMultiplier
-                        val totalHeight = lineHeight * lines.size
-                        lines.forEachIndexed { i, line ->
-                            val yOffset = -totalHeight / 2 + i * lineHeight - fm.top
-                            drawText(line, 0f, yOffset, element.paint)
-                        }
+                        // Adjust text size based on export scale
+                        elementPaint.textSize = element.paintTextSize * scaleFactorX
+                        // Text is drawn centered around its (x,y)
+                        drawText(element.text, 0f, 0f, elementPaint)
                     }
 
                     ElementType.IMAGE -> {
-                        element.bitmap?.let { bmp ->
-                            val srcRect = Rect(0, 0, bmp.width, bmp.height)
-                            val dstRect = RectF(
-                                -element.getLocalContentWidth() / 2f,
-                                -element.getLocalContentHeight() / 2f,
-                                element.getLocalContentWidth() / 2f,
-                                element.getLocalContentHeight() / 2f
-                            )
-                            drawBitmap(bmp, srcRect, dstRect, element.paint)
+                        element.bitmap?.let {
+                            drawBitmap(it, -it.width / 2f, -it.height / 2f, elementPaint)
                         }
+                    }
+
+                    else -> { /* Handle other element types if necessary */
                     }
                 }
             }
         }
-        return bitmap
+        return outputBitmap
     }
-
 
     private fun checkAlignment(element: CanvasElement) {
         val centerThreshold = 5f // pixels within which we consider centered
@@ -615,6 +717,101 @@ class SizedCanvasView @JvmOverloads constructor(
                             canvas.drawText(line, 0f, yOffset, element.paint)
                         }
                     } else {
+                        element.paint.colorFilter = when (element.imageFilter) {
+                            ImageFilter.Grayscale -> ColorMatrixColorFilter(ColorMatrix().apply {
+                                setSaturation(0f)
+                            })
+
+                            ImageFilter.Sepia -> ColorMatrixColorFilter(ColorMatrix().apply {
+                                set(floatArrayOf(
+                                    0.393f, 0.769f, 0.189f, 0f, 0f,
+                                    0.349f, 0.686f, 0.168f, 0f, 0f,
+                                    0.272f, 0.534f, 0.131f, 0f, 0f,
+                                    0f, 0f, 0f, 1f, 0f
+                                ))
+                            })
+
+                            ImageFilter.Invert -> ColorMatrixColorFilter(ColorMatrix().apply {
+                                set(floatArrayOf(
+                                    -1f, 0f, 0f, 0f, 255f,
+                                    0f, -1f, 0f, 0f, 255f,
+                                    0f, 0f, -1f, 0f, 255f,
+                                    0f, 0f, 0f, 1f, 0f
+                                ))
+                            })
+
+                            ImageFilter.CoolTint -> ColorMatrixColorFilter(ColorMatrix().apply {
+                                set(floatArrayOf(
+                                    1.1f, 0f, 0f, 0f, -20f,  // Red decrease
+                                    0f, 1f, 0f, 0f, 0f,      // Green
+                                    0f, 0f, 1.3f, 0f, 20f,   // Blue boost
+                                    0f, 0f, 0f, 1f, 0f
+                                ))
+                            })
+
+                            ImageFilter.WarmTint -> ColorMatrixColorFilter(ColorMatrix().apply {
+                                set(floatArrayOf(
+                                    1.3f, 0f, 0f, 0f, 30f,   // Red boost
+                                    0f, 1f, 0f, 0f, 0f,      // Green
+                                    0f, 0f, 0.8f, 0f, -20f,  // Blue reduce
+                                    0f, 0f, 0f, 1f, 0f
+                                ))
+                            })
+
+                            ImageFilter.Vintage -> ColorMatrixColorFilter(ColorMatrix().apply {
+                                set(floatArrayOf(
+                                    0.9f, 0.3f, 0.1f, 0f, 5f,
+                                    0.2f, 0.8f, 0.2f, 0f, 5f,
+                                    0.1f, 0.2f, 0.7f, 0f, -10f,
+                                    0f, 0f, 0f, 1f, 0f
+                                ))
+                            })
+
+                            ImageFilter.Film -> ColorMatrixColorFilter(ColorMatrix().apply {
+                                // High red + green, faded blue for a film-like tone
+                                set(floatArrayOf(
+                                    1.2f, 0.1f, 0.1f, 0f, 15f,
+                                    0.1f, 1.2f, 0.1f, 0f, 10f,
+                                    0.1f, 0.1f, 0.9f, 0f, -10f,
+                                    0f, 0f, 0f, 1f, 0f
+                                ))
+                            })
+
+                            ImageFilter.TealOrange -> ColorMatrixColorFilter(ColorMatrix().apply {
+                                // Teal shadows, orange highlights – a Hollywood-style grade
+                                set(floatArrayOf(
+                                    1.2f, 0f, 0f, 0f, 20f,
+                                    0f, 1.0f, 0f, 0f, 0f,
+                                    0f, 0f, 0.8f, 0f, -10f,
+                                    0f, 0f, 0f, 1f, 0f
+                                ))
+                            })
+
+                            ImageFilter.HighContrast -> ColorMatrixColorFilter(ColorMatrix().apply {
+                                set(floatArrayOf(
+                                    1.5f, 0f, 0f, 0f, -50f,
+                                    0f, 1.5f, 0f, 0f, -50f,
+                                    0f, 0f, 1.5f, 0f, -50f,
+                                    0f, 0f, 0f, 1f, 0f
+                                ))
+                            })
+
+                            ImageFilter.BlackWhite -> ColorMatrixColorFilter(ColorMatrix().apply {
+                                setSaturation(0f)
+                                val contrast = ColorMatrix().apply {
+                                    set(floatArrayOf(
+                                        1.4f, 0f, 0f, 0f, -50f,
+                                        0f, 1.4f, 0f, 0f, -50f,
+                                        0f, 0f, 1.4f, 0f, -50f,
+                                        0f, 0f, 0f, 1f, 0f
+                                    ))
+                                }
+                                postConcat(contrast)
+                            })
+
+                            else -> null
+                        }
+
                         element.bitmap?.let {
                             canvas.drawBitmap(it, -it.width / 2f, -it.height / 2f, element.paint)
                         }
@@ -664,18 +861,18 @@ class SizedCanvasView @JvmOverloads constructor(
                     val iconMap = mutableMapOf<String, Pair<Float, Float>>()
 
                     if (selectedElements.size > 1) { // Multi-selection icons
-                        // Remove icon (top-left)
+                        // Remove icon (top-right)
                         iconMap["delete"] = Pair(
-                            combinedBounds.left - localSpacePadding,
+                            combinedBounds.right + localSpacePadding,
                             combinedBounds.top - localSpacePadding
                         )
-                        // Rotate icon (bottom-left)
-                        iconMap["rotate"] = Pair(
+                        // Resize icon (bottom-left)
+                        iconMap["resize"] = Pair(
                             combinedBounds.left - localSpacePadding,
                             combinedBounds.bottom + localSpacePadding
                         )
-                        // Resize icon (bottom-right)
-                        iconMap["resize"] = Pair(
+                        // Rotate icon (bottom-right)
+                        iconMap["rotate"] = Pair(
                             combinedBounds.right + localSpacePadding,
                             combinedBounds.bottom + localSpacePadding
                         )
@@ -691,15 +888,9 @@ class SizedCanvasView @JvmOverloads constructor(
                         matrix.postTranslate(element.x, element.y)
 
                         elementIconPositions.forEach { (iconName, position) ->
-                            // Only add "edit" icon if it's a text element
-                            if (iconName == "edit" && element.type != ElementType.TEXT) {
-                                return@forEach // Skip if it's an edit icon for non-text element
-                            }
-
                             val iconCenterInCanvasCords = floatArrayOf(position.x, position.y)
                             matrix.mapPoints(iconCenterInCanvasCords)
-                            iconMap[iconName] =
-                                Pair(iconCenterInCanvasCords[0], iconCenterInCanvasCords[1])
+                            iconMap[iconName] = Pair(iconCenterInCanvasCords[0], iconCenterInCanvasCords[1])
                         }
                     }
 
@@ -764,7 +955,7 @@ class SizedCanvasView @JvmOverloads constructor(
                     bounds.contains(touchPoint[0], touchPoint[1])
                 }
 
-            if (touchedElement != null && touchedElement.type == ElementType.TEXT) {
+            if (touchedElement != null) {
                 // Deselect all existing elements before selecting the new one
                 canvasElements.forEach { it.isSelected = false }
                 selectedElements.clear() // Clear internal selected list as well
@@ -818,22 +1009,22 @@ class SizedCanvasView @JvmOverloads constructor(
                     val globalIconRegions = mutableMapOf<String, RectF>()
 
                     if (selectedElements.size > 1) { // Multi-selection icon hit areas
-                        // Delete icon (top-left of combined bounds)
+                        // Delete icon (top-right of combined bounds)
                         globalIconRegions["delete"] = RectF(
-                            combinedBounds.left - localSpacePadding - adjustedIconHitSize / 2f,
+                            combinedBounds.right + localSpacePadding - adjustedIconHitSize / 2f,
                             combinedBounds.top - localSpacePadding - adjustedIconHitSize / 2f,
-                            combinedBounds.left - localSpacePadding + adjustedIconHitSize / 2f,
+                            combinedBounds.right + localSpacePadding + adjustedIconHitSize / 2f,
                             combinedBounds.top - localSpacePadding + adjustedIconHitSize / 2f
                         )
-                        // Rotate icon (bottom-left of combined bounds)
-                        globalIconRegions["rotate"] = RectF(
+                        // Resize icon (bottom-left of combined bounds)
+                        globalIconRegions["resize"] = RectF(
                             combinedBounds.left - localSpacePadding - adjustedIconHitSize / 2f,
                             combinedBounds.bottom + localSpacePadding - adjustedIconHitSize / 2f,
                             combinedBounds.left - localSpacePadding + adjustedIconHitSize / 2f,
                             combinedBounds.bottom + localSpacePadding + adjustedIconHitSize / 2f
                         )
-                        // Resize icon (bottom-right of combined bounds)
-                        globalIconRegions["resize"] = RectF(
+                        // Rotate icon (bottom-right of combined bounds)
+                        globalIconRegions["rotate"] = RectF(
                             combinedBounds.right + localSpacePadding - adjustedIconHitSize / 2f,
                             combinedBounds.bottom + localSpacePadding - adjustedIconHitSize / 2f,
                             combinedBounds.right + localSpacePadding + adjustedIconHitSize / 2f,
@@ -852,11 +1043,6 @@ class SizedCanvasView @JvmOverloads constructor(
                         elementMatrix.postTranslate(element.x, element.y)
 
                         elementIconPositions.forEach { (iconName, position) ->
-                            // Only add "edit" icon hit area if it's a text element
-                            if (iconName == "edit" && element.type != ElementType.TEXT) {
-                                return@forEach // Skip if it's an edit icon for non-text element
-                            }
-
                             val iconCenterInCanvasCords = floatArrayOf(position.x, position.y)
                             elementMatrix.mapPoints(iconCenterInCanvasCords)
 
@@ -925,7 +1111,7 @@ class SizedCanvasView @JvmOverloads constructor(
                             }
 
                             "edit" -> {
-                                if (selectedElements.size == 1 && selectedElements.first().type == ElementType.TEXT) {
+                                if (selectedElements.size == 1) {
                                     onEditTextRequested?.invoke(selectedElements.first())
                                 }
                                 return true

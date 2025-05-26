@@ -14,7 +14,7 @@ import com.example.urduphotodesigner.common.utils.Converter.cmToPx
 import com.example.urduphotodesigner.common.utils.Converter.inchesToPx
 import com.example.urduphotodesigner.common.utils.Converter.pxToCm
 import com.example.urduphotodesigner.common.utils.Converter.pxToInches
-import com.example.urduphotodesigner.common.enums.UnitType
+import com.example.urduphotodesigner.common.canvas.enums.UnitType
 import com.example.urduphotodesigner.common.canvas.model.CanvasSize
 import com.example.urduphotodesigner.databinding.FragmentCreateBinding
 import com.google.android.material.snackbar.Snackbar

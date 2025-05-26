@@ -9,31 +9,32 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.canvas.model.ColorItem
 import com.example.urduphotodesigner.databinding.LayoutColorItemBinding
+import com.example.urduphotodesigner.databinding.LayoutColorPickerItemBinding // Assuming you create this layout
 
 class ColorsAdapter(
     private val colorList: List<ColorItem>,
-    private val onColorSelected: (ColorItem) -> Unit
-) : RecyclerView.Adapter<ColorsAdapter.ColorViewHolder>() {
+    private val onColorSelected: (ColorItem) -> Unit,
+    private val onColorPickerClicked: () -> Unit // New callback for color picker
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() { // Change base class to RecyclerView.ViewHolder
 
-    // Keep track of the currently selected color
+    // Define view types
+    private val VIEW_TYPE_COLOR_PICKER = 0
+    private val VIEW_TYPE_COLOR_ITEM = 1
+
     var selectedColor: Int = Color.BLACK
         set(value) {
-            // Only update if the color actually changed
             if (field != value) {
                 val oldSelectedPosition = colorList.indexOfFirst { it.colorCode.toColorInt() == field }
                 val newSelectedPosition = colorList.indexOfFirst { it.colorCode.toColorInt() == value }
 
-                field = value // Update the backing field
+                field = value
 
-                // Notify only the items whose selection state has changed
                 if (oldSelectedPosition != -1) {
-                    notifyItemChanged(oldSelectedPosition)
+                    notifyItemChanged(oldSelectedPosition + 1) // +1 because of color picker at pos 0
                 }
                 if (newSelectedPosition != -1 && newSelectedPosition != oldSelectedPosition) {
-                    notifyItemChanged(newSelectedPosition)
+                    notifyItemChanged(newSelectedPosition + 1) // +1 because of color picker at pos 0
                 }
-                // If the new color isn't in the list, and an old one was, just update the old one to deselect.
-                // This handles cases where selection is cleared or set to a non-list color.
             }
         }
 
@@ -42,7 +43,6 @@ class ColorsAdapter(
         fun bind(colorItem: ColorItem) {
             binding.colorView.setBackgroundColor(colorItem.colorCode.toColorInt())
 
-            // Determine if the current item should be selected based on the adapter's selectedColor
             val isCurrentItemSelected = colorItem.colorCode.toColorInt() == selectedColor
 
             if (isCurrentItemSelected) {
@@ -56,24 +56,45 @@ class ColorsAdapter(
             }
 
             binding.root.setOnClickListener {
-                // Invoke the callback to the ViewModel, which will update the selected color.
-                // The ViewModel's LiveData will then trigger the observer in ColorsListFragment,
-                // which in turn updates `selectedColor` in this adapter, leading to efficient
-                // `notifyItemChanged` calls.
                 onColorSelected.invoke(colorItem)
             }
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ColorViewHolder {
-        val binding =
-            LayoutColorItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return ColorViewHolder(binding)
+    inner class ColorPickerViewHolder(val binding: LayoutColorPickerItemBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        init {
+            binding.root.setOnClickListener {
+                onColorPickerClicked.invoke()
+            }
+        }
     }
 
-    override fun getItemCount() = colorList.size
+    override fun getItemViewType(position: Int): Int {
+        return if (position == 0) VIEW_TYPE_COLOR_PICKER else VIEW_TYPE_COLOR_ITEM
+    }
 
-    override fun onBindViewHolder(holder: ColorViewHolder, position: Int) {
-        holder.bind(colorList[position])
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return if (viewType == VIEW_TYPE_COLOR_PICKER) {
+            val binding = LayoutColorPickerItemBinding.inflate(
+                LayoutInflater.from(parent.context),
+                parent,
+                false
+            )
+            ColorPickerViewHolder(binding)
+        } else {
+            val binding =
+                LayoutColorItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            ColorViewHolder(binding)
+        }
+    }
+
+    override fun getItemCount() = colorList.size + 1 // +1 for the color picker
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        if (holder.itemViewType == VIEW_TYPE_COLOR_ITEM) {
+            (holder as ColorViewHolder).bind(colorList[position - 1]) // -1 because of color picker at pos 0
+        }
+        // No binding needed for the color picker as it's static
     }
 }

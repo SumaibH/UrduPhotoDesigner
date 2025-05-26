@@ -1,4 +1,4 @@
-package com.example.urduphotodesigner.common.enums
+package com.example.urduphotodesigner.common.canvas.enums
 
 import java.io.Serializable
 
