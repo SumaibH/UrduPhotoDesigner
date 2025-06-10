@@ -17,21 +17,21 @@
     <androidx.constraintlayout.widget.Guideline
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintGuide_percent="0.98"
+        app:layout_constraintGuide_percent="0.99"
         android:orientation="horizontal"
         android:id="@+id/bottomGuide"/>
 
     <androidx.constraintlayout.widget.Guideline
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintGuide_percent="0.05"
+        app:layout_constraintGuide_percent="0.01"
         android:orientation="vertical"
         android:id="@+id/startGuide"/>
 
     <androidx.constraintlayout.widget.Guideline
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintGuide_percent="0.95"
+        app:layout_constraintGuide_percent="0.99"
         android:orientation="vertical"
         android:id="@+id/endGuide"/>
 
@@ -47,22 +47,27 @@
         app:tabRippleColor="@android:color/transparent"
         app:tabTextColor="@color/black"
         app:tabSelectedTextColor="@color/whiteText"
-        app:layout_constraintStart_toEndOf="@id/startGuide"
-        app:layout_constraintEnd_toStartOf="@id/addText"
+        app:layout_constraintStart_toEndOf="@id/addText"
+        app:layout_constraintEnd_toStartOf="@id/endGuide"
         app:layout_constraintTop_toBottomOf="@id/topGuide"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/plus"
-        android:textColor="@color/whiteText"
-        app:layout_constraintEnd_toStartOf="@id/endGuide"
+        android:text="@string/add_text"
+        android:backgroundTint="@color/contrast"
+        android:textColor="@color/appColor"
+        android:drawablePadding="@dimen/_5sdp"
+        app:drawableStartCompat="@drawable/ic_text"
+        app:layout_constraintStart_toStartOf="@id/startGuide"
         app:layout_constraintTop_toTopOf="@id/tabLayout"
         app:layout_constraintBottom_toBottomOf="@id/tabLayout"
+        android:gravity="center_vertical"
         android:background="@drawable/button_bg"
         android:fontFamily="@font/regular"
-        android:textSize="@dimen/_16sdp"
-        android:paddingHorizontal="@dimen/_10sdp"
+        android:textSize="@dimen/_10sdp"
+        android:paddingVertical="@dimen/_5sdp"
+        android:paddingHorizontal="@dimen/_5sdp"
         android:id="@+id/addText"/>
 
     <androidx.viewpager2.widget.ViewPager2

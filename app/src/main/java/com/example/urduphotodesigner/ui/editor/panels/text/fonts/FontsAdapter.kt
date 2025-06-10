@@ -79,7 +79,7 @@ class FontsAdapter(
                 binding.root.setCardBackgroundColor(
                     ContextCompat.getColor(
                         binding.root.context,
-                        R.color.whiteText
+                        android.R.color.transparent
                     )
                 )
             }

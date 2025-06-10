@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FFFFFF</color>
-    <color name="white">#2B2B2B</color>
+    <color name="black">#2B2B2B</color>
+    <color name="white">#FFFFFF</color>
     <color name="whiteText">#FFFFFF</color>
-    <color name="contrast">#23342A</color>
+    <color name="contrast">#F3F3F3</color>
     <color name="appColor">#005D28</color>
-    <color name="selection">#00FF6E</color>
+    <color name="selection">#EFEFEF</color>
 </resources>
+
+    <!--<?xml version="1.0" encoding="utf-8"?>-->
+    <!--<resources>-->
+    <!--    <color name="black">#FFFFFF</color>-->
+    <!--    <color name="white">#2B2B2B</color>-->
+    <!--    <color name="whiteText">#FFFFFF</color>-->
+    <!--    <color name="contrast">#23342A</color>-->
+    <!--    <color name="appColor">#005D28</color>-->
+    <!--    <color name="selection">#00FF6E</color>-->
+    <!--</resources>-->

@@ -19,6 +19,7 @@ class TemplatesListFragment : Fragment() {
         super.onCreate(savedInstanceState)
         tabName = arguments?.getString("TAB_NAME")
     }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?

@@ -23,9 +23,15 @@ class FontsListFragment : Fragment() {
 
     private val mainViewModel: MainViewModel by activityViewModels()
     private val viewModel: CanvasViewModel by activityViewModels()
-    private lateinit var englishAdapter: FontsAdapter
-    private lateinit var urduAdapter: FontsAdapter
+    private lateinit var fontsAdapter: FontsAdapter
     private var fontEntity: FontEntity? = null
+
+    private var currentCategory: String? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        currentCategory = arguments?.getString("font_category")
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -43,15 +49,10 @@ class FontsListFragment : Fragment() {
     }
 
     private fun setupRecyclerViews() {
-        englishAdapter = FontsAdapter { font, isDownloaded ->
+        fontsAdapter = FontsAdapter { font, isDownloaded ->
             handleFontSelection(font, isDownloaded)
         }
-        urduAdapter = FontsAdapter { font, isDownloaded ->
-            handleFontSelection(font, isDownloaded)
-        }
-
-        binding.englishRV.adapter = englishAdapter
-        binding.urduRV.adapter = urduAdapter
+        binding.englishRV.adapter = fontsAdapter
     }
 
     private fun handleFontSelection(font: FontEntity, isDownloaded: Boolean) {
@@ -68,11 +69,10 @@ class FontsListFragment : Fragment() {
     private fun initObservers() {
         lifecycleScope.launch {
             mainViewModel.localFonts.collect { fonts ->
-                val urduFonts = fonts.filter { it.font_category.equals("Urdu", ignoreCase = true) }
-                val englishFonts = fonts.filter { !it.font_category.equals("Urdu", ignoreCase = true) }
-
-                urduAdapter.submitList(urduFonts)
-                englishAdapter.submitList(englishFonts)
+                val filteredFonts = fonts.filter {
+                    it.font_category.equals(currentCategory, ignoreCase = true)
+                }
+                fontsAdapter.submitList(filteredFonts)
             }
         }
 
@@ -87,11 +87,7 @@ class FontsListFragment : Fragment() {
                         viewModel.setFont(downloadState.fontEntity)
                         // Update UI to show the font is selected
                         fontEntity?.let { font ->
-                            if (font.font_category.equals("Urdu", ignoreCase = true)) {
-                                urduAdapter.selectedFontId = font.id.toString()
-                            } else {
-                                englishAdapter.selectedFontId = font.id.toString()
-                            }
+                            fontsAdapter.selectedFontId = font.id.toString()
                         }
                         mainViewModel.clearDownloadState()
                     }
@@ -114,17 +110,12 @@ class FontsListFragment : Fragment() {
 
         viewModel.currentFont.observe(viewLifecycleOwner) { currentTypeface ->
             // Clear previous selections
-            urduAdapter.selectedFontId = null
-            englishAdapter.selectedFontId = null
+            fontsAdapter.selectedFontId = null
 
             // Find the font that matches the current typeface by comparing file paths
             mainViewModel.localFonts.value.forEach { font ->
                 if (font.is_downloaded && font.id.toString() == currentTypeface?.id.toString()) { // Compare font.id with currentTypeface.id
-                    if (font.font_category.equals("Urdu", ignoreCase = true)) {
-                        urduAdapter.selectedFontId = font.id.toString()
-                    } else {
-                        englishAdapter.selectedFontId = font.id.toString()
-                    }
+                    fontsAdapter.selectedFontId = font.id.toString()
                     return@forEach // Exit the loop once the matching font is found
                 }
             }
@@ -137,8 +128,15 @@ class FontsListFragment : Fragment() {
     }
 
     companion object {
-        fun newInstance(): FontsListFragment {
-            return FontsListFragment()
+        private const val ARG_FONT_CATEGORY = "font_category"
+
+        fun newInstance(fontCategory: String): FontsListFragment {
+            val fragment = FontsListFragment()
+            val args = Bundle()
+            args.putString(ARG_FONT_CATEGORY, fontCategory)
+            fragment.arguments = args
+            return fragment
         }
     }
+
 }

@@ -41,7 +41,7 @@ class TextFragment : Fragment() {
     }
 
     private fun setEvents() {
-        tabs = listOf("Fonts", "Color", "Paragraph")
+        tabs = listOf("Font", "Appearance", "Format", "Style")
 
         val adapter = TextPagerAdapter(
             requireActivity().supportFragmentManager,

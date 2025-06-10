@@ -5,6 +5,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.urduphotodesigner.ui.editor.panels.text.colors.ColorsListFragment
+import com.example.urduphotodesigner.ui.editor.panels.text.fonts.FontsFragment
 import com.example.urduphotodesigner.ui.editor.panels.text.fonts.FontsListFragment
 import com.example.urduphotodesigner.ui.editor.panels.text.para.ParagraphOptionsFragment
 
@@ -18,10 +19,11 @@ class TextPagerAdapter(
 
     override fun createFragment(position: Int): Fragment {
         return when (tabs[position]) {
-            "Fonts" -> FontsListFragment.newInstance()
-            "Color" -> ColorsListFragment.newInstance()
-            "Paragraph" -> ParagraphOptionsFragment.newInstance()
-            else -> FontsListFragment.newInstance()
+            "Font" -> FontsFragment.newInstance()
+            "Appearance" -> ColorsListFragment.newInstance()
+            "Format" -> ParagraphOptionsFragment.newInstance()
+            "Style" -> ParagraphOptionsFragment.newInstance()
+            else -> FontsFragment.newInstance()
         }
     }
 
