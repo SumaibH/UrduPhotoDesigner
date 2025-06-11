@@ -6,12 +6,26 @@ import com.example.urduphotodesigner.data.model.FontCategory
 
 class FontsPagerAdapter(
     fragment: Fragment,
-    private val categories: List<FontCategory>
+    private var categories: List<FontCategory>
 ) : FragmentStateAdapter(fragment) {
 
-    override fun getItemCount(): Int = categories.size
+    override fun getItemCount() = categories.size
 
     override fun createFragment(position: Int): Fragment {
         return FontsListFragment.newInstance(categories[position].font_category)
     }
+
+    fun updateCategories(newCategories: List<FontCategory>) {
+        categories = newCategories
+        notifyDataSetChanged() // triggers a smooth update
+    }
+
+    override fun getItemId(position: Int): Long {
+        return categories[position].id.toLong()
+    }
+
+    override fun containsItem(itemId: Long): Boolean {
+        return categories.any { it.id.toLong() == itemId }
+    }
 }
+

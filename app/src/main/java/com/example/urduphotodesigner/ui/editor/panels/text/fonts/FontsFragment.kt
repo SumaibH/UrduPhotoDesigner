@@ -10,7 +10,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import com.example.urduphotodesigner.data.model.FontCategory
 import com.example.urduphotodesigner.databinding.FragmentFontsBinding
-import com.example.urduphotodesigner.ui.editor.panels.text.colors.ColorsListFragment
 import com.example.urduphotodesigner.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -49,6 +48,9 @@ class FontsFragment : Fragment() {
 
         binding.viewPager.orientation = ViewPager2.ORIENTATION_VERTICAL
 
+        pagerAdapter = FontsPagerAdapter(this@FontsFragment, categories)
+        binding.viewPager.adapter = pagerAdapter
+
         binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 val selectedCategory = categories[position]
@@ -59,27 +61,27 @@ class FontsFragment : Fragment() {
 
     }
 
-    // In FontsListFragment.kt
     private fun initObservers() {
         lifecycleScope.launch {
             mainViewModel.localFonts.collect { fonts ->
-                categories = fonts
-                    .map { it.font_category }
-                    .distinct()
-                    .mapIndexed { index, category ->
-                        FontCategory(
-                            id = index,
-                            font_category = category,
-                            is_selected = index == 0
-                        )
-                    } as ArrayList<FontCategory>
+                val distinctCategories = fonts.map { it.font_category }.distinct()
+                val newCategories = mutableListOf<FontCategory>()
 
-                adapter.submitList(categories)
+                // Add "All" category at the top
+                newCategories.add(FontCategory(id = -1, font_category = "All", is_selected = true))
 
-                pagerAdapter = FontsPagerAdapter(this@FontsFragment, categories)
-                binding.viewPager.adapter = pagerAdapter
+                // Add actual categories
+                distinctCategories.forEachIndexed { index, category ->
+                    newCategories.add(FontCategory(id = index, font_category = category, is_selected = false))
+                }
 
-                handleFontSelection(categories.firstOrNull())
+                if (newCategories != categories) {
+                    categories.clear()
+                    categories.addAll(newCategories)
+                    adapter.submitList(ArrayList(categories))
+                    pagerAdapter.updateCategories(categories)
+                    handleFontSelection(categories.firstOrNull())
+                }
             }
         }
     }

@@ -61,6 +61,10 @@ class FontsListFragment : Fragment() {
         } else {
             // Initiate download
             fontEntity = font // Keep track of the font being downloaded
+            val updatedList = fontsAdapter.currentList.map {
+                if (it.id == font.id) it.copy(is_downloading = true) else it
+            }
+            fontsAdapter.submitList(updatedList)
             mainViewModel.downloadFont(font)
         }
     }
@@ -69,8 +73,12 @@ class FontsListFragment : Fragment() {
     private fun initObservers() {
         lifecycleScope.launch {
             mainViewModel.localFonts.collect { fonts ->
-                val filteredFonts = fonts.filter {
-                    it.font_category.equals(currentCategory, ignoreCase = true)
+                val filteredFonts = if (currentCategory.equals("All", ignoreCase = true)) {
+                    fonts
+                } else {
+                    fonts.filter {
+                        it.font_category.equals(currentCategory, ignoreCase = true)
+                    }
                 }
                 fontsAdapter.submitList(filteredFonts)
             }
@@ -83,11 +91,20 @@ class FontsListFragment : Fragment() {
                         // Optional: Show progress in UI if needed
                     }
                     is DownloadState.SuccessWithTypeface -> {
+                        fontEntity = downloadState.fontEntity
                         // Automatically apply the font to canvas
-                        viewModel.setFont(downloadState.fontEntity)
+                        viewModel.setFont(fontEntity!!)
                         // Update UI to show the font is selected
                         fontEntity?.let { font ->
-                            fontsAdapter.selectedFontId = font.id.toString()
+                            // Manually set font as downloaded and selected
+                            val updatedList = fontsAdapter.currentList.map {
+                                if (it.id == font.id) it.copy(is_downloaded = true, is_downloading = false) else it
+                            }
+
+                            fontsAdapter.submitList(updatedList) {
+                                // Post-update, set selection to trigger UI highlight
+                                fontsAdapter.selectedFontId = font.id.toString()
+                            }
                         }
                         mainViewModel.clearDownloadState()
                     }
@@ -108,16 +125,10 @@ class FontsListFragment : Fragment() {
             }
         }
 
-        viewModel.currentFont.observe(viewLifecycleOwner) { currentTypeface ->
-            // Clear previous selections
-            fontsAdapter.selectedFontId = null
-
-            // Find the font that matches the current typeface by comparing file paths
-            mainViewModel.localFonts.value.forEach { font ->
-                if (font.is_downloaded && font.id.toString() == currentTypeface?.id.toString()) { // Compare font.id with currentTypeface.id
-                    fontsAdapter.selectedFontId = font.id.toString()
-                    return@forEach // Exit the loop once the matching font is found
-                }
+        viewModel.currentFont.observe(viewLifecycleOwner) { currentFont ->
+            val currentId = currentFont?.id?.toString()
+            if (!currentId.isNullOrEmpty()) {
+                fontsAdapter.selectedFontId = currentId
             }
         }
     }

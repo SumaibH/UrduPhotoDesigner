@@ -11,6 +11,7 @@ import android.text.TextPaint
 import androidx.core.content.res.ResourcesCompat
 import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.canvas.enums.ElementType
+import com.example.urduphotodesigner.common.canvas.enums.LabelShape
 import com.example.urduphotodesigner.common.canvas.sealed.ImageFilter
 import java.io.Serializable
 import java.util.UUID
@@ -43,59 +44,54 @@ data class CanvasElement(
     var paintColor: Int = Color.BLACK,
     var paintTextSize: Float = 80f,
     var paintTextAlign: Paint.Align = Paint.Align.CENTER,
-    var paintAlpha: Int = 255
+    var paintAlpha: Int = 255,
+    // Border
+    var hasBorder: Boolean = false,
+    var borderColor: Int = Color.BLACK,
+    var borderWidth: Float = 1f,
+
+    // Shadow
+    var hasShadow: Boolean = false,
+    var shadowColor: Int = Color.GRAY,
+    var shadowDx: Float = 1f,
+    var shadowDy: Float = 1f,
+
+    // Label
+    var hasLabel: Boolean = false,
+    var labelColor: Int = Color.YELLOW,
+    var labelShape: LabelShape = LabelShape.RECTANGLE
 ) : Serializable {
 
     @Transient
-    lateinit var paint: TextPaint // Changed to lateinit var
+    lateinit var paint: TextPaint
 
     init {
-        // Initialize paint with default values.
-        // We will set typeface separately if context is available.
-        paint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = paintColor
-            textSize = paintTextSize
-            textAlign = paintTextAlign
-            alpha = paintAlpha
-            // Initial typeface is set here, but might be overridden if fontId is present later
-            context?.let {
-                typeface = ResourcesCompat.getFont(it, R.font.regular) // Default font
-            } ?: run {
-                typeface = Typeface.DEFAULT // Fallback if context is null
-            }
-        }
+        paint = TextPaint(Paint.ANTI_ALIAS_FLAG)
+        updatePaintProperties()
     }
 
-    // Removed the secondary constructor as it was redundant and causing conflicting overloads.
-    // The primary constructor with default values and the init block handle all initialization.
-
-    // Helper function to update transient paint properties from serializable ones
-    // This is still useful to ensure the transient paint object reflects the latest serializable properties
     fun updatePaintProperties() {
-        if (!::paint.isInitialized) {
-            paint = TextPaint(Paint.ANTI_ALIAS_FLAG)
-        }
+        if (!::paint.isInitialized) paint = TextPaint(Paint.ANTI_ALIAS_FLAG)
         paint.color = paintColor
         paint.textSize = paintTextSize
         paint.textAlign = paintTextAlign
         paint.alpha = paintAlpha
 
-        // Re-apply font if fontId is set and context is available
-        if (type == ElementType.TEXT && fontId != null && context != null) {
-            // This assumes you have a way to get FontEntity from fontId here.
-            // For now, we'll leave this part to be handled by ViewModel,
-            // or you'd need a font lookup mechanism here.
-            // However, this function is called when deserializing or re-applying context.
-            // A safer approach is to pass the actual font file path or typeface directly if possible.
-            // For now, let's keep the font application in ViewModel for single source of truth.
-            // The main purpose of updatePaintProperties is for the other paint properties.
-            // The typeface will be explicitly set by ViewModel.
-        } else if (context != null) {
-            // Ensure a default font is set if no custom font is selected
-            paint.typeface = ResourcesCompat.getFont(context!!, R.font.regular)
+        if (hasShadow) {
+            paint.setShadowLayer(8f, shadowDx, shadowDy, shadowColor)
         } else {
-            paint.typeface = Typeface.DEFAULT
+            paint.clearShadowLayer()
         }
+
+        if (hasBorder) {
+            paint.style = Paint.Style.STROKE
+            paint.strokeWidth = borderWidth
+            paint.color = borderColor
+        } else {
+            paint.style = Paint.Style.FILL
+        }
+
+        paint.typeface = context?.let { ResourcesCompat.getFont(it, R.font.regular) } ?: Typeface.DEFAULT
     }
 
     fun getLocalContentWidth(): Float {

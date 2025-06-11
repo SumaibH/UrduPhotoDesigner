@@ -19,6 +19,7 @@ import com.example.urduphotodesigner.common.canvas.model.CanvasTemplate
 import com.example.urduphotodesigner.common.canvas.model.ExportOptions
 import com.example.urduphotodesigner.common.canvas.model.ExportResolution
 import com.example.urduphotodesigner.common.canvas.enums.ElementType
+import com.example.urduphotodesigner.common.canvas.enums.LabelShape
 import com.example.urduphotodesigner.common.canvas.sealed.BatchedCanvasAction
 import com.example.urduphotodesigner.common.canvas.sealed.CanvasAction
 import com.example.urduphotodesigner.common.canvas.sealed.ImageFilter
@@ -754,6 +755,46 @@ class CanvasViewModel @Inject constructor(
 
     fun isExplicitChange(): Boolean {
         return _isExplicitChange
+    }
+
+    fun setTextShadow(enabled: Boolean, color: Int, dx: Float, dy: Float) {
+        val updatedList = _canvasElements.value?.map { element ->
+            if (element.isSelected && element.type == ElementType.TEXT) {
+                element.copy(
+                    hasShadow = enabled,
+                    shadowColor = color,
+                    shadowDx = dx,
+                    shadowDy = dy
+                ).also { it.updatePaintProperties() }
+            } else element
+        } ?: return
+        _canvasElements.value = updatedList
+    }
+
+    fun setTextBorder(enabled: Boolean, color: Int, width: Float) {
+        val updatedList = _canvasElements.value?.map { element ->
+            if (element.isSelected && element.type == ElementType.TEXT) {
+                element.copy(
+                    hasBorder = enabled,
+                    borderColor = color,
+                    borderWidth = width
+                ).also { it.updatePaintProperties() }
+            } else element
+        } ?: return
+        _canvasElements.value = updatedList
+    }
+
+    fun setTextLabel(enabled: Boolean, color: Int, shape: LabelShape) {
+        val updatedList = _canvasElements.value?.map { element ->
+            if (element.isSelected && element.type == ElementType.TEXT) {
+                element.copy(
+                    hasLabel = enabled,
+                    labelColor = color,
+                    labelShape = shape
+                )
+            } else element
+        } ?: return
+        _canvasElements.value = updatedList
     }
 
     fun setTextColor(color: Int) {

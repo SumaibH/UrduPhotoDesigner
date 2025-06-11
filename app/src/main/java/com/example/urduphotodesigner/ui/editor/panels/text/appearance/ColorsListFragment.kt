@@ -1,4 +1,4 @@
-package com.example.urduphotodesigner.ui.editor.panels.text.colors
+package com.example.urduphotodesigner.ui.editor.panels.text.appearance
 
 import android.graphics.Color
 import android.os.Bundle
@@ -10,8 +10,9 @@ import androidx.core.graphics.toColorInt
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.urduphotodesigner.R
-import com.example.urduphotodesigner.common.utils.Constants
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
+import com.example.urduphotodesigner.common.canvas.enums.LabelShape
+import com.example.urduphotodesigner.common.utils.Constants
 import com.example.urduphotodesigner.databinding.FragmentColorsListBinding
 import com.flask.colorpicker.ColorPickerView
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder
@@ -24,6 +25,12 @@ class ColorsListFragment : Fragment() {
 
     private lateinit var colorsAdapter: ColorsAdapter
     private val viewModel: CanvasViewModel by activityViewModels()
+    private var currentTab: String? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        currentTab = arguments?.getString("tab_name")
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -42,11 +49,17 @@ class ColorsListFragment : Fragment() {
 
     private fun setupRecyclerView() {
         colorsAdapter = ColorsAdapter(Constants.colorList, { color ->
-            viewModel.setTextColor(color.colorCode.toColorInt())
+            val selectedColor = color.colorCode.toColorInt()
+            when (currentTab?.lowercase()) {
+                "border" -> viewModel.setTextBorder(true, selectedColor, 6f) // border enabled, 6f width
+                "shadow" -> viewModel.setTextShadow(true, selectedColor, 6f, 6f) // shadow with dx/dy
+                "label" -> viewModel.setTextLabel(true, selectedColor, LabelShape.RECTANGLE)
+                else -> viewModel.setTextColor(selectedColor) // default to text color
+            }
         }) {
-            // This is the lambda for when the color picker is clicked
             openColorPickerDialog()
         }
+
         binding.colors.apply {
             adapter = colorsAdapter
         }
@@ -64,22 +77,30 @@ class ColorsListFragment : Fragment() {
             .density(6) // Density of the color wheel
             .lightnessSliderOnly() // If you want only lightness slider
             .setPositiveButton("Select") { _, selectedColor, _ ->
-                viewModel.setTextColor(selectedColor)
+                when (currentTab?.lowercase()) {
+                    "border" -> viewModel.setTextBorder(true, selectedColor, 6f)
+                    "shadow" -> viewModel.setTextShadow(true, selectedColor, 6f, 6f)
+                    "label" -> viewModel.setTextLabel(true, selectedColor, LabelShape.RECTANGLE)
+                    else -> viewModel.setTextColor(selectedColor)
+                }
             }
+
             .setNegativeButton("Cancel") { _, _ ->
                 // Do nothing or handle cancellation
             }
             .showColorEdit(true) // Show hex/rgb editor
-            .setColorEditTextColor(ContextCompat.getColor(requireContext(), R.color.black)) // Set text color of the editor
+            .setColorEditTextColor(
+                ContextCompat.getColor(
+                    requireContext(),
+                    R.color.black
+                )
+            ) // Set text color of the editor
             .build()
             .show()
     }
 
     private fun initObservers() {
         viewModel.currentTextColor.observe(viewLifecycleOwner) { color ->
-            // When the ViewModel's current text color changes (e.g., due to canvas selection),
-            // update the adapter's selectedColor. This will trigger the efficient
-            // notifyItemChanged calls within the adapter's setter.
             colorsAdapter.selectedColor = color!!
         }
     }
@@ -90,8 +111,14 @@ class ColorsListFragment : Fragment() {
     }
 
     companion object {
-        fun newInstance(): ColorsListFragment {
-            return ColorsListFragment()
+        private const val ARG_TAB_NAME = "tab_name"
+
+        fun newInstance(tabName: String): ColorsListFragment {
+            val fragment = ColorsListFragment()
+            val args = Bundle()
+            args.putString(ARG_TAB_NAME, tabName)
+            fragment.arguments = args
+            return fragment
         }
     }
 }

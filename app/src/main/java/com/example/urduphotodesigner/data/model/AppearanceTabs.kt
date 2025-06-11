@@ -1,7 +1,7 @@
 package com.example.urduphotodesigner.data.model
 
-data class FontCategory(
+data class AppearanceTabs(
     val id: Int,
-    val font_category: String,
+    val tab_name: String,
     var is_selected:Boolean = false
 )
