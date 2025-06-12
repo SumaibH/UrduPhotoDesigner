@@ -40,7 +40,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="@android:color/transparent"
-        app:tabGravity="start"
+        app:tabGravity="fill"
         app:tabMode="auto"
         app:tabIndicatorColor="@null"
         app:tabIndicatorHeight="0dp"

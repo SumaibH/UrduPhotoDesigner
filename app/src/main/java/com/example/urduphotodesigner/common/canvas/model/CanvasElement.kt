@@ -59,7 +59,7 @@ data class CanvasElement(
     // Label
     var hasLabel: Boolean = false,
     var labelColor: Int = Color.YELLOW,
-    var labelShape: LabelShape = LabelShape.RECTANGLE
+    var labelShape: LabelShape = LabelShape.RECTANGLE_FILL
 ) : Serializable {
 
     @Transient

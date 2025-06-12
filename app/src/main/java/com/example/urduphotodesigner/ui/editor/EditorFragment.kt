@@ -187,7 +187,7 @@ class EditorFragment : Fragment() {
 
         viewModel.currentFont.observe(viewLifecycleOwner) { font ->
             if (font != null && viewModel.isExplicitChange()) {
-                canvasManager.setFont(font)
+            font.let { canvasManager.setFont(it) }
             }
         }
 
@@ -457,6 +457,9 @@ class EditorFragment : Fragment() {
     }
 
     private fun exportCanvasInternal() {
+        //Save Template
+        viewModel.saveTemplate()
+
         // Retrieve the current export options from the ViewModel, which now includes the selected quality and format
         val currentExportOptions = viewModel.exportOptions.value
 
@@ -485,7 +488,6 @@ class EditorFragment : Fragment() {
                     currentExportOptions.quality
                 )
 
-                viewModel.saveTemplate()
 
                 var success = false
                 try {

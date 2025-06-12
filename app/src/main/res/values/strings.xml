@@ -50,7 +50,7 @@
     <string name="opacity">Opacity</string>
     <string name="urdu_fonts">Urdu Fonts</string>
     <string name="english_fonts">English Fonts</string>
-    <string name="font_size">Font Size: 10</string>
+    <string name="font_size">Font Size</string>
     <string name="plus">+</string>
     <string name="text_alignment">Text Alignment</string>
     <string name="search_here">Search here</string>
@@ -59,4 +59,7 @@
     <string name="email">Email</string>
     <string name="name">Name</string>
     <string name="add_text">Add Text</string>
+    <string name="border_width">Border width</string>
+    <string name="shadow_x">Shadow X</string>
+    <string name="shadow_y">Shadow Y</string>
 </resources>

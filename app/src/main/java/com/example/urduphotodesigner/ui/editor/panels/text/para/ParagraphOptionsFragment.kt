@@ -35,11 +35,11 @@ class ParagraphOptionsFragment : Fragment() {
     }
 
     private fun initObservers() {
-        viewModel.currentTextSize.observe(viewLifecycleOwner) { textSize ->
-            // Update the SeekBar progress
-            binding.seekBar.value = textSize!!
-            binding.fontTitle.text = "Font Size: ${textSize.toInt()}"
-        }
+//        viewModel.currentTextSize.observe(viewLifecycleOwner) { textSize ->
+//            // Update the SeekBar progress
+//            binding.seekBar.value = textSize!!
+//            binding.fontTitle.text = "Font Size: ${textSize.toInt()}"
+//        }
 
         viewModel.currentTextAlignment.observe(viewLifecycleOwner) { alignment ->
             val alignCards = listOf(

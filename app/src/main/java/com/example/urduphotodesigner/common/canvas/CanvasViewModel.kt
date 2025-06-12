@@ -27,6 +27,7 @@ import com.example.urduphotodesigner.data.model.FontEntity
 import com.example.urduphotodesigner.domain.usecase.GetFontsUseCase
 import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -37,7 +38,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CanvasViewModel @Inject constructor(
-    private val getFontsUseCase: GetFontsUseCase
+    private val getFontsUseCase: GetFontsUseCase,
 ) : ViewModel() {
     private val _canvasActions = Stack<CanvasAction>()
     private val _redoStack = Stack<CanvasAction>()
@@ -88,12 +89,41 @@ class CanvasViewModel @Inject constructor(
     private val _currentImageFilter = MutableLiveData<ImageFilter?>(null)
     val currentImageFilter: LiveData<ImageFilter?> = _currentImageFilter
 
+    private val _currentTextBorderColor = MutableLiveData<Int>(Color.BLACK)
+    val currentTextBorderColor: LiveData<Int> = _currentTextBorderColor
+
+    private val _currentTextBorderWidth = MutableLiveData<Float>(1f)
+    val currentTextBorderWidth: LiveData<Float> = _currentTextBorderWidth
+
+    private val _currentTextShadowColor = MutableLiveData<Int>(Color.BLACK)
+    val currentTextShadowColor: LiveData<Int> = _currentTextShadowColor
+
+    private val _currentTextShadowDx = MutableLiveData<Float>(1f)
+    val currentTextShadowDx: LiveData<Float> = _currentTextShadowDx
+
+    private val _currentTextShadowDy = MutableLiveData<Float>(1f)
+    val currentTextShadowDy: LiveData<Float> = _currentTextShadowDy
+
+    private val _currentTextShadowRadius  = MutableLiveData<Float>(1f)
+    val currentTextShadowRadius: LiveData<Float> = _currentTextShadowRadius
+
+    private val _currentTextLabelColor = MutableLiveData<Int>(Color.BLACK)
+    val currentTextLabelColor: LiveData<Int> = _currentTextLabelColor
+
+    private val _currentTextLabelShape  = MutableLiveData<LabelShape>(LabelShape.RECTANGLE_FILL)
+    val currentTextLabelShape: LiveData<LabelShape> = _currentTextLabelShape
+
     private var selectedElement: CanvasElement? = null
     private var currentBatchAction: BatchedCanvasAction? = null
     private var _isExplicitChange = false
 
     private val availableResolutions = listOf(
-        ExportResolution("Original Size", 0, 0, 1f), // Width and Height 0 indicate use canvas's current size
+        ExportResolution(
+            "Original Size",
+            0,
+            0,
+            1f
+        ), // Width and Height 0 indicate use canvas's current size
         ExportResolution("HD (1280x720)", 1280, 720),
         ExportResolution("Full HD (1920x1080)", 1920, 1080),
         ExportResolution("4K (3840x2160)", 3840, 2160),
@@ -289,16 +319,7 @@ class CanvasViewModel @Inject constructor(
             if (elementToUpdate.type == ElementType.TEXT && elementToUpdate.fontId != null) {
                 val font = localFonts.value.find { it.id.toString() == elementToUpdate.fontId }
                 if (font != null && font.file_path?.isNotBlank() == true) {
-                    try {
-                        elementToUpdate.paint.typeface = Typeface.createFromFile(font.file_path)
-                    } catch (e: Exception) {
-                        println("Error re-applying typeface in updateElement for element ${elementToUpdate.id}: ${font.file_path}. Error: ${e.message}")
-                        elementToUpdate.paint.typeface = elementToUpdate.context?.let {
-                            ResourcesCompat.getFont(
-                                it, R.font.regular
-                            )
-                        } ?: Typeface.DEFAULT // Fallback
-                    }
+                    elementToUpdate.paint.typeface = elementToUpdate.applyTypefaceFromFontList()
                 } else {
                     // If font not found or path is blank, revert to default system font
                     elementToUpdate.paint.typeface =
@@ -374,12 +395,13 @@ class CanvasViewModel @Inject constructor(
 
         _canvasActions.push(
             CanvasAction.UpdateCanvasElementsOrder(
-            oldList.map {
-                it.copy(
-                    context = null, bitmap = null
-                )
-            }, // Store copies without transient data
-            updatedList.map { it.copy(context = null, bitmap = null) }))
+                oldList.map {
+                    it.copy(
+                        context = null, bitmap = null
+                    )
+                }, // Store copies without transient data
+                updatedList.map { it.copy(context = null, bitmap = null) })
+        )
         _redoStack.clear()
         _canvasElements.value = updatedList
         notifyUndoRedoChanged()
@@ -465,7 +487,7 @@ class CanvasViewModel @Inject constructor(
                     _currentTextAlignment.value = selectedElementCopy.paintTextAlign
                     _currentTextOpacity.value = selectedElementCopy.paintAlpha
                     _currentImageFilter.value = null
-                }else if (element.type == ElementType.IMAGE) {
+                } else if (element.type == ElementType.IMAGE) {
                     _currentImageFilter.value = selectedElementCopy.imageFilter
                     // Clear text properties if image is selected
                     _currentFont.value = null
@@ -503,21 +525,7 @@ class CanvasViewModel @Inject constructor(
             )
             // Re-apply font for text elements
             if (copiedElement.type == ElementType.TEXT && copiedElement.fontId != null) {
-                val font = localFonts.value.find { it.id.toString() == copiedElement.fontId }
-                if (font != null && font.file_path?.isNotBlank() == true) {
-                    try {
-                        copiedElement.paint.typeface = Typeface.createFromFile(font.file_path)
-                    } catch (e: Exception) {
-                        println("Error re-applying typeface in onCanvasSelectionChanged: ${font.file_path}. Error: ${e.message}")
-                        copiedElement.paint.typeface =
-                            context?.let { ResourcesCompat.getFont(it, R.font.regular) }
-                                ?: Typeface.DEFAULT
-                    }
-                } else {
-                    copiedElement.paint.typeface =
-                        context?.let { ResourcesCompat.getFont(it, R.font.regular) }
-                            ?: Typeface.DEFAULT
-                }
+                copiedElement.paint.typeface = copiedElement.applyTypefaceFromFontList()
             } else {
                 copiedElement.paint.typeface =
                     context?.let { ResourcesCompat.getFont(it, R.font.regular) } ?: Typeface.DEFAULT
@@ -547,10 +555,11 @@ class CanvasViewModel @Inject constructor(
             _currentTextAlignment.value = Paint.Align.CENTER
             _currentTextOpacity.value = 255
         }
-        val firstSelectedImageElement = selectedListFromCanvas.firstOrNull { it.type == ElementType.IMAGE }
+        val firstSelectedImageElement =
+            selectedListFromCanvas.firstOrNull { it.type == ElementType.IMAGE }
         if (firstSelectedImageElement != null) {
             _currentImageFilter.value = firstSelectedImageElement.imageFilter
-        } else if (firstSelectedTextElement == null){ // Only clear if no image or text element is selected
+        } else if (firstSelectedTextElement == null) { // Only clear if no image or text element is selected
             _currentImageFilter.value = null
         }
     }
@@ -568,21 +577,7 @@ class CanvasViewModel @Inject constructor(
                 element.copy(isSelected = idsToSelect.contains(element.id), context = context)
             // Re-apply font for text elements
             if (copiedElement.type == ElementType.TEXT && copiedElement.fontId != null) {
-                val font = localFonts.value.find { it.id.toString() == copiedElement.fontId }
-                if (font != null && font.file_path?.isNotBlank() == true) {
-                    try {
-                        copiedElement.paint.typeface = Typeface.createFromFile(font.file_path)
-                    } catch (e: Exception) {
-                        println("Error re-applying typeface in setSelectedElementsFromLayers: ${font.file_path}. Error: ${e.message}")
-                        copiedElement.paint.typeface =
-                            context?.let { ResourcesCompat.getFont(it, R.font.regular) }
-                                ?: Typeface.DEFAULT
-                    }
-                } else {
-                    copiedElement.paint.typeface =
-                        context?.let { ResourcesCompat.getFont(it, R.font.regular) }
-                            ?: Typeface.DEFAULT
-                }
+                copiedElement.paint.typeface = copiedElement.applyTypefaceFromFontList()
             } else {
                 copiedElement.paint.typeface =
                     context?.let { ResourcesCompat.getFont(it, R.font.regular) } ?: Typeface.DEFAULT
@@ -700,50 +695,34 @@ class CanvasViewModel @Inject constructor(
     fun setFont(fontEntity: FontEntity, isExplicit: Boolean = true) {
         _isExplicitChange = isExplicit
         val currentList = _canvasElements.value?.toMutableList() ?: mutableListOf()
+        val context = currentList.firstOrNull()?.context
         val affectedElementsData = mutableListOf<Pair<String, String?>>()
-        var changed = false
-        val context = currentList.firstOrNull()?.context // Get context for font application
 
         val updatedList = currentList.map { element ->
             if (element.isSelected && element.type == ElementType.TEXT && element.fontId != fontEntity.id.toString()) {
-                // Only update if the font is different
-                affectedElementsData.add(Pair(element.id, element.fontId))
-                changed = true
-                // Create a copy to ensure proper state management and re-apply context
-                val copiedElement = element.copy(context = context).apply {
-                    try {
-                        paint.typeface = Typeface.createFromFile(fontEntity.file_path)
-                        this.fontId = fontEntity.id.toString()
+                affectedElementsData.add(element.id to element.fontId)
+                element.copy(context = context).apply {
+                    fontId = fontEntity.id.toString()
+                    paint.typeface = try {
+                        Typeface.createFromFile(fontEntity.file_path)
                     } catch (e: Exception) {
                         println("Error applying font: ${fontEntity.file_path}. Error: ${e.message}")
-                        paint.typeface =
-                            context?.let { ResourcesCompat.getFont(it, R.font.regular) }
-                        this.fontId = null
+                        fontId = null
+                        context?.let { ResourcesCompat.getFont(it, R.font.regular) } ?: Typeface.DEFAULT
                     }
                 }
-                copiedElement
-            } else {
-                element
-            }
+            } else element
         }
 
-        if (changed) {
-            val selectedTextElements =
-                currentList.filter { it.isSelected && it.type == ElementType.TEXT }
-
-            // Update currentFont based on selection state:
-            if (selectedTextElements.isEmpty()) {
-                _currentFont.value = null
-            } else if (selectedTextElements.all { it.fontId == fontEntity.id.toString() }) {
-                // All selected already have this font
-                _currentFont.value = fontEntity
-            } else if (selectedTextElements.any { it.fontId == fontEntity.id.toString() }) {
-                // Some have this font, some don't - mixed state
-                _currentFont.value = null
-            } else {
-                // None have this font - apply to all
-                _currentFont.value = fontEntity
-            }
+        if (affectedElementsData.isNotEmpty()) {
+            val selectedTextElements = updatedList.filter { it.isSelected && it.type == ElementType.TEXT }
+            _currentFont.value =
+                when {
+                    selectedTextElements.isEmpty() -> null
+                    selectedTextElements.all { it.fontId == fontEntity.id.toString() } -> fontEntity
+                    selectedTextElements.any { it.fontId == fontEntity.id.toString() } -> null // mixed
+                    else -> fontEntity
+                }
 
             _canvasElements.value = updatedList
             _canvasActions.push(CanvasAction.SetFont(fontEntity, affectedElementsData))
@@ -753,99 +732,101 @@ class CanvasViewModel @Inject constructor(
         }
     }
 
-    fun isExplicitChange(): Boolean {
-        return _isExplicitChange
-    }
-
-    fun setTextShadow(enabled: Boolean, color: Int, dx: Float, dy: Float) {
-        val updatedList = _canvasElements.value?.map { element ->
+    fun setTextShadow(enabled: Boolean, color: Int, dx: Float, dy: Float, radius: Float) {
+        val currentList = _canvasElements.value?.toMutableList() ?: mutableListOf()
+        val updatedList = currentList.map { element ->
             if (element.isSelected && element.type == ElementType.TEXT) {
                 element.copy(
                     hasShadow = enabled,
                     shadowColor = color,
                     shadowDx = dx,
                     shadowDy = dy
-                ).also { it.updatePaintProperties() }
+                ).apply {
+                    // Restore font!
+                    paint.typeface = element.applyTypefaceFromFontList()
+                }
             } else element
-        } ?: return
+        }
         _canvasElements.value = updatedList
+        _currentTextShadowColor.value = color
+        _currentTextShadowDx.value = dx
+        _currentTextShadowDy.value = dy
+        _currentTextShadowRadius.value = radius
     }
 
     fun setTextBorder(enabled: Boolean, color: Int, width: Float) {
-        val updatedList = _canvasElements.value?.map { element ->
+        val currentList = _canvasElements.value?.toMutableList() ?: mutableListOf()
+        val updatedList = currentList.map { element ->
             if (element.isSelected && element.type == ElementType.TEXT) {
                 element.copy(
                     hasBorder = enabled,
                     borderColor = color,
                     borderWidth = width
-                ).also { it.updatePaintProperties() }
+                ).apply {
+                    // Restore font!
+                    paint.typeface = element.applyTypefaceFromFontList()
+                }
             } else element
-        } ?: return
+        }
         _canvasElements.value = updatedList
+        _currentTextBorderColor.value = color
+        _currentTextBorderWidth.value = width
     }
 
     fun setTextLabel(enabled: Boolean, color: Int, shape: LabelShape) {
-        val updatedList = _canvasElements.value?.map { element ->
+        val currentList = _canvasElements.value?.toMutableList() ?: mutableListOf()
+        val updatedList = currentList.map { element ->
             if (element.isSelected && element.type == ElementType.TEXT) {
                 element.copy(
                     hasLabel = enabled,
                     labelColor = color,
                     labelShape = shape
-                )
+                ).apply {
+                    // Restore font!
+                    paint.typeface = element.applyTypefaceFromFontList()
+                }
             } else element
-        } ?: return
+        }
         _canvasElements.value = updatedList
+        _currentTextLabelColor.value = color
+        _currentTextLabelShape.value = shape
+    }
+
+
+    private fun CanvasElement.applyTypefaceFromFontList(): Typeface {
+        return fontId?.let { id ->
+            localFonts.value.firstOrNull { it.id.toString() == id }?.file_path
+                ?.takeIf { it.isNotBlank() }
+                ?.let { Typeface.createFromFile(it) }
+        } ?: context?.let { ResourcesCompat.getFont(it, R.font.regular) } ?: Typeface.DEFAULT
     }
 
     fun setTextColor(color: Int) {
         val currentList = _canvasElements.value?.toMutableList() ?: mutableListOf()
-        var changed = false
+        val context = currentList.firstOrNull()?.context
         var oldColor: Int? = null
         var targetElementId: String? = null
-        val context = currentList.firstOrNull()?.context // Get context for copying
 
         val updatedList = currentList.map { element ->
             if (element.isSelected && element.type == ElementType.TEXT) {
-                if (!changed) {
-                    oldColor = element.paintColor // Use paintColor for serialization
-                    targetElementId = element.id
+                oldColor = oldColor ?: element.paintColor
+                targetElementId = targetElementId ?: element.id
+
+                element.copy(context = context).apply {
+                    paintColor = color
+                    paint.color = color
+
+                    // Apply correct typeface
+                    paint.typeface = element.applyTypefaceFromFontList()
                 }
-                changed = true
-                val copiedElement =
-                    element.copy(context = context).apply { // Copy and re-apply context
-                        paint.color = color
-                        paintColor = color // Update serializable property
-                    }
-                // Ensure typeface is still correct after copy
-                if (copiedElement.fontId != null) {
-                    val font = localFonts.value.find { it.id.toString() == copiedElement.fontId }
-                    if (font != null && font.file_path?.isNotBlank() == true) {
-                        try {
-                            copiedElement.paint.typeface = Typeface.createFromFile(font.file_path)
-                        } catch (e: Exception) {
-                            println("Error re-applying typeface in setTextColor: ${font.file_path}. Error: ${e.message}")
-                            copiedElement.paint.typeface =
-                                context?.let { ResourcesCompat.getFont(it, R.font.regular) }
-                                    ?: Typeface.DEFAULT
-                        }
-                    }
-                } else {
-                    copiedElement.paint.typeface =
-                        context?.let { ResourcesCompat.getFont(it, R.font.regular) }
-                            ?: Typeface.DEFAULT
-                }
-                copiedElement
-            } else {
-                element
-            }
+            } else element
         }
-        if (changed) {
-            _currentTextColor.value = color // Update UI state
-            _canvasElements.value = updatedList // Trigger observers to redraw
+
+        if (targetElementId != null) {
+            _currentTextColor.value = color
+            _canvasElements.value = updatedList
             _canvasActions.push(
-                CanvasAction.SetTextColor(
-                    color, oldColor ?: Color.BLACK, targetElementId!!
-                )
+                CanvasAction.SetTextColor(color, oldColor ?: Color.BLACK, targetElementId!!)
             )
             _redoStack.clear()
             notifyUndoRedoChanged()
@@ -856,50 +837,27 @@ class CanvasViewModel @Inject constructor(
      * Applies text size to all currently selected text elements.
      */
     fun setTextSize(size: Float) {
-        val currentList = _canvasElements.value?.toMutableList() ?: mutableListOf()
-        var changed = false
+        val currentList = _canvasElements.value ?: return
+        val context = currentList.firstOrNull()?.context
         var oldSize: Float? = null
         var targetElementId: String? = null
-        val context = currentList.firstOrNull()?.context // Get context for copying
 
         val updatedList = currentList.map { element ->
             if (element.isSelected && element.type == ElementType.TEXT) {
-                if (!changed) {
-                    oldSize = element.paintTextSize // Use paintTextSize for serialization
-                    targetElementId = element.id
+                oldSize = oldSize ?: element.paintTextSize
+                targetElementId = targetElementId ?: element.id
+
+                element.copy(context = context).apply {
+                    paintTextSize = size
+                    paint.textSize = size
+                    paint.typeface = element.applyTypefaceFromFontList()
                 }
-                changed = true
-                val copiedElement =
-                    element.copy(context = context).apply { // Copy and re-apply context
-                        paint.textSize = size
-                        paintTextSize = size // Update serializable property
-                    }
-                // Ensure typeface is still correct after copy
-                if (copiedElement.fontId != null) {
-                    val font = localFonts.value.find { it.id.toString() == copiedElement.fontId }
-                    if (font != null && font.file_path?.isNotBlank() == true) {
-                        try {
-                            copiedElement.paint.typeface = Typeface.createFromFile(font.file_path)
-                        } catch (e: Exception) {
-                            println("Error re-applying typeface in setTextSize: ${font.file_path}. Error: ${e.message}")
-                            copiedElement.paint.typeface =
-                                context?.let { ResourcesCompat.getFont(it, R.font.regular) }
-                                    ?: Typeface.DEFAULT
-                        }
-                    }
-                } else {
-                    copiedElement.paint.typeface =
-                        context?.let { ResourcesCompat.getFont(it, R.font.regular) }
-                            ?: Typeface.DEFAULT
-                }
-                copiedElement
-            } else {
-                element
-            }
+            } else element
         }
-        if (changed) {
-            _currentTextSize.value = size // Update UI state
-            _canvasElements.value = updatedList // Trigger observers to redraw
+
+        if (targetElementId != null) {
+            _currentTextSize.value = size
+            _canvasElements.value = updatedList
             _canvasActions.push(CanvasAction.SetTextSize(size, oldSize ?: 40f, targetElementId!!))
             _redoStack.clear()
             notifyUndoRedoChanged()
@@ -910,50 +868,27 @@ class CanvasViewModel @Inject constructor(
      * Applies text alignment to all currently selected text elements.
      */
     fun setTextAlignment(alignment: Paint.Align) {
-        val currentList = _canvasElements.value?.toMutableList() ?: mutableListOf()
-        var changed = false
+        val currentList = _canvasElements.value ?: return
+        val context = currentList.firstOrNull()?.context
         var oldAlignment: Paint.Align? = null
         var targetElementId: String? = null
-        val context = currentList.firstOrNull()?.context // Get context for copying
 
         val updatedList = currentList.map { element ->
             if (element.isSelected && element.type == ElementType.TEXT) {
-                if (!changed) {
-                    oldAlignment = element.paintTextAlign // Use paintTextAlign for serialization
-                    targetElementId = element.id
+                oldAlignment = oldAlignment ?: element.paintTextAlign
+                targetElementId = targetElementId ?: element.id
+
+                element.copy(context = context).apply {
+                    paintTextAlign = alignment
+                    paint.textAlign = alignment
+                    paint.typeface = element.applyTypefaceFromFontList()
                 }
-                changed = true
-                val copiedElement =
-                    element.copy(context = context).apply { // Copy and re-apply context
-                        paint.textAlign = alignment
-                        paintTextAlign = alignment // Update serializable property
-                    }
-                // Ensure typeface is still correct after copy
-                if (copiedElement.fontId != null) {
-                    val font = localFonts.value.find { it.id.toString() == copiedElement.fontId }
-                    if (font != null && font.file_path?.isNotBlank() == true) {
-                        try {
-                            copiedElement.paint.typeface = Typeface.createFromFile(font.file_path)
-                        } catch (e: Exception) {
-                            println("Error re-applying typeface in setTextAlignment: ${font.file_path}. Error: ${e.message}")
-                            copiedElement.paint.typeface =
-                                context?.let { ResourcesCompat.getFont(it, R.font.regular) }
-                                    ?: Typeface.DEFAULT
-                        }
-                    }
-                } else {
-                    copiedElement.paint.typeface =
-                        context?.let { ResourcesCompat.getFont(it, R.font.regular) }
-                            ?: Typeface.DEFAULT
-                }
-                copiedElement
-            } else {
-                element
-            }
+            } else element
         }
-        if (changed) {
-            _currentTextAlignment.value = alignment // Update UI state
-            _canvasElements.value = updatedList // Trigger observers to redraw
+
+        if (targetElementId != null) {
+            _currentTextAlignment.value = alignment
+            _canvasElements.value = updatedList
             _canvasActions.push(
                 CanvasAction.SetTextAlignment(
                     alignment, oldAlignment ?: Paint.Align.CENTER, targetElementId!!
@@ -968,96 +903,48 @@ class CanvasViewModel @Inject constructor(
      * Applies opacity to all currently selected elements.
      */
     fun setOpacity(opacity: Int) {
-        val currentList = _canvasElements.value?.toMutableList() ?: mutableListOf()
-        var changed = false
+        val currentList = _canvasElements.value ?: return
+        val context = currentList.firstOrNull()?.context
         var oldOpacity: Int? = null
         var targetElementId: String? = null
-        val context = currentList.firstOrNull()?.context // Get context for copying
 
         val updatedList = currentList.map { element ->
             if (element.isSelected) {
-                if (!changed) {
-                    oldOpacity = element.paintAlpha // Use paintAlpha for serialization
-                    targetElementId = element.id
-                }
-                changed = true
-                val copiedElement =
-                    element.copy(context = context).apply { // Copy and re-apply context
-                        paint.alpha = opacity
-                        paintAlpha = opacity // Update serializable property
+                oldOpacity = oldOpacity ?: element.paintAlpha
+                targetElementId = targetElementId ?: element.id
+
+                element.copy(context = context).apply {
+                    paintAlpha = opacity
+                    paint.alpha = opacity
+                    if (type == ElementType.TEXT) {
+                        paint.typeface = element.applyTypefaceFromFontList()
                     }
-                // Ensure typeface is still correct after copy for text elements
-                if (copiedElement.type == ElementType.TEXT && copiedElement.fontId != null) {
-                    val font = localFonts.value.find { it.id.toString() == copiedElement.fontId }
-                    if (font != null && font.file_path?.isNotBlank() == true) {
-                        try {
-                            copiedElement.paint.typeface = Typeface.createFromFile(font.file_path)
-                        } catch (e: Exception) {
-                            println("Error re-applying typeface in setOpacity: ${font.file_path}. Error: ${e.message}")
-                            copiedElement.paint.typeface =
-                                context?.let { ResourcesCompat.getFont(it, R.font.regular) }
-                                    ?: Typeface.DEFAULT
-                        }
-                    }
-                } else if (copiedElement.type == ElementType.TEXT) {
-                    copiedElement.paint.typeface =
-                        context?.let { ResourcesCompat.getFont(it, R.font.regular) }
-                            ?: Typeface.DEFAULT
                 }
-                copiedElement
-            } else {
-                element
-            }
+            } else element
         }
-        if (changed) {
-            _currentTextOpacity.value = opacity // Update UI state
-            _canvasElements.value = updatedList // Trigger observers to redraw
-            _canvasActions.push(
-                CanvasAction.SetOpacity(
-                    opacity, oldOpacity ?: 255, targetElementId!!
-                )
-            )
+
+        if (targetElementId != null) {
+            _currentTextOpacity.value = opacity
+            _canvasElements.value = updatedList
+            _canvasActions.push(CanvasAction.SetOpacity(opacity, oldOpacity ?: 255, targetElementId!!))
             _redoStack.clear()
             notifyUndoRedoChanged()
         }
     }
 
     fun updateText(element: CanvasElement) {
-        val currentList = _canvasElements.value ?: emptyList()
+        val currentList = _canvasElements.value ?: return
         val textElement = currentList.find { it.id == element.id } ?: return
+        val context = textElement.context
         val oldText = textElement.text
-        val context = textElement.context // Get context for copying
 
-        // Create a copy and update text and re-apply context
-        val updatedElement = textElement.copy(text = element.text, context = context)
-
-        // Ensure typeface is still correct after copy for text elements
-        if (updatedElement.type == ElementType.TEXT && updatedElement.fontId != null) {
-            val font = localFonts.value.find { it.id.toString() == updatedElement.fontId }
-            if (font != null && font.file_path?.isNotBlank() == true) {
-                try {
-                    updatedElement.paint.typeface = Typeface.createFromFile(font.file_path)
-                } catch (e: Exception) {
-                    println("Error re-applying typeface in updateText: ${font.file_path}. Error: ${e.message}")
-                    updatedElement.paint.typeface =
-                        context?.let { ResourcesCompat.getFont(it, R.font.regular) }
-                            ?: Typeface.DEFAULT
-                }
-            }
-        } else if (updatedElement.type == ElementType.TEXT) {
-            updatedElement.paint.typeface =
-                context?.let { ResourcesCompat.getFont(it, R.font.regular) } ?: Typeface.DEFAULT
-        }
-
-
-        _canvasElements.value = currentList.map {
-            if (it.id == element.id) {
-                updatedElement
-            } else {
-                it
+        val updatedElement = textElement.copy(text = element.text, context = context).apply {
+            if (type == ElementType.TEXT) {
+                paint.typeface = element.applyTypefaceFromFontList()
             }
         }
 
+        _canvasElements.value = currentList.map { if (it.id == element.id) updatedElement else it }
         _canvasActions.push(
             CanvasAction.UpdateText(
                 elementId = element.id, text = updatedElement.text, previousText = oldText
@@ -1074,41 +961,20 @@ class CanvasViewModel @Inject constructor(
      */
     fun applyImageFilter(elementId: String, newFilter: ImageFilter?, isExplicit: Boolean = true) {
         _isExplicitChange = isExplicit
-        val currentList = _canvasElements.value?.toMutableList() ?: mutableListOf()
-        val targetElement = currentList.find { it.id == elementId && it.type == ElementType.IMAGE }
+        val currentList = _canvasElements.value ?: return
+        val targetElement = currentList.find { it.id == elementId && it.type == ElementType.IMAGE } ?: return
 
-        if (targetElement != null) {
-            val oldFilter = targetElement.imageFilter // Store the current filter for undo
-            if (oldFilter != newFilter) { // Only apply if the filter is actually changing
-                val context = targetElement.context // Get context for copying
+        val oldFilter = targetElement.imageFilter
+        if (oldFilter != newFilter) {
+            val context = targetElement.context
+            val updatedElement = targetElement.copy(imageFilter = newFilter, context = context)
 
-                // Create a copy of the element with the new filter
-                val updatedElement = targetElement.copy(
-                    imageFilter = newFilter,
-                    context = context // Re-apply context
-                )
-
-                _canvasElements.value = currentList.map {
-                    if (it.id == updatedElement.id) updatedElement else it
-                }
-
-                // Update the current image filter LiveData if this element is selected
-                if (updatedElement.isSelected) {
-                    _currentImageFilter.value = newFilter
-                }
-
-                // Push the action to the undo stack
-                _canvasActions.push(
-                    CanvasAction.ApplyImageFilter(
-                        elementId = elementId,
-                        newFilter = newFilter,
-                        oldFilter = oldFilter
-                    )
-                )
-                _redoStack.clear()
-                _isExplicitChange = false
-                notifyUndoRedoChanged()
-            }
+            _canvasElements.value = currentList.map { if (it.id == updatedElement.id) updatedElement else it }
+            if (updatedElement.isSelected) _currentImageFilter.value = newFilter
+            _canvasActions.push(CanvasAction.ApplyImageFilter(elementId, newFilter, oldFilter))
+            _redoStack.clear()
+            _isExplicitChange = false
+            notifyUndoRedoChanged()
         }
     }
 
@@ -1608,7 +1474,10 @@ class CanvasViewModel @Inject constructor(
                 val currentList = _canvasElements.value ?: emptyList()
                 _canvasElements.value = currentList.map {
                     if (it.id == action.elementId) {
-                        it.copy(imageFilter = if (isRedo) action.oldFilter else action.newFilter, context = context)
+                        it.copy(
+                            imageFilter = if (isRedo) action.oldFilter else action.newFilter,
+                            context = context
+                        )
                     } else it
                 }
                 // Update the current image filter LiveData if it's the selected element
@@ -1733,5 +1602,9 @@ class CanvasViewModel @Inject constructor(
         _canvasActions.clear() // Clear undo/redo history for loaded templates
         _redoStack.clear()
         notifyUndoRedoChanged()
+    }
+
+    fun isExplicitChange(): Boolean {
+        return _isExplicitChange
     }
 }

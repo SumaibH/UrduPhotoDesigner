@@ -42,6 +42,8 @@ class ColorsListFragment : Fragment() {
     private fun setupRecyclerView() {
         colorsAdapter = ColorsAdapter(Constants.colorList, { color ->
             viewModel.setCanvasBackgroundColor(color.colorCode.toColorInt())
+        },{
+            viewModel.setCanvasBackgroundColor(android.R.color.transparent)
         }) {
             // This is the lambda for when the color picker is clicked
             openColorPickerDialog()

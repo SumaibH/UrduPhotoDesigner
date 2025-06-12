@@ -17,6 +17,7 @@ import android.graphics.Shader
 import android.graphics.Typeface
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import android.text.TextPaint
 import android.util.AttributeSet
 import android.view.GestureDetector
 import android.view.MotionEvent
@@ -35,7 +36,6 @@ import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.hypot
 import kotlin.math.max
-import androidx.core.graphics.withScale
 import com.example.urduphotodesigner.common.canvas.sealed.ImageFilter
 import androidx.core.graphics.withMatrix
 import com.example.urduphotodesigner.common.canvas.enums.LabelShape
@@ -227,6 +227,46 @@ class SizedCanvasView @JvmOverloads constructor(
         backgroundImage = null
         invalidate()
     }
+
+    fun setTextBorder(enabled: Boolean, color: Int = Color.BLACK, width: Float = 2f) {
+        selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
+            element.hasBorder = enabled
+            element.borderColor = color
+            element.borderWidth = width
+            element.updatePaintProperties()
+            onElementChanged?.invoke(element)
+        }
+        invalidate()
+    }
+
+    fun removeTextBorder() = setTextBorder(false)
+
+    fun setTextShadow(enabled: Boolean, color: Int = Color.GRAY, dx: Float = 1f, dy: Float = 1f) {
+        selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
+            element.hasShadow = enabled
+            element.shadowColor = color
+            element.shadowDx = dx
+            element.shadowDy = dy
+            element.updatePaintProperties()
+            onElementChanged?.invoke(element)
+        }
+        invalidate()
+    }
+
+    fun removeTextShadow() = setTextShadow(false)
+
+    fun setTextLabel(enabled: Boolean, color: Int = Color.YELLOW, shape: LabelShape = LabelShape.RECTANGLE_FILL) {
+        selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
+            element.hasLabel = enabled
+            element.labelColor = color
+            element.labelShape = shape
+            // If label rendering is in your onDraw, call invalidate
+            onElementChanged?.invoke(element)
+        }
+        invalidate()
+    }
+
+    fun removeTextLabel() = setTextLabel(false)
 
     fun addText(text: String, context: Context) {
         val element = CanvasElement(
@@ -645,140 +685,6 @@ class SizedCanvasView @JvmOverloads constructor(
         setMeasuredDimension(parentWidth, parentHeight)
     }
 
-    fun setTextBorder(enable: Boolean, color: Int, width: Float? = null) {
-        selectedElements.forEach {
-            if (it.type == ElementType.TEXT) {
-                it.hasBorder = enable
-                it.borderColor = color
-                if (width != null) it.borderWidth = width
-                it.updatePaintProperties()
-            }
-        }
-        invalidate()
-    }
-
-    fun removeTextBorder() {
-        selectedElements.forEach {
-            it.hasBorder = false
-        }
-        invalidate()
-    }
-
-    fun setTextShadow(enable: Boolean, color: Int, dx: Float, dy: Float) {
-        selectedElements.forEach {
-            if (it.type == ElementType.TEXT) {
-                it.hasShadow = enable
-                it.shadowColor = color
-                it.shadowDx = dx
-                it.shadowDy = dy
-                it.updatePaintProperties()
-            }
-        }
-        invalidate()
-    }
-
-    fun removeTextShadow() {
-        selectedElements.forEach {
-            it.hasShadow = false
-            it.updatePaintProperties()
-        }
-        invalidate()
-    }
-
-    fun setTextLabel(enable: Boolean, color: Int, shape: LabelShape) {
-        selectedElements.forEach {
-            if (it.type == ElementType.TEXT) {
-                it.hasLabel = enable
-                it.labelColor = color
-                it.labelShape = shape
-            }
-        }
-        invalidate()
-    }
-
-    fun removeTextLabel() {
-        selectedElements.forEach {
-            it.hasLabel = false
-        }
-        invalidate()
-    }
-
-    private fun drawTextElement(canvas: Canvas, element: CanvasElement) {
-        canvas.save()
-        canvas.translate(element.x, element.y)
-        canvas.scale(element.scale, element.scale)
-        canvas.rotate(element.rotation)
-
-        val paint = element.paint
-        val lines = element.text.split("\n")
-        val fm = paint.fontMetrics
-        val lineHeight = (fm.bottom - fm.top) * element.lineSpacingMultiplier
-        val totalHeight = lineHeight * lines.size
-        val textWidth = lines.maxOfOrNull { paint.measureText(it) } ?: 0f
-
-        // Draw label background
-        if (element.hasLabel) {
-            val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                color = element.labelColor
-                style = Paint.Style.FILL
-            }
-
-            val padding = 20f
-            val left = -textWidth / 2 - padding
-            val top = -totalHeight / 2 - padding
-            val right = textWidth / 2 + padding
-            val bottom = totalHeight / 2 + padding
-
-            when (element.labelShape) {
-                LabelShape.RECTANGLE -> canvas.drawRect(left, top, right, bottom, labelPaint)
-                LabelShape.ROUNDED_RECT -> canvas.drawRoundRect(left, top, right, bottom, 25f, 25f, labelPaint)
-                LabelShape.OVAL -> canvas.drawOval(RectF(left, top, right, bottom), labelPaint)
-            }
-        }
-
-        // Apply shadow if needed
-        if (element.hasShadow) {
-            paint.setShadowLayer(6f, element.shadowDx, element.shadowDy, element.shadowColor)
-        } else {
-            paint.clearShadowLayer()
-        }
-
-        // Draw text fill
-        lines.forEachIndexed { index, line ->
-            val y = index * lineHeight - totalHeight / 2 - fm.top
-            canvas.drawText(line, 0f, y, paint)
-        }
-
-        // Draw text border if enabled
-        if (element.hasBorder) {
-            val strokePaint = Paint(paint).apply {
-                style = Paint.Style.STROKE
-                strokeWidth = element.borderWidth
-                color = element.borderColor
-                isAntiAlias = true
-            }
-            lines.forEachIndexed { index, line ->
-                val y = index * lineHeight - totalHeight / 2 - fm.top
-                canvas.drawText(line, 0f, y, strokePaint)
-            }
-        }
-
-        canvas.restore()
-    }
-
-    private fun drawImageElement(canvas: Canvas, element: CanvasElement) {
-        canvas.save()
-        canvas.translate(element.x, element.y)
-        canvas.scale(element.scale, element.scale)
-        canvas.rotate(element.rotation)
-        element.bitmap?.let {
-            val left = -it.width / 2f
-            val top = -it.height / 2f
-            canvas.drawBitmap(it, left, top, element.paint)
-        }
-        canvas.restore()
-    }
-
     @SuppressLint("DrawAllocation")
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
@@ -940,7 +846,9 @@ class SizedCanvasView @JvmOverloads constructor(
                             else -> null
                         }
 
-                        drawImageElement(canvas, element)
+                        element.bitmap?.let {
+                            canvas.drawBitmap(it, -it.width / 2f, -it.height / 2f, element.paint)
+                        }
                     }
                 }
             }
@@ -1040,6 +948,101 @@ class SizedCanvasView @JvmOverloads constructor(
                         }
                     }
                 }
+            }
+        }
+    }
+
+    private fun drawTextElement(canvas: Canvas, element: CanvasElement) {
+        val lines = element.text.split("\n")
+        val fm = element.paint.fontMetrics
+        val lineHeight = (fm.bottom - fm.top) * element.lineSpacingMultiplier
+        val totalHeight = lineHeight * lines.size
+        lines.forEachIndexed { i, line ->
+
+            val yOffset = -totalHeight / 2 + i * lineHeight - fm.top
+
+            if (element.hasLabel) {
+                val maxLineWidth = lines.maxOf { element.paint.measureText(it) }
+                val labelPadding = 16f
+                val left = -maxLineWidth / 2f - labelPadding
+                val top = -totalHeight / 2f - labelPadding
+                val right = maxLineWidth / 2f + labelPadding
+                val bottom = totalHeight / 2f + labelPadding
+
+                val labelRect = RectF(left, top, right, bottom)
+                val labelPaint = Paint().apply {
+                    color = element.labelColor
+                    style = Paint.Style.FILL
+                    isAntiAlias = true
+                }
+
+                when (element.labelShape) {
+                    LabelShape.RECTANGLE_FILL -> {
+                        labelPaint.style = Paint.Style.FILL
+                        canvas.drawRect(labelRect, labelPaint)
+                    }
+                    LabelShape.RECTANGLE_STROKE -> {
+                        labelPaint.style = Paint.Style.STROKE
+                        labelPaint.strokeWidth = 4f // You can adjust the stroke width as needed
+                        canvas.drawRect(labelRect, labelPaint)
+                    }
+
+                    LabelShape.OVAL_FILL -> {
+                        labelPaint.style = Paint.Style.FILL
+                        canvas.drawOval(labelRect, labelPaint)
+                    }
+                    LabelShape.OVAL_STROKE -> {
+                        labelPaint.style = Paint.Style.STROKE
+                        labelPaint.strokeWidth = 4f // Adjust stroke width as needed
+                        canvas.drawOval(labelRect, labelPaint)
+                    }
+
+                    LabelShape.CIRCLE_FILL -> {
+                        labelPaint.style = Paint.Style.FILL
+                        val radius = Math.min(labelRect.width(), labelRect.height()) / 2f
+                        val centerX = labelRect.centerX()
+                        val centerY = labelRect.centerY()
+                        canvas.drawCircle(centerX, centerY, radius, labelPaint)
+                    }
+                    LabelShape.CIRCLE_STROKE -> {
+                        labelPaint.style = Paint.Style.STROKE
+                        labelPaint.strokeWidth = 4f // Adjust stroke width as needed
+                        val radius = Math.min(labelRect.width(), labelRect.height()) / 2f
+                        val centerX = labelRect.centerX()
+                        val centerY = labelRect.centerY()
+                        canvas.drawCircle(centerX, centerY, radius, labelPaint)
+                    }
+
+                    LabelShape.ROUNDED_RECTANGLE_FILL -> {
+                        labelPaint.style = Paint.Style.FILL
+                        canvas.drawRoundRect(labelRect, 20f, 20f, labelPaint) // Adjust corner radius as needed
+                    }
+                    LabelShape.ROUNDED_RECTANGLE_STROKE -> {
+                        labelPaint.style = Paint.Style.STROKE
+                        labelPaint.strokeWidth = 4f // Adjust stroke width as needed
+                        canvas.drawRoundRect(labelRect, 20f, 20f, labelPaint) // Adjust corner radius as needed
+                    }
+
+                    else -> {
+                        // Default to drawing a rectangle if no shape matches
+                        labelPaint.style = Paint.Style.FILL
+                        canvas.drawRect(labelRect, labelPaint)
+                    }
+                }
+            }
+
+            val fillPaint = TextPaint(element.paint)
+            fillPaint.style = Paint.Style.FILL
+            fillPaint.color = element.paintColor
+            canvas.drawText(line, 0f, yOffset, fillPaint)
+
+            // Draw border (stroke)
+            if (element.hasBorder && element.borderWidth > 0f) {
+                val strokePaint = TextPaint(element.paint)
+                strokePaint.style = Paint.Style.STROKE
+                strokePaint.strokeWidth = element.borderWidth
+                strokePaint.color = element.borderColor
+                canvas.drawText(line, 0f, yOffset, strokePaint)
             }
         }
     }
