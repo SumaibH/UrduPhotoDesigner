@@ -1,31 +1,33 @@
-package com.example.urduphotodesigner.ui.editor.panels.text.appearance
+package com.example.urduphotodesigner.ui.editor.panels.text.format
 
 import android.os.Bundle
+import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import com.example.urduphotodesigner.data.model.PanelTabs
-import com.example.urduphotodesigner.databinding.FragmentAppearanceBinding
+import com.example.urduphotodesigner.databinding.FragmentFormatBinding
+import com.example.urduphotodesigner.ui.editor.panels.text.appearance.PanelTabsAdapter
+import com.example.urduphotodesigner.ui.editor.panels.text.appearance.AppearancePagerAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class AppearanceFragment : Fragment() {
-    private var _binding: FragmentAppearanceBinding? = null
+class FormatFragment : Fragment() {
+    private var _binding: FragmentFormatBinding? = null
     private val binding get() = _binding!!
 
     private lateinit var tabs: ArrayList<PanelTabs>
     private lateinit var adapter: PanelTabsAdapter
-    private lateinit var pagerAdapter: AppearancePagerAdapter
+    private lateinit var pagerAdapter: FormatPagerAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentAppearanceBinding.inflate(layoutInflater, container, false)
+        _binding = FragmentFormatBinding.inflate(layoutInflater, container, false)
         return binding.root
     }
 
@@ -46,7 +48,7 @@ class AppearanceFragment : Fragment() {
         binding.viewPager.orientation = ViewPager2.ORIENTATION_VERTICAL
         binding.viewPager.offscreenPageLimit = 1
 
-        pagerAdapter = AppearancePagerAdapter(this, tabs)
+        pagerAdapter = FormatPagerAdapter(this, tabs)
         binding.viewPager.adapter = pagerAdapter
 
         binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
@@ -61,10 +63,10 @@ class AppearanceFragment : Fragment() {
 
     private fun initObservers() {
         lifecycleScope.launch {
-            tabs.add(PanelTabs(0, "Text", true))
-            tabs.add(PanelTabs(1, "Border", false))
-            tabs.add(PanelTabs(2, "Shadow", false))
-            tabs.add(PanelTabs(3, "Label", false))
+            tabs.add(PanelTabs(0, "Spacing", true))
+            tabs.add(PanelTabs(1, "Casing", false))
+            tabs.add(PanelTabs(2, "Decoration", false))
+            tabs.add(PanelTabs(3, "Alignment", false))
 
             adapter.submitList(ArrayList(tabs))
             handleFontSelection(tabs.firstOrNull()) // Select "All" by default
@@ -92,8 +94,8 @@ class AppearanceFragment : Fragment() {
     }
 
     companion object {
-        fun newInstance(): AppearanceFragment {
-            return AppearanceFragment()
+        fun newInstance(): FormatFragment {
+            return FormatFragment()
         }
     }
 }

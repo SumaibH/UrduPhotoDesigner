@@ -19,7 +19,6 @@ import com.example.urduphotodesigner.databinding.FragmentColorsListBinding
 import com.flask.colorpicker.ColorPickerView
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.Locale
 
 @AndroidEntryPoint
 class ColorsListFragment : Fragment() {
@@ -101,7 +100,6 @@ class ColorsListFragment : Fragment() {
         }) {
             openColorPickerDialog()
         }
-
 
         binding.colors.apply {
             adapter = colorsAdapter

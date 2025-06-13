@@ -6,16 +6,16 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.urduphotodesigner.R
-import com.example.urduphotodesigner.data.model.AppearanceTabs
+import com.example.urduphotodesigner.data.model.PanelTabs
 import com.example.urduphotodesigner.databinding.LayoutTabsItemBinding
 
-class AppearanceAdapter(
-    private val onFontSelected: (AppearanceTabs) -> Unit
-) : RecyclerView.Adapter<AppearanceAdapter.FontViewHolder>() {
+class PanelTabsAdapter(
+    private val onFontSelected: (PanelTabs) -> Unit
+) : RecyclerView.Adapter<PanelTabsAdapter.FontViewHolder>() {
 
-    private val fonts = mutableListOf<AppearanceTabs>()
+    private val fonts = mutableListOf<PanelTabs>()
 
-    fun submitList(newList: List<AppearanceTabs>) {
+    fun submitList(newList: List<PanelTabs>) {
         fonts.clear()
         fonts.addAll(newList)
         notifyDataSetChanged()
@@ -35,7 +35,7 @@ class AppearanceAdapter(
 
     inner class FontViewHolder(private val binding: LayoutTabsItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(font: AppearanceTabs) {
+        fun bind(font: PanelTabs) {
 
             if (font.is_selected) {
                 binding.root.backgroundTintList = ColorStateList.valueOf(

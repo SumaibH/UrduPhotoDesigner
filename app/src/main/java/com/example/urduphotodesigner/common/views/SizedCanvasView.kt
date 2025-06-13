@@ -39,6 +39,12 @@ import kotlin.math.max
 import com.example.urduphotodesigner.common.canvas.sealed.ImageFilter
 import androidx.core.graphics.withMatrix
 import com.example.urduphotodesigner.common.canvas.enums.LabelShape
+import com.example.urduphotodesigner.common.canvas.enums.LetterCasing
+import com.example.urduphotodesigner.common.canvas.enums.ListStyle
+import com.example.urduphotodesigner.common.canvas.enums.ParagraphIndentation
+import com.example.urduphotodesigner.common.canvas.enums.TextAlignment
+import com.example.urduphotodesigner.common.canvas.enums.TextDecoration
+import java.util.Locale
 
 class SizedCanvasView @JvmOverloads constructor(
     context: Context,
@@ -210,13 +216,78 @@ class SizedCanvasView @JvmOverloads constructor(
      * Note: With multi-selection, this should ideally apply to all selected text elements.
      * For now, it applies to the first selected text element found.
      */
+    // Set line spacing for selected text elements
     fun setLineSpacing(multiplier: Float) {
-        // Apply to all selected text elements
         selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
             element.lineSpacingMultiplier = multiplier
-            onElementChanged?.invoke(element) // Notify ViewModel of change
+            element.updatePaintProperties()  // Ensure paint is updated after spacing change
+            onElementChanged?.invoke(element)  // Notify listeners of the change
         }
-        invalidate()
+        invalidate()  // Redraw the canvas
+    }
+
+    // Set letter spacing for selected text elements
+    fun setLetterSpacing(spacing: Float) {
+        selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
+            element.letterSpacing = spacing
+            element.updatePaintProperties()  // Ensure paint is updated after spacing change
+            onElementChanged?.invoke(element)  // Notify listeners of the change
+        }
+        invalidate()  // Redraw the canvas
+    }
+
+    // Set letter casing for selected text elements
+    fun setLetterCasing(casing: LetterCasing) {
+        selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
+            element.letterCasing = casing
+            // Apply the appropriate letter casing
+            element.text = when (casing) {
+                LetterCasing.ALL_CAPS -> element.text.toUpperCase()
+                LetterCasing.LOWER_CASE -> element.text.toLowerCase()
+                LetterCasing.TITLE_CASE -> element.text.split(" ").joinToString(" ") { it.capitalize() }
+                else -> element.text
+            }
+            onElementChanged?.invoke(element)  // Notify listeners of the change
+        }
+        invalidate()  // Redraw the canvas
+    }
+
+    // Set text decoration (bold, italic, underline, strike-through) for selected text elements
+    fun setTextDecoration(decorations: Set<TextDecoration>) {
+        selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
+            element.textDecoration = decorations
+            element.updatePaintProperties()  // Ensure paint is updated after decoration change
+            onElementChanged?.invoke(element)  // Notify listeners of the change
+        }
+        invalidate()  // Redraw the canvas
+    }
+
+    // Set text alignment for selected text elements
+    fun setTextAlignment(alignment: TextAlignment) {
+        selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
+            element.alignment = alignment
+            element.updatePaintProperties()  // Ensure paint is updated after alignment change
+            onElementChanged?.invoke(element)  // Notify listeners of the change
+        }
+        invalidate()  // Redraw the canvas
+    }
+
+    // Set paragraph indentation (increase or decrease) for selected text elements
+    fun setParagraphIndentation(indent: ParagraphIndentation) {
+        selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
+            element.paragraphIndentation = indent
+            onElementChanged?.invoke(element)  // Notify listeners of the change
+        }
+        invalidate()  // Redraw the canvas
+    }
+
+    // Set list style (bulleted or numbered) for selected text elements
+    fun setListStyle(style: ListStyle) {
+        selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
+            element.listStyle = style
+            onElementChanged?.invoke(element)  // Notify listeners of the change
+        }
+        invalidate()  // Redraw the canvas
     }
 
     fun clearCanvas() {
@@ -957,9 +1028,11 @@ class SizedCanvasView @JvmOverloads constructor(
         val fm = element.paint.fontMetrics
         val lineHeight = (fm.bottom - fm.top) * element.lineSpacingMultiplier
         val totalHeight = lineHeight * lines.size
-        lines.forEachIndexed { i, line ->
 
-            val yOffset = -totalHeight / 2 + i * lineHeight - fm.top
+        var yOffset = -totalHeight / 2 + fm.bottom
+
+        lines.forEachIndexed { i, line ->
+//            var yOffset = -totalHeight / 2 + i * lineHeight - fm.top
 
             if (element.hasLabel) {
                 val maxLineWidth = lines.maxOf { element.paint.measureText(it) }
@@ -1034,7 +1107,47 @@ class SizedCanvasView @JvmOverloads constructor(
             val fillPaint = TextPaint(element.paint)
             fillPaint.style = Paint.Style.FILL
             fillPaint.color = element.paintColor
-            canvas.drawText(line, 0f, yOffset, fillPaint)
+
+            if (i == 0 && element.paragraphIndentation == ParagraphIndentation.INCREASE_INDENT) {
+                // Increase indentation for the first line
+                element.x += 30f  // Example: Increase indentation by 30px
+            } else if (i == 0 && element.paragraphIndentation == ParagraphIndentation.DECREASE_INDENT) {
+                // Decrease indentation for the first line
+                element.x -= 30f  // Example: Decrease indentation by 30px
+            }
+
+            // Apply list style (bullets or numbering)
+            val textToDraw = when (element.listStyle) {
+                ListStyle.BULLETED -> "• $line"  // Add bullet point to line
+                ListStyle.NUMBERED -> "${i + 1}. $line"  // Add numbering
+                else -> line  // Just regular text
+            }
+
+            // Handle letter spacing
+            element.paint.letterSpacing = element.letterSpacing
+
+            // Handle text alignment (left, center, right, justify)
+            val adjustedX = when (element.alignment) {
+                TextAlignment.LEFT -> -element.getLocalContentWidth() / 2f
+                TextAlignment.CENTER -> 0f
+                TextAlignment.RIGHT -> element.getLocalContentWidth() / 2f
+                TextAlignment.JUSTIFY -> {
+                    // Justify the text (adjust space between words)
+                    justifyText(canvas, textToDraw, yOffset, element)
+                    return  // Exit early for justified text rendering
+                }
+            }
+
+            fillPaint.letterSpacing = element.letterSpacing
+
+            val displayText = when (element.letterCasing) {
+                LetterCasing.ALL_CAPS -> line.uppercase()
+                LetterCasing.LOWER_CASE -> line.lowercase()
+                LetterCasing.TITLE_CASE -> line.split(" ").joinToString(" ") { it.capitalize(Locale.ROOT) }
+                else -> line
+            }
+
+            canvas.drawText(displayText, adjustedX, yOffset, fillPaint)
 
             // Draw border (stroke)
             if (element.hasBorder && element.borderWidth > 0f) {
@@ -1044,6 +1157,29 @@ class SizedCanvasView @JvmOverloads constructor(
                 strokePaint.color = element.borderColor
                 canvas.drawText(line, 0f, yOffset, strokePaint)
             }
+
+            yOffset += lineHeight
+        }
+    }
+
+    private fun justifyText(canvas: Canvas, text: String, yOffset: Float, element: CanvasElement) {
+        val words = text.split(" ")
+        val totalWidth = element.paint.measureText(text)
+        val spaceWidth = element.paint.measureText(" ")
+
+        if (words.size > 1) {
+            val totalSpaces = (element.getLocalContentWidth() - totalWidth) / (words.size - 1)
+            var xOffset = -element.getLocalContentWidth() / 2f
+
+            words.forEachIndexed { index, word ->
+                if (index > 0) {
+                    xOffset += totalSpaces
+                }
+                canvas.drawText(word, xOffset, yOffset, element.paint)
+                xOffset += element.paint.measureText(word) + spaceWidth
+            }
+        } else {
+            canvas.drawText(text, -element.getLocalContentWidth() / 2f, yOffset, element.paint)
         }
     }
 

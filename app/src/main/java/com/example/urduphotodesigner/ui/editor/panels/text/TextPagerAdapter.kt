@@ -7,6 +7,7 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.urduphotodesigner.ui.editor.panels.text.appearance.AppearanceFragment
 import com.example.urduphotodesigner.ui.editor.panels.text.appearance.ColorsListFragment
 import com.example.urduphotodesigner.ui.editor.panels.text.fonts.FontsFragment
+import com.example.urduphotodesigner.ui.editor.panels.text.format.FormatFragment
 import com.example.urduphotodesigner.ui.editor.panels.text.para.ParagraphOptionsFragment
 
 class TextPagerAdapter(
@@ -21,8 +22,8 @@ class TextPagerAdapter(
         return when (tabs[position]) {
             "Font" -> FontsFragment.newInstance()
             "Appearance" -> AppearanceFragment.newInstance()
-            "Format" -> ParagraphOptionsFragment.newInstance()
-            "Style" -> ParagraphOptionsFragment.newInstance()
+            "Format" -> FormatFragment.newInstance()
+            "Style" -> FormatFragment.newInstance()
             else -> FontsFragment.newInstance()
         }
     }

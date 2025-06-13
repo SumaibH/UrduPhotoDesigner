@@ -20,6 +20,11 @@ import com.example.urduphotodesigner.common.canvas.model.ExportOptions
 import com.example.urduphotodesigner.common.canvas.model.ExportResolution
 import com.example.urduphotodesigner.common.canvas.enums.ElementType
 import com.example.urduphotodesigner.common.canvas.enums.LabelShape
+import com.example.urduphotodesigner.common.canvas.enums.LetterCasing
+import com.example.urduphotodesigner.common.canvas.enums.ListStyle
+import com.example.urduphotodesigner.common.canvas.enums.ParagraphIndentation
+import com.example.urduphotodesigner.common.canvas.enums.TextAlignment
+import com.example.urduphotodesigner.common.canvas.enums.TextDecoration
 import com.example.urduphotodesigner.common.canvas.sealed.BatchedCanvasAction
 import com.example.urduphotodesigner.common.canvas.sealed.CanvasAction
 import com.example.urduphotodesigner.common.canvas.sealed.ImageFilter
@@ -112,6 +117,27 @@ class CanvasViewModel @Inject constructor(
 
     private val _currentTextLabelShape  = MutableLiveData<LabelShape>(LabelShape.RECTANGLE_FILL)
     val currentTextLabelShape: LiveData<LabelShape> = _currentTextLabelShape
+
+    private val _lineSpacing = MutableLiveData<Float>(1.0f)
+    val lineSpacing: LiveData<Float> = _lineSpacing
+
+    private val _letterSpacing = MutableLiveData<Float>(0f)
+    val letterSpacing: LiveData<Float> = _letterSpacing
+
+    private val _letterCasing = MutableLiveData<LetterCasing>(LetterCasing.NONE)
+    val letterCasing: LiveData<LetterCasing> = _letterCasing
+
+    private val _textDecoration = MutableLiveData<Set<TextDecoration>>(emptySet())
+    val textDecoration: LiveData<Set<TextDecoration>> = _textDecoration
+
+    private val _textAlignment = MutableLiveData<TextAlignment>(TextAlignment.CENTER)
+    val textAlignment: LiveData<TextAlignment> = _textAlignment
+
+    private val _paragraphIndentation = MutableLiveData<ParagraphIndentation>(ParagraphIndentation.NONE)
+    val paragraphIndentation: LiveData<ParagraphIndentation> = _paragraphIndentation
+
+    private val _listStyle = MutableLiveData<ListStyle>(ListStyle.NONE)
+    val listStyle: LiveData<ListStyle> = _listStyle
 
     private var selectedElement: CanvasElement? = null
     private var currentBatchAction: BatchedCanvasAction? = null
@@ -217,6 +243,59 @@ class CanvasViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun setLineSpacing(spacing: Float) {
+        _lineSpacing.value = spacing
+        applyChangesToSelectedTextElements()
+    }
+
+    fun setLetterSpacing(spacing: Float) {
+        _letterSpacing.value = spacing
+        applyChangesToSelectedTextElements()
+    }
+
+    fun setLetterCasing(casing: LetterCasing) {
+        _letterCasing.value = casing
+        applyChangesToSelectedTextElements()
+    }
+
+    fun setTextDecoration(decorations: Set<TextDecoration>) {
+        _textDecoration.value = decorations
+        applyChangesToSelectedTextElements()
+    }
+
+    fun setTextAlignment(alignment: TextAlignment) {
+        _textAlignment.value = alignment
+        applyChangesToSelectedTextElements()
+    }
+
+    fun setParagraphIndentation(indent: ParagraphIndentation) {
+        _paragraphIndentation.value = indent
+        applyChangesToSelectedTextElements()
+    }
+
+    fun setListStyle(style: ListStyle) {
+        _listStyle.value = style
+        applyChangesToSelectedTextElements()
+    }
+
+    private fun applyChangesToSelectedTextElements() {
+        val currentList = _canvasElements.value?.toMutableList() ?: return
+        val updatedList = currentList.map { element ->
+            if (element.isSelected && element.type == ElementType.TEXT) {
+                element.copy(
+                    lineSpacing = _lineSpacing.value ?: 1.0f,
+                    letterSpacing = _letterSpacing.value ?: 0f,
+                    letterCasing = _letterCasing.value ?: LetterCasing.NONE,
+                    textDecoration = _textDecoration.value ?: emptySet(),
+                    alignment = _textAlignment.value ?: TextAlignment.CENTER,
+                    paragraphIndentation = _paragraphIndentation.value ?: ParagraphIndentation.NONE,
+                    listStyle = _listStyle.value ?: ListStyle.NONE
+                )
+            } else element
+        }
+        _canvasElements.value = updatedList
     }
 
     fun setCanvasSize(newSize: CanvasSize) {

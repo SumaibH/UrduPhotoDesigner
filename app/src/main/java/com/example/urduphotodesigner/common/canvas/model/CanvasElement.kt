@@ -5,19 +5,22 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.PointF
-import android.graphics.RectF
 import android.graphics.Typeface
 import android.text.TextPaint
-import androidx.core.content.res.ResourcesCompat
-import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.canvas.enums.ElementType
 import com.example.urduphotodesigner.common.canvas.enums.LabelShape
+import com.example.urduphotodesigner.common.canvas.enums.LetterCasing
+import com.example.urduphotodesigner.common.canvas.enums.ListStyle
+import com.example.urduphotodesigner.common.canvas.enums.ParagraphIndentation
+import com.example.urduphotodesigner.common.canvas.enums.TextAlignment
+import com.example.urduphotodesigner.common.canvas.enums.TextDecoration
 import com.example.urduphotodesigner.common.canvas.sealed.ImageFilter
 import java.io.Serializable
+import java.util.Locale
 import java.util.UUID
 
-private const val ICON_PADDING = 20f // Or whatever value suits your icon sizes and visual preference
-private const val BOUNDS_PADDING = 20f // Padding you used for getBounds
+private const val ICON_PADDING =
+    20f // Or whatever value suits your icon sizes and visual preference
 
 // Make CanvasElement Serializable to allow it to be passed via Bundles and saved.
 data class CanvasElement(
@@ -59,7 +62,15 @@ data class CanvasElement(
     // Label
     var hasLabel: Boolean = false,
     var labelColor: Int = Color.YELLOW,
-    var labelShape: LabelShape = LabelShape.RECTANGLE_FILL
+    var labelShape: LabelShape = LabelShape.RECTANGLE_FILL,
+
+    var lineSpacing: Float = 1.0f,
+    var letterSpacing: Float = 0f,
+    var letterCasing: LetterCasing = LetterCasing.NONE,
+    var textDecoration: Set<TextDecoration> = emptySet(),
+    var alignment: TextAlignment = TextAlignment.CENTER,
+    var paragraphIndentation: ParagraphIndentation = ParagraphIndentation.NONE,
+    var listStyle: ListStyle = ListStyle.NONE
 ) : Serializable {
 
     @Transient
@@ -77,12 +88,14 @@ data class CanvasElement(
         paint.textAlign = paintTextAlign
         paint.alpha = paintAlpha
 
+        // Apply text shadow if enabled
         if (hasShadow) {
             paint.setShadowLayer(8f, shadowDx, shadowDy, shadowColor)
         } else {
             paint.clearShadowLayer()
         }
 
+        // Apply text border if enabled
         if (hasBorder) {
             paint.style = Paint.Style.STROKE
             paint.strokeWidth = borderWidth
@@ -91,8 +104,40 @@ data class CanvasElement(
             paint.style = Paint.Style.FILL
         }
 
-        paint.typeface = context?.let { ResourcesCompat.getFont(it, R.font.regular) } ?: Typeface.DEFAULT
+        // Apply letter spacing
+        if (letterSpacing != 0f) {
+            paint.letterSpacing = letterSpacing
+        }
+
+        // Apply text decoration: bold, italic, etc.
+        val typefaceStyle = when {
+            TextDecoration.BOLD in textDecoration -> Typeface.BOLD
+            TextDecoration.ITALIC in textDecoration -> Typeface.ITALIC
+            else -> Typeface.NORMAL
+        }
+        paint.typeface = Typeface.create(paint.typeface, typefaceStyle)
+
+        // Apply text casing (capitalization)
+        text = when (letterCasing) {
+            LetterCasing.ALL_CAPS -> text.uppercase()
+            LetterCasing.LOWER_CASE -> text.lowercase()
+            LetterCasing.TITLE_CASE -> text.split(" ").joinToString(" ") { it.capitalize(Locale.ROOT) }
+            else -> text
+        }
+
+        // Update line spacing multiplier
+        paint.fontMetrics
+
+        // Apply paragraph indentation (applied at the start of the first line)
+        if (paragraphIndentation == ParagraphIndentation.INCREASE_INDENT) {
+            // Apply indentation on the X position of the first line
+            x += 30f // Example: Increase indentation by 30px
+        } else if (paragraphIndentation == ParagraphIndentation.DECREASE_INDENT) {
+            // Apply indentation on the X position of the first line
+            x -= 30f // Example: Decrease indentation by 30px
+        }
     }
+
 
     fun getLocalContentWidth(): Float {
         return if (type == ElementType.TEXT) {
@@ -122,29 +167,6 @@ data class CanvasElement(
         } else {
             bitmap?.height?.toFloat() ?: 0f
         }
-    }
-
-    // This function returns bounds in the CANVAS coordinate system, scaled and positioned.
-    // It's used for general element selection/deselection based on touch.
-    // Note: The padding here (BOUNDS_PADDING) makes the tappable area for selection larger.
-    fun getBounds(): RectF {
-        val localContentWidth = getLocalContentWidth()
-        val localContentHeight = getLocalContentHeight()
-
-        // Scaled dimensions of the content itself
-        val scaledContentWidth = localContentWidth * scale
-        val scaledContentHeight = localContentHeight * scale
-
-        // Add padding to the scaled content dimensions to get the final tappable/bounding box size
-        val finalWidth = scaledContentWidth + BOUNDS_PADDING
-        val finalHeight = scaledContentHeight + BOUNDS_PADDING
-
-        return RectF(
-            x - finalWidth / 2,
-            y - finalHeight / 2,
-            x + finalWidth / 2,
-            y + finalHeight / 2
-        )
     }
 
     // This function MUST return icon positions in the ELEMENT'S LOCAL, UNSCALED coordinate system

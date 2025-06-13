@@ -62,4 +62,8 @@
     <string name="border_width">Border width</string>
     <string name="shadow_x">Shadow X</string>
     <string name="shadow_y">Shadow Y</string>
+    <string name="line_spacing">Line Spacing</string>
+    <string name="letter_spacing">Letter Spacing</string>
+    <string name="paragraph_indentation">Paragraph Indentation</string>
+    <string name="list_style">List Style</string>
 </resources>

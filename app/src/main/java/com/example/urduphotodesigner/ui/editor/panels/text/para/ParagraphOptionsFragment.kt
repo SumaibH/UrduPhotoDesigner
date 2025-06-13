@@ -7,8 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Observer
-import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.databinding.FragmentParagraphOptionsBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -58,7 +56,7 @@ class ParagraphOptionsFragment : Fragment() {
 
         binding.seekBar.addOnChangeListener { _, value, _ ->
             viewModel.setTextSize(value)
-            binding.fontTitle.text = "Font Size: ${value.toInt()}" // Update title dynamically
+            binding.fontTitle.text = "Font Size: ${value.toInt()}"
         }
 
         val alignCards = listOf(
@@ -81,8 +79,14 @@ class ParagraphOptionsFragment : Fragment() {
     }
 
     companion object {
-        fun newInstance(): ParagraphOptionsFragment {
-            return ParagraphOptionsFragment()
+        private const val ARG_TAB_NAME = "tab_name"
+
+        fun newInstance(tabName: String): ParagraphOptionsFragment {
+            val fragment = ParagraphOptionsFragment()
+            val args = Bundle()
+            args.putString(ARG_TAB_NAME, tabName)
+            fragment.arguments = args
+            return fragment
         }
     }
 }
