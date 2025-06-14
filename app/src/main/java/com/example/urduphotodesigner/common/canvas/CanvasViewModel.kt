@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
-import android.graphics.Paint
 import android.graphics.Typeface
 import android.util.Base64
 import androidx.core.content.res.ResourcesCompat
@@ -13,18 +12,17 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.urduphotodesigner.R
+import com.example.urduphotodesigner.common.canvas.enums.ElementType
+import com.example.urduphotodesigner.common.canvas.enums.LabelShape
+import com.example.urduphotodesigner.common.canvas.enums.LetterCasing
+import com.example.urduphotodesigner.common.canvas.enums.ListStyle
+import com.example.urduphotodesigner.common.canvas.enums.TextAlignment
+import com.example.urduphotodesigner.common.canvas.enums.TextDecoration
 import com.example.urduphotodesigner.common.canvas.model.CanvasElement
 import com.example.urduphotodesigner.common.canvas.model.CanvasSize
 import com.example.urduphotodesigner.common.canvas.model.CanvasTemplate
 import com.example.urduphotodesigner.common.canvas.model.ExportOptions
 import com.example.urduphotodesigner.common.canvas.model.ExportResolution
-import com.example.urduphotodesigner.common.canvas.enums.ElementType
-import com.example.urduphotodesigner.common.canvas.enums.LabelShape
-import com.example.urduphotodesigner.common.canvas.enums.LetterCasing
-import com.example.urduphotodesigner.common.canvas.enums.ListStyle
-import com.example.urduphotodesigner.common.canvas.enums.ParagraphIndentation
-import com.example.urduphotodesigner.common.canvas.enums.TextAlignment
-import com.example.urduphotodesigner.common.canvas.enums.TextDecoration
 import com.example.urduphotodesigner.common.canvas.sealed.BatchedCanvasAction
 import com.example.urduphotodesigner.common.canvas.sealed.CanvasAction
 import com.example.urduphotodesigner.common.canvas.sealed.ImageFilter
@@ -32,7 +30,6 @@ import com.example.urduphotodesigner.data.model.FontEntity
 import com.example.urduphotodesigner.domain.usecase.GetFontsUseCase
 import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -82,8 +79,8 @@ class CanvasViewModel @Inject constructor(
     private val _currentTextSize = MutableLiveData<Float>(40f)  // Initialize with a default size
     val currentTextSize: LiveData<Float> = _currentTextSize
 
-    private val _currentTextAlignment = MutableLiveData<Paint.Align>(Paint.Align.CENTER)
-    val currentTextAlignment: LiveData<Paint.Align> = _currentTextAlignment
+    private val _currentTextAlignment = MutableLiveData<TextAlignment>(TextAlignment.CENTER)
+    val currentTextAlignment: LiveData<TextAlignment> = _currentTextAlignment
 
     private val _currentTextOpacity = MutableLiveData<Int>(255)
     val currentTextOpacity: LiveData<Int> = _currentTextOpacity
@@ -109,13 +106,13 @@ class CanvasViewModel @Inject constructor(
     private val _currentTextShadowDy = MutableLiveData<Float>(1f)
     val currentTextShadowDy: LiveData<Float> = _currentTextShadowDy
 
-    private val _currentTextShadowRadius  = MutableLiveData<Float>(1f)
+    private val _currentTextShadowRadius = MutableLiveData<Float>(1f)
     val currentTextShadowRadius: LiveData<Float> = _currentTextShadowRadius
 
     private val _currentTextLabelColor = MutableLiveData<Int>(Color.BLACK)
     val currentTextLabelColor: LiveData<Int> = _currentTextLabelColor
 
-    private val _currentTextLabelShape  = MutableLiveData<LabelShape>(LabelShape.RECTANGLE_FILL)
+    private val _currentTextLabelShape = MutableLiveData<LabelShape>(LabelShape.RECTANGLE_FILL)
     val currentTextLabelShape: LiveData<LabelShape> = _currentTextLabelShape
 
     private val _lineSpacing = MutableLiveData<Float>(1.0f)
@@ -133,8 +130,9 @@ class CanvasViewModel @Inject constructor(
     private val _textAlignment = MutableLiveData<TextAlignment>(TextAlignment.CENTER)
     val textAlignment: LiveData<TextAlignment> = _textAlignment
 
-    private val _paragraphIndentation = MutableLiveData<ParagraphIndentation>(ParagraphIndentation.NONE)
-    val paragraphIndentation: LiveData<ParagraphIndentation> = _paragraphIndentation
+    private val _paragraphIndentation =
+        MutableLiveData<Float>(0f)
+    val paragraphIndentation: LiveData<Float> = _paragraphIndentation
 
     private val _listStyle = MutableLiveData<ListStyle>(ListStyle.NONE)
     val listStyle: LiveData<ListStyle> = _listStyle
@@ -270,10 +268,33 @@ class CanvasViewModel @Inject constructor(
         applyChangesToSelectedTextElements()
     }
 
-    fun setParagraphIndentation(indent: ParagraphIndentation) {
-        _paragraphIndentation.value = indent
-        applyChangesToSelectedTextElements()
+    // In your ViewModel
+    fun increaseIndent() {
+        val currentList = _canvasElements.value?.toMutableList() ?: return
+        val updatedList = currentList.map { element ->
+            if (element.isSelected && element.type == ElementType.TEXT) {
+                // Increase the indent by 5px
+                element.copy(currentIndent = element.currentIndent + 5f)
+            } else {
+                element
+            }
+        }
+        _canvasElements.value = updatedList
     }
+
+    fun decreaseIndent() {
+        val currentList = _canvasElements.value?.toMutableList() ?: return
+        val updatedList = currentList.map { element ->
+            if (element.isSelected && element.type == ElementType.TEXT) {
+                // Decrease the indent by 5px
+                element.copy(currentIndent = element.currentIndent - 5f)
+            } else {
+                element
+            }
+        }
+        _canvasElements.value = updatedList
+    }
+
 
     fun setListStyle(style: ListStyle) {
         _listStyle.value = style
@@ -290,9 +311,12 @@ class CanvasViewModel @Inject constructor(
                     letterCasing = _letterCasing.value ?: LetterCasing.NONE,
                     textDecoration = _textDecoration.value ?: emptySet(),
                     alignment = _textAlignment.value ?: TextAlignment.CENTER,
-                    paragraphIndentation = _paragraphIndentation.value ?: ParagraphIndentation.NONE,
-                    listStyle = _listStyle.value ?: ListStyle.NONE
-                )
+                    currentIndent = _paragraphIndentation.value ?: 0f,
+                    listStyle = _listStyle.value ?: ListStyle.NONE,
+                ).apply {
+                    // Restore font!
+                    paint.typeface = element.applyTypefaceFromFontList()
+                }
             } else element
         }
         _canvasElements.value = updatedList
@@ -535,15 +559,10 @@ class CanvasViewModel @Inject constructor(
                     val font =
                         localFonts.value.find { font -> font.id.toString() == selectedElementCopy.fontId }
                     if (font != null && font.file_path?.isNotBlank() == true) {
-                        try {
-                            selectedElementCopy.paint.typeface =
-                                Typeface.createFromFile(font.file_path)
-                        } catch (e: Exception) {
-                            println("Error re-applying typeface for selected element: ${font.file_path}. Error: ${e.message}")
-                            selectedElementCopy.paint.typeface =
-                                context?.let { ResourcesCompat.getFont(it, R.font.regular) }
-                                    ?: Typeface.DEFAULT
-                        }
+
+                        selectedElementCopy.paint.typeface =
+                            selectedElementCopy.applyTypefaceFromFontList()
+
                     } else {
                         selectedElementCopy.paint.typeface =
                             context?.let { ResourcesCompat.getFont(it, R.font.regular) }
@@ -563,7 +582,7 @@ class CanvasViewModel @Inject constructor(
                     }
                     _currentTextColor.value = selectedElementCopy.paintColor
                     _currentTextSize.value = selectedElementCopy.paintTextSize
-                    _currentTextAlignment.value = selectedElementCopy.paintTextAlign
+                    _currentTextAlignment.value = selectedElementCopy.alignment
                     _currentTextOpacity.value = selectedElementCopy.paintAlpha
                     _currentImageFilter.value = null
                 } else if (element.type == ElementType.IMAGE) {
@@ -572,7 +591,7 @@ class CanvasViewModel @Inject constructor(
                     _currentFont.value = null
                     _currentTextColor.value = Color.BLACK
                     _currentTextSize.value = 40f
-                    _currentTextAlignment.value = Paint.Align.CENTER
+                    _currentTextAlignment.value = TextAlignment.CENTER
                     _currentTextOpacity.value = selectedElementCopy.paint.alpha
                 }
             }
@@ -581,7 +600,7 @@ class CanvasViewModel @Inject constructor(
             _currentFont.value = null
             _currentTextColor.value = Color.BLACK
             _currentTextSize.value = 40f
-            _currentTextAlignment.value = Paint.Align.CENTER
+            _currentTextAlignment.value = TextAlignment.CENTER
             _currentTextOpacity.value = 255
             _currentImageFilter.value = null
         }
@@ -623,7 +642,7 @@ class CanvasViewModel @Inject constructor(
             }
             _currentTextColor.value = firstSelectedTextElement.paintColor
             _currentTextSize.value = firstSelectedTextElement.paintTextSize
-            _currentTextAlignment.value = firstSelectedTextElement.paintTextAlign
+            _currentTextAlignment.value = firstSelectedTextElement.alignment
             _currentTextOpacity.value = firstSelectedTextElement.paintAlpha
             _currentImageFilter.value = null
         } else {
@@ -631,7 +650,7 @@ class CanvasViewModel @Inject constructor(
             _currentFont.value = null
             _currentTextColor.value = Color.BLACK
             _currentTextSize.value = 40f
-            _currentTextAlignment.value = Paint.Align.CENTER
+            _currentTextAlignment.value = TextAlignment.CENTER
             _currentTextOpacity.value = 255
         }
         val firstSelectedImageElement =
@@ -752,7 +771,7 @@ class CanvasViewModel @Inject constructor(
             y = 150f,
             paintColor = Color.BLACK,
             paintTextSize = 40f,
-            paintTextAlign = Paint.Align.CENTER,
+            alignment = TextAlignment.CENTER,
             paintAlpha = 255,
             fontId = null // Default font ID
         )
@@ -787,14 +806,16 @@ class CanvasViewModel @Inject constructor(
                     } catch (e: Exception) {
                         println("Error applying font: ${fontEntity.file_path}. Error: ${e.message}")
                         fontId = null
-                        context?.let { ResourcesCompat.getFont(it, R.font.regular) } ?: Typeface.DEFAULT
+                        context?.let { ResourcesCompat.getFont(it, R.font.regular) }
+                            ?: Typeface.DEFAULT
                     }
                 }
             } else element
         }
 
         if (affectedElementsData.isNotEmpty()) {
-            val selectedTextElements = updatedList.filter { it.isSelected && it.type == ElementType.TEXT }
+            val selectedTextElements =
+                updatedList.filter { it.isSelected && it.type == ElementType.TEXT }
             _currentFont.value =
                 when {
                     selectedTextElements.isEmpty() -> null
@@ -944,41 +965,6 @@ class CanvasViewModel @Inject constructor(
     }
 
     /**
-     * Applies text alignment to all currently selected text elements.
-     */
-    fun setTextAlignment(alignment: Paint.Align) {
-        val currentList = _canvasElements.value ?: return
-        val context = currentList.firstOrNull()?.context
-        var oldAlignment: Paint.Align? = null
-        var targetElementId: String? = null
-
-        val updatedList = currentList.map { element ->
-            if (element.isSelected && element.type == ElementType.TEXT) {
-                oldAlignment = oldAlignment ?: element.paintTextAlign
-                targetElementId = targetElementId ?: element.id
-
-                element.copy(context = context).apply {
-                    paintTextAlign = alignment
-                    paint.textAlign = alignment
-                    paint.typeface = element.applyTypefaceFromFontList()
-                }
-            } else element
-        }
-
-        if (targetElementId != null) {
-            _currentTextAlignment.value = alignment
-            _canvasElements.value = updatedList
-            _canvasActions.push(
-                CanvasAction.SetTextAlignment(
-                    alignment, oldAlignment ?: Paint.Align.CENTER, targetElementId!!
-                )
-            )
-            _redoStack.clear()
-            notifyUndoRedoChanged()
-        }
-    }
-
-    /**
      * Applies opacity to all currently selected elements.
      */
     fun setOpacity(opacity: Int) {
@@ -1005,7 +991,13 @@ class CanvasViewModel @Inject constructor(
         if (targetElementId != null) {
             _currentTextOpacity.value = opacity
             _canvasElements.value = updatedList
-            _canvasActions.push(CanvasAction.SetOpacity(opacity, oldOpacity ?: 255, targetElementId!!))
+            _canvasActions.push(
+                CanvasAction.SetOpacity(
+                    opacity,
+                    oldOpacity ?: 255,
+                    targetElementId!!
+                )
+            )
             _redoStack.clear()
             notifyUndoRedoChanged()
         }
@@ -1041,14 +1033,16 @@ class CanvasViewModel @Inject constructor(
     fun applyImageFilter(elementId: String, newFilter: ImageFilter?, isExplicit: Boolean = true) {
         _isExplicitChange = isExplicit
         val currentList = _canvasElements.value ?: return
-        val targetElement = currentList.find { it.id == elementId && it.type == ElementType.IMAGE } ?: return
+        val targetElement =
+            currentList.find { it.id == elementId && it.type == ElementType.IMAGE } ?: return
 
         val oldFilter = targetElement.imageFilter
         if (oldFilter != newFilter) {
             val context = targetElement.context
             val updatedElement = targetElement.copy(imageFilter = newFilter, context = context)
 
-            _canvasElements.value = currentList.map { if (it.id == updatedElement.id) updatedElement else it }
+            _canvasElements.value =
+                currentList.map { if (it.id == updatedElement.id) updatedElement else it }
             if (updatedElement.isSelected) _currentImageFilter.value = newFilter
             _canvasActions.push(CanvasAction.ApplyImageFilter(elementId, newFilter, oldFilter))
             _redoStack.clear()
@@ -1230,6 +1224,8 @@ class CanvasViewModel @Inject constructor(
                             element.copy(context = context) // Copy and re-apply context
                         if (fontToApply != null && fontToApply.file_path?.isNotBlank() == true) {
                             try {
+                                copiedElement.originalTypeface =
+                                    Typeface.createFromFile(fontToApply.file_path)
                                 copiedElement.paint.typeface =
                                     Typeface.createFromFile(fontToApply.file_path)
                                 copiedElement.fontId = fontToApply.id.toString()
@@ -1349,8 +1345,7 @@ class CanvasViewModel @Inject constructor(
                         if (isRedo) action.alignment else action.previousAlignment
                     // Create a copy to trigger paint re-initialization with context, then modify
                     val updatedElement = targetElement.copy(context = context).apply {
-                        paint.textAlign = alignmentToApply
-                        paintTextAlign = alignmentToApply // Update serializable property
+                        alignment = alignmentToApply // Update serializable property
                     }
                     // Re-apply typeface for text elements after updating properties
                     if (updatedElement.type == ElementType.TEXT && updatedElement.fontId != null) {
@@ -1581,7 +1576,7 @@ class CanvasViewModel @Inject constructor(
         _currentFont.value = null
         _currentTextColor.value = Color.BLACK
         _currentTextSize.value = 40f
-        _currentTextAlignment.value = Paint.Align.CENTER
+        _currentTextAlignment.value = TextAlignment.CENTER
         _currentTextOpacity.value = 255
 
         notifyUndoRedoChanged()

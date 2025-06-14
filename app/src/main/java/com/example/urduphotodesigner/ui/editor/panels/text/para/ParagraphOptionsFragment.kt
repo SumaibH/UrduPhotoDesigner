@@ -46,9 +46,9 @@ class ParagraphOptionsFragment : Fragment() {
                 binding.right to Paint.Align.RIGHT,
             )
 
-            alignCards.forEach { (card, alignType) ->
-                card.strokeWidth = if (alignType == alignment) 4 else 0
-            }
+//            alignCards.forEach { (card, alignType) ->
+//                card.strokeWidth = if (alignType == alignment) 4 else 0
+//            }
         }
     }
 
@@ -59,18 +59,18 @@ class ParagraphOptionsFragment : Fragment() {
             binding.fontTitle.text = "Font Size: ${value.toInt()}"
         }
 
-        val alignCards = listOf(
-            binding.left to Paint.Align.LEFT,
-            binding.center to Paint.Align.CENTER,
-            binding.right to Paint.Align.RIGHT,
-        )
-
-        alignCards.forEach { (card, alignType) ->
-            card.setOnClickListener {
-                // This part is already handled by the observer, but we keep it to trigger the ViewModel update
-                viewModel.setTextAlignment(alignType)
-            }
-        }
+//        val alignCards = listOf(
+//            binding.left to Paint.Align.LEFT,
+//            binding.center to Paint.Align.CENTER,
+//            binding.right to Paint.Align.RIGHT,
+//        )
+//
+//        alignCards.forEach { (card, alignType) ->
+//            card.setOnClickListener {
+//                // This part is already handled by the observer, but we keep it to trigger the ViewModel update
+//                viewModel.setTextAlignment(alignType)
+//            }
+//        }
     }
 
     override fun onDestroy() {

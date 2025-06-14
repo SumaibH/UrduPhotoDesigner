@@ -37,7 +37,6 @@ data class CanvasElement(
     var y: Float = 0f,
     var scale: Float = 1f,
     var rotation: Float = 0f,
-    var lineSpacingMultiplier: Float = 1.0f,
     val id: String = UUID.randomUUID().toString(),
     var isLocked: Boolean = false,
     var zIndex: Int = 0,
@@ -46,7 +45,6 @@ data class CanvasElement(
     // Properties of TextPaint for serialization
     var paintColor: Int = Color.BLACK,
     var paintTextSize: Float = 80f,
-    var paintTextAlign: Paint.Align = Paint.Align.CENTER,
     var paintAlpha: Int = 255,
     // Border
     var hasBorder: Boolean = false,
@@ -69,8 +67,11 @@ data class CanvasElement(
     var letterCasing: LetterCasing = LetterCasing.NONE,
     var textDecoration: Set<TextDecoration> = emptySet(),
     var alignment: TextAlignment = TextAlignment.CENTER,
-    var paragraphIndentation: ParagraphIndentation = ParagraphIndentation.NONE,
-    var listStyle: ListStyle = ListStyle.NONE
+    var currentIndent: Float = 0f,
+    var listStyle: ListStyle = ListStyle.NONE,
+
+    @Transient
+    var originalTypeface: Typeface? = null
 ) : Serializable {
 
     @Transient
@@ -83,19 +84,20 @@ data class CanvasElement(
 
     fun updatePaintProperties() {
         if (!::paint.isInitialized) paint = TextPaint(Paint.ANTI_ALIAS_FLAG)
+
+        // Basic properties
         paint.color = paintColor
         paint.textSize = paintTextSize
-        paint.textAlign = paintTextAlign
         paint.alpha = paintAlpha
 
-        // Apply text shadow if enabled
+        // Shadow
         if (hasShadow) {
-            paint.setShadowLayer(8f, shadowDx, shadowDy, shadowColor)
+            paint.setShadowLayer(4f, shadowDx, shadowDy, shadowColor)
         } else {
             paint.clearShadowLayer()
         }
 
-        // Apply text border if enabled
+        // Border or Fill
         if (hasBorder) {
             paint.style = Paint.Style.STROKE
             paint.strokeWidth = borderWidth
@@ -104,40 +106,28 @@ data class CanvasElement(
             paint.style = Paint.Style.FILL
         }
 
-        // Apply letter spacing
-        if (letterSpacing != 0f) {
-            paint.letterSpacing = letterSpacing
-        }
+        // Letter spacing
+        paint.letterSpacing = letterSpacing
 
-        // Apply text decoration: bold, italic, etc.
-        val typefaceStyle = when {
-            TextDecoration.BOLD in textDecoration -> Typeface.BOLD
-            TextDecoration.ITALIC in textDecoration -> Typeface.ITALIC
-            else -> Typeface.NORMAL
-        }
-        paint.typeface = Typeface.create(paint.typeface, typefaceStyle)
+        // Apply underline
+        paint.isUnderlineText = TextDecoration.UNDERLINE in textDecoration
 
-        // Apply text casing (capitalization)
+        // Apply bold + italic using combined style flags
+        var style = Typeface.NORMAL
+        if (TextDecoration.BOLD in textDecoration) style = style or Typeface.BOLD
+        if (TextDecoration.ITALIC in textDecoration) style = style or Typeface.ITALIC
+
+        val baseTypeface = originalTypeface ?: paint.typeface ?: Typeface.DEFAULT
+        paint.typeface = Typeface.create(baseTypeface, style)
+
+        // Apply letter casing
         text = when (letterCasing) {
             LetterCasing.ALL_CAPS -> text.uppercase()
             LetterCasing.LOWER_CASE -> text.lowercase()
-            LetterCasing.TITLE_CASE -> text.split(" ").joinToString(" ") { it.capitalize(Locale.ROOT) }
+            LetterCasing.TITLE_CASE -> text.split(" ").joinToString(" ") { it.replaceFirstChar { c -> c.uppercaseChar() } }
             else -> text
         }
-
-        // Update line spacing multiplier
-        paint.fontMetrics
-
-        // Apply paragraph indentation (applied at the start of the first line)
-        if (paragraphIndentation == ParagraphIndentation.INCREASE_INDENT) {
-            // Apply indentation on the X position of the first line
-            x += 30f // Example: Increase indentation by 30px
-        } else if (paragraphIndentation == ParagraphIndentation.DECREASE_INDENT) {
-            // Apply indentation on the X position of the first line
-            x -= 30f // Example: Decrease indentation by 30px
-        }
     }
-
 
     fun getLocalContentWidth(): Float {
         return if (type == ElementType.TEXT) {
@@ -158,7 +148,7 @@ data class CanvasElement(
             // Ensure paint is initialized before using it
             if (::paint.isInitialized) {
                 val fm = paint.fontMetrics
-                val lineHeight = (fm.bottom - fm.top) * lineSpacingMultiplier
+                val lineHeight = (fm.bottom - fm.top) * lineSpacing
                 val lines = text.split("\n")
                 lines.size * lineHeight
             } else {

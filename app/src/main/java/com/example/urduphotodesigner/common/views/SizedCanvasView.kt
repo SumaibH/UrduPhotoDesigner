@@ -219,7 +219,7 @@ class SizedCanvasView @JvmOverloads constructor(
     // Set line spacing for selected text elements
     fun setLineSpacing(multiplier: Float) {
         selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
-            element.lineSpacingMultiplier = multiplier
+            element.lineSpacing = multiplier
             element.updatePaintProperties()  // Ensure paint is updated after spacing change
             onElementChanged?.invoke(element)  // Notify listeners of the change
         }
@@ -242,9 +242,10 @@ class SizedCanvasView @JvmOverloads constructor(
             element.letterCasing = casing
             // Apply the appropriate letter casing
             element.text = when (casing) {
-                LetterCasing.ALL_CAPS -> element.text.toUpperCase()
-                LetterCasing.LOWER_CASE -> element.text.toLowerCase()
-                LetterCasing.TITLE_CASE -> element.text.split(" ").joinToString(" ") { it.capitalize() }
+                LetterCasing.ALL_CAPS -> element.text.uppercase()
+                LetterCasing.LOWER_CASE -> element.text.lowercase()
+                LetterCasing.TITLE_CASE -> element.text.split(" ").joinToString(" ") { it.capitalize(
+                    Locale.ROOT) }
                 else -> element.text
             }
             onElementChanged?.invoke(element)  // Notify listeners of the change
@@ -272,14 +273,14 @@ class SizedCanvasView @JvmOverloads constructor(
         invalidate()  // Redraw the canvas
     }
 
-    // Set paragraph indentation (increase or decrease) for selected text elements
-    fun setParagraphIndentation(indent: ParagraphIndentation) {
-        selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
-            element.paragraphIndentation = indent
-            onElementChanged?.invoke(element)  // Notify listeners of the change
-        }
-        invalidate()  // Redraw the canvas
-    }
+//    // Set paragraph indentation (increase or decrease) for selected text elements
+//    fun setParagraphIndentation(indent: ParagraphIndentation) {
+//        selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
+//            element.paragraphIndentation = indent
+//            onElementChanged?.invoke(element)  // Notify listeners of the change
+//        }
+//        invalidate()  // Redraw the canvas
+//    }
 
     // Set list style (bulleted or numbered) for selected text elements
     fun setListStyle(style: ListStyle) {
@@ -423,14 +424,6 @@ class SizedCanvasView @JvmOverloads constructor(
     fun setTextSize(size: Float) {
         selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
             element.paint.textSize = size
-            onElementChanged?.invoke(element)
-        }
-        invalidate()
-    }
-
-    fun setTextAlignment(alignment: Paint.Align) {
-        selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
-            element.paint.textAlign = alignment
             onElementChanged?.invoke(element)
         }
         invalidate()
@@ -1026,136 +1019,148 @@ class SizedCanvasView @JvmOverloads constructor(
     private fun drawTextElement(canvas: Canvas, element: CanvasElement) {
         val lines = element.text.split("\n")
         val fm = element.paint.fontMetrics
-        val lineHeight = (fm.bottom - fm.top) * element.lineSpacingMultiplier
+        val lineHeight = (fm.descent - fm.ascent) * element.lineSpacing
         val totalHeight = lineHeight * lines.size
 
-        var yOffset = -totalHeight / 2 + fm.bottom
+        if (element.hasLabel) {
+            val maxLineWidth = lines.maxOf { element.paint.measureText(it) }
+            val labelPadding = 16f
+            val left = -maxLineWidth / 2f - labelPadding
+            val top = -totalHeight / 2f - labelPadding
+            val right = maxLineWidth / 2f + labelPadding
+            val bottom = totalHeight / 2f + labelPadding
 
-        lines.forEachIndexed { i, line ->
-//            var yOffset = -totalHeight / 2 + i * lineHeight - fm.top
+            val labelRect = RectF(left, top, right, bottom)
+            val labelPaint = Paint().apply {
+                color = element.labelColor
+                style = Paint.Style.FILL
+                isAntiAlias = true
+            }
 
-            if (element.hasLabel) {
-                val maxLineWidth = lines.maxOf { element.paint.measureText(it) }
-                val labelPadding = 16f
-                val left = -maxLineWidth / 2f - labelPadding
-                val top = -totalHeight / 2f - labelPadding
-                val right = maxLineWidth / 2f + labelPadding
-                val bottom = totalHeight / 2f + labelPadding
-
-                val labelRect = RectF(left, top, right, bottom)
-                val labelPaint = Paint().apply {
-                    color = element.labelColor
-                    style = Paint.Style.FILL
-                    isAntiAlias = true
+            when (element.labelShape) {
+                LabelShape.RECTANGLE_FILL -> {
+                    labelPaint.style = Paint.Style.FILL
+                    canvas.drawRect(labelRect, labelPaint)
+                }
+                LabelShape.RECTANGLE_STROKE -> {
+                    labelPaint.style = Paint.Style.STROKE
+                    labelPaint.strokeWidth = 4f // You can adjust the stroke width as needed
+                    canvas.drawRect(labelRect, labelPaint)
                 }
 
-                when (element.labelShape) {
-                    LabelShape.RECTANGLE_FILL -> {
-                        labelPaint.style = Paint.Style.FILL
-                        canvas.drawRect(labelRect, labelPaint)
-                    }
-                    LabelShape.RECTANGLE_STROKE -> {
-                        labelPaint.style = Paint.Style.STROKE
-                        labelPaint.strokeWidth = 4f // You can adjust the stroke width as needed
-                        canvas.drawRect(labelRect, labelPaint)
-                    }
+                LabelShape.OVAL_FILL -> {
+                    labelPaint.style = Paint.Style.FILL
+                    canvas.drawOval(labelRect, labelPaint)
+                }
+                LabelShape.OVAL_STROKE -> {
+                    labelPaint.style = Paint.Style.STROKE
+                    labelPaint.strokeWidth = 4f // Adjust stroke width as needed
+                    canvas.drawOval(labelRect, labelPaint)
+                }
 
-                    LabelShape.OVAL_FILL -> {
-                        labelPaint.style = Paint.Style.FILL
-                        canvas.drawOval(labelRect, labelPaint)
-                    }
-                    LabelShape.OVAL_STROKE -> {
-                        labelPaint.style = Paint.Style.STROKE
-                        labelPaint.strokeWidth = 4f // Adjust stroke width as needed
-                        canvas.drawOval(labelRect, labelPaint)
-                    }
+                LabelShape.CIRCLE_FILL -> {
+                    labelPaint.style = Paint.Style.FILL
+                    val radius = Math.min(labelRect.width(), labelRect.height()) / 2f
+                    val centerX = labelRect.centerX()
+                    val centerY = labelRect.centerY()
+                    canvas.drawCircle(centerX, centerY, radius, labelPaint)
+                }
+                LabelShape.CIRCLE_STROKE -> {
+                    labelPaint.style = Paint.Style.STROKE
+                    labelPaint.strokeWidth = 4f // Adjust stroke width as needed
+                    val radius = Math.min(labelRect.width(), labelRect.height()) / 2f
+                    val centerX = labelRect.centerX()
+                    val centerY = labelRect.centerY()
+                    canvas.drawCircle(centerX, centerY, radius, labelPaint)
+                }
 
-                    LabelShape.CIRCLE_FILL -> {
-                        labelPaint.style = Paint.Style.FILL
-                        val radius = Math.min(labelRect.width(), labelRect.height()) / 2f
-                        val centerX = labelRect.centerX()
-                        val centerY = labelRect.centerY()
-                        canvas.drawCircle(centerX, centerY, radius, labelPaint)
-                    }
-                    LabelShape.CIRCLE_STROKE -> {
-                        labelPaint.style = Paint.Style.STROKE
-                        labelPaint.strokeWidth = 4f // Adjust stroke width as needed
-                        val radius = Math.min(labelRect.width(), labelRect.height()) / 2f
-                        val centerX = labelRect.centerX()
-                        val centerY = labelRect.centerY()
-                        canvas.drawCircle(centerX, centerY, radius, labelPaint)
-                    }
+                LabelShape.ROUNDED_RECTANGLE_FILL -> {
+                    labelPaint.style = Paint.Style.FILL
+                    canvas.drawRoundRect(labelRect, 20f, 20f, labelPaint) // Adjust corner radius as needed
+                }
+                LabelShape.ROUNDED_RECTANGLE_STROKE -> {
+                    labelPaint.style = Paint.Style.STROKE
+                    labelPaint.strokeWidth = 4f // Adjust stroke width as needed
+                    canvas.drawRoundRect(labelRect, 20f, 20f, labelPaint) // Adjust corner radius as needed
+                }
 
-                    LabelShape.ROUNDED_RECTANGLE_FILL -> {
-                        labelPaint.style = Paint.Style.FILL
-                        canvas.drawRoundRect(labelRect, 20f, 20f, labelPaint) // Adjust corner radius as needed
-                    }
-                    LabelShape.ROUNDED_RECTANGLE_STROKE -> {
-                        labelPaint.style = Paint.Style.STROKE
-                        labelPaint.strokeWidth = 4f // Adjust stroke width as needed
-                        canvas.drawRoundRect(labelRect, 20f, 20f, labelPaint) // Adjust corner radius as needed
-                    }
-
-                    else -> {
-                        // Default to drawing a rectangle if no shape matches
-                        labelPaint.style = Paint.Style.FILL
-                        canvas.drawRect(labelRect, labelPaint)
-                    }
+                else -> {
+                    // Default to drawing a rectangle if no shape matches
+                    labelPaint.style = Paint.Style.FILL
+                    canvas.drawRect(labelRect, labelPaint)
                 }
             }
+        }
+
+        var yOffset = -(lines.size - 1) * lineHeight / 2f
+
+        lines.forEachIndexed { i, line ->
 
             val fillPaint = TextPaint(element.paint)
             fillPaint.style = Paint.Style.FILL
             fillPaint.color = element.paintColor
-
-            if (i == 0 && element.paragraphIndentation == ParagraphIndentation.INCREASE_INDENT) {
-                // Increase indentation for the first line
-                element.x += 30f  // Example: Increase indentation by 30px
-            } else if (i == 0 && element.paragraphIndentation == ParagraphIndentation.DECREASE_INDENT) {
-                // Decrease indentation for the first line
-                element.x -= 30f  // Example: Decrease indentation by 30px
-            }
-
-            // Apply list style (bullets or numbering)
-            val textToDraw = when (element.listStyle) {
-                ListStyle.BULLETED -> "• $line"  // Add bullet point to line
-                ListStyle.NUMBERED -> "${i + 1}. $line"  // Add numbering
-                else -> line  // Just regular text
-            }
-
-            // Handle letter spacing
-            element.paint.letterSpacing = element.letterSpacing
-
-            // Handle text alignment (left, center, right, justify)
-            val adjustedX = when (element.alignment) {
-                TextAlignment.LEFT -> -element.getLocalContentWidth() / 2f
-                TextAlignment.CENTER -> 0f
-                TextAlignment.RIGHT -> element.getLocalContentWidth() / 2f
-                TextAlignment.JUSTIFY -> {
-                    // Justify the text (adjust space between words)
-                    justifyText(canvas, textToDraw, yOffset, element)
-                    return  // Exit early for justified text rendering
-                }
-            }
-
+            fillPaint.typeface = element.paint.typeface
             fillPaint.letterSpacing = element.letterSpacing
 
-            val displayText = when (element.letterCasing) {
-                LetterCasing.ALL_CAPS -> line.uppercase()
-                LetterCasing.LOWER_CASE -> line.lowercase()
-                LetterCasing.TITLE_CASE -> line.split(" ").joinToString(" ") { it.capitalize(Locale.ROOT) }
+            // Apply paragraph indentation
+//            if (i == 0) {
+//                when (element.currentIndent) {
+//                    ParagraphIndentation.INCREASE_INDENT -> element.x += 30f
+//                    ParagraphIndentation.DECREASE_INDENT -> element.x -= 30f
+//                    else -> {}
+//                }
+//            }
+
+            // Handle list styles
+            val textToDraw = when (element.listStyle) {
+                ListStyle.BULLETED -> "• $line"
+                ListStyle.NUMBERED -> "${i + 1}. $line"
                 else -> line
             }
 
-            canvas.drawText(displayText, adjustedX, yOffset, fillPaint)
+            // Letter casing
+            val displayText = when (element.letterCasing) {
+                LetterCasing.ALL_CAPS -> textToDraw.uppercase()
+                LetterCasing.LOWER_CASE -> textToDraw.lowercase()
+                LetterCasing.TITLE_CASE -> textToDraw.split(" ")
+                    .joinToString(" ") { it.replaceFirstChar { c -> c.uppercaseChar() } }
+                else -> textToDraw
+            }
 
-            // Draw border (stroke)
-            if (element.hasBorder && element.borderWidth > 0f) {
-                val strokePaint = TextPaint(element.paint)
-                strokePaint.style = Paint.Style.STROKE
-                strokePaint.strokeWidth = element.borderWidth
-                strokePaint.color = element.borderColor
-                canvas.drawText(line, 0f, yOffset, strokePaint)
+            // Alignment
+            val alignment = when (element.alignment) {
+                TextAlignment.LEFT -> Paint.Align.LEFT
+                TextAlignment.CENTER -> Paint.Align.CENTER
+                TextAlignment.RIGHT -> Paint.Align.RIGHT
+                TextAlignment.JUSTIFY -> Paint.Align.LEFT // needed for justify, but handled separately
+            }
+
+            fillPaint.textAlign = alignment
+
+            val xPosition = when (alignment) {
+                Paint.Align.LEFT -> -element.getLocalContentWidth() / 2f
+                Paint.Align.CENTER -> 0f
+                Paint.Align.RIGHT -> element.getLocalContentWidth() / 2f
+                else -> 0f
+            }
+
+            // Handle justified text separately
+            if (element.alignment == TextAlignment.JUSTIFY) {
+                element.paint = fillPaint
+                justifyText(canvas, displayText, yOffset, element)
+            } else {
+                // Draw filled text
+                canvas.drawText(displayText, xPosition, yOffset, fillPaint)
+
+                // Draw border (stroke) if needed
+                if (element.hasBorder && element.borderWidth > 0f) {
+                    val strokePaint = TextPaint(fillPaint)
+                    strokePaint.style = Paint.Style.STROKE
+                    strokePaint.strokeWidth = element.borderWidth
+                    strokePaint.color = element.borderColor
+                    strokePaint.textAlign = alignment
+                    canvas.drawText(displayText, xPosition, yOffset, strokePaint)
+                }
             }
 
             yOffset += lineHeight
@@ -1163,23 +1168,47 @@ class SizedCanvasView @JvmOverloads constructor(
     }
 
     private fun justifyText(canvas: Canvas, text: String, yOffset: Float, element: CanvasElement) {
-        val words = text.split(" ")
-        val totalWidth = element.paint.measureText(text)
-        val spaceWidth = element.paint.measureText(" ")
+        if (text.length <= 1) {
+            val x = -element.getLocalContentWidth() / 2f
+            canvas.drawText(text, x, yOffset, element.paint)
+            return
+        }
 
-        if (words.size > 1) {
-            val totalSpaces = (element.getLocalContentWidth() - totalWidth) / (words.size - 1)
-            var xOffset = -element.getLocalContentWidth() / 2f
+        val basePaint = TextPaint(element.paint).apply {
+            isAntiAlias = true
+            letterSpacing = element.letterSpacing
+            textAlign = Paint.Align.LEFT
+        }
 
-            words.forEachIndexed { index, word ->
-                if (index > 0) {
-                    xOffset += totalSpaces
-                }
-                canvas.drawText(word, xOffset, yOffset, element.paint)
-                xOffset += element.paint.measureText(word) + spaceWidth
+        // Create FILL and STROKE paints, both retaining shadow and font features
+        val fillPaint = TextPaint(basePaint).apply {
+            style = Paint.Style.FILL
+            color = element.paintColor
+        }
+
+        val strokePaint = if (element.hasBorder && element.borderWidth > 0f) {
+            TextPaint(basePaint).apply {
+                style = Paint.Style.STROKE
+                strokeWidth = element.borderWidth
+                color = element.borderColor
             }
-        } else {
-            canvas.drawText(text, -element.getLocalContentWidth() / 2f, yOffset, element.paint)
+        } else null
+
+        val charWidths = text.map { fillPaint.measureText(it.toString()) }
+        val textWidth = charWidths.sum()
+        val totalAvailable = element.getLocalContentWidth()
+        val extraSpace = (totalAvailable - textWidth) / (text.length - 1)
+
+        var xOffset = -totalAvailable / 2f
+
+        text.forEachIndexed { index, char ->
+            val charStr = char.toString()
+            // Draw stroke first
+            strokePaint?.let { canvas.drawText(charStr, xOffset, yOffset, it) }
+            // Then draw fill
+            canvas.drawText(charStr, xOffset, yOffset, fillPaint)
+            // Move to next char position
+            xOffset += charWidths[index] + extraSpace
         }
     }
 
@@ -1468,6 +1497,10 @@ class SizedCanvasView @JvmOverloads constructor(
                         elementsToModify.forEach { element ->
                             element.x += actualDx
                             element.y += actualDy
+                            val halfW = element.getLocalContentWidth()  / 2f
+                            val halfH = element.getLocalContentHeight() / 2f
+                            element.x = element.x.coerceIn(halfW, canvasWidth  - halfW)
+                            element.y = element.y.coerceIn(halfH, canvasHeight - halfH)
                             onElementChanged?.invoke(element)
                         }
 

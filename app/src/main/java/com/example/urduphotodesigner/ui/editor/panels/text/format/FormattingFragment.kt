@@ -19,6 +19,7 @@ import com.example.urduphotodesigner.databinding.FragmentFormatBinding
 import com.example.urduphotodesigner.databinding.FragmentFormattingBinding
 import com.example.urduphotodesigner.ui.editor.panels.text.appearance.ColorsListFragment
 import dagger.hilt.android.AndroidEntryPoint
+import org.w3c.dom.Text
 
 @AndroidEntryPoint
 class FormattingFragment : Fragment() {
@@ -155,10 +156,11 @@ class FormattingFragment : Fragment() {
 
         paraCards.forEach { (card, paraType) ->
             card.setOnClickListener {
-                val currentPara = viewModel.paragraphIndentation.value ?: ParagraphIndentation.NONE
                 // Set paragraph indentation only if it's a different selection
-                if (currentPara != paraType) {
-                    viewModel.setParagraphIndentation(paraType)
+                if (card == binding.increaseIndent) {
+                    viewModel.increaseIndent()
+                }else if (card == binding.decreaseIndent){
+                    viewModel.decreaseIndent()
                 }
                 // Update stroke for selected paragraph indentation
                 paraCards.forEach { (otherCard, _) ->
@@ -223,12 +225,38 @@ class FormattingFragment : Fragment() {
     private fun initObservers(){
         viewModel.lineSpacing.observe(viewLifecycleOwner) { lineSpace ->
             binding.lineSpace.progress = lineSpace.toInt()
-            binding.lineSpacing.text = "$lineSpace"
+            binding.lineSpacing.text = "%.2f".format(lineSpace)
         }
 
         viewModel.letterSpacing.observe(viewLifecycleOwner) { letterSpace ->
             binding.letterSpace.progress = letterSpace.toInt()
-            binding.letterSpacing.text = "$letterSpace"
+            binding.letterSpacing.text = "%.2f".format(letterSpace)
+        }
+
+        viewModel.currentTextAlignment.observe(viewLifecycleOwner) { alignment ->
+            val alignCards = listOf(
+                binding.leftAlign to TextAlignment.LEFT,
+                binding.centerAlignment to TextAlignment.CENTER,
+                binding.rightAlign to TextAlignment.RIGHT,
+                binding.justify to TextAlignment.JUSTIFY,
+            )
+
+            alignCards.forEach { (card, alignType) ->
+                card.strokeWidth = if (alignType == alignment) 4 else 0
+            }
+        }
+
+        viewModel.currentTextAlignment.observe(viewLifecycleOwner) { alignment ->
+            val alignCards = listOf(
+                binding.leftAlign to TextAlignment.LEFT,
+                binding.centerAlignment to TextAlignment.CENTER,
+                binding.rightAlign to TextAlignment.RIGHT,
+                binding.justify to TextAlignment.JUSTIFY,
+            )
+
+            alignCards.forEach { (card, alignType) ->
+                card.strokeWidth = if (alignType == alignment) 4 else 0
+            }
         }
     }
 

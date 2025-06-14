@@ -187,7 +187,7 @@ class EditorFragment : Fragment() {
 
         viewModel.currentFont.observe(viewLifecycleOwner) { font ->
             if (font != null && viewModel.isExplicitChange()) {
-            font.let { canvasManager.setFont(it) }
+                font.let { canvasManager.setFont(it) }
             }
         }
 
