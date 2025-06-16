@@ -47,6 +47,7 @@ class FormattingFragment : Fragment() {
 
         setupControlsVisibility()
         setEvents()
+        initObservers()
     }
 
     private fun setEvents() {
@@ -79,47 +80,26 @@ class FormattingFragment : Fragment() {
             binding.defaultStyle to TextDecoration.NONE
         )
 
-        viewModel.textDecoration.observe(viewLifecycleOwner) { currentDecorations ->
-            // Update strokeWidth for each card based on the current selection in ViewModel
-            decorationCards.forEach { (card, decorationType) ->
-                card.strokeWidth = if (currentDecorations.contains(decorationType)) 4 else 0
-            }
-        }
-
-        // Set up click listeners for each card
         decorationCards.forEach { (card, decorationType) ->
             card.setOnClickListener {
                 val currentDecorations = viewModel.textDecoration.value ?: emptySet()
 
                 if (decorationType == TextDecoration.NONE) {
-                    // If "None" is clicked:
-                    if (currentDecorations.isEmpty()) return@setOnClickListener // Do nothing if "None" is already selected
-
-                    // Deselect all decorations and select "None" only
+                    if (currentDecorations.isEmpty()) return@setOnClickListener
                     viewModel.setTextDecoration(emptySet())
-
-                    // Update strokeWidth: Only "None" should have stroke width applied
                     decorationCards.forEach { (otherCard, _) ->
                         otherCard.strokeWidth = if (otherCard == card) 4 else 0
                     }
                 } else {
-                    // If any other decoration is clicked:
                     if (currentDecorations.contains(TextDecoration.NONE)) {
-                        // Deselect "None" if it's currently selected
                         viewModel.setTextDecoration(currentDecorations - TextDecoration.NONE)
                     }
-
-                    // Toggle the decoration (add or remove it)
                     val updatedDecorations = if (currentDecorations.contains(decorationType)) {
-                        currentDecorations - decorationType // Deselect this decoration
+                        currentDecorations - decorationType
                     } else {
-                        currentDecorations + decorationType // Select this decoration
+                        currentDecorations + decorationType
                     }
-
-                    // Update the ViewModel with the new set of decorations
                     viewModel.setTextDecoration(updatedDecorations)
-
-                    // Update stroke width for selected decorations only
                     decorationCards.forEach { (otherCard, otherDecorationType) ->
                         otherCard.strokeWidth = if (updatedDecorations.contains(otherDecorationType)) 4 else 0
                     }
@@ -137,11 +117,9 @@ class FormattingFragment : Fragment() {
         alignCards.forEach { (card, alignType) ->
             card.setOnClickListener {
                 val currentAlign = viewModel.textAlignment.value ?: TextAlignment.LEFT
-                // Set text alignment only if it's a different selection
                 if (currentAlign != alignType) {
                     viewModel.setTextAlignment(alignType)
                 }
-                // Update stroke for selected alignment
                 alignCards.forEach { (otherCard, _) ->
                     otherCard.strokeWidth = if (otherCard == card) 4 else 0
                 }
@@ -154,17 +132,23 @@ class FormattingFragment : Fragment() {
             binding.increaseIndent to ParagraphIndentation.INCREASE_INDENT
         )
 
-        paraCards.forEach { (card, paraType) ->
+        paraCards.forEach { (card, indent) ->
             card.setOnClickListener {
-                // Set paragraph indentation only if it's a different selection
-                if (card == binding.increaseIndent) {
-                    viewModel.increaseIndent()
-                }else if (card == binding.decreaseIndent){
-                    viewModel.decreaseIndent()
+                when (indent) {
+                    ParagraphIndentation.NONE -> {
+                        viewModel.setIndentNone()
+                    }
+                    ParagraphIndentation.INCREASE_INDENT -> {
+                        viewModel.increaseIndent()
+                    }
+                    ParagraphIndentation.DECREASE_INDENT -> {
+                        viewModel.decreaseIndent()
+                    }
                 }
-                // Update stroke for selected paragraph indentation
-                paraCards.forEach { (otherCard, _) ->
-                    otherCard.strokeWidth = if (otherCard == card) 4 else 0
+                val paraValue = viewModel.paragraphIndentation.value
+
+                paraCards.forEach { (otherCard, otherIndent) ->
+                    otherCard.strokeWidth = if (paraValue?.toInt() == 0 && otherIndent == ParagraphIndentation.NONE) 4 else 0
                 }
             }
         }
@@ -194,11 +178,12 @@ class FormattingFragment : Fragment() {
             max = 100
             setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(sb: SeekBar, progress: Int, fromUser: Boolean) {
-                    val mappedLineSpacing = 1.0f + (progress / 100.0f) * 2.0f // Line height range from 1.0 to 3.0
-                    binding.lineSpacing.text = "%.2f".format(mappedLineSpacing) // Display with 2 decimal places
+                    if (fromUser){
+                        val mappedLineSpacing = -0.5f + (progress / 100.0f) * (3.0f + 0.5f)
+                        binding.lineSpacing.text = "%.2f".format(mappedLineSpacing)
 
-                    // Update the ViewModel with the mapped line spacing
-                    viewModel.setLineSpacing(mappedLineSpacing)
+                        viewModel.setLineSpacing(mappedLineSpacing)
+                    }
                 }
                 override fun onStartTrackingTouch(sb: SeekBar) {}
                 override fun onStopTrackingTouch(sb: SeekBar) {}
@@ -210,11 +195,12 @@ class FormattingFragment : Fragment() {
             max = 100
             setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(sb: SeekBar, progress: Int, fromUser: Boolean) {
-                    val mappedLetterSpacing = -0.5f + (progress / 100.0f) * 2.0f // Letter spacing range from -0.5 to 1.5
-                    binding.letterSpacing.text = "%.2f".format(mappedLetterSpacing) // Display with 2 decimal places
+                    if (fromUser){
+                        val mappedLetterSpacing = -0.5f + (progress / 100.0f) * 2.0f // Letter spacing range from -0.5 to 1.5
+                        binding.letterSpacing.text = "%.2f".format(mappedLetterSpacing) // Display with 2 decimal places
 
-                    // Update the ViewModel with the mapped letter spacing
-                    viewModel.setLetterSpacing(mappedLetterSpacing)
+                        viewModel.setLetterSpacing(mappedLetterSpacing)
+                    }
                 }
                 override fun onStartTrackingTouch(sb: SeekBar) {}
                 override fun onStopTrackingTouch(sb: SeekBar) {}
@@ -224,13 +210,15 @@ class FormattingFragment : Fragment() {
 
     private fun initObservers(){
         viewModel.lineSpacing.observe(viewLifecycleOwner) { lineSpace ->
-            binding.lineSpace.progress = lineSpace.toInt()
-            binding.lineSpacing.text = "%.2f".format(lineSpace)
+            val mappedLineProgress = (((lineSpace + 0.5f) / 3.5f) * 100).toInt().coerceIn(0, 100)
+            binding.lineSpace.progress = mappedLineProgress
+            binding.lineSpacing.text = "$mappedLineProgress"
         }
 
         viewModel.letterSpacing.observe(viewLifecycleOwner) { letterSpace ->
-            binding.letterSpace.progress = letterSpace.toInt()
-            binding.letterSpacing.text = "%.2f".format(letterSpace)
+            val mappedLetterProgress = (((letterSpace + 0.5f) / 2.0f) * 100).toInt().coerceIn(0, 100)
+            binding.letterSpace.progress = mappedLetterProgress
+            binding.letterSpacing.text = "$mappedLetterProgress"
         }
 
         viewModel.currentTextAlignment.observe(viewLifecycleOwner) { alignment ->
@@ -246,16 +234,54 @@ class FormattingFragment : Fragment() {
             }
         }
 
-        viewModel.currentTextAlignment.observe(viewLifecycleOwner) { alignment ->
-            val alignCards = listOf(
-                binding.leftAlign to TextAlignment.LEFT,
-                binding.centerAlignment to TextAlignment.CENTER,
-                binding.rightAlign to TextAlignment.RIGHT,
-                binding.justify to TextAlignment.JUSTIFY,
+        viewModel.listStyle.observe(viewLifecycleOwner) { listStyle ->
+            val listCards = listOf(
+                binding.defaultList to ListStyle.NONE,
+                binding.numberedList to ListStyle.NUMBERED,
+                binding.bulletedList to ListStyle.BULLETED
             )
 
-            alignCards.forEach { (card, alignType) ->
-                card.strokeWidth = if (alignType == alignment) 4 else 0
+            listCards.forEach { (card, list) ->
+                card.strokeWidth = if (list == listStyle) 4 else 0
+            }
+        }
+
+        viewModel.letterCasing.observe(viewLifecycleOwner) { case ->
+            val caseCards = listOf(
+                binding.defaultCase to LetterCasing.NONE,
+                binding.allCaps to LetterCasing.ALL_CAPS,
+                binding.lowerCase to LetterCasing.LOWER_CASE,
+                binding.titleCase to LetterCasing.TITLE_CASE
+            )
+
+            caseCards.forEach { (card, letterCase) ->
+                card.strokeWidth = if (letterCase == case) 4 else 0
+            }
+        }
+
+
+        viewModel.textDecoration.observe(viewLifecycleOwner) { currentDecorations ->
+            val decorationCards = listOf(
+                binding.bold to TextDecoration.BOLD,
+                binding.italic to TextDecoration.ITALIC,
+                binding.underLine to TextDecoration.UNDERLINE,
+                binding.defaultStyle to TextDecoration.NONE
+            )
+
+            decorationCards.forEach { (card, decorationType) ->
+                card.strokeWidth = if (currentDecorations.contains(decorationType)) 4 else 0
+            }
+        }
+
+        viewModel.paragraphIndentation.observe(viewLifecycleOwner) { para ->
+            val paraCards = listOf(
+                binding.defaultIndent to ParagraphIndentation.NONE,
+                binding.decreaseIndent to ParagraphIndentation.DECREASE_INDENT,
+                binding.increaseIndent to ParagraphIndentation.INCREASE_INDENT
+            )
+
+            paraCards.forEach { (card, indent) ->
+                card.strokeWidth = if (para?.toInt() == 0 && indent == ParagraphIndentation.NONE) 4 else 0
             }
         }
     }

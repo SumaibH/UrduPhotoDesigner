@@ -39,7 +39,7 @@ class ColorsListFragment : Fragment() {
 
     private val shapesAdapter = ShapesAdapter(shapesList) { selectedShape ->
         // When a shape is selected, apply the label to the text element
-        viewModel.setTextLabel(true, viewModel.currentTextLabelColor.value!!, selectedShape) // Use selected shape
+        viewModel.setTextLabel(true, viewModel.labelColor.value!!, selectedShape) // Use selected shape
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,16 +70,16 @@ class ColorsListFragment : Fragment() {
             when (currentTab?.lowercase()) {
                 "border" -> {
                     // preserve existing width
-                    val width = viewModel.currentTextBorderWidth.value ?: 1f
+                    val width = viewModel.borderWidth.value ?: 1f
                     viewModel.setTextBorder(true, selectedColor, width)
                 }
                 "shadow" -> {
-                    val dx = viewModel.currentTextShadowDx.value ?: 0f
-                    val dy = viewModel.currentTextShadowDy.value ?: 0f
-                    viewModel.setTextShadow(true, selectedColor, dx, dy, 1f)
+                    val dx = viewModel.shadowDx.value ?: 0f
+                    val dy = viewModel.shadowDy.value ?: 0f
+                    viewModel.setTextShadow(true, selectedColor, dx, dy)
                 }
                 "label" -> viewModel.setTextLabel(true, selectedColor,
-                    viewModel.currentTextLabelShape.value!!
+                    viewModel.labelShape.value!!
                 )
                 else -> viewModel.setTextColor(selectedColor)
             }
@@ -90,11 +90,11 @@ class ColorsListFragment : Fragment() {
                     viewModel.setTextBorder(false, android.R.color.transparent, 0f)
                 }
                 "shadow" -> {
-                    val dx = viewModel.currentTextShadowDx.value ?: 0f
-                    val dy = viewModel.currentTextShadowDy.value ?: 0f
-                    viewModel.setTextShadow(false, android.R.color.transparent, dx, dy, 0f)
+                    val dx = viewModel.shadowDx.value ?: 0f
+                    val dy = viewModel.shadowDy.value ?: 0f
+                    viewModel.setTextShadow(false, android.R.color.transparent, dx, dy)
                 }
-                "label" -> viewModel.setTextLabel(false, android.R.color.transparent, viewModel.currentTextLabelShape.value!!)
+                "label" -> viewModel.setTextLabel(false, android.R.color.transparent, viewModel.labelShape.value!!)
                 else -> viewModel.setTextColor(android.R.color.transparent)
             }
         }) {
@@ -117,9 +117,11 @@ class ColorsListFragment : Fragment() {
             max = 10
             setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(sb: SeekBar, progress: Int, fromUser: Boolean) {
-                    binding.borderSize.text = "$progress"
-                    val color = viewModel.currentTextBorderColor.value ?: Color.BLACK
-                    viewModel.setTextBorder(true, color, progress.toFloat())
+                    if (fromUser){
+                        binding.borderSize.text = "$progress"
+                        val color = viewModel.borderColor.value ?: Color.BLACK
+                        viewModel.setTextBorder(true, color, progress.toFloat())
+                    }
                 }
                 override fun onStartTrackingTouch(sb: SeekBar) {}
                 override fun onStopTrackingTouch(sb: SeekBar) {}
@@ -132,10 +134,12 @@ class ColorsListFragment : Fragment() {
             max = 50
             setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(sb: SeekBar, progress: Int, fromUser: Boolean) {
-                    binding.shadowXSize.text = "$progress"
-                    val color = viewModel.currentTextShadowColor.value ?: Color.BLACK
-                    val dy    = viewModel.currentTextShadowDy.value    ?: 0f
-                    viewModel.setTextShadow(true, color, progress.toFloat(), dy, 1f)
+                    if (fromUser){
+                        binding.shadowXSize.text = "$progress"
+                        val color = viewModel.shadowColor.value ?: Color.BLACK
+                        val dy    = viewModel.shadowDy.value    ?: 0f
+                        viewModel.setTextShadow(true, color, progress.toFloat(), dy)
+                    }
                 }
                 override fun onStartTrackingTouch(sb: SeekBar) {}
                 override fun onStopTrackingTouch(sb: SeekBar) {}
@@ -148,10 +152,12 @@ class ColorsListFragment : Fragment() {
             max = 50
             setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(sb: SeekBar, progress: Int, fromUser: Boolean) {
-                    binding.shadowYSize.text = "$progress"
-                    val color = viewModel.currentTextShadowColor.value ?: Color.BLACK
-                    val dx    = viewModel.currentTextShadowDx.value    ?: 0f
-                    viewModel.setTextShadow(true, color, dx, progress.toFloat(), 1f)
+                   if (fromUser){
+                       binding.shadowYSize.text = "$progress"
+                       val color = viewModel.shadowColor.value ?: Color.BLACK
+                       val dx    = viewModel.shadowDx.value    ?: 0f
+                       viewModel.setTextShadow(true, color, dx, progress.toFloat())
+                   }
                 }
                 override fun onStartTrackingTouch(sb: SeekBar) {}
                 override fun onStopTrackingTouch(sb: SeekBar) {}
@@ -164,8 +170,10 @@ class ColorsListFragment : Fragment() {
             max = 100
             setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(sb: SeekBar, progress: Int, fromUser: Boolean) {
-                    binding.fontSize.text = "$progress"
-                    viewModel.setTextSize(progress.toFloat())
+                    if (fromUser){
+                        binding.fontSize.text = "$progress"
+                        viewModel.setTextSize(progress.toFloat())
+                    }
                 }
                 override fun onStartTrackingTouch(sb: SeekBar) {}
                 override fun onStopTrackingTouch(sb: SeekBar) {}
@@ -179,20 +187,20 @@ class ColorsListFragment : Fragment() {
             "border" -> {
                 // preserve existing width
                 binding.borderCard.visibility = View.VISIBLE
-                binding.borderSize.text = "${viewModel.currentTextBorderWidth.value!!}"
-                binding.border.progress = viewModel.currentTextBorderWidth.value?.toInt()!!
+                binding.borderSize.text = "${viewModel.borderWidth.value!!}"
+                binding.border.progress = viewModel.borderWidth.value?.toInt()!!
             }
             "shadow" -> {
                 binding.shadowXCard.visibility = View.VISIBLE
                 binding.shadowYCard.visibility = View.VISIBLE
-                binding.shadowXSize.text = "${viewModel.currentTextShadowDx.value!!}"
-                binding.shadowYSize.text = "${viewModel.currentTextShadowDy.value!!}"
-                binding.shadowX.progress = viewModel.currentTextShadowDx.value?.toInt()!!
-                binding.shadowY.progress = viewModel.currentTextShadowDy.value?.toInt()!!
+                binding.shadowXSize.text = "${viewModel.shadowDx.value!!}"
+                binding.shadowYSize.text = "${viewModel.shadowDy.value!!}"
+                binding.shadowX.progress = viewModel.shadowDx.value?.toInt()!!
+                binding.shadowY.progress = viewModel.shadowDy.value?.toInt()!!
             }
             "label" -> {
                 binding.shapes.visibility = View.VISIBLE
-                shapesAdapter.selectedShape = viewModel.currentTextLabelShape.value!!
+                shapesAdapter.selectedShape = viewModel.labelShape.value!!
             }
             else -> {
                 binding.fontCard.visibility = View.VISIBLE
@@ -217,15 +225,15 @@ class ColorsListFragment : Fragment() {
                 when (currentTab?.lowercase()) {
                     "border" -> {
                         // preserve existing width
-                        val width = viewModel.currentTextBorderWidth.value ?: 1f
+                        val width = viewModel.borderWidth.value ?: 1f
                         viewModel.setTextBorder(true, selectedColor, width)
                     }
                     "shadow" -> {
-                        val dx = viewModel.currentTextShadowDx.value ?: 0f
-                        val dy = viewModel.currentTextShadowDy.value ?: 0f
-                        viewModel.setTextShadow(true, selectedColor, dx, dy, 1f)
+                        val dx = viewModel.shadowDx.value ?: 0f
+                        val dy = viewModel.shadowDy.value ?: 0f
+                        viewModel.setTextShadow(true, selectedColor, dx, dy)
                     }
-                    "label" -> viewModel.setTextLabel(true, selectedColor, viewModel.currentTextLabelShape.value!!)
+                    "label" -> viewModel.setTextLabel(true, selectedColor, viewModel.labelShape.value!!)
                     else -> viewModel.setTextColor(selectedColor)
                 }
             }
@@ -252,24 +260,55 @@ class ColorsListFragment : Fragment() {
             }
         }
 
-        // Observe border color only if the current tab is "border"
-        viewModel.currentTextBorderColor.observe(viewLifecycleOwner) { color ->
+        viewModel.borderColor.observe(viewLifecycleOwner) { color ->
             if (currentTab?.lowercase() == "border") {
-                colorsAdapter.selectedColor = color ?: Color.BLACK // Default to black if null
+                colorsAdapter.selectedColor = color ?: Color.BLACK
             }
         }
 
-        // Observe shadow color only if the current tab is "shadow"
-        viewModel.currentTextShadowColor.observe(viewLifecycleOwner) { color ->
+        viewModel.shadowColor.observe(viewLifecycleOwner) { color ->
             if (currentTab?.lowercase() == "shadow") {
-                colorsAdapter.selectedColor = color ?: Color.BLACK // Default to black if null
+                colorsAdapter.selectedColor = color ?: Color.BLACK
             }
         }
 
-        // Observe label color only if the current tab is "label"
-        viewModel.currentTextLabelColor.observe(viewLifecycleOwner) { color ->
+        viewModel.labelColor.observe(viewLifecycleOwner) { color ->
             if (currentTab?.lowercase() == "label") {
-                colorsAdapter.selectedColor = color ?: Color.BLACK // Default to black if null
+                colorsAdapter.selectedColor = color ?: Color.BLACK
+            }
+        }
+
+        viewModel.currentTextSize.observe(viewLifecycleOwner) { size ->
+            if (currentTab?.lowercase() == "text") {
+                binding.fontSize.text = "${size?.toInt() ?: 40}"
+                binding.font.progress = size?.toInt() ?: 40
+            }
+        }
+
+        viewModel.shadowDx.observe(viewLifecycleOwner) { dx ->
+            if (currentTab?.lowercase() == "shadow") {
+                binding.shadowXSize.text = "${dx?.toInt() ?: 1}"
+                binding.shadowX.progress = dx?.toInt() ?: 1
+            }
+        }
+
+        viewModel.shadowDy.observe(viewLifecycleOwner) { dy ->
+            if (currentTab?.lowercase() == "shadow") {
+                binding.shadowYSize.text = "${dy?.toInt() ?: 1}"
+                binding.shadowY.progress = dy?.toInt() ?: 1
+            }
+        }
+
+        viewModel.borderWidth.observe(viewLifecycleOwner) { width ->
+            if (currentTab?.lowercase() == "border") {
+                binding.borderSize.text = "${width?.toInt() ?: 1}"
+                binding.border.progress = width?.toInt() ?: 1
+            }
+        }
+
+        viewModel.labelShape.observe(viewLifecycleOwner) { shape ->
+            if (currentTab?.lowercase() == "label") {
+                shapesAdapter.selectedShape = shape
             }
         }
     }

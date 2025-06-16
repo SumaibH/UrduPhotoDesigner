@@ -281,7 +281,6 @@ class EditorFragment : Fragment() {
                     viewModel.removeElement(it)
                 }
             }, onElementSelected = { elements ->
-                viewModel.setSelectedElementsFromLayers(elements)
                 viewModel.onCanvasSelectionChanged(elements)
 
                 binding.seekBar.visibility = View.INVISIBLE

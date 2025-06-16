@@ -89,44 +89,6 @@ data class CanvasElement(
         paint.color = paintColor
         paint.textSize = paintTextSize
         paint.alpha = paintAlpha
-
-        // Shadow
-        if (hasShadow) {
-            paint.setShadowLayer(4f, shadowDx, shadowDy, shadowColor)
-        } else {
-            paint.clearShadowLayer()
-        }
-
-        // Border or Fill
-        if (hasBorder) {
-            paint.style = Paint.Style.STROKE
-            paint.strokeWidth = borderWidth
-            paint.color = borderColor
-        } else {
-            paint.style = Paint.Style.FILL
-        }
-
-        // Letter spacing
-        paint.letterSpacing = letterSpacing
-
-        // Apply underline
-        paint.isUnderlineText = TextDecoration.UNDERLINE in textDecoration
-
-        // Apply bold + italic using combined style flags
-        var style = Typeface.NORMAL
-        if (TextDecoration.BOLD in textDecoration) style = style or Typeface.BOLD
-        if (TextDecoration.ITALIC in textDecoration) style = style or Typeface.ITALIC
-
-        val baseTypeface = originalTypeface ?: paint.typeface ?: Typeface.DEFAULT
-        paint.typeface = Typeface.create(baseTypeface, style)
-
-        // Apply letter casing
-        text = when (letterCasing) {
-            LetterCasing.ALL_CAPS -> text.uppercase()
-            LetterCasing.LOWER_CASE -> text.lowercase()
-            LetterCasing.TITLE_CASE -> text.split(" ").joinToString(" ") { it.replaceFirstChar { c -> c.uppercaseChar() } }
-            else -> text
-        }
     }
 
     fun getLocalContentWidth(): Float {

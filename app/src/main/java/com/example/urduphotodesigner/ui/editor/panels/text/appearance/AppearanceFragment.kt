@@ -39,7 +39,7 @@ class AppearanceFragment : Fragment() {
     private fun setupRecyclerViews() {
         tabs = ArrayList()
         adapter = PanelTabsAdapter { tab ->
-            handleFontSelection(tab)
+            handleAppearanceTabSelection(tab)
         }
         binding.categories.adapter = adapter
 
@@ -52,11 +52,10 @@ class AppearanceFragment : Fragment() {
         binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 val selectedCategory = tabs[position]
-                handleFontSelection(selectedCategory)
+                handleAppearanceTabSelection(selectedCategory)
                 binding.categories.smoothScrollToPosition(position)
             }
         })
-
     }
 
     private fun initObservers() {
@@ -67,11 +66,11 @@ class AppearanceFragment : Fragment() {
             tabs.add(PanelTabs(3, "Label", false))
 
             adapter.submitList(ArrayList(tabs))
-            handleFontSelection(tabs.firstOrNull()) // Select "All" by default
+            handleAppearanceTabSelection(tabs.firstOrNull()) // Select "All" by default
         }
     }
 
-    private fun handleFontSelection(selectedCategory: PanelTabs?) {
+    private fun handleAppearanceTabSelection(selectedCategory: PanelTabs?) {
         selectedCategory?.let { tab ->
             val selectedIndex = tabs.indexOfFirst { it.tab_name == tab.tab_name }
 

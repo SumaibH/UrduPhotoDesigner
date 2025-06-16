@@ -91,29 +91,38 @@ class CanvasViewModel @Inject constructor(
     private val _currentImageFilter = MutableLiveData<ImageFilter?>(null)
     val currentImageFilter: LiveData<ImageFilter?> = _currentImageFilter
 
-    private val _currentTextBorderColor = MutableLiveData<Int>(Color.BLACK)
-    val currentTextBorderColor: LiveData<Int> = _currentTextBorderColor
+    // 🔷 Shadow
+    private val _hasShadow = MutableLiveData<Boolean>(false)
+    val hasShadow: LiveData<Boolean> = _hasShadow
 
-    private val _currentTextBorderWidth = MutableLiveData<Float>(1f)
-    val currentTextBorderWidth: LiveData<Float> = _currentTextBorderWidth
+    private val _shadowColor = MutableLiveData<Int>(Color.GRAY)
+    val shadowColor: LiveData<Int> = _shadowColor
 
-    private val _currentTextShadowColor = MutableLiveData<Int>(Color.BLACK)
-    val currentTextShadowColor: LiveData<Int> = _currentTextShadowColor
+    private val _shadowDx = MutableLiveData<Float>(1f)
+    val shadowDx: LiveData<Float> = _shadowDx
 
-    private val _currentTextShadowDx = MutableLiveData<Float>(1f)
-    val currentTextShadowDx: LiveData<Float> = _currentTextShadowDx
+    private val _shadowDy = MutableLiveData<Float>(1f)
+    val shadowDy: LiveData<Float> = _shadowDy
 
-    private val _currentTextShadowDy = MutableLiveData<Float>(1f)
-    val currentTextShadowDy: LiveData<Float> = _currentTextShadowDy
+    // 🔷 Border
+    private val _hasBorder = MutableLiveData<Boolean>(false)
+    val hasBorder: LiveData<Boolean> = _hasBorder
 
-    private val _currentTextShadowRadius = MutableLiveData<Float>(1f)
-    val currentTextShadowRadius: LiveData<Float> = _currentTextShadowRadius
+    private val _borderColor = MutableLiveData<Int>(Color.BLACK)
+    val borderColor: LiveData<Int> = _borderColor
 
-    private val _currentTextLabelColor = MutableLiveData<Int>(Color.BLACK)
-    val currentTextLabelColor: LiveData<Int> = _currentTextLabelColor
+    private val _borderWidth = MutableLiveData<Float>(1f)
+    val borderWidth: LiveData<Float> = _borderWidth
 
-    private val _currentTextLabelShape = MutableLiveData<LabelShape>(LabelShape.RECTANGLE_FILL)
-    val currentTextLabelShape: LiveData<LabelShape> = _currentTextLabelShape
+    // 🔷 Label
+    private val _hasLabel = MutableLiveData<Boolean>(false)
+    val hasLabel: LiveData<Boolean> = _hasLabel
+
+    private val _labelColor = MutableLiveData<Int>(Color.YELLOW)
+    val labelColor: LiveData<Int> = _labelColor
+
+    private val _labelShape = MutableLiveData<LabelShape>(LabelShape.RECTANGLE_FILL)
+    val labelShape: LiveData<LabelShape> = _labelShape
 
     private val _lineSpacing = MutableLiveData<Float>(1.0f)
     val lineSpacing: LiveData<Float> = _lineSpacing
@@ -124,7 +133,7 @@ class CanvasViewModel @Inject constructor(
     private val _letterCasing = MutableLiveData<LetterCasing>(LetterCasing.NONE)
     val letterCasing: LiveData<LetterCasing> = _letterCasing
 
-    private val _textDecoration = MutableLiveData<Set<TextDecoration>>(emptySet())
+    private val _textDecoration = MutableLiveData<Set<TextDecoration>>(setOf(TextDecoration.NONE))
     val textDecoration: LiveData<Set<TextDecoration>> = _textDecoration
 
     private val _textAlignment = MutableLiveData<TextAlignment>(TextAlignment.CENTER)
@@ -268,33 +277,22 @@ class CanvasViewModel @Inject constructor(
         applyChangesToSelectedTextElements()
     }
 
-    // In your ViewModel
+    fun setIndentNone() {
+        _paragraphIndentation.value = 0f
+        applyChangesToSelectedTextElements()
+    }
+
     fun increaseIndent() {
-        val currentList = _canvasElements.value?.toMutableList() ?: return
-        val updatedList = currentList.map { element ->
-            if (element.isSelected && element.type == ElementType.TEXT) {
-                // Increase the indent by 5px
-                element.copy(currentIndent = element.currentIndent + 5f)
-            } else {
-                element
-            }
-        }
-        _canvasElements.value = updatedList
+        val currentIndent = _paragraphIndentation.value ?: 0f
+        _paragraphIndentation.value = currentIndent + 5f
+        applyChangesToSelectedTextElements()
     }
 
     fun decreaseIndent() {
-        val currentList = _canvasElements.value?.toMutableList() ?: return
-        val updatedList = currentList.map { element ->
-            if (element.isSelected && element.type == ElementType.TEXT) {
-                // Decrease the indent by 5px
-                element.copy(currentIndent = element.currentIndent - 5f)
-            } else {
-                element
-            }
-        }
-        _canvasElements.value = updatedList
+        val currentIndent = _paragraphIndentation.value ?: 0f
+        _paragraphIndentation.value = currentIndent - 5f
+        applyChangesToSelectedTextElements()
     }
-
 
     fun setListStyle(style: ListStyle) {
         _listStyle.value = style
@@ -303,9 +301,17 @@ class CanvasViewModel @Inject constructor(
 
     private fun applyChangesToSelectedTextElements() {
         val currentList = _canvasElements.value?.toMutableList() ?: return
+
+        var oldElement: CanvasElement? = null
+        var newElement: CanvasElement? = null
+        var targetId: String? = null
+
         val updatedList = currentList.map { element ->
             if (element.isSelected && element.type == ElementType.TEXT) {
-                element.copy(
+                oldElement = element.copy(context = null, bitmap = null)
+                targetId = element.id
+
+                val updated = element.copy(
                     lineSpacing = _lineSpacing.value ?: 1.0f,
                     letterSpacing = _letterSpacing.value ?: 0f,
                     letterCasing = _letterCasing.value ?: LetterCasing.NONE,
@@ -313,12 +319,35 @@ class CanvasViewModel @Inject constructor(
                     alignment = _textAlignment.value ?: TextAlignment.CENTER,
                     currentIndent = _paragraphIndentation.value ?: 0f,
                     listStyle = _listStyle.value ?: ListStyle.NONE,
+
+                    hasShadow = _hasShadow.value ?: element.hasShadow,
+                    shadowColor = _shadowColor.value ?: element.shadowColor,
+                    shadowDx = _shadowDx.value ?: element.shadowDx,
+                    shadowDy = _shadowDy.value ?: element.shadowDy,
+
+                    hasBorder = _hasBorder.value ?: element.hasBorder,
+                    borderColor = _borderColor.value ?: element.borderColor,
+                    borderWidth = _borderWidth.value ?: element.borderWidth,
+
+                    hasLabel = _hasLabel.value ?: element.hasLabel,
+                    labelColor = _labelColor.value ?: element.labelColor,
+                    labelShape = _labelShape.value ?: element.labelShape
                 ).apply {
-                    // Restore font!
                     paint.typeface = element.applyTypefaceFromFontList()
                 }
+
+                newElement = updated.copy(context = null, bitmap = null)
+                updated
             } else element
         }
+
+        if (oldElement != null && newElement != null && targetId != null) {
+            _canvasActions.push(CanvasAction.UpdateElement(targetId!!, newElement!!, oldElement!!))
+            _redoStack.clear()
+            _redoStack.clear()
+            notifyUndoRedoChanged()
+        }
+
         _canvasElements.value = updatedList
     }
 
@@ -512,178 +541,192 @@ class CanvasViewModel @Inject constructor(
 
     fun setSelectedElement(element: CanvasElement?) {
         val currentList = _canvasElements.value?.toMutableList() ?: mutableListOf()
-        val context = currentList.firstOrNull()?.context // Get context from existing element
+        val context = currentList.firstOrNull()?.context
 
-        // Deselect the previously selected element in the list
-        currentList.find { it.isSelected }?.let { prevSelected ->
-            if (prevSelected.id != element?.id) { // Only deselect if it's not the same element
-                val index = currentList.indexOfFirst { it.id == prevSelected.id }
-                if (index != -1) {
-                    val deselectedElement = prevSelected.copy(isSelected = false, context = context)
-                    // Re-apply font for deselected text elements
-                    if (deselectedElement.type == ElementType.TEXT && deselectedElement.fontId != null) {
-                        val font =
-                            localFonts.value.find { font -> font.id.toString() == deselectedElement.fontId }
-                        if (font != null && font.file_path?.isNotBlank() == true) {
-                            try {
-                                deselectedElement.paint.typeface =
-                                    Typeface.createFromFile(font.file_path)
-                            } catch (e: Exception) {
-                                println("Error re-applying typeface for deselected element: ${font.file_path}. Error: ${e.message}")
-                                deselectedElement.paint.typeface =
-                                    context?.let { ResourcesCompat.getFont(it, R.font.regular) }
-                                        ?: Typeface.DEFAULT
-                            }
-                        } else {
-                            deselectedElement.paint.typeface =
-                                context?.let { ResourcesCompat.getFont(it, R.font.regular) }
-                                    ?: Typeface.DEFAULT
-                        }
-                    } else {
-                        deselectedElement.paint.typeface =
-                            context?.let { ResourcesCompat.getFont(it, R.font.regular) }
-                                ?: Typeface.DEFAULT
-                    }
-                    currentList[index] = deselectedElement
-                }
+        // Deselect any previously selected element
+        currentList.indexOfFirst { it.isSelected }.takeIf { it != -1 }?.let { index ->
+            val prev = currentList[index]
+            if (prev.id != element?.id) {
+                val deselected = prev.copy(isSelected = false, context = context)
+                deselected.paint.typeface = getTypefaceForElement(deselected, context)
+                currentList[index] = deselected
             }
         }
 
-        // Select the new element in the list and update current text properties
-        if (element != null) {
-            val index = currentList.indexOfFirst { it.id == element.id }
-            if (index != -1) {
-                val selectedElementCopy = element.copy(isSelected = true, context = context)
-                // Re-apply font for selected text elements
-                if (selectedElementCopy.type == ElementType.TEXT && selectedElementCopy.fontId != null) {
-                    val font =
-                        localFonts.value.find { font -> font.id.toString() == selectedElementCopy.fontId }
-                    if (font != null && font.file_path?.isNotBlank() == true) {
+        // Select the new element
+        val selectedCopy = element?.copy(isSelected = true, context = context)?.apply {
+            paint.typeface = getTypefaceForElement(this, context)
+        }
 
-                        selectedElementCopy.paint.typeface =
-                            selectedElementCopy.applyTypefaceFromFontList()
+        selectedCopy?.let { selected ->
+            currentList.indexOfFirst { it.id == selected.id }.takeIf { it != -1 }?.let { idx ->
+                currentList[idx] = selected
+            }
+        }
 
-                    } else {
-                        selectedElementCopy.paint.typeface =
-                            context?.let { ResourcesCompat.getFont(it, R.font.regular) }
-                                ?: Typeface.DEFAULT
-                    }
-                } else {
-                    selectedElementCopy.paint.typeface =
-                        context?.let { ResourcesCompat.getFont(it, R.font.regular) }
-                            ?: Typeface.DEFAULT
+        // Reflect into UI
+        if (selectedCopy != null) {
+            when (selectedCopy.type) {
+                ElementType.TEXT -> syncUiFormattingWithSelectedTextElement(selectedCopy)
+                ElementType.IMAGE -> {
+                    _currentImageFilter.value = selectedCopy.imageFilter
+                    resetTextFormattingToDefault() // reset text-related
                 }
-                currentList[index] = selectedElementCopy
-
-                // Update all current text properties if the selected element is TEXT
-                if (element.type == ElementType.TEXT) {
-                    _currentFont.value = localFonts.value.find { font ->
-                        selectedElementCopy.fontId != null && font.id.toString() == selectedElementCopy.fontId
-                    }
-                    _currentTextColor.value = selectedElementCopy.paintColor
-                    _currentTextSize.value = selectedElementCopy.paintTextSize
-                    _currentTextAlignment.value = selectedElementCopy.alignment
-                    _currentTextOpacity.value = selectedElementCopy.paintAlpha
-                    _currentImageFilter.value = null
-                } else if (element.type == ElementType.IMAGE) {
-                    _currentImageFilter.value = selectedElementCopy.imageFilter
-                    // Clear text properties if image is selected
-                    _currentFont.value = null
-                    _currentTextColor.value = Color.BLACK
-                    _currentTextSize.value = 40f
-                    _currentTextAlignment.value = TextAlignment.CENTER
-                    _currentTextOpacity.value = selectedElementCopy.paint.alpha
-                }
+                else -> resetTextFormattingToDefault()
             }
         } else {
-            // If no element is selected, reset current text properties to defaults
-            _currentFont.value = null
-            _currentTextColor.value = Color.BLACK
-            _currentTextSize.value = 40f
-            _currentTextAlignment.value = TextAlignment.CENTER
-            _currentTextOpacity.value = 255
+            resetTextFormattingToDefault()
             _currentImageFilter.value = null
         }
 
-        this.selectedElement = element // Update the local reference
-        _canvasElements.value = currentList // Emit the updated list to observers
+        this.selectedElement = selectedCopy
+        _canvasElements.value = currentList
+    }
+
+    private fun getTypefaceForElement(element: CanvasElement, context: Context?): Typeface {
+        return if (element.type == ElementType.TEXT && element.fontId != null) {
+            val font = localFonts.value.find { it.id.toString() == element.fontId }
+            font?.file_path?.takeIf { it.isNotBlank() }?.let { path ->
+                try {
+                    Typeface.createFromFile(path)
+                } catch (e: Exception) {
+                    ResourcesCompat.getFont(context ?: return Typeface.DEFAULT, R.font.regular) ?: Typeface.DEFAULT
+                }
+            } ?: ResourcesCompat.getFont(context ?: return Typeface.DEFAULT, R.font.regular) ?: Typeface.DEFAULT
+        } else {
+            ResourcesCompat.getFont(context ?: return Typeface.DEFAULT, R.font.regular) ?: Typeface.DEFAULT
+        }
     }
 
     fun onCanvasSelectionChanged(selectedListFromCanvas: List<CanvasElement>) {
         val currentElements = _canvasElements.value?.toMutableList() ?: mutableListOf()
-        val context = currentElements.firstOrNull()?.context // Get context from existing element
+        val context = currentElements.firstOrNull()?.context
 
-        // Create a set of IDs for the elements that are selected by the canvas
-        val idsSelectedByCanvas = selectedListFromCanvas.map { it.id }.toSet()
+        val selectedIds = selectedListFromCanvas.map { it.id }.toSet()
 
-        // Update the isSelected flag for all elements based on the canvas's selection
         val updatedList = currentElements.map { element ->
-            val copiedElement = element.copy(
-                isSelected = idsSelectedByCanvas.contains(element.id), context = context
-            )
-            // Re-apply font for text elements
-            if (copiedElement.type == ElementType.TEXT && copiedElement.fontId != null) {
-                copiedElement.paint.typeface = copiedElement.applyTypefaceFromFontList()
-            } else {
-                copiedElement.paint.typeface =
-                    context?.let { ResourcesCompat.getFont(it, R.font.regular) } ?: Typeface.DEFAULT
-            }
-            copiedElement
+            val updated = element.copy(isSelected = selectedIds.contains(element.id), context = context)
+            updated.paint.typeface = getTypefaceForElement(updated, context)
+            updated
         }
-        _canvasElements.value =
-            updatedList // Trigger update for SizedCanvasView and other observers
 
-        // Find the first selected text element and update current text properties
-        val firstSelectedTextElement =
-            selectedListFromCanvas.firstOrNull { it.type == ElementType.TEXT }
-        if (firstSelectedTextElement != null) {
-            _currentFont.value = localFonts.value.find { font ->
-                firstSelectedTextElement.fontId != null && font.id.toString() == firstSelectedTextElement.fontId
-            }
-            _currentTextColor.value = firstSelectedTextElement.paintColor
-            _currentTextSize.value = firstSelectedTextElement.paintTextSize
-            _currentTextAlignment.value = firstSelectedTextElement.alignment
-            _currentTextOpacity.value = firstSelectedTextElement.paintAlpha
+        _canvasElements.value = updatedList
+
+        val firstText = selectedListFromCanvas.firstOrNull { it.type == ElementType.TEXT }
+        val firstImage = selectedListFromCanvas.firstOrNull { it.type == ElementType.IMAGE }
+
+        if (firstText != null) {
+            syncUiFormattingWithSelectedTextElement(firstText)
             _currentImageFilter.value = null
         } else {
-            // If no text element is selected, reset current text properties to defaults
-            _currentFont.value = null
-            _currentTextColor.value = Color.BLACK
-            _currentTextSize.value = 40f
-            _currentTextAlignment.value = TextAlignment.CENTER
-            _currentTextOpacity.value = 255
+            resetTextFormattingToDefault()
+            _currentImageFilter.value = firstImage?.imageFilter
         }
-        val firstSelectedImageElement =
-            selectedListFromCanvas.firstOrNull { it.type == ElementType.IMAGE }
-        if (firstSelectedImageElement != null) {
-            _currentImageFilter.value = firstSelectedImageElement.imageFilter
-        } else if (firstSelectedTextElement == null) { // Only clear if no image or text element is selected
-            _currentImageFilter.value = null
+    }
+
+    private fun syncUiFormattingWithSelectedTextElement(textElement: CanvasElement?) {
+        if (textElement != null) {
+            _currentFont.value = localFonts.value.find { font ->
+                textElement.fontId != null && font.id.toString() == textElement.fontId
+            }
+            _currentTextColor.value = textElement.paintColor
+            _currentTextSize.value = textElement.paintTextSize
+            _currentTextAlignment.value = textElement.alignment
+            _currentTextOpacity.value = textElement.paintAlpha
+
+            _lineSpacing.value = textElement.lineSpacing
+            _letterSpacing.value = textElement.letterSpacing
+            _letterCasing.value = textElement.letterCasing
+            _textDecoration.value = textElement.textDecoration
+            _textAlignment.value = textElement.alignment
+            _paragraphIndentation.value = textElement.currentIndent
+            _listStyle.value = textElement.listStyle
+
+            // 🟡 Shadow
+            _hasShadow.value = textElement.hasShadow
+            _shadowColor.value = textElement.shadowColor
+            _shadowDx.value = textElement.shadowDx
+            _shadowDy.value = textElement.shadowDy
+
+            // 🟡 Border
+            _hasBorder.value = textElement.hasBorder
+            _borderColor.value = textElement.borderColor
+            _borderWidth.value = textElement.borderWidth
+
+            // 🟡 Label
+            _hasLabel.value = textElement.hasLabel
+            _labelColor.value = textElement.labelColor
+            _labelShape.value = textElement.labelShape
+        } else {
+            resetTextFormattingToDefault()
         }
+    }
+
+    private fun resetTextFormattingToDefault() {
+        _currentFont.value = null
+        _currentTextColor.value = Color.BLACK
+        _currentTextSize.value = 40f
+        _currentTextAlignment.value = TextAlignment.CENTER
+        _currentTextOpacity.value = 255
+
+        _lineSpacing.value = 1.0f
+        _letterSpacing.value = 0f
+        _letterCasing.value = LetterCasing.NONE
+        _textDecoration.value = setOf(TextDecoration.NONE)
+        _textAlignment.value = TextAlignment.CENTER
+        _paragraphIndentation.value = 0f
+        _listStyle.value = ListStyle.NONE
+
+        // Reset Shadow
+        _hasShadow.value = false
+        _shadowColor.value = Color.GRAY
+        _shadowDx.value = 1f
+        _shadowDy.value = 1f
+
+        // Reset Border
+        _hasBorder.value = false
+        _borderColor.value = Color.BLACK
+        _borderWidth.value = 1f
+
+        // Reset Label
+        _hasLabel.value = false
+        _labelColor.value = Color.YELLOW
+        _labelShape.value = LabelShape.RECTANGLE_FILL
     }
 
     fun setSelectedElementsFromLayers(elementsToSelect: List<CanvasElement>) {
         val currentElements = _canvasElements.value?.toMutableList() ?: mutableListOf()
         val context = currentElements.firstOrNull()?.context
-
-        // Create a set of IDs for the elements that should be selected
         val idsToSelect = elementsToSelect.map { it.id }.toSet()
 
-        // Update the isSelected flag for all elements based on the provided list
         val updatedList = currentElements.map { element ->
-            val copiedElement =
-                element.copy(isSelected = idsToSelect.contains(element.id), context = context)
-            // Re-apply font for text elements
-            if (copiedElement.type == ElementType.TEXT && copiedElement.fontId != null) {
-                copiedElement.paint.typeface = copiedElement.applyTypefaceFromFontList()
+            val copiedElement = element.copy(
+                isSelected = idsToSelect.contains(element.id),
+                context = context
+            )
+
+            copiedElement.paint.typeface = if (copiedElement.type == ElementType.TEXT && copiedElement.fontId != null) {
+                copiedElement.applyTypefaceFromFontList()
             } else {
-                copiedElement.paint.typeface =
-                    context?.let { ResourcesCompat.getFont(it, R.font.regular) } ?: Typeface.DEFAULT
+                context?.let { ResourcesCompat.getFont(it, R.font.regular) } ?: Typeface.DEFAULT
             }
+
             copiedElement
         }
 
-        _canvasElements.value = updatedList // Emit the updated list to SizedCanvasView
+        _canvasElements.value = updatedList
+
+        // 🛑 Don't sync formatting if more than 1 item is selected
+        val selectedTextElements = elementsToSelect.filter { it.type == ElementType.TEXT }
+
+        if (selectedTextElements.size == 1) {
+            syncUiFormattingWithSelectedTextElement(selectedTextElements.first())
+        } else {
+            resetTextFormattingToDefault()
+        }
+
+        val firstSelectedImageElement = elementsToSelect.firstOrNull { it.type == ElementType.IMAGE }
+        _currentImageFilter.value = firstSelectedImageElement?.imageFilter
     }
 
     fun getSelectedElement(): CanvasElement? {
@@ -707,31 +750,6 @@ class CanvasViewModel @Inject constructor(
             _canvasActions.push(CanvasAction.SetBackgroundImage(bitmap, previousBitmap))
             _redoStack.clear()
             _backgroundImage.value = bitmap
-            notifyUndoRedoChanged()
-        }
-    }
-
-    fun setCanvasBackgroundGradient(colors: IntArray?, positions: FloatArray?) {
-        val previousColors = _backgroundGradient.value?.first
-        val previousPositions = _backgroundGradient.value?.second
-
-        // Check if there's a significant change to warrant an undo action
-        val colorsChanged = colors?.contentEquals(
-            previousColors ?: intArrayOf()
-        ) == false || (colors == null && previousColors != null) || (colors != null && previousColors == null)
-        val positionsChanged = positions?.contentEquals(
-            previousPositions ?: floatArrayOf()
-        ) == false || (positions == null && previousPositions != null) || (positions != null && previousPositions == null)
-
-        if (colorsChanged || positionsChanged) {
-            _canvasActions.push(
-                CanvasAction.SetBackgroundGradient(
-                    colors ?: intArrayOf(), // Ensure not null for action
-                    positions, previousColors, previousPositions
-                )
-            )
-            _redoStack.clear()
-            _backgroundGradient.value = Pair(colors, positions)
             notifyUndoRedoChanged()
         }
     }
@@ -832,66 +850,27 @@ class CanvasViewModel @Inject constructor(
         }
     }
 
-    fun setTextShadow(enabled: Boolean, color: Int, dx: Float, dy: Float, radius: Float) {
-        val currentList = _canvasElements.value?.toMutableList() ?: mutableListOf()
-        val updatedList = currentList.map { element ->
-            if (element.isSelected && element.type == ElementType.TEXT) {
-                element.copy(
-                    hasShadow = enabled,
-                    shadowColor = color,
-                    shadowDx = dx,
-                    shadowDy = dy
-                ).apply {
-                    // Restore font!
-                    paint.typeface = element.applyTypefaceFromFontList()
-                }
-            } else element
-        }
-        _canvasElements.value = updatedList
-        _currentTextShadowColor.value = color
-        _currentTextShadowDx.value = dx
-        _currentTextShadowDy.value = dy
-        _currentTextShadowRadius.value = radius
+    fun setTextShadow(enabled: Boolean, color: Int, dx: Float, dy: Float) {
+        _shadowColor.value = color
+        _shadowDx.value = dx
+        _shadowDy.value = dy
+        _hasShadow.value = enabled
+        applyChangesToSelectedTextElements()
     }
 
     fun setTextBorder(enabled: Boolean, color: Int, width: Float) {
-        val currentList = _canvasElements.value?.toMutableList() ?: mutableListOf()
-        val updatedList = currentList.map { element ->
-            if (element.isSelected && element.type == ElementType.TEXT) {
-                element.copy(
-                    hasBorder = enabled,
-                    borderColor = color,
-                    borderWidth = width
-                ).apply {
-                    // Restore font!
-                    paint.typeface = element.applyTypefaceFromFontList()
-                }
-            } else element
-        }
-        _canvasElements.value = updatedList
-        _currentTextBorderColor.value = color
-        _currentTextBorderWidth.value = width
+        _borderColor.value = color
+        _borderWidth.value = width
+        _hasBorder.value = enabled
+        applyChangesToSelectedTextElements()
     }
 
     fun setTextLabel(enabled: Boolean, color: Int, shape: LabelShape) {
-        val currentList = _canvasElements.value?.toMutableList() ?: mutableListOf()
-        val updatedList = currentList.map { element ->
-            if (element.isSelected && element.type == ElementType.TEXT) {
-                element.copy(
-                    hasLabel = enabled,
-                    labelColor = color,
-                    labelShape = shape
-                ).apply {
-                    // Restore font!
-                    paint.typeface = element.applyTypefaceFromFontList()
-                }
-            } else element
-        }
-        _canvasElements.value = updatedList
-        _currentTextLabelColor.value = color
-        _currentTextLabelShape.value = shape
+        _labelColor.value = color
+        _labelShape.value = shape
+        _hasLabel.value = enabled
+        applyChangesToSelectedTextElements()
     }
-
 
     private fun CanvasElement.applyTypefaceFromFontList(): Typeface {
         return fontId?.let { id ->

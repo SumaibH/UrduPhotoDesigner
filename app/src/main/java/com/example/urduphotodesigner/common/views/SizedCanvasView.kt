@@ -1092,24 +1092,41 @@ class SizedCanvasView @JvmOverloads constructor(
             }
         }
 
-        var yOffset = -(lines.size - 1) * lineHeight / 2f
+        // Font correction for baseline alignment
+        val baselineShift = (fm.ascent + fm.descent) / 2f
+        var yOffset = -((lines.size - 1) * lineHeight / 2f) - baselineShift
 
         lines.forEachIndexed { i, line ->
 
-            val fillPaint = TextPaint(element.paint)
-            fillPaint.style = Paint.Style.FILL
-            fillPaint.color = element.paintColor
-            fillPaint.typeface = element.paint.typeface
-            fillPaint.letterSpacing = element.letterSpacing
+            val fillPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = element.paintColor
+                textSize = element.paintTextSize
+                alpha = element.paintAlpha
+                letterSpacing = element.letterSpacing
+                isAntiAlias = true
+                style = Paint.Style.FILL
 
-            // Apply paragraph indentation
-//            if (i == 0) {
-//                when (element.currentIndent) {
-//                    ParagraphIndentation.INCREASE_INDENT -> element.x += 30f
-//                    ParagraphIndentation.DECREASE_INDENT -> element.x -= 30f
-//                    else -> {}
-//                }
-//            }
+                // Shadow
+                if (element.hasShadow) {
+                    setShadowLayer(4f, element.shadowDx, element.shadowDy, element.shadowColor)
+                }
+
+                // Underline
+                isUnderlineText = TextDecoration.UNDERLINE in element.textDecoration
+
+                // Bold / Italic
+                val baseTypeface = element.paint.typeface ?: Typeface.DEFAULT
+                val isBold = TextDecoration.BOLD in element.textDecoration
+                val isItalic = TextDecoration.ITALIC in element.textDecoration
+
+                val style = when {
+                    isBold && isItalic -> Typeface.BOLD_ITALIC
+                    isBold -> Typeface.BOLD
+                    isItalic -> Typeface.ITALIC
+                    else -> Typeface.NORMAL
+                }
+                typeface = Typeface.create(baseTypeface, style)
+            }
 
             // Handle list styles
             val textToDraw = when (element.listStyle) {
@@ -1135,12 +1152,13 @@ class SizedCanvasView @JvmOverloads constructor(
                 TextAlignment.JUSTIFY -> Paint.Align.LEFT // needed for justify, but handled separately
             }
 
-            fillPaint.textAlign = alignment
+            val indentOffset = if (i == 0) element.currentIndent else 0f
 
+            fillPaint.textAlign = alignment
             val xPosition = when (alignment) {
-                Paint.Align.LEFT -> -element.getLocalContentWidth() / 2f
+                Paint.Align.LEFT -> -element.getLocalContentWidth() / 2f + indentOffset
                 Paint.Align.CENTER -> 0f
-                Paint.Align.RIGHT -> element.getLocalContentWidth() / 2f
+                Paint.Align.RIGHT -> element.getLocalContentWidth() / 2f + indentOffset
                 else -> 0f
             }
 
