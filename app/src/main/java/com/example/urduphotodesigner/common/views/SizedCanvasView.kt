@@ -41,7 +41,6 @@ import androidx.core.graphics.withMatrix
 import com.example.urduphotodesigner.common.canvas.enums.LabelShape
 import com.example.urduphotodesigner.common.canvas.enums.LetterCasing
 import com.example.urduphotodesigner.common.canvas.enums.ListStyle
-import com.example.urduphotodesigner.common.canvas.enums.ParagraphIndentation
 import com.example.urduphotodesigner.common.canvas.enums.TextAlignment
 import com.example.urduphotodesigner.common.canvas.enums.TextDecoration
 import java.util.Locale
@@ -302,9 +301,9 @@ class SizedCanvasView @JvmOverloads constructor(
 
     fun setTextBorder(enabled: Boolean, color: Int = Color.BLACK, width: Float = 2f) {
         selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
-            element.hasBorder = enabled
-            element.borderColor = color
-            element.borderWidth = width
+            element.hasStroke = enabled
+            element.strokeColor = color
+            element.strokeWidth = width
             element.updatePaintProperties()
             onElementChanged?.invoke(element)
         }
@@ -493,6 +492,26 @@ class SizedCanvasView @JvmOverloads constructor(
         // Set as background
         backgroundImage = resultBitmap
         backgroundGradient = null
+        invalidate()
+    }
+
+    /** Apply a horizontal fill gradient across the text bounds */
+    fun setTextFillGradient(colors: IntArray, positions: FloatArray? = null) {
+        selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
+            element.fillGradientColors     = colors
+            element.fillGradientPositions  = positions
+            onElementChanged?.invoke(element)
+        }
+        invalidate()
+    }
+
+    /** Apply a horizontal stroke gradient across the text bounds */
+    fun setTextStrokeGradient(colors: IntArray, positions: FloatArray? = null) {
+        selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
+            element.strokeGradientColors    = colors
+            element.strokeGradientPositions = positions
+            onElementChanged?.invoke(element)
+        }
         invalidate()
     }
 
@@ -1106,11 +1125,6 @@ class SizedCanvasView @JvmOverloads constructor(
                 isAntiAlias = true
                 style = Paint.Style.FILL
 
-                // Shadow
-                if (element.hasShadow) {
-                    setShadowLayer(4f, element.shadowDx, element.shadowDy, element.shadowColor)
-                }
-
                 // Underline
                 isUnderlineText = TextDecoration.UNDERLINE in element.textDecoration
 
@@ -1162,6 +1176,31 @@ class SizedCanvasView @JvmOverloads constructor(
                 else -> 0f
             }
 
+            element.fillGradientColors?.let { colors ->
+                // measure the widest line so your gradient spans the text
+                val maxLineWidth = lines.maxOf { fillPaint.measureText(it) }
+                fillPaint.shader = LinearGradient(
+                    -maxLineWidth/2f, 0f,
+                    maxLineWidth/2f, 0f,
+                    colors,
+                    element.fillGradientPositions,
+                    Shader.TileMode.CLAMP
+                )
+            } ?: run {
+                fillPaint.shader = null
+                fillPaint.color  = element.paintColor
+            }
+
+            if (element.hasShadow) {
+                val shadowColorWithOpacity = (element.shadowColor and 0x00FFFFFF) or (64 shl 24)
+                val shadowPaint = TextPaint(fillPaint).apply {
+                    shader = null
+                    color = element.shadowColor
+                    setShadowLayer(10f, element.shadowDx, element.shadowDy, shadowColorWithOpacity)
+                }
+                canvas.drawText(displayText, xPosition, yOffset, shadowPaint)
+            }
+
             // Handle justified text separately
             if (element.alignment == TextAlignment.JUSTIFY) {
                 element.paint = fillPaint
@@ -1171,12 +1210,26 @@ class SizedCanvasView @JvmOverloads constructor(
                 canvas.drawText(displayText, xPosition, yOffset, fillPaint)
 
                 // Draw border (stroke) if needed
-                if (element.hasBorder && element.borderWidth > 0f) {
-                    val strokePaint = TextPaint(fillPaint)
-                    strokePaint.style = Paint.Style.STROKE
-                    strokePaint.strokeWidth = element.borderWidth
-                    strokePaint.color = element.borderColor
-                    strokePaint.textAlign = alignment
+                if (element.hasStroke && element.strokeWidth > 0f) {
+                    val strokePaint = TextPaint(fillPaint).apply {
+                        style = Paint.Style.STROKE
+                        strokeWidth = element.strokeWidth
+                        element.strokeGradientColors?.let { sColors ->
+                            // use same width to span stroke gradient
+                            val w = element.strokeWidth
+                            shader = LinearGradient(
+                                -w/2f, 0f,
+                                w/2f, 0f,
+                                sColors,
+                                element.strokeGradientPositions?: floatArrayOf(0f, 1f),
+                                Shader.TileMode.CLAMP
+                            )
+                        } ?: run {
+                            shader = null
+                            color  = element.strokeColor
+                        }
+                        textAlign = alignment
+                    }
                     canvas.drawText(displayText, xPosition, yOffset, strokePaint)
                 }
             }
@@ -1204,11 +1257,11 @@ class SizedCanvasView @JvmOverloads constructor(
             color = element.paintColor
         }
 
-        val strokePaint = if (element.hasBorder && element.borderWidth > 0f) {
+        val strokePaint = if (element.hasStroke && element.strokeWidth > 0f) {
             TextPaint(basePaint).apply {
                 style = Paint.Style.STROKE
-                strokeWidth = element.borderWidth
-                color = element.borderColor
+                strokeWidth = element.strokeWidth
+                color = element.strokeColor
             }
         } else null
 

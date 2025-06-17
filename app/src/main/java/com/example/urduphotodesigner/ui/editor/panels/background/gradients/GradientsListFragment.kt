@@ -33,9 +33,18 @@ class GradientsListFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        gradientsAdapter = GradientsAdapter(Constants.gradientList){ selectedGradient ->
-            viewModel.setCanvasBackgroundImage(selectedGradient)
-        }
+        gradientsAdapter = GradientsAdapter(
+            gradientList = Constants.gradientList,
+            onGradientSelected = { selectedGradient, item ->
+                viewModel.setCanvasBackgroundImage(selectedGradient)
+            },
+            onNoneSelected = {
+                viewModel.removeCanvasBackgroundImage()
+            },
+            onGradientPickerClicked = {
+//                openColorPickerDialog()
+            }
+        )
         binding.colors.apply {
             adapter = gradientsAdapter
         }

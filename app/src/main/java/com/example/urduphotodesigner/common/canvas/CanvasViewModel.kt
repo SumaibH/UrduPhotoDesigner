@@ -91,6 +91,19 @@ class CanvasViewModel @Inject constructor(
     private val _currentImageFilter = MutableLiveData<ImageFilter?>(null)
     val currentImageFilter: LiveData<ImageFilter?> = _currentImageFilter
 
+    private val _fillGradientColors = MutableLiveData<IntArray?>()
+    val fillGradientColors: LiveData<IntArray?> = _fillGradientColors
+
+    private val _fillGradientPositions = MutableLiveData<FloatArray?>()
+    val fillGradientPositions: LiveData<FloatArray?> = _fillGradientPositions
+
+    // Stroke gradient
+    private val _strokeGradientColors = MutableLiveData<IntArray?>()
+    val strokeGradientColors: LiveData<IntArray?> = _strokeGradientColors
+
+    private val _strokeGradientPositions = MutableLiveData<FloatArray?>()
+    val strokeGradientPositions: LiveData<FloatArray?> = _strokeGradientPositions
+
     // 🔷 Shadow
     private val _hasShadow = MutableLiveData<Boolean>(false)
     val hasShadow: LiveData<Boolean> = _hasShadow
@@ -299,6 +312,44 @@ class CanvasViewModel @Inject constructor(
         applyChangesToSelectedTextElements()
     }
 
+    fun setTextFillGradient(colors: IntArray, positions: FloatArray) {
+        _fillGradientColors.value = colors
+        _fillGradientPositions.value  = positions
+        applyChangesToSelectedTextElements()
+    }
+
+    /** Call this when the user selects a new text‐stroke gradient */
+    fun setTextStrokeGradient(colors: IntArray, positions: FloatArray, width: Float) {
+        _borderWidth.value = width
+        _hasBorder.value = true
+        _strokeGradientColors.value = colors
+        _strokeGradientPositions.value = positions
+        applyChangesToSelectedTextElements()
+    }
+
+    /** Optional: clear gradients (back to solid color) */
+    fun clearGradients() {
+        _fillGradientColors.value = null
+        _fillGradientPositions.value = null
+        _strokeGradientColors.value = null
+        _strokeGradientPositions.value = null
+        applyChangesToSelectedTextElements()
+    }
+
+    fun clearFillGradients() {
+        _fillGradientColors.value = null
+        _fillGradientPositions.value = null
+        applyChangesToSelectedTextElements()
+    }
+
+    fun clearStrokeGradients() {
+        _borderWidth.value = 0f
+        _hasBorder.value = false
+        _strokeGradientColors.value = null
+        _strokeGradientPositions.value = null
+        applyChangesToSelectedTextElements()
+    }
+
     private fun applyChangesToSelectedTextElements() {
         val currentList = _canvasElements.value?.toMutableList() ?: return
 
@@ -312,26 +363,32 @@ class CanvasViewModel @Inject constructor(
                 targetId = element.id
 
                 val updated = element.copy(
-                    lineSpacing = _lineSpacing.value ?: 1.0f,
-                    letterSpacing = _letterSpacing.value ?: 0f,
-                    letterCasing = _letterCasing.value ?: LetterCasing.NONE,
-                    textDecoration = _textDecoration.value ?: emptySet(),
-                    alignment = _textAlignment.value ?: TextAlignment.CENTER,
-                    currentIndent = _paragraphIndentation.value ?: 0f,
-                    listStyle = _listStyle.value ?: ListStyle.NONE,
+                    lineSpacing = _lineSpacing.value ?: element.lineSpacing,
+                    letterSpacing = _letterSpacing.value ?: element.letterSpacing,
+                    letterCasing = _letterCasing.value ?: element.letterCasing,
+                    textDecoration = _textDecoration.value ?: element.textDecoration,
+                    alignment = _textAlignment.value ?: element.alignment,
+                    currentIndent = _paragraphIndentation.value ?: element.currentIndent,
+                    listStyle = _listStyle.value ?: element.listStyle,
 
                     hasShadow = _hasShadow.value ?: element.hasShadow,
                     shadowColor = _shadowColor.value ?: element.shadowColor,
                     shadowDx = _shadowDx.value ?: element.shadowDx,
                     shadowDy = _shadowDy.value ?: element.shadowDy,
 
-                    hasBorder = _hasBorder.value ?: element.hasBorder,
-                    borderColor = _borderColor.value ?: element.borderColor,
-                    borderWidth = _borderWidth.value ?: element.borderWidth,
+                    hasStroke = _hasBorder.value ?: element.hasStroke,
+                    strokeColor = _borderColor.value ?: element.strokeColor,
+                    strokeWidth = _borderWidth.value ?: element.strokeWidth,
 
                     hasLabel = _hasLabel.value ?: element.hasLabel,
                     labelColor = _labelColor.value ?: element.labelColor,
-                    labelShape = _labelShape.value ?: element.labelShape
+                    labelShape = _labelShape.value ?: element.labelShape,
+
+                    fillGradientColors = if (_fillGradientColors.value == null) null else _fillGradientColors.value ?: element.fillGradientColors,
+                    fillGradientPositions = if (_fillGradientPositions.value == null) null else _fillGradientPositions.value ?: element.fillGradientPositions,
+
+                    strokeGradientColors = if (_strokeGradientColors.value == null) null else _strokeGradientColors.value ?: element.strokeGradientColors,
+                    strokeGradientPositions = if (_strokeGradientPositions.value == null) null else _strokeGradientPositions.value ?: element.strokeGradientPositions
                 ).apply {
                     paint.typeface = element.applyTypefaceFromFontList()
                 }
@@ -649,9 +706,9 @@ class CanvasViewModel @Inject constructor(
             _shadowDy.value = textElement.shadowDy
 
             // 🟡 Border
-            _hasBorder.value = textElement.hasBorder
-            _borderColor.value = textElement.borderColor
-            _borderWidth.value = textElement.borderWidth
+            _hasBorder.value = textElement.hasStroke
+            _borderColor.value = textElement.strokeColor
+            _borderWidth.value = textElement.strokeWidth
 
             // 🟡 Label
             _hasLabel.value = textElement.hasLabel
@@ -750,6 +807,17 @@ class CanvasViewModel @Inject constructor(
             _canvasActions.push(CanvasAction.SetBackgroundImage(bitmap, previousBitmap))
             _redoStack.clear()
             _backgroundImage.value = bitmap
+            notifyUndoRedoChanged()
+        }
+    }
+
+    fun removeCanvasBackgroundImage() {
+        val previousBitmap = _backgroundImage.value
+        // Only push action if there's a change
+        if (previousBitmap != null) {
+            _canvasActions.push(CanvasAction.SetBackgroundImage(null, previousBitmap))
+            _redoStack.clear()
+            _backgroundImage.value = null
             notifyUndoRedoChanged()
         }
     }

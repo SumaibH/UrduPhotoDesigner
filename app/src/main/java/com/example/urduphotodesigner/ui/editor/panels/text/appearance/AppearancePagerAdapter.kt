@@ -12,7 +12,11 @@ class AppearancePagerAdapter(
     override fun getItemCount() = tabs.size
 
     override fun createFragment(position: Int): Fragment {
-        return ColorsListFragment.newInstance(tabs[position].tab_name)
+        return if (position == 0 || position == 1){
+            FillStrokeFragment.newInstance(tabs[position].tab_name)
+        }else{
+            ColorsListFragment.newInstance(tabs[position].tab_name)
+        }
     }
 
     fun updateTabs(newTabs: List<PanelTabs>) {

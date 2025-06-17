@@ -2,7 +2,7 @@
     <string name="app_name">UrduPhotoDesigner</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="server_client_id">262118457778-pkck3l53ls79asmbipjdlis8e6bt8cn8.apps.googleusercontent.com</string>
+    <string name="server_client_id">262118457778-vbkhl67en4464tieb8dd5s8e5l96067n.apps.googleusercontent.com</string>
     <string name="lorem_ispum">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore</string>
     <string name="login">Login</string>
     <string name="email_username">Email / Username</string>
@@ -66,4 +66,6 @@
     <string name="letter_spacing">Letter Spacing</string>
     <string name="paragraph_indentation">Paragraph Indentation</string>
     <string name="list_style">List Style</string>
+    <string name="solid">Solid</string>
+    <string name="gradient">Gradient</string>
 </resources>

@@ -11,12 +11,10 @@ import com.example.urduphotodesigner.common.canvas.enums.ElementType
 import com.example.urduphotodesigner.common.canvas.enums.LabelShape
 import com.example.urduphotodesigner.common.canvas.enums.LetterCasing
 import com.example.urduphotodesigner.common.canvas.enums.ListStyle
-import com.example.urduphotodesigner.common.canvas.enums.ParagraphIndentation
 import com.example.urduphotodesigner.common.canvas.enums.TextAlignment
 import com.example.urduphotodesigner.common.canvas.enums.TextDecoration
 import com.example.urduphotodesigner.common.canvas.sealed.ImageFilter
 import java.io.Serializable
-import java.util.Locale
 import java.util.UUID
 
 private const val ICON_PADDING =
@@ -47,9 +45,9 @@ data class CanvasElement(
     var paintTextSize: Float = 80f,
     var paintAlpha: Int = 255,
     // Border
-    var hasBorder: Boolean = false,
-    var borderColor: Int = Color.BLACK,
-    var borderWidth: Float = 1f,
+    var hasStroke: Boolean = false,
+    var strokeColor: Int = Color.BLACK,
+    var strokeWidth: Float = 1f,
 
     // Shadow
     var hasShadow: Boolean = false,
@@ -70,8 +68,16 @@ data class CanvasElement(
     var currentIndent: Float = 0f,
     var listStyle: ListStyle = ListStyle.NONE,
 
+    // text fill gradient
+    var fillGradientColors: IntArray? = null,
+    var fillGradientPositions: FloatArray? = null,
+
+    // text stroke gradient
+    var strokeGradientColors: IntArray? = null,
+    var strokeGradientPositions: FloatArray? = null,
+
     @Transient
-    var originalTypeface: Typeface? = null
+    var originalTypeface: Typeface? = null,
 ) : Serializable {
 
     @Transient
