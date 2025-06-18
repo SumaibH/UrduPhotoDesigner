@@ -60,10 +60,11 @@ class AppearanceFragment : Fragment() {
 
     private fun initObservers() {
         lifecycleScope.launch {
-            tabs.add(PanelTabs(0, "Text", true))
-            tabs.add(PanelTabs(1, "Border", false))
+            tabs.add(PanelTabs(0, "Fill", true))
+            tabs.add(PanelTabs(1, "Stroke", false))
             tabs.add(PanelTabs(2, "Shadow", false))
-            tabs.add(PanelTabs(3, "Label", false))
+            tabs.add(PanelTabs(3, "Glow", false))
+            tabs.add(PanelTabs(4, "Label", false))
 
             adapter.submitList(ArrayList(tabs))
             handleAppearanceTabSelection(tabs.firstOrNull()) // Select "All" by default

@@ -11,6 +11,7 @@ import com.example.urduphotodesigner.common.canvas.enums.ElementType
 import com.example.urduphotodesigner.common.canvas.enums.LabelShape
 import com.example.urduphotodesigner.common.canvas.enums.LetterCasing
 import com.example.urduphotodesigner.common.canvas.enums.ListStyle
+import com.example.urduphotodesigner.common.canvas.enums.ShadowType
 import com.example.urduphotodesigner.common.canvas.enums.TextAlignment
 import com.example.urduphotodesigner.common.canvas.enums.TextDecoration
 import com.example.urduphotodesigner.common.canvas.sealed.ImageFilter
@@ -54,6 +55,9 @@ data class CanvasElement(
     var shadowColor: Int = Color.GRAY,
     var shadowDx: Float = 1f,
     var shadowDy: Float = 1f,
+    var shadowRadius: Float = 8f,
+    var shadowOpacity: Int = 64,
+    var shadowType: ShadowType = ShadowType.OUTER,
 
     // Label
     var hasLabel: Boolean = false,

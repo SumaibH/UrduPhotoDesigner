@@ -45,4 +45,13 @@
         android:gravity="center"
         android:layout_marginTop="@dimen/_10sdp"/>
 
+    <com.example.urduphotodesigner.common.views.EngravedInnerShadowTextView
+        android:id="@+id/innerShadowTextView"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:background="#F2F3F3" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

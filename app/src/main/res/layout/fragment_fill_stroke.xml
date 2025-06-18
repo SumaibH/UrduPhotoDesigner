@@ -6,198 +6,206 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".ui.editor.panels.text.appearance.FillStrokeFragment">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/solid"
+    <androidx.cardview.widget.CardView
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        app:cardElevation="0dp"
+        app:cardCornerRadius="@dimen/_3sdp"
+        app:cardBackgroundColor="@color/contrast"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:paddingVertical="@dimen/_3sdp"
-        android:background="?selectableItemBackground">
-        <TextView
-            android:id="@+id/solidTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/solid"
-            android:fontFamily="@font/medium"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:textSize="@dimen/_10sdp"
-            android:textColor="@color/black"/>
+        android:id="@+id/toolbar">
 
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_dropdown"
-            android:id="@+id/solidDropDown"
-            android:layout_marginEnd="@dimen/_10sdp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/solidTitle"
-            app:layout_constraintBottom_toBottomOf="@id/solidTitle"/>
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="@dimen/_3sdp">
+            <TextView
+                android:id="@+id/solid"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/solid"
+                android:textColor="@color/black"
+                android:textSize="@dimen/_10sdp"
+                android:fontFamily="@font/medium"
+                android:gravity="center"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/gradient"
+                android:paddingVertical="@dimen/_3sdp"
+                android:background="@drawable/button_bg"
+                android:backgroundTint="@color/white"/>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/solid"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        tools:itemCount="100"
-        android:orientation="horizontal"
-        android:id="@+id/colors"
-        tools:listitem="@layout/layout_color_item"/>
+            <TextView
+                android:id="@+id/gradient"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/gradient"
+                android:textColor="@color/black"
+                android:textSize="@dimen/_10sdp"
+                android:fontFamily="@font/medium"
+                android:gravity="center"
+                app:layout_constraintStart_toEndOf="@id/solid"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:paddingVertical="@dimen/_3sdp"
+                android:background="@drawable/button_bg"
+                android:backgroundTint="@color/contrast"/>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/gradient"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/colors"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:paddingVertical="@dimen/_3sdp"
-        android:background="?selectableItemBackground">
-        <TextView
-            android:id="@+id/gradientTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/gradient"
-            android:fontFamily="@font/medium"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:textSize="@dimen/_10sdp"
-            android:textColor="@color/black"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
 
-        <ImageView
-            android:layout_marginEnd="@dimen/_10sdp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_dropdown"
-            android:id="@+id/gradientDropDown"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/gradientTitle"
-            app:layout_constraintBottom_toBottomOf="@id/gradientTitle"/>
-    </androidx.constraintlayout.widget.ConstraintLayout>
+   <androidx.constraintlayout.widget.ConstraintLayout
+       android:id="@+id/views"
+       android:layout_width="0dp"
+       android:layout_height="wrap_content"
+       app:layout_constraintStart_toStartOf="parent"
+       app:layout_constraintEnd_toEndOf="parent"
+       app:layout_constraintBottom_toTopOf="@id/footer"
+       app:layout_constraintTop_toBottomOf="@id/toolbar">
+       <androidx.recyclerview.widget.RecyclerView
+           android:layout_width="0dp"
+           android:layout_height="wrap_content"
+           app:layout_constraintStart_toStartOf="parent"
+           app:layout_constraintEnd_toEndOf="parent"
+           app:layout_constraintTop_toTopOf="parent"
+           app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+           tools:itemCount="100"
+           android:orientation="horizontal"
+           android:id="@+id/colors"
+           tools:listitem="@layout/layout_color_item"/>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:layout_width="0dp"
-        android:visibility="gone"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/gradient"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        tools:itemCount="100"
-        android:orientation="horizontal"
-        android:id="@+id/gradients"
-        tools:listitem="@layout/layout_color_item"/>
+       <androidx.recyclerview.widget.RecyclerView
+           android:layout_width="0dp"
+           android:visibility="gone"
+           android:layout_height="wrap_content"
+           app:layout_constraintStart_toStartOf="parent"
+           app:layout_constraintEnd_toEndOf="parent"
+           app:layout_constraintTop_toTopOf="parent"
+           app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+           tools:itemCount="100"
+           android:orientation="horizontal"
+           android:id="@+id/gradients"
+           tools:listitem="@layout/layout_color_item"/>
+   </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:visibility="gone"
-        android:id="@+id/fontCard"
+        android:id="@+id/footer"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_2sdp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/gradients">
-
-        <TextView
-            android:id="@+id/fontTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/font_size"
-            android:fontFamily="@font/medium"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:textSize="@dimen/_10sdp"
-            android:layout_marginStart="@dimen/_10sdp"
-            android:textColor="@color/black"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="10"
-            android:fontFamily="@font/regular"
-            app:layout_constraintTop_toTopOf="@id/fontTitle"
-            app:layout_constraintBottom_toBottomOf="@id/fontTitle"
-            app:layout_constraintStart_toEndOf="@id/fontTitle"
-            android:textSize="@dimen/_10sdp"
-            android:background="@drawable/edit_bg_stroke"
-            android:paddingHorizontal="@dimen/_5sdp"
-            android:paddingVertical="@dimen/_3sdp"
-            android:textColor="@color/black"
-            android:layout_marginStart="@dimen/_5sdp"
-            android:id="@+id/fontSize"/>
-
-        <SeekBar
-            android:id="@+id/font"
-            android:layout_marginTop="@dimen/_2sdp"
+        app:layout_constraintTop_toBottomOf="@id/views">
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:visibility="gone"
+            android:id="@+id/fontCard"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_2sdp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/fontSize"
-            android:thumbTint="@color/appColor"
-            android:indeterminateTint="@color/appColor"
-            android:progressTint="@color/appColor"
-            android:progress="20"/>
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:visibility="gone"
-        android:id="@+id/borderCard"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_2sdp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/gradients">
-
-        <TextView
-            android:id="@+id/borderTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/border_width"
-            android:fontFamily="@font/medium"
-            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            android:textSize="@dimen/_10sdp"
-            android:layout_marginStart="@dimen/_10sdp"
-            android:textColor="@color/black"/>
+            app:layout_constraintBottom_toBottomOf="parent">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="10"
-            android:fontFamily="@font/regular"
-            app:layout_constraintTop_toTopOf="@id/borderTitle"
-            app:layout_constraintBottom_toBottomOf="@id/borderTitle"
-            app:layout_constraintStart_toEndOf="@id/borderTitle"
-            android:textSize="@dimen/_10sdp"
-            android:background="@drawable/edit_bg_stroke"
-            android:paddingHorizontal="@dimen/_5sdp"
-            android:paddingVertical="@dimen/_3sdp"
-            android:textColor="@color/black"
-            android:layout_marginStart="@dimen/_5sdp"
-            android:id="@+id/borderSize"/>
+            <TextView
+                android:id="@+id/fontTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/font_size"
+                android:fontFamily="@font/medium"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:textSize="@dimen/_10sdp"
+                android:layout_marginStart="@dimen/_10sdp"
+                android:textColor="@color/black"/>
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="10"
+                android:fontFamily="@font/regular"
+                app:layout_constraintTop_toTopOf="@id/fontTitle"
+                app:layout_constraintBottom_toBottomOf="@id/fontTitle"
+                app:layout_constraintStart_toEndOf="@id/fontTitle"
+                android:textSize="@dimen/_10sdp"
+                android:background="@drawable/edit_bg_stroke"
+                android:paddingHorizontal="@dimen/_5sdp"
+                android:paddingVertical="@dimen/_3sdp"
+                android:textColor="@color/black"
+                android:layout_marginStart="@dimen/_5sdp"
+                android:id="@+id/fontSize"/>
 
-        <SeekBar
-            android:id="@+id/border"
-            android:layout_marginTop="@dimen/_2sdp"
+            <SeekBar
+                android:id="@+id/font"
+                android:layout_marginTop="@dimen/_2sdp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/fontSize"
+                android:thumbTint="@color/appColor"
+                android:indeterminateTint="@color/appColor"
+                android:progressTint="@color/appColor"
+                android:progress="20"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:visibility="gone"
+            android:id="@+id/borderCard"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_2sdp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/borderSize"
-            android:thumbTint="@color/appColor"
-            android:indeterminateTint="@color/appColor"
-            android:progressTint="@color/appColor"
-            android:progress="20"/>
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/borderTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/border_width"
+                android:fontFamily="@font/medium"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:textSize="@dimen/_10sdp"
+                android:layout_marginStart="@dimen/_10sdp"
+                android:textColor="@color/black"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="10"
+                android:fontFamily="@font/regular"
+                app:layout_constraintTop_toTopOf="@id/borderTitle"
+                app:layout_constraintBottom_toBottomOf="@id/borderTitle"
+                app:layout_constraintStart_toEndOf="@id/borderTitle"
+                android:textSize="@dimen/_10sdp"
+                android:background="@drawable/edit_bg_stroke"
+                android:paddingHorizontal="@dimen/_5sdp"
+                android:paddingVertical="@dimen/_3sdp"
+                android:textColor="@color/black"
+                android:layout_marginStart="@dimen/_5sdp"
+                android:id="@+id/borderSize"/>
+
+
+            <SeekBar
+                android:id="@+id/border"
+                android:layout_marginTop="@dimen/_2sdp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/borderSize"
+                android:thumbTint="@color/appColor"
+                android:indeterminateTint="@color/appColor"
+                android:progressTint="@color/appColor"
+                android:progress="20"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

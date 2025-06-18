@@ -68,4 +68,7 @@
     <string name="list_style">List Style</string>
     <string name="solid">Solid</string>
     <string name="gradient">Gradient</string>
+    <string name="inner">Inner</string>
+    <string name="outer">Outer</string>
+    <string name="radius">Radius</string>
 </resources>

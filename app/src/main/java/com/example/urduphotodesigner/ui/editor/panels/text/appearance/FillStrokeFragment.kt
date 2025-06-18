@@ -132,8 +132,8 @@ class FillStrokeFragment : Fragment() {
 
         viewModel.borderWidth.observe(viewLifecycleOwner) { width ->
             if (currentTab?.lowercase() == "border") {
-                binding.borderSize.text = "${width?.toInt() ?: 1}"
-                binding.border.progress = width?.toInt() ?: 1
+                binding.borderSize.text = "${width?.toInt() ?: 0}"
+                binding.border.progress = width?.toInt() ?: 0
             }
         }
 
@@ -202,7 +202,7 @@ class FillStrokeFragment : Fragment() {
     private fun setEvents() {
         // Font Size SeekBar
         binding.font.apply {
-            min = 1
+            min = 0
             max = 100
             setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(sb: SeekBar, progress: Int, fromUser: Boolean) {
@@ -217,7 +217,7 @@ class FillStrokeFragment : Fragment() {
         }
 
         binding.border.apply {
-            min = 1
+            min = 0
             max = 10
             setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(sb: SeekBar, progress: Int, fromUser: Boolean) {
@@ -247,7 +247,6 @@ class FillStrokeFragment : Fragment() {
 
     private fun togglePanels() {
         val fadeDuration = 300L
-        val rotateDuration = 200L
 
         // Check if clicked panel is already visible; if so, do nothing.
         if (binding.colors.isVisible && binding.gradients.isVisible) return
@@ -270,16 +269,6 @@ class FillStrokeFragment : Fragment() {
                         .alpha(1f)
                         .setDuration(fadeDuration)
                         .start()
-
-                    // Rotate arrows
-                    binding.solidDropDown.animate()
-                        .rotationBy(180f)
-                        .setDuration(rotateDuration)
-                        .start()
-                    binding.gradientDropDown.animate()
-                        .rotationBy(180f)
-                        .setDuration(rotateDuration)
-                        .start()
                 }
                 .start()
 
@@ -296,16 +285,6 @@ class FillStrokeFragment : Fragment() {
                     binding.gradients.animate()
                         .alpha(1f)
                         .setDuration(fadeDuration)
-                        .start()
-
-                    // Rotate arrows
-                    binding.gradientDropDown.animate()
-                        .rotationBy(180f)
-                        .setDuration(rotateDuration)
-                        .start()
-                    binding.solidDropDown.animate()
-                        .rotationBy(180f)
-                        .setDuration(rotateDuration)
                         .start()
                 }
                 .start()

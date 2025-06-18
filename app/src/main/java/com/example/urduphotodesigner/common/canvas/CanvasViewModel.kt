@@ -16,6 +16,7 @@ import com.example.urduphotodesigner.common.canvas.enums.ElementType
 import com.example.urduphotodesigner.common.canvas.enums.LabelShape
 import com.example.urduphotodesigner.common.canvas.enums.LetterCasing
 import com.example.urduphotodesigner.common.canvas.enums.ListStyle
+import com.example.urduphotodesigner.common.canvas.enums.ShadowType
 import com.example.urduphotodesigner.common.canvas.enums.TextAlignment
 import com.example.urduphotodesigner.common.canvas.enums.TextDecoration
 import com.example.urduphotodesigner.common.canvas.model.CanvasElement
@@ -116,6 +117,15 @@ class CanvasViewModel @Inject constructor(
 
     private val _shadowDy = MutableLiveData<Float>(1f)
     val shadowDy: LiveData<Float> = _shadowDy
+
+    private val _shadowRadius = MutableLiveData<Float>(8f)
+    val shadowRadius: LiveData<Float> = _shadowRadius
+
+    private val _shadowOpacity = MutableLiveData<Int>(64)
+    val shadowOpacity: LiveData<Int> = _shadowOpacity
+
+    private val _shadowType = MutableLiveData<ShadowType>(ShadowType.OUTER)
+    val shadowType: LiveData<ShadowType> = _shadowType
 
     // 🔷 Border
     private val _hasBorder = MutableLiveData<Boolean>(false)
@@ -375,6 +385,10 @@ class CanvasViewModel @Inject constructor(
                     shadowColor = _shadowColor.value ?: element.shadowColor,
                     shadowDx = _shadowDx.value ?: element.shadowDx,
                     shadowDy = _shadowDy.value ?: element.shadowDy,
+                    shadowRadius = _shadowRadius.value ?: element.shadowRadius,
+                    shadowOpacity = _shadowOpacity.value ?: element.shadowOpacity,
+                    shadowType = _shadowType.value ?: element.shadowType,
+
 
                     hasStroke = _hasBorder.value ?: element.hasStroke,
                     strokeColor = _borderColor.value ?: element.strokeColor,
@@ -704,6 +718,9 @@ class CanvasViewModel @Inject constructor(
             _shadowColor.value = textElement.shadowColor
             _shadowDx.value = textElement.shadowDx
             _shadowDy.value = textElement.shadowDy
+            _shadowRadius.value = textElement.shadowRadius
+            _shadowOpacity.value = textElement.shadowOpacity
+            _shadowType.value = textElement.shadowType
 
             // 🟡 Border
             _hasBorder.value = textElement.hasStroke
@@ -925,6 +942,22 @@ class CanvasViewModel @Inject constructor(
         _hasShadow.value = enabled
         applyChangesToSelectedTextElements()
     }
+
+    fun setShadowRadius(radius: Float) {
+        _shadowRadius.value = radius
+        applyChangesToSelectedTextElements()
+    }
+
+    fun setShadowOpacity(opacity: Int) {
+        _shadowOpacity.value = opacity
+        applyChangesToSelectedTextElements()
+    }
+
+    fun setShadowType(type: ShadowType) {
+        _shadowType.value = type
+        applyChangesToSelectedTextElements()
+    }
+
 
     fun setTextBorder(enabled: Boolean, color: Int, width: Float) {
         _borderColor.value = color

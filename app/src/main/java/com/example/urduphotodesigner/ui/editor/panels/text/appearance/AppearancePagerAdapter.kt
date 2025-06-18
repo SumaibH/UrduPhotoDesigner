@@ -15,7 +15,7 @@ class AppearancePagerAdapter(
         return if (position == 0 || position == 1){
             FillStrokeFragment.newInstance(tabs[position].tab_name)
         }else{
-            ColorsListFragment.newInstance(tabs[position].tab_name)
+            ShadowsFragment.newInstance(tabs[position].tab_name)
         }
     }
 

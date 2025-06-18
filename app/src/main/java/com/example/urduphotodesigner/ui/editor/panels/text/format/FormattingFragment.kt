@@ -1,6 +1,5 @@
 package com.example.urduphotodesigner.ui.editor.panels.text.format
 
-import android.graphics.Paint
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -8,18 +7,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
 import androidx.fragment.app.activityViewModels
-import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.common.canvas.enums.LetterCasing
 import com.example.urduphotodesigner.common.canvas.enums.ListStyle
 import com.example.urduphotodesigner.common.canvas.enums.ParagraphIndentation
 import com.example.urduphotodesigner.common.canvas.enums.TextAlignment
 import com.example.urduphotodesigner.common.canvas.enums.TextDecoration
-import com.example.urduphotodesigner.databinding.FragmentFormatBinding
 import com.example.urduphotodesigner.databinding.FragmentFormattingBinding
-import com.example.urduphotodesigner.ui.editor.panels.text.appearance.ColorsListFragment
 import dagger.hilt.android.AndroidEntryPoint
-import org.w3c.dom.Text
 
 @AndroidEntryPoint
 class FormattingFragment : Fragment() {

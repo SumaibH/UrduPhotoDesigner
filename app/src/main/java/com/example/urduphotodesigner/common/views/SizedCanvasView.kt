@@ -3,6 +3,7 @@ package com.example.urduphotodesigner.common.views
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BlurMaskFilter
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.ColorMatrix
@@ -11,6 +12,8 @@ import android.graphics.DashPathEffect
 import android.graphics.LinearGradient
 import android.graphics.Matrix
 import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Shader
@@ -41,6 +44,7 @@ import androidx.core.graphics.withMatrix
 import com.example.urduphotodesigner.common.canvas.enums.LabelShape
 import com.example.urduphotodesigner.common.canvas.enums.LetterCasing
 import com.example.urduphotodesigner.common.canvas.enums.ListStyle
+import com.example.urduphotodesigner.common.canvas.enums.ShadowType
 import com.example.urduphotodesigner.common.canvas.enums.TextAlignment
 import com.example.urduphotodesigner.common.canvas.enums.TextDecoration
 import java.util.Locale
@@ -1192,13 +1196,61 @@ class SizedCanvasView @JvmOverloads constructor(
             }
 
             if (element.hasShadow) {
-                val shadowColorWithOpacity = (element.shadowColor and 0x00FFFFFF) or (64 shl 24)
-                val shadowPaint = TextPaint(fillPaint).apply {
-                    shader = null
-                    color = element.shadowColor
-                    setShadowLayer(10f, element.shadowDx, element.shadowDy, shadowColorWithOpacity)
+                val shadowColorWithOpacity = (element.shadowColor and 0x00FFFFFF) or (element.shadowOpacity shl 24)
+
+                when (element.shadowType) {
+                    ShadowType.OUTER -> {
+                        val shadowPaint = TextPaint(fillPaint).apply {
+                            setShadowLayer(element.shadowRadius, element.shadowDx, element.shadowDy, shadowColorWithOpacity)
+                        }
+                        canvas.drawText(displayText, xPosition, yOffset, shadowPaint)
+                    }
+
+                    ShadowType.OUTER_GLOW -> {
+                        val glowPaint = TextPaint(fillPaint).apply {
+                            style = Paint.Style.STROKE
+                            maskFilter = BlurMaskFilter(element.shadowRadius, BlurMaskFilter.Blur.NORMAL)
+                            color = shadowColorWithOpacity
+                        }
+                        canvas.drawText(displayText, xPosition, yOffset, glowPaint)
+                    }
+
+                    ShadowType.INNER -> {
+                        // Simulate inner shadow using saveLayer and DST_IN
+                        val layerPaint = Paint()
+                        val saved = canvas.saveLayer(null, layerPaint)
+
+                        val shadowPaint = TextPaint(fillPaint).apply {
+                            setShadowLayer(element.shadowRadius, element.shadowDx, element.shadowDy, shadowColorWithOpacity)
+                            xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_OUT)
+                        }
+
+                        canvas.drawText(displayText, xPosition, yOffset, shadowPaint)
+                        canvas.restoreToCount(saved)
+                    }
+
+                    ShadowType.INNER_GLOW -> {
+                        // Simulate inner glow by drawing blurred text then masking it
+                        val saved = canvas.saveLayer(null, null)
+
+                        val glowPaint = TextPaint(fillPaint).apply {
+                            maskFilter = BlurMaskFilter(element.shadowRadius, BlurMaskFilter.Blur.NORMAL)
+                            color = shadowColorWithOpacity
+                        }
+                        canvas.drawText(displayText, xPosition, yOffset, glowPaint)
+
+                        val maskPaint = TextPaint(fillPaint).apply {
+                            xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN)
+                        }
+                        canvas.drawText(displayText, xPosition, yOffset, maskPaint)
+
+                        canvas.restoreToCount(saved)
+                    }
+
+                    else -> {
+                        // No shadow
+                    }
                 }
-                canvas.drawText(displayText, xPosition, yOffset, shadowPaint)
             }
 
             // Handle justified text separately
@@ -1774,5 +1826,10 @@ class SizedCanvasView @JvmOverloads constructor(
             }
         }
         return super.onTouchEvent(event)
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        setLayerType(LAYER_TYPE_SOFTWARE, null)
     }
 }

@@ -8,12 +8,12 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.urduphotodesigner.common.utils.Constants
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
-import com.example.urduphotodesigner.databinding.FragmentColorsListBinding
+import com.example.urduphotodesigner.databinding.FragmentFillStrokeBinding
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class GradientsListFragment : Fragment() {
-    private var _binding: FragmentColorsListBinding? = null
+    private var _binding: FragmentFillStrokeBinding? = null
     private val binding get() = _binding!!
 
     private lateinit var gradientsAdapter: GradientsAdapter
@@ -22,7 +22,7 @@ class GradientsListFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentColorsListBinding.inflate(layoutInflater, container, false)
+        _binding = FragmentFillStrokeBinding.inflate(layoutInflater, container, false)
         return binding.root
     }
 
