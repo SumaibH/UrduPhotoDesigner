@@ -13,7 +13,7 @@ import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.utils.Constants
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.databinding.FragmentFillStrokeBinding
-import com.example.urduphotodesigner.ui.editor.panels.text.appearance.ColorsAdapter
+import com.example.urduphotodesigner.ui.editor.panels.text.appearance.adapters.ColorsAdapter
 import com.flask.colorpicker.ColorPickerView
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint

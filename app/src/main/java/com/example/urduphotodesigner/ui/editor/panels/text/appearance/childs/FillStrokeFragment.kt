@@ -1,4 +1,4 @@
-package com.example.urduphotodesigner.ui.editor.panels.text.appearance
+package com.example.urduphotodesigner.ui.editor.panels.text.appearance.childs
 
 import android.graphics.Color
 import android.os.Bundle
@@ -16,6 +16,7 @@ import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.common.utils.Constants
 import com.example.urduphotodesigner.databinding.FragmentFillStrokeBinding
 import com.example.urduphotodesigner.ui.editor.panels.background.gradients.GradientsAdapter
+import com.example.urduphotodesigner.ui.editor.panels.text.appearance.adapters.ColorsAdapter
 import com.flask.colorpicker.ColorPickerView
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
@@ -56,7 +57,7 @@ class FillStrokeFragment : Fragment() {
         colorsAdapter = ColorsAdapter(Constants.colorList, { color ->
             val selectedColor = color.colorCode.toColorInt()
             when (currentTab?.lowercase()) {
-                "border" -> {
+                "stroke" -> {
                     // preserve existing width
                     val width = viewModel.borderWidth.value ?: 1f
                     viewModel.clearStrokeGradients()
@@ -69,7 +70,7 @@ class FillStrokeFragment : Fragment() {
             }
         },{
             when (currentTab?.lowercase()) {
-                "border" -> {
+                "stroke" -> {
                     // preserve existing width
                     viewModel.setTextBorder(false, android.R.color.transparent, 0f)
                 }
@@ -83,7 +84,7 @@ class FillStrokeFragment : Fragment() {
             gradientList = Constants.gradientList,
             onGradientSelected = { _, item ->
                 when (currentTab?.lowercase()) {
-                    "border" -> {
+                    "stroke" -> {
                         val colorsArray = item.colors.toIntArray()
                         val positions = FloatArray(colorsArray.size) { i ->
                             if (colorsArray.size == 1) 0f else i.toFloat() / (colorsArray.size - 1)
@@ -102,7 +103,7 @@ class FillStrokeFragment : Fragment() {
             },
             onNoneSelected = {
                 when (currentTab?.lowercase()) {
-                    "border" -> {
+                    "stroke" -> {
                         viewModel.clearStrokeGradients()
                     }
                     else -> viewModel.clearFillGradients()
@@ -131,20 +132,20 @@ class FillStrokeFragment : Fragment() {
         }
 
         viewModel.borderWidth.observe(viewLifecycleOwner) { width ->
-            if (currentTab?.lowercase() == "border") {
+            if (currentTab?.lowercase() == "stroke") {
                 binding.borderSize.text = "${width?.toInt() ?: 0}"
                 binding.border.progress = width?.toInt() ?: 0
             }
         }
 
         viewModel.currentTextColor.observe(viewLifecycleOwner) { color ->
-            if (currentTab?.lowercase() == "text") {
+            if (currentTab?.lowercase() == "fill") {
                 colorsAdapter.selectedColor = color ?: Color.BLACK // Default to black if null
             }
         }
 
         viewModel.borderColor.observe(viewLifecycleOwner) { color ->
-            if (currentTab?.lowercase() == "border") {
+            if (currentTab?.lowercase() == "stroke") {
                 colorsAdapter.selectedColor = color ?: Color.BLACK
             }
         }
@@ -175,7 +176,7 @@ class FillStrokeFragment : Fragment() {
             .lightnessSliderOnly() // If you want only lightness slider
             .setPositiveButton("Select") { _, selectedColor, _ ->
                 when (currentTab?.lowercase()) {
-                    "border" -> {
+                    "stroke" -> {
                         // preserve existing width
                         val width = viewModel.borderWidth.value ?: 1f
                         viewModel.setTextBorder(true, selectedColor, width)
@@ -294,7 +295,7 @@ class FillStrokeFragment : Fragment() {
     private fun setupControlsVisibility() {
         // only show the relevant controls panel
         when (currentTab?.lowercase()) {
-            "border" -> {
+            "stroke" -> {
                 // preserve existing width
                 binding.borderCard.visibility = View.VISIBLE
                 binding.borderSize.text = "${viewModel.borderWidth.value!!}"

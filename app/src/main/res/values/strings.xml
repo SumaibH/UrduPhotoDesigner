@@ -71,4 +71,6 @@
     <string name="inner">Inner</string>
     <string name="outer">Outer</string>
     <string name="radius">Radius</string>
+    <string name="blur_radius">Blur Radius</string>
+    <string name="blending_options">Blending Options</string>
 </resources>

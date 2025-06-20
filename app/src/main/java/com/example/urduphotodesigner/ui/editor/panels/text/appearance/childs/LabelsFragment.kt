@@ -1,4 +1,4 @@
-package com.example.urduphotodesigner.ui.editor.panels.text.appearance
+package com.example.urduphotodesigner.ui.editor.panels.text.appearance.childs
 
 import android.graphics.Color
 import android.os.Bundle
@@ -15,6 +15,8 @@ import com.example.urduphotodesigner.common.canvas.enums.LabelShape
 import com.example.urduphotodesigner.common.utils.Constants
 import com.example.urduphotodesigner.data.model.ShapeItem
 import com.example.urduphotodesigner.databinding.FragmentLabelsBinding
+import com.example.urduphotodesigner.ui.editor.panels.text.appearance.adapters.ColorsAdapter
+import com.example.urduphotodesigner.ui.editor.panels.text.appearance.adapters.ShapesAdapter
 import com.flask.colorpicker.ColorPickerView
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
@@ -43,13 +45,6 @@ class LabelsFragment : Fragment() {
             viewModel.labelColor.value!!,
             selectedShape
         ) // Use selected shape
-    }
-
-    private var currentTab: String? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        currentTab = arguments?.getString("tab_name")
     }
 
     override fun onCreateView(
@@ -142,13 +137,8 @@ class LabelsFragment : Fragment() {
     }
 
     companion object {
-        private const val ARG_TAB_NAME = "tab_name"
-
-        fun newInstance(tabName: String): LabelsFragment {
+        fun newInstance(): LabelsFragment {
             val fragment = LabelsFragment()
-            val args = Bundle()
-            args.putString(ARG_TAB_NAME, tabName)
-            fragment.arguments = args
             return fragment
         }
     }

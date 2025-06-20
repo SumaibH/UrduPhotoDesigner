@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".ui.editor.panels.text.appearance.FillStrokeFragment">
+    tools:context=".ui.editor.panels.text.appearance.childs.FillStrokeFragment">
 
     <androidx.cardview.widget.CardView
         android:layout_width="0dp"
@@ -59,6 +59,7 @@
     </androidx.cardview.widget.CardView>
 
    <androidx.constraintlayout.widget.ConstraintLayout
+       android:layout_marginTop="@dimen/_5sdp"
        android:id="@+id/views"
        android:layout_width="0dp"
        android:layout_height="wrap_content"

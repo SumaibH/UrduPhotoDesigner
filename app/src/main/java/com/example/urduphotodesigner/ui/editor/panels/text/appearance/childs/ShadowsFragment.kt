@@ -1,6 +1,5 @@
-package com.example.urduphotodesigner.ui.editor.panels.text.appearance
+package com.example.urduphotodesigner.ui.editor.panels.text.appearance.childs
 
-import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -13,9 +12,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
-import com.example.urduphotodesigner.common.canvas.enums.ShadowType
 import com.example.urduphotodesigner.common.utils.Constants
 import com.example.urduphotodesigner.databinding.FragmentShadowsBinding
+import com.example.urduphotodesigner.ui.editor.panels.text.appearance.adapters.ColorsAdapter
 import com.flask.colorpicker.ColorPickerView
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
@@ -27,12 +26,6 @@ class ShadowsFragment : Fragment() {
 
     private lateinit var colorsAdapter: ColorsAdapter
     private val viewModel: CanvasViewModel by activityViewModels()
-    private var currentTab: String? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        currentTab = arguments?.getString("tab_name")
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -51,7 +44,7 @@ class ShadowsFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        colorsAdapter = ColorsAdapter(Constants.colorList, { color ->
+        colorsAdapter = ColorsAdapter(Constants.shadowColorList, { color ->
             val selectedColor = color.colorCode.toColorInt()
             val dx = viewModel.shadowDx.value ?: 0f
             val dy = viewModel.shadowDy.value ?: 0f
@@ -66,27 +59,6 @@ class ShadowsFragment : Fragment() {
 
         binding.colors.apply {
             adapter = colorsAdapter
-        }
-
-        binding.inner.setOnClickListener {
-            when (currentTab){
-                "Glow" ->{
-                    viewModel.setShadowType(ShadowType.INNER_GLOW)
-                }
-                "Shadow" ->{
-                    viewModel.setShadowType(ShadowType.INNER)
-                }
-            }
-        }
-        binding.outer.setOnClickListener {
-            when (currentTab){
-                "Glow" ->{
-                    viewModel.setShadowType(ShadowType.OUTER_GLOW)
-                }
-                "Shadow" ->{
-                    viewModel.setShadowType(ShadowType.OUTER)
-                }
-            }
         }
     }
 
@@ -130,7 +102,7 @@ class ShadowsFragment : Fragment() {
         }
 
         binding.opacity.apply {
-            min = 0
+            min = 1
             max = 255
             setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(sb: SeekBar, progress: Int, fromUser: Boolean) {
@@ -150,7 +122,7 @@ class ShadowsFragment : Fragment() {
         }
 
         binding.radius.apply {
-            min = 0
+            min = 1
             max = 50
             setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(sb: SeekBar, progress: Int, fromUser: Boolean) {
@@ -225,16 +197,6 @@ class ShadowsFragment : Fragment() {
             binding.radiusSize.text = "${radius?.toInt() ?: 0}"
             binding.radius.progress = radius?.toInt() ?: 0
         }
-
-        viewModel.shadowType.observe(viewLifecycleOwner) { type ->
-            if (type == ShadowType.INNER){
-                binding.inner.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(requireActivity(), R.color.white))
-                binding.outer.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(requireActivity(), R.color.contrast))
-            }else{
-                binding.inner.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(requireActivity(), R.color.contrast))
-                binding.outer.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(requireActivity(), R.color.white))
-            }
-        }
     }
 
     override fun onDestroy() {
@@ -243,13 +205,9 @@ class ShadowsFragment : Fragment() {
     }
 
     companion object {
-        private const val ARG_TAB_NAME = "tab_name"
 
-        fun newInstance(tabName: String): ShadowsFragment {
+        fun newInstance(): ShadowsFragment {
             val fragment = ShadowsFragment()
-            val args = Bundle()
-            args.putString(ARG_TAB_NAME, tabName)
-            fragment.arguments = args
             return fragment
         }
     }

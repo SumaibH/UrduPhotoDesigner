@@ -9,8 +9,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import com.example.urduphotodesigner.data.model.PanelTabs
 import com.example.urduphotodesigner.databinding.FragmentFormatBinding
-import com.example.urduphotodesigner.ui.editor.panels.text.appearance.PanelTabsAdapter
-import com.example.urduphotodesigner.ui.editor.panels.text.appearance.AppearancePagerAdapter
+import com.example.urduphotodesigner.ui.editor.panels.text.appearance.adapters.PanelTabsAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 

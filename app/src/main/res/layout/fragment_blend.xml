@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".ui.editor.panels.text.appearance.childs.BlendFragment">
+
+    <TextView
+        android:id="@+id/blendTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/blending_options"
+        android:fontFamily="@font/medium"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:textSize="@dimen/_10sdp"
+        android:textColor="@color/black"/>
+
+    <TextView
+        android:id="@+id/blend_spinner"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/blendTitle"
+        android:background="@drawable/edit_bg_stroke"
+        android:dropDownWidth="wrap_content"
+        android:popupBackground="@color/white"
+        android:padding="@dimen/_5sdp"
+        android:textColor="@color/black"
+        android:fontFamily="@font/regular"
+        android:textSize="@dimen/_10sdp"
+        android:layout_marginTop="@dimen/_5sdp"/>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/opacityCard"
+        android:visibility="visible"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/radiusCard"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <TextView
+            android:id="@+id/opacityTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/opacity"
+            android:fontFamily="@font/medium"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:textSize="@dimen/_10sdp"
+            android:layout_marginStart="@dimen/_10sdp"
+            android:textColor="@color/black"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="10"
+            android:fontFamily="@font/regular"
+            app:layout_constraintTop_toTopOf="@id/opacityTitle"
+            app:layout_constraintBottom_toBottomOf="@id/opacityTitle"
+            app:layout_constraintStart_toEndOf="@id/opacityTitle"
+            android:textSize="@dimen/_10sdp"
+            android:background="@drawable/edit_bg_stroke"
+            android:paddingHorizontal="@dimen/_5sdp"
+            android:paddingVertical="@dimen/_3sdp"
+            android:textColor="@color/black"
+            android:layout_marginStart="@dimen/_5sdp"
+            android:id="@+id/opacitySize"/>
+
+        <SeekBar
+            android:id="@+id/opacity"
+            android:layout_marginTop="@dimen/_2sdp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/opacitySize"
+            android:thumbTint="@color/appColor"
+            android:indeterminateTint="@color/appColor"
+            android:progressTint="@color/appColor"
+            android:progress="20"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/radiusCard"
+        android:visibility="visible"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toEndOf="@id/opacityCard"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <TextView
+            android:id="@+id/radiusTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/blur_radius"
+            android:fontFamily="@font/medium"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:textSize="@dimen/_10sdp"
+            android:layout_marginStart="@dimen/_10sdp"
+            android:textColor="@color/black"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="10"
+            android:fontFamily="@font/regular"
+            app:layout_constraintTop_toTopOf="@id/radiusTitle"
+            app:layout_constraintBottom_toBottomOf="@id/radiusTitle"
+            app:layout_constraintStart_toEndOf="@id/radiusTitle"
+            android:textSize="@dimen/_10sdp"
+            android:background="@drawable/edit_bg_stroke"
+            android:paddingHorizontal="@dimen/_5sdp"
+            android:paddingVertical="@dimen/_3sdp"
+            android:textColor="@color/black"
+            android:layout_marginStart="@dimen/_5sdp"
+            android:id="@+id/radiusSize"/>
+
+
+        <SeekBar
+            android:id="@+id/radius"
+            android:layout_marginTop="@dimen/_2sdp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/radiusSize"
+            android:thumbTint="@color/appColor"
+            android:indeterminateTint="@color/appColor"
+            android:progressTint="@color/appColor"
+            android:progress="20"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

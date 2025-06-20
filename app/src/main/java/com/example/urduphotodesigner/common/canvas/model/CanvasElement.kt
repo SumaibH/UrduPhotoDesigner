@@ -7,11 +7,11 @@ import android.graphics.Paint
 import android.graphics.PointF
 import android.graphics.Typeface
 import android.text.TextPaint
+import com.example.urduphotodesigner.common.canvas.enums.BlendType
 import com.example.urduphotodesigner.common.canvas.enums.ElementType
 import com.example.urduphotodesigner.common.canvas.enums.LabelShape
 import com.example.urduphotodesigner.common.canvas.enums.LetterCasing
 import com.example.urduphotodesigner.common.canvas.enums.ListStyle
-import com.example.urduphotodesigner.common.canvas.enums.ShadowType
 import com.example.urduphotodesigner.common.canvas.enums.TextAlignment
 import com.example.urduphotodesigner.common.canvas.enums.TextDecoration
 import com.example.urduphotodesigner.common.canvas.sealed.ImageFilter
@@ -57,7 +57,6 @@ data class CanvasElement(
     var shadowDy: Float = 1f,
     var shadowRadius: Float = 8f,
     var shadowOpacity: Int = 64,
-    var shadowType: ShadowType = ShadowType.OUTER,
 
     // Label
     var hasLabel: Boolean = false,
@@ -82,6 +81,9 @@ data class CanvasElement(
 
     @Transient
     var originalTypeface: Typeface? = null,
+    var hasBlur: Boolean = false,
+    var blurValue: Float = 10f,  // Blur radius value
+    var blendType: BlendType = BlendType.SRC_OVER
 ) : Serializable {
 
     @Transient

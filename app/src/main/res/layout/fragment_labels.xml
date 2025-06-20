@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".ui.editor.panels.text.appearance.LabelsFragment">
+    tools:context=".ui.editor.panels.text.appearance.childs.LabelsFragment">
 
     <androidx.recyclerview.widget.RecyclerView
         android:layout_marginTop="@dimen/_5sdp"

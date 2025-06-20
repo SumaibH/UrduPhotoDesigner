@@ -9,6 +9,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import com.example.urduphotodesigner.data.model.PanelTabs
 import com.example.urduphotodesigner.databinding.FragmentAppearanceBinding
+import com.example.urduphotodesigner.ui.editor.panels.text.appearance.adapters.AppearancePagerAdapter
+import com.example.urduphotodesigner.ui.editor.panels.text.appearance.adapters.PanelTabsAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -63,11 +65,12 @@ class AppearanceFragment : Fragment() {
             tabs.add(PanelTabs(0, "Fill", true))
             tabs.add(PanelTabs(1, "Stroke", false))
             tabs.add(PanelTabs(2, "Shadow", false))
-            tabs.add(PanelTabs(3, "Glow", false))
-            tabs.add(PanelTabs(4, "Label", false))
+            tabs.add(PanelTabs(3, "Label", false))
+            tabs.add(PanelTabs(4, "Blur", false))
+            tabs.add(PanelTabs(5, "Blend", false))
 
             adapter.submitList(ArrayList(tabs))
-            handleAppearanceTabSelection(tabs.firstOrNull()) // Select "All" by default
+            handleAppearanceTabSelection(tabs.firstOrNull())
         }
     }
 

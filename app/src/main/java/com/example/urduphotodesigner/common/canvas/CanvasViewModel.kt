@@ -12,11 +12,11 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.urduphotodesigner.R
+import com.example.urduphotodesigner.common.canvas.enums.BlendType
 import com.example.urduphotodesigner.common.canvas.enums.ElementType
 import com.example.urduphotodesigner.common.canvas.enums.LabelShape
 import com.example.urduphotodesigner.common.canvas.enums.LetterCasing
 import com.example.urduphotodesigner.common.canvas.enums.ListStyle
-import com.example.urduphotodesigner.common.canvas.enums.ShadowType
 import com.example.urduphotodesigner.common.canvas.enums.TextAlignment
 import com.example.urduphotodesigner.common.canvas.enums.TextDecoration
 import com.example.urduphotodesigner.common.canvas.model.CanvasElement
@@ -124,8 +124,17 @@ class CanvasViewModel @Inject constructor(
     private val _shadowOpacity = MutableLiveData<Int>(64)
     val shadowOpacity: LiveData<Int> = _shadowOpacity
 
-    private val _shadowType = MutableLiveData<ShadowType>(ShadowType.OUTER)
-    val shadowType: LiveData<ShadowType> = _shadowType
+    private val _blurValue = MutableLiveData<Float>(10f) // Default blur value
+    val blurValue: LiveData<Float> = _blurValue
+
+    private val _opacity = MutableLiveData<Int>(255) // Default opacity
+    val opacity: LiveData<Int> = _opacity
+
+    private val _hasBlur = MutableLiveData<Boolean>(false)
+    val hasBlur: LiveData<Boolean> = _hasBlur
+
+    private val _blendingType = MutableLiveData<BlendType>(BlendType.SRC_OVER) // Default blend type
+    val blendingType: LiveData<BlendType> = _blendingType
 
     // 🔷 Border
     private val _hasBorder = MutableLiveData<Boolean>(false)
@@ -328,6 +337,22 @@ class CanvasViewModel @Inject constructor(
         applyChangesToSelectedTextElements()
     }
 
+    fun setBlurValue(value: Float) {
+        _hasBlur.value = value > 0
+        _blurValue.value = value
+        applyChangesToSelectedTextElements()
+    }
+
+    fun setOpacityValue(value: Int) {
+        _opacity.value = value
+        applyChangesToSelectedTextElements()
+    }
+
+    fun setBlendingType(type: BlendType) {
+        _blendingType.value = type
+        applyChangesToSelectedTextElements()
+    }
+
     /** Call this when the user selects a new text‐stroke gradient */
     fun setTextStrokeGradient(colors: IntArray, positions: FloatArray, width: Float) {
         _borderWidth.value = width
@@ -387,7 +412,6 @@ class CanvasViewModel @Inject constructor(
                     shadowDy = _shadowDy.value ?: element.shadowDy,
                     shadowRadius = _shadowRadius.value ?: element.shadowRadius,
                     shadowOpacity = _shadowOpacity.value ?: element.shadowOpacity,
-                    shadowType = _shadowType.value ?: element.shadowType,
 
 
                     hasStroke = _hasBorder.value ?: element.hasStroke,
@@ -402,7 +426,11 @@ class CanvasViewModel @Inject constructor(
                     fillGradientPositions = if (_fillGradientPositions.value == null) null else _fillGradientPositions.value ?: element.fillGradientPositions,
 
                     strokeGradientColors = if (_strokeGradientColors.value == null) null else _strokeGradientColors.value ?: element.strokeGradientColors,
-                    strokeGradientPositions = if (_strokeGradientPositions.value == null) null else _strokeGradientPositions.value ?: element.strokeGradientPositions
+                    strokeGradientPositions = if (_strokeGradientPositions.value == null) null else _strokeGradientPositions.value ?: element.strokeGradientPositions,
+                    blurValue = _blurValue.value ?: element.blurValue,
+                    hasBlur = _hasBlur.value?: element.hasBlur,
+                    paintAlpha = _opacity.value ?: element.paintAlpha,
+                    blendType = _blendingType.value ?: element.blendType
                 ).apply {
                     paint.typeface = element.applyTypefaceFromFontList()
                 }
@@ -720,7 +748,6 @@ class CanvasViewModel @Inject constructor(
             _shadowDy.value = textElement.shadowDy
             _shadowRadius.value = textElement.shadowRadius
             _shadowOpacity.value = textElement.shadowOpacity
-            _shadowType.value = textElement.shadowType
 
             // 🟡 Border
             _hasBorder.value = textElement.hasStroke
@@ -952,12 +979,6 @@ class CanvasViewModel @Inject constructor(
         _shadowOpacity.value = opacity
         applyChangesToSelectedTextElements()
     }
-
-    fun setShadowType(type: ShadowType) {
-        _shadowType.value = type
-        applyChangesToSelectedTextElements()
-    }
-
 
     fun setTextBorder(enabled: Boolean, color: Int, width: Float) {
         _borderColor.value = color

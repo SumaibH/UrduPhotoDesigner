@@ -1,4 +1,4 @@
-package com.example.urduphotodesigner.ui.editor.panels.text.appearance
+package com.example.urduphotodesigner.ui.editor.panels.text.appearance.adapters
 
 import android.graphics.Color
 import android.view.LayoutInflater

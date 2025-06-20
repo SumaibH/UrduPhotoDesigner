@@ -27,27 +27,27 @@ import android.view.MotionEvent
 import android.view.View
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.graphics.createBitmap
+import androidx.core.graphics.withMatrix
 import androidx.core.graphics.withTranslation
 import com.example.urduphotodesigner.R
+import com.example.urduphotodesigner.common.canvas.enums.BlendType
+import com.example.urduphotodesigner.common.canvas.enums.ElementType
+import com.example.urduphotodesigner.common.canvas.enums.LabelShape
+import com.example.urduphotodesigner.common.canvas.enums.LetterCasing
+import com.example.urduphotodesigner.common.canvas.enums.ListStyle
+import com.example.urduphotodesigner.common.canvas.enums.Mode
+import com.example.urduphotodesigner.common.canvas.enums.TextAlignment
+import com.example.urduphotodesigner.common.canvas.enums.TextDecoration
 import com.example.urduphotodesigner.common.canvas.model.CanvasElement
 import com.example.urduphotodesigner.common.canvas.model.ExportOptions
-import com.example.urduphotodesigner.common.canvas.enums.ElementType
-import com.example.urduphotodesigner.common.canvas.enums.Mode
+import com.example.urduphotodesigner.common.canvas.sealed.ImageFilter
 import com.example.urduphotodesigner.data.model.FontEntity
+import java.util.Locale
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.hypot
 import kotlin.math.max
-import com.example.urduphotodesigner.common.canvas.sealed.ImageFilter
-import androidx.core.graphics.withMatrix
-import com.example.urduphotodesigner.common.canvas.enums.LabelShape
-import com.example.urduphotodesigner.common.canvas.enums.LetterCasing
-import com.example.urduphotodesigner.common.canvas.enums.ListStyle
-import com.example.urduphotodesigner.common.canvas.enums.ShadowType
-import com.example.urduphotodesigner.common.canvas.enums.TextAlignment
-import com.example.urduphotodesigner.common.canvas.enums.TextDecoration
-import java.util.Locale
 
 class SizedCanvasView @JvmOverloads constructor(
     context: Context,
@@ -247,8 +247,12 @@ class SizedCanvasView @JvmOverloads constructor(
             element.text = when (casing) {
                 LetterCasing.ALL_CAPS -> element.text.uppercase()
                 LetterCasing.LOWER_CASE -> element.text.lowercase()
-                LetterCasing.TITLE_CASE -> element.text.split(" ").joinToString(" ") { it.capitalize(
-                    Locale.ROOT) }
+                LetterCasing.TITLE_CASE -> element.text.split(" ").joinToString(" ") {
+                    it.capitalize(
+                        Locale.ROOT
+                    )
+                }
+
                 else -> element.text
             }
             onElementChanged?.invoke(element)  // Notify listeners of the change
@@ -330,7 +334,11 @@ class SizedCanvasView @JvmOverloads constructor(
 
     fun removeTextShadow() = setTextShadow(false)
 
-    fun setTextLabel(enabled: Boolean, color: Int = Color.YELLOW, shape: LabelShape = LabelShape.RECTANGLE_FILL) {
+    fun setTextLabel(
+        enabled: Boolean,
+        color: Int = Color.YELLOW,
+        shape: LabelShape = LabelShape.RECTANGLE_FILL
+    ) {
         selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
             element.hasLabel = enabled
             element.labelColor = color
@@ -502,8 +510,8 @@ class SizedCanvasView @JvmOverloads constructor(
     /** Apply a horizontal fill gradient across the text bounds */
     fun setTextFillGradient(colors: IntArray, positions: FloatArray? = null) {
         selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
-            element.fillGradientColors     = colors
-            element.fillGradientPositions  = positions
+            element.fillGradientColors = colors
+            element.fillGradientPositions = positions
             onElementChanged?.invoke(element)
         }
         invalidate()
@@ -512,7 +520,7 @@ class SizedCanvasView @JvmOverloads constructor(
     /** Apply a horizontal stroke gradient across the text bounds */
     fun setTextStrokeGradient(colors: IntArray, positions: FloatArray? = null) {
         selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
-            element.strokeGradientColors    = colors
+            element.strokeGradientColors = colors
             element.strokeGradientPositions = positions
             onElementChanged?.invoke(element)
         }
@@ -566,7 +574,13 @@ class SizedCanvasView @JvmOverloads constructor(
         val outputCanvas = Canvas(outputBitmap)
 
         // Draw background
-        outputCanvas.drawRect(0f, 0f, outputWidth.toFloat(), outputHeight.toFloat(), backgroundPaint)
+        outputCanvas.drawRect(
+            0f,
+            0f,
+            outputWidth.toFloat(),
+            outputHeight.toFloat(),
+            backgroundPaint
+        )
 
         // Draw background gradient if exists
         backgroundGradient?.let {
@@ -577,7 +591,12 @@ class SizedCanvasView @JvmOverloads constructor(
                 outputHeight.toFloat() / canvasHeight
             )
             it.setLocalMatrix(gradientMatrix)
-            outputCanvas.drawRect(0f, 0f, outputWidth.toFloat(), outputHeight.toFloat(), Paint().apply { shader = it })
+            outputCanvas.drawRect(
+                0f,
+                0f,
+                outputWidth.toFloat(),
+                outputHeight.toFloat(),
+                Paint().apply { shader = it })
         }
 
         // Draw background image if exists
@@ -614,88 +633,106 @@ class SizedCanvasView @JvmOverloads constructor(
                         })
 
                         ImageFilter.Sepia -> ColorMatrixColorFilter(ColorMatrix().apply {
-                            set(floatArrayOf(
-                                0.393f, 0.769f, 0.189f, 0f, 0f,
-                                0.349f, 0.686f, 0.168f, 0f, 0f,
-                                0.272f, 0.534f, 0.131f, 0f, 0f,
-                                0f, 0f, 0f, 1f, 0f
-                            ))
+                            set(
+                                floatArrayOf(
+                                    0.393f, 0.769f, 0.189f, 0f, 0f,
+                                    0.349f, 0.686f, 0.168f, 0f, 0f,
+                                    0.272f, 0.534f, 0.131f, 0f, 0f,
+                                    0f, 0f, 0f, 1f, 0f
+                                )
+                            )
                         })
 
                         ImageFilter.Invert -> ColorMatrixColorFilter(ColorMatrix().apply {
-                            set(floatArrayOf(
-                                -1f, 0f, 0f, 0f, 255f,
-                                0f, -1f, 0f, 0f, 255f,
-                                0f, 0f, -1f, 0f, 255f,
-                                0f, 0f, 0f, 1f, 0f
-                            ))
+                            set(
+                                floatArrayOf(
+                                    -1f, 0f, 0f, 0f, 255f,
+                                    0f, -1f, 0f, 0f, 255f,
+                                    0f, 0f, -1f, 0f, 255f,
+                                    0f, 0f, 0f, 1f, 0f
+                                )
+                            )
                         })
 
                         ImageFilter.CoolTint -> ColorMatrixColorFilter(ColorMatrix().apply {
-                            set(floatArrayOf(
-                                1.1f, 0f, 0f, 0f, -20f,  // Red decrease
-                                0f, 1f, 0f, 0f, 0f,      // Green
-                                0f, 0f, 1.3f, 0f, 20f,   // Blue boost
-                                0f, 0f, 0f, 1f, 0f
-                            ))
+                            set(
+                                floatArrayOf(
+                                    1.1f, 0f, 0f, 0f, -20f,  // Red decrease
+                                    0f, 1f, 0f, 0f, 0f,      // Green
+                                    0f, 0f, 1.3f, 0f, 20f,   // Blue boost
+                                    0f, 0f, 0f, 1f, 0f
+                                )
+                            )
                         })
 
                         ImageFilter.WarmTint -> ColorMatrixColorFilter(ColorMatrix().apply {
-                            set(floatArrayOf(
-                                1.3f, 0f, 0f, 0f, 30f,   // Red boost
-                                0f, 1f, 0f, 0f, 0f,      // Green
-                                0f, 0f, 0.8f, 0f, -20f,  // Blue reduce
-                                0f, 0f, 0f, 1f, 0f
-                            ))
+                            set(
+                                floatArrayOf(
+                                    1.3f, 0f, 0f, 0f, 30f,   // Red boost
+                                    0f, 1f, 0f, 0f, 0f,      // Green
+                                    0f, 0f, 0.8f, 0f, -20f,  // Blue reduce
+                                    0f, 0f, 0f, 1f, 0f
+                                )
+                            )
                         })
 
                         ImageFilter.Vintage -> ColorMatrixColorFilter(ColorMatrix().apply {
-                            set(floatArrayOf(
-                                0.9f, 0.3f, 0.1f, 0f, 5f,
-                                0.2f, 0.8f, 0.2f, 0f, 5f,
-                                0.1f, 0.2f, 0.7f, 0f, -10f,
-                                0f, 0f, 0f, 1f, 0f
-                            ))
+                            set(
+                                floatArrayOf(
+                                    0.9f, 0.3f, 0.1f, 0f, 5f,
+                                    0.2f, 0.8f, 0.2f, 0f, 5f,
+                                    0.1f, 0.2f, 0.7f, 0f, -10f,
+                                    0f, 0f, 0f, 1f, 0f
+                                )
+                            )
                         })
 
                         ImageFilter.Film -> ColorMatrixColorFilter(ColorMatrix().apply {
                             // High red + green, faded blue for a film-like tone
-                            set(floatArrayOf(
-                                1.2f, 0.1f, 0.1f, 0f, 15f,
-                                0.1f, 1.2f, 0.1f, 0f, 10f,
-                                0.1f, 0.1f, 0.9f, 0f, -10f,
-                                0f, 0f, 0f, 1f, 0f
-                            ))
+                            set(
+                                floatArrayOf(
+                                    1.2f, 0.1f, 0.1f, 0f, 15f,
+                                    0.1f, 1.2f, 0.1f, 0f, 10f,
+                                    0.1f, 0.1f, 0.9f, 0f, -10f,
+                                    0f, 0f, 0f, 1f, 0f
+                                )
+                            )
                         })
 
                         ImageFilter.TealOrange -> ColorMatrixColorFilter(ColorMatrix().apply {
                             // Teal shadows, orange highlights – a Hollywood-style grade
-                            set(floatArrayOf(
-                                1.2f, 0f, 0f, 0f, 20f,
-                                0f, 1.0f, 0f, 0f, 0f,
-                                0f, 0f, 0.8f, 0f, -10f,
-                                0f, 0f, 0f, 1f, 0f
-                            ))
+                            set(
+                                floatArrayOf(
+                                    1.2f, 0f, 0f, 0f, 20f,
+                                    0f, 1.0f, 0f, 0f, 0f,
+                                    0f, 0f, 0.8f, 0f, -10f,
+                                    0f, 0f, 0f, 1f, 0f
+                                )
+                            )
                         })
 
                         ImageFilter.HighContrast -> ColorMatrixColorFilter(ColorMatrix().apply {
-                            set(floatArrayOf(
-                                1.5f, 0f, 0f, 0f, -50f,
-                                0f, 1.5f, 0f, 0f, -50f,
-                                0f, 0f, 1.5f, 0f, -50f,
-                                0f, 0f, 0f, 1f, 0f
-                            ))
+                            set(
+                                floatArrayOf(
+                                    1.5f, 0f, 0f, 0f, -50f,
+                                    0f, 1.5f, 0f, 0f, -50f,
+                                    0f, 0f, 1.5f, 0f, -50f,
+                                    0f, 0f, 0f, 1f, 0f
+                                )
+                            )
                         })
 
                         ImageFilter.BlackWhite -> ColorMatrixColorFilter(ColorMatrix().apply {
                             setSaturation(0f)
                             val contrast = ColorMatrix().apply {
-                                set(floatArrayOf(
-                                    1.4f, 0f, 0f, 0f, -50f,
-                                    0f, 1.4f, 0f, 0f, -50f,
-                                    0f, 0f, 1.4f, 0f, -50f,
-                                    0f, 0f, 0f, 1f, 0f
-                                ))
+                                set(
+                                    floatArrayOf(
+                                        1.4f, 0f, 0f, 0f, -50f,
+                                        0f, 1.4f, 0f, 0f, -50f,
+                                        0f, 0f, 1.4f, 0f, -50f,
+                                        0f, 0f, 0f, 1f, 0f
+                                    )
+                                )
                             }
                             postConcat(contrast)
                         })
@@ -844,88 +881,106 @@ class SizedCanvasView @JvmOverloads constructor(
                             })
 
                             ImageFilter.Sepia -> ColorMatrixColorFilter(ColorMatrix().apply {
-                                set(floatArrayOf(
-                                    0.393f, 0.769f, 0.189f, 0f, 0f,
-                                    0.349f, 0.686f, 0.168f, 0f, 0f,
-                                    0.272f, 0.534f, 0.131f, 0f, 0f,
-                                    0f, 0f, 0f, 1f, 0f
-                                ))
+                                set(
+                                    floatArrayOf(
+                                        0.393f, 0.769f, 0.189f, 0f, 0f,
+                                        0.349f, 0.686f, 0.168f, 0f, 0f,
+                                        0.272f, 0.534f, 0.131f, 0f, 0f,
+                                        0f, 0f, 0f, 1f, 0f
+                                    )
+                                )
                             })
 
                             ImageFilter.Invert -> ColorMatrixColorFilter(ColorMatrix().apply {
-                                set(floatArrayOf(
-                                    -1f, 0f, 0f, 0f, 255f,
-                                    0f, -1f, 0f, 0f, 255f,
-                                    0f, 0f, -1f, 0f, 255f,
-                                    0f, 0f, 0f, 1f, 0f
-                                ))
+                                set(
+                                    floatArrayOf(
+                                        -1f, 0f, 0f, 0f, 255f,
+                                        0f, -1f, 0f, 0f, 255f,
+                                        0f, 0f, -1f, 0f, 255f,
+                                        0f, 0f, 0f, 1f, 0f
+                                    )
+                                )
                             })
 
                             ImageFilter.CoolTint -> ColorMatrixColorFilter(ColorMatrix().apply {
-                                set(floatArrayOf(
-                                    1.1f, 0f, 0f, 0f, -20f,  // Red decrease
-                                    0f, 1f, 0f, 0f, 0f,      // Green
-                                    0f, 0f, 1.3f, 0f, 20f,   // Blue boost
-                                    0f, 0f, 0f, 1f, 0f
-                                ))
+                                set(
+                                    floatArrayOf(
+                                        1.1f, 0f, 0f, 0f, -20f,  // Red decrease
+                                        0f, 1f, 0f, 0f, 0f,      // Green
+                                        0f, 0f, 1.3f, 0f, 20f,   // Blue boost
+                                        0f, 0f, 0f, 1f, 0f
+                                    )
+                                )
                             })
 
                             ImageFilter.WarmTint -> ColorMatrixColorFilter(ColorMatrix().apply {
-                                set(floatArrayOf(
-                                    1.3f, 0f, 0f, 0f, 30f,   // Red boost
-                                    0f, 1f, 0f, 0f, 0f,      // Green
-                                    0f, 0f, 0.8f, 0f, -20f,  // Blue reduce
-                                    0f, 0f, 0f, 1f, 0f
-                                ))
+                                set(
+                                    floatArrayOf(
+                                        1.3f, 0f, 0f, 0f, 30f,   // Red boost
+                                        0f, 1f, 0f, 0f, 0f,      // Green
+                                        0f, 0f, 0.8f, 0f, -20f,  // Blue reduce
+                                        0f, 0f, 0f, 1f, 0f
+                                    )
+                                )
                             })
 
                             ImageFilter.Vintage -> ColorMatrixColorFilter(ColorMatrix().apply {
-                                set(floatArrayOf(
-                                    0.9f, 0.3f, 0.1f, 0f, 5f,
-                                    0.2f, 0.8f, 0.2f, 0f, 5f,
-                                    0.1f, 0.2f, 0.7f, 0f, -10f,
-                                    0f, 0f, 0f, 1f, 0f
-                                ))
+                                set(
+                                    floatArrayOf(
+                                        0.9f, 0.3f, 0.1f, 0f, 5f,
+                                        0.2f, 0.8f, 0.2f, 0f, 5f,
+                                        0.1f, 0.2f, 0.7f, 0f, -10f,
+                                        0f, 0f, 0f, 1f, 0f
+                                    )
+                                )
                             })
 
                             ImageFilter.Film -> ColorMatrixColorFilter(ColorMatrix().apply {
                                 // High red + green, faded blue for a film-like tone
-                                set(floatArrayOf(
-                                    1.2f, 0.1f, 0.1f, 0f, 15f,
-                                    0.1f, 1.2f, 0.1f, 0f, 10f,
-                                    0.1f, 0.1f, 0.9f, 0f, -10f,
-                                    0f, 0f, 0f, 1f, 0f
-                                ))
+                                set(
+                                    floatArrayOf(
+                                        1.2f, 0.1f, 0.1f, 0f, 15f,
+                                        0.1f, 1.2f, 0.1f, 0f, 10f,
+                                        0.1f, 0.1f, 0.9f, 0f, -10f,
+                                        0f, 0f, 0f, 1f, 0f
+                                    )
+                                )
                             })
 
                             ImageFilter.TealOrange -> ColorMatrixColorFilter(ColorMatrix().apply {
                                 // Teal shadows, orange highlights – a Hollywood-style grade
-                                set(floatArrayOf(
-                                    1.2f, 0f, 0f, 0f, 20f,
-                                    0f, 1.0f, 0f, 0f, 0f,
-                                    0f, 0f, 0.8f, 0f, -10f,
-                                    0f, 0f, 0f, 1f, 0f
-                                ))
+                                set(
+                                    floatArrayOf(
+                                        1.2f, 0f, 0f, 0f, 20f,
+                                        0f, 1.0f, 0f, 0f, 0f,
+                                        0f, 0f, 0.8f, 0f, -10f,
+                                        0f, 0f, 0f, 1f, 0f
+                                    )
+                                )
                             })
 
                             ImageFilter.HighContrast -> ColorMatrixColorFilter(ColorMatrix().apply {
-                                set(floatArrayOf(
-                                    1.5f, 0f, 0f, 0f, -50f,
-                                    0f, 1.5f, 0f, 0f, -50f,
-                                    0f, 0f, 1.5f, 0f, -50f,
-                                    0f, 0f, 0f, 1f, 0f
-                                ))
+                                set(
+                                    floatArrayOf(
+                                        1.5f, 0f, 0f, 0f, -50f,
+                                        0f, 1.5f, 0f, 0f, -50f,
+                                        0f, 0f, 1.5f, 0f, -50f,
+                                        0f, 0f, 0f, 1f, 0f
+                                    )
+                                )
                             })
 
                             ImageFilter.BlackWhite -> ColorMatrixColorFilter(ColorMatrix().apply {
                                 setSaturation(0f)
                                 val contrast = ColorMatrix().apply {
-                                    set(floatArrayOf(
-                                        1.4f, 0f, 0f, 0f, -50f,
-                                        0f, 1.4f, 0f, 0f, -50f,
-                                        0f, 0f, 1.4f, 0f, -50f,
-                                        0f, 0f, 0f, 1f, 0f
-                                    ))
+                                    set(
+                                        floatArrayOf(
+                                            1.4f, 0f, 0f, 0f, -50f,
+                                            0f, 1.4f, 0f, 0f, -50f,
+                                            0f, 0f, 1.4f, 0f, -50f,
+                                            0f, 0f, 0f, 1f, 0f
+                                        )
+                                    )
                                 }
                                 postConcat(contrast)
                             })
@@ -1011,7 +1066,8 @@ class SizedCanvasView @JvmOverloads constructor(
                         elementIconPositions.forEach { (iconName, position) ->
                             val iconCenterInCanvasCords = floatArrayOf(position.x, position.y)
                             matrix.mapPoints(iconCenterInCanvasCords)
-                            iconMap[iconName] = Pair(iconCenterInCanvasCords[0], iconCenterInCanvasCords[1])
+                            iconMap[iconName] =
+                                Pair(iconCenterInCanvasCords[0], iconCenterInCanvasCords[1])
                         }
                     }
 
@@ -1065,6 +1121,7 @@ class SizedCanvasView @JvmOverloads constructor(
                     labelPaint.style = Paint.Style.FILL
                     canvas.drawRect(labelRect, labelPaint)
                 }
+
                 LabelShape.RECTANGLE_STROKE -> {
                     labelPaint.style = Paint.Style.STROKE
                     labelPaint.strokeWidth = 4f // You can adjust the stroke width as needed
@@ -1075,6 +1132,7 @@ class SizedCanvasView @JvmOverloads constructor(
                     labelPaint.style = Paint.Style.FILL
                     canvas.drawOval(labelRect, labelPaint)
                 }
+
                 LabelShape.OVAL_STROKE -> {
                     labelPaint.style = Paint.Style.STROKE
                     labelPaint.strokeWidth = 4f // Adjust stroke width as needed
@@ -1088,6 +1146,7 @@ class SizedCanvasView @JvmOverloads constructor(
                     val centerY = labelRect.centerY()
                     canvas.drawCircle(centerX, centerY, radius, labelPaint)
                 }
+
                 LabelShape.CIRCLE_STROKE -> {
                     labelPaint.style = Paint.Style.STROKE
                     labelPaint.strokeWidth = 4f // Adjust stroke width as needed
@@ -1099,12 +1158,23 @@ class SizedCanvasView @JvmOverloads constructor(
 
                 LabelShape.ROUNDED_RECTANGLE_FILL -> {
                     labelPaint.style = Paint.Style.FILL
-                    canvas.drawRoundRect(labelRect, 20f, 20f, labelPaint) // Adjust corner radius as needed
+                    canvas.drawRoundRect(
+                        labelRect,
+                        20f,
+                        20f,
+                        labelPaint
+                    ) // Adjust corner radius as needed
                 }
+
                 LabelShape.ROUNDED_RECTANGLE_STROKE -> {
                     labelPaint.style = Paint.Style.STROKE
                     labelPaint.strokeWidth = 4f // Adjust stroke width as needed
-                    canvas.drawRoundRect(labelRect, 20f, 20f, labelPaint) // Adjust corner radius as needed
+                    canvas.drawRoundRect(
+                        labelRect,
+                        20f,
+                        20f,
+                        labelPaint
+                    ) // Adjust corner radius as needed
                 }
 
                 else -> {
@@ -1159,6 +1229,7 @@ class SizedCanvasView @JvmOverloads constructor(
                 LetterCasing.LOWER_CASE -> textToDraw.lowercase()
                 LetterCasing.TITLE_CASE -> textToDraw.split(" ")
                     .joinToString(" ") { it.replaceFirstChar { c -> c.uppercaseChar() } }
+
                 else -> textToDraw
             }
 
@@ -1184,73 +1255,57 @@ class SizedCanvasView @JvmOverloads constructor(
                 // measure the widest line so your gradient spans the text
                 val maxLineWidth = lines.maxOf { fillPaint.measureText(it) }
                 fillPaint.shader = LinearGradient(
-                    -maxLineWidth/2f, 0f,
-                    maxLineWidth/2f, 0f,
+                    -maxLineWidth / 2f, 0f,
+                    maxLineWidth / 2f, 0f,
                     colors,
                     element.fillGradientPositions,
                     Shader.TileMode.CLAMP
                 )
             } ?: run {
                 fillPaint.shader = null
-                fillPaint.color  = element.paintColor
+                fillPaint.color = element.paintColor
+            }
+
+            if (element.hasBlur) {
+                val blurMaskFilter = BlurMaskFilter(element.blurValue, BlurMaskFilter.Blur.NORMAL)
+                fillPaint.maskFilter = blurMaskFilter
+            }
+
+            // Apply opacity (alpha)
+            fillPaint.alpha = element.paintAlpha
+
+            // Apply layer blending (based on imageFilter)
+            when (element.blendType) {
+                BlendType.MULTIPLY -> fillPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.MULTIPLY)
+                BlendType.SRC_OVER -> fillPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_OVER)
+                BlendType.SCREEN -> fillPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SCREEN)
+                BlendType.ADD -> fillPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.ADD)
+                BlendType.LIGHTEN -> fillPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.LIGHTEN)
+                BlendType.DARKEN -> fillPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.DARKEN)
+                BlendType.SRC -> fillPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC)
+                BlendType.DST -> fillPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.DST)
+                BlendType.DST_OVER -> fillPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_OVER)
+                BlendType.SRC_IN -> fillPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
+                BlendType.DST_IN -> fillPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN)
+                BlendType.SRC_OUT -> fillPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_OUT)
+                BlendType.DST_OUT -> fillPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_OUT)
+                BlendType.SRC_ATOP -> fillPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_ATOP)
+                BlendType.DST_ATOP -> fillPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_ATOP)
+                BlendType.XOR -> fillPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.XOR)
             }
 
             if (element.hasShadow) {
-                val shadowColorWithOpacity = (element.shadowColor and 0x00FFFFFF) or (element.shadowOpacity shl 24)
-
-                when (element.shadowType) {
-                    ShadowType.OUTER -> {
-                        val shadowPaint = TextPaint(fillPaint).apply {
-                            setShadowLayer(element.shadowRadius, element.shadowDx, element.shadowDy, shadowColorWithOpacity)
-                        }
-                        canvas.drawText(displayText, xPosition, yOffset, shadowPaint)
-                    }
-
-                    ShadowType.OUTER_GLOW -> {
-                        val glowPaint = TextPaint(fillPaint).apply {
-                            style = Paint.Style.STROKE
-                            maskFilter = BlurMaskFilter(element.shadowRadius, BlurMaskFilter.Blur.NORMAL)
-                            color = shadowColorWithOpacity
-                        }
-                        canvas.drawText(displayText, xPosition, yOffset, glowPaint)
-                    }
-
-                    ShadowType.INNER -> {
-                        // Simulate inner shadow using saveLayer and DST_IN
-                        val layerPaint = Paint()
-                        val saved = canvas.saveLayer(null, layerPaint)
-
-                        val shadowPaint = TextPaint(fillPaint).apply {
-                            setShadowLayer(element.shadowRadius, element.shadowDx, element.shadowDy, shadowColorWithOpacity)
-                            xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_OUT)
-                        }
-
-                        canvas.drawText(displayText, xPosition, yOffset, shadowPaint)
-                        canvas.restoreToCount(saved)
-                    }
-
-                    ShadowType.INNER_GLOW -> {
-                        // Simulate inner glow by drawing blurred text then masking it
-                        val saved = canvas.saveLayer(null, null)
-
-                        val glowPaint = TextPaint(fillPaint).apply {
-                            maskFilter = BlurMaskFilter(element.shadowRadius, BlurMaskFilter.Blur.NORMAL)
-                            color = shadowColorWithOpacity
-                        }
-                        canvas.drawText(displayText, xPosition, yOffset, glowPaint)
-
-                        val maskPaint = TextPaint(fillPaint).apply {
-                            xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN)
-                        }
-                        canvas.drawText(displayText, xPosition, yOffset, maskPaint)
-
-                        canvas.restoreToCount(saved)
-                    }
-
-                    else -> {
-                        // No shadow
-                    }
+                val shadowColorWithOpacity =
+                    (element.shadowColor and 0x00FFFFFF) or (element.shadowOpacity shl 24)
+                val shadowPaint = TextPaint(fillPaint).apply {
+                    setShadowLayer(
+                        element.shadowRadius,
+                        element.shadowDx,
+                        element.shadowDy,
+                        shadowColorWithOpacity
+                    )
                 }
+                canvas.drawText(displayText, xPosition, yOffset, shadowPaint)
             }
 
             // Handle justified text separately
@@ -1270,15 +1325,15 @@ class SizedCanvasView @JvmOverloads constructor(
                             // use same width to span stroke gradient
                             val w = element.strokeWidth
                             shader = LinearGradient(
-                                -w/2f, 0f,
-                                w/2f, 0f,
+                                -w / 2f, 0f,
+                                w / 2f, 0f,
                                 sColors,
-                                element.strokeGradientPositions?: floatArrayOf(0f, 1f),
+                                element.strokeGradientPositions ?: floatArrayOf(0f, 1f),
                                 Shader.TileMode.CLAMP
                             )
                         } ?: run {
                             shader = null
-                            color  = element.strokeColor
+                            color = element.strokeColor
                         }
                         textAlign = alignment
                     }
@@ -1620,9 +1675,9 @@ class SizedCanvasView @JvmOverloads constructor(
                         elementsToModify.forEach { element ->
                             element.x += actualDx
                             element.y += actualDy
-                            val halfW = element.getLocalContentWidth()  / 2f
+                            val halfW = element.getLocalContentWidth() / 2f
                             val halfH = element.getLocalContentHeight() / 2f
-                            element.x = element.x.coerceIn(halfW, canvasWidth  - halfW)
+                            element.x = element.x.coerceIn(halfW, canvasWidth - halfW)
                             element.y = element.y.coerceIn(halfH, canvasHeight - halfH)
                             onElementChanged?.invoke(element)
                         }
