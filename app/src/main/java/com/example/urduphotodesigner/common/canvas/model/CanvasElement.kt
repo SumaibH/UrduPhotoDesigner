@@ -18,8 +18,7 @@ import com.example.urduphotodesigner.common.canvas.sealed.ImageFilter
 import java.io.Serializable
 import java.util.UUID
 
-private const val ICON_PADDING =
-    20f // Or whatever value suits your icon sizes and visual preference
+private const val ICON_PADDING = 10f // Or whatever value suits your icon sizes and visual preference
 
 // Make CanvasElement Serializable to allow it to be passed via Bundles and saved.
 data class CanvasElement(
@@ -55,8 +54,8 @@ data class CanvasElement(
     var shadowColor: Int = Color.GRAY,
     var shadowDx: Float = 1f,
     var shadowDy: Float = 1f,
-    var shadowRadius: Float = 8f,
-    var shadowOpacity: Int = 64,
+    var shadowRadius: Float = 1f,
+    var shadowOpacity: Int = 1,
 
     // Label
     var hasLabel: Boolean = false,
@@ -82,7 +81,7 @@ data class CanvasElement(
     @Transient
     var originalTypeface: Typeface? = null,
     var hasBlur: Boolean = false,
-    var blurValue: Float = 10f,  // Blur radius value
+    var blurValue: Float = 0f,
     var blendType: BlendType = BlendType.SRC_OVER
 ) : Serializable {
 
@@ -133,30 +132,18 @@ data class CanvasElement(
         }
     }
 
-    // This function MUST return icon positions in the ELEMENT'S LOCAL, UNSCALED coordinate system
-    // where (0,0) is the element's pivot point (center in your case).
     fun getIconPositions(): Map<String, PointF> {
-        // Use the local, unscaled content dimensions
         val localW = getLocalContentWidth()
         val localH = getLocalContentHeight()
 
-        // Calculate icon positions relative to the local center (0,0) of the element
-        // These are coordinates in the element's own unscaled space.
-        // The positions define the center of where the icon should be.
-        // For example, top-right corner of the local content box:
-        val iconOffsetX =
-            localW / 2f + ICON_PADDING // Position icons slightly outside the content box
+        val iconOffsetX = localW / 2f + ICON_PADDING
         val iconOffsetY = localH / 2f + ICON_PADDING
 
         return mapOf(
-            // Example: Delete icon at the top-right of the *local content*
             "delete" to PointF(iconOffsetX, -iconOffsetY),
-            // Example: Rotate icon at the bottom-right
             "rotate" to PointF(iconOffsetX, iconOffsetY),
-            // Example: Resize icon at the bottom-left
             "resize" to PointF(-iconOffsetX, iconOffsetY),
             "edit" to PointF(-iconOffsetX, -iconOffsetY)
-            // Adjust signs and axes as per your desired icon layout (e.g. top-left, bottom-left etc)
         )
     }
 }

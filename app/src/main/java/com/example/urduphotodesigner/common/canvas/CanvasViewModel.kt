@@ -37,6 +37,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import java.util.Stack
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -82,9 +83,6 @@ class CanvasViewModel @Inject constructor(
 
     private val _currentTextAlignment = MutableLiveData<TextAlignment>(TextAlignment.CENTER)
     val currentTextAlignment: LiveData<TextAlignment> = _currentTextAlignment
-
-    private val _currentTextOpacity = MutableLiveData<Int>(255)
-    val currentTextOpacity: LiveData<Int> = _currentTextOpacity
 
     private val _canvasSize = MutableLiveData<CanvasSize>()
     val canvasSize: LiveData<CanvasSize> = _canvasSize
@@ -413,7 +411,6 @@ class CanvasViewModel @Inject constructor(
                     shadowRadius = _shadowRadius.value ?: element.shadowRadius,
                     shadowOpacity = _shadowOpacity.value ?: element.shadowOpacity,
 
-
                     hasStroke = _hasBorder.value ?: element.hasStroke,
                     strokeColor = _borderColor.value ?: element.strokeColor,
                     strokeWidth = _borderWidth.value ?: element.strokeWidth,
@@ -443,11 +440,39 @@ class CanvasViewModel @Inject constructor(
         if (oldElement != null && newElement != null && targetId != null) {
             _canvasActions.push(CanvasAction.UpdateElement(targetId!!, newElement!!, oldElement!!))
             _redoStack.clear()
-            _redoStack.clear()
             notifyUndoRedoChanged()
         }
 
         _canvasElements.value = updatedList
+    }
+
+    fun copySelectedElement() {
+        val selectedElement = getSelectedElement()
+
+        // Check if an element is selected
+        if (selectedElement != null) {
+            // Create a copy of the selected element
+            val copiedElement = selectedElement.copy(
+                id = UUID.randomUUID().toString(),
+                isSelected = false,
+                x = selectedElement.x + 20f,
+                y = selectedElement.y + 20f
+            )
+            copiedElement.paint.typeface = copiedElement.applyTypefaceFromFontList()
+            // Add the copied element to the list
+            _canvasElements.value = _canvasElements.value?.plus(copiedElement)
+
+            // Optionally push the action to the undo stack
+            if (copiedElement.type == ElementType.TEXT){
+                _canvasActions.push(CanvasAction.AddText(copiedElement.text, copiedElement))
+            }else{
+                _canvasActions.push(CanvasAction.AddSticker(copiedElement))
+            }
+            _redoStack.clear()
+
+            // Notify observers
+            notifyUndoRedoChanged()
+        }
     }
 
     fun setCanvasSize(newSize: CanvasSize) {
@@ -731,7 +756,6 @@ class CanvasViewModel @Inject constructor(
             _currentTextColor.value = textElement.paintColor
             _currentTextSize.value = textElement.paintTextSize
             _currentTextAlignment.value = textElement.alignment
-            _currentTextOpacity.value = textElement.paintAlpha
 
             _lineSpacing.value = textElement.lineSpacing
             _letterSpacing.value = textElement.letterSpacing
@@ -758,6 +782,18 @@ class CanvasViewModel @Inject constructor(
             _hasLabel.value = textElement.hasLabel
             _labelColor.value = textElement.labelColor
             _labelShape.value = textElement.labelShape
+
+            // 🟡 Gradients
+            _fillGradientColors.value = textElement.fillGradientColors
+            _fillGradientPositions.value = textElement.fillGradientPositions
+            _strokeGradientColors.value = textElement.strokeGradientColors
+            _strokeGradientPositions.value = textElement.strokeGradientPositions
+
+            // 🟡 Blur and opacity settings
+            _blurValue.value = textElement.blurValue
+            _hasBlur.value = textElement.hasBlur
+            _opacity.value = textElement.paintAlpha
+            _blendingType.value = textElement.blendType
         } else {
             resetTextFormattingToDefault()
         }
@@ -768,7 +804,6 @@ class CanvasViewModel @Inject constructor(
         _currentTextColor.value = Color.BLACK
         _currentTextSize.value = 40f
         _currentTextAlignment.value = TextAlignment.CENTER
-        _currentTextOpacity.value = 255
 
         _lineSpacing.value = 1.0f
         _letterSpacing.value = 0f
@@ -793,6 +828,18 @@ class CanvasViewModel @Inject constructor(
         _hasLabel.value = false
         _labelColor.value = Color.YELLOW
         _labelShape.value = LabelShape.RECTANGLE_FILL
+
+        // Reset Gradients
+        _fillGradientColors.value = null
+        _fillGradientPositions.value = null
+        _strokeGradientColors.value = null
+        _strokeGradientPositions.value = null
+
+        // Reset Blur
+        _blurValue.value = 0f
+        _hasBlur.value = false
+        _opacity.value = 255
+        _blendingType.value = BlendType.SRC_OVER
     }
 
     fun setSelectedElementsFromLayers(elementsToSelect: List<CanvasElement>) {
@@ -1090,7 +1137,7 @@ class CanvasViewModel @Inject constructor(
         }
 
         if (targetElementId != null) {
-            _currentTextOpacity.value = opacity
+            _opacity.value = opacity
             _canvasElements.value = updatedList
             _canvasActions.push(
                 CanvasAction.SetOpacity(
@@ -1275,32 +1322,11 @@ class CanvasViewModel @Inject constructor(
             is CanvasAction.AddText -> {
                 val currentList = _canvasElements.value ?: emptyList()
                 if (isRedo) {
-                    action.element.context = context // Re-apply context
+                    action.element.context = context
                     action.element.updatePaintProperties()
-                    // Re-apply typeface for text elements after updating properties
-                    if (action.element.type == ElementType.TEXT && action.element.fontId != null) {
-                        val font =
-                            localFonts.value.find { font -> font.id.toString() == action.element.fontId }
-                        if (font != null && font.file_path?.isNotBlank() == true) {
-                            try {
-                                action.element.paint.typeface =
-                                    Typeface.createFromFile(font.file_path)
-                            } catch (e: Exception) {
-                                println("Error re-applying typeface in undo/redo AddText: ${font.file_path}. Error: ${e.message}")
-                                action.element.paint.typeface =
-                                    context?.let { ResourcesCompat.getFont(it, R.font.regular) }
-                                        ?: Typeface.DEFAULT
-                            }
-                        } else {
-                            action.element.paint.typeface =
-                                context?.let { ResourcesCompat.getFont(it, R.font.regular) }
-                                    ?: Typeface.DEFAULT
-                        }
-                    } else if (action.element.type == ElementType.TEXT) {
-                        action.element.paint.typeface =
-                            context?.let { ResourcesCompat.getFont(it, R.font.regular) }
-                                ?: Typeface.DEFAULT
-                    }
+
+                    action.element.paint.typeface = action.element.applyTypefaceFromFontList()
+                    action.element.originalTypeface = action.element.applyTypefaceFromFontList()
 
                     _canvasElements.value = currentList + action.element
                 } else {
@@ -1514,7 +1540,7 @@ class CanvasViewModel @Inject constructor(
                                 ?: Typeface.DEFAULT
                     }
 
-                    _currentTextOpacity.value = opacityToApply
+                    _opacity.value = opacityToApply
                     _canvasElements.value =
                         currentList.map { if (it.id == updatedElement.id) updatedElement else it } // Trigger redraw
                 }
@@ -1678,7 +1704,7 @@ class CanvasViewModel @Inject constructor(
         _currentTextColor.value = Color.BLACK
         _currentTextSize.value = 40f
         _currentTextAlignment.value = TextAlignment.CENTER
-        _currentTextOpacity.value = 255
+        _opacity.value = 255
 
         notifyUndoRedoChanged()
     }

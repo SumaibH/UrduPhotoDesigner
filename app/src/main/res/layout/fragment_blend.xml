@@ -81,8 +81,7 @@
             app:layout_constraintTop_toBottomOf="@id/opacitySize"
             android:thumbTint="@color/appColor"
             android:indeterminateTint="@color/appColor"
-            android:progressTint="@color/appColor"
-            android:progress="20"/>
+            android:progressTint="@color/appColor"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/radiusCard"
@@ -133,8 +132,7 @@
             app:layout_constraintTop_toBottomOf="@id/radiusSize"
             android:thumbTint="@color/appColor"
             android:indeterminateTint="@color/appColor"
-            android:progressTint="@color/appColor"
-            android:progress="20"/>
+            android:progressTint="@color/appColor"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

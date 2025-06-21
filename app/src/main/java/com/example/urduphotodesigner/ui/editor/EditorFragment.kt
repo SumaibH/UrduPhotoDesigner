@@ -1,6 +1,7 @@
 package com.example.urduphotodesigner.ui.editor
 
 import android.Manifest
+import android.animation.ObjectAnimator
 import android.app.Dialog
 import android.content.ContentValues
 import android.content.pm.PackageManager
@@ -18,6 +19,7 @@ import android.view.WindowManager
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.RadioButton
+import android.widget.SeekBar
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -191,27 +193,14 @@ class EditorFragment : Fragment() {
             }
         }
 
-        viewModel.currentTextColor.observe(viewLifecycleOwner) { color ->
-            canvasManager.setTextColor(color!!)
-        }
-
-        viewModel.currentTextSize.observe(viewLifecycleOwner) { size ->
-            canvasManager.setTextSize(size!!)
-        }
-
-        viewModel.currentTextAlignment.observe(viewLifecycleOwner) { alignment ->
-            canvasManager.setTextAlignment(alignment!!)
-        }
-
         viewModel.currentImageFilter.observe(viewLifecycleOwner) { filter ->
             if (filter != null && viewModel.isExplicitChange()){
                 canvasManager.applyImageFilter(filter)
             }
         }
 
-        viewModel.currentTextOpacity.observe(viewLifecycleOwner) { opacity ->
-            binding.seekBar.value = opacity?.toFloat()!!
-            canvasManager.setOpacity(opacity)
+        viewModel.opacity.observe(viewLifecycleOwner) { opacity ->
+            binding.seekBar.progress = opacity
         }
     }
 
@@ -283,7 +272,27 @@ class EditorFragment : Fragment() {
             }, onElementSelected = { elements ->
                 viewModel.onCanvasSelectionChanged(elements)
 
-                binding.seekBar.visibility = View.INVISIBLE
+                if (elements.isNotEmpty()){
+                    animateSlideUp(binding.copyIcon)
+                    animateSlideUp(binding.opacityIcon)
+
+                    animateSlideDown(binding.alignmentKit)
+
+                    binding.alignmentKit.visibility = View.VISIBLE
+                    binding.copyIcon.visibility = View.VISIBLE
+                    binding.seekBar.visibility = View.GONE
+                    binding.opacityIcon.visibility = View.VISIBLE
+                }else{
+                    animateSlideDown(binding.copyIcon)
+                    animateSlideDown(binding.opacityIcon)
+
+                    animateSlideUp(binding.alignmentKit)
+
+                    binding.alignmentKit.visibility = View.GONE
+                    binding.copyIcon.visibility = View.GONE
+                    binding.seekBar.visibility = View.GONE
+                    binding.opacityIcon.visibility = View.GONE
+                }
             },
             onEndBatchUpdate = { elementId ->
                 viewModel.endBatchUpdate(elementId)
@@ -305,14 +314,53 @@ class EditorFragment : Fragment() {
                 if (binding.seekBar.isVisible) View.INVISIBLE else View.VISIBLE
         }
 
-        binding.seekBar.addOnChangeListener { _, value, _ ->
-            viewModel.setOpacity(value.roundToInt())
+        binding.seekBar.apply {
+            min = 1
+            max = 255
+            setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(sb: SeekBar, progress: Int, fromUser: Boolean) {
+                    if (fromUser){
+                        viewModel.setOpacity(progress)
+                    }
+                }
+                override fun onStartTrackingTouch(sb: SeekBar) {}
+                override fun onStopTrackingTouch(sb: SeekBar) {}
+            })
+        }
+
+        binding.copyIcon.setOnClickListener {
+            viewModel.copySelectedElement()
         }
 
         binding.done.setOnClickListener {
             showExportSettingsDialog()
         }
     }
+
+    // Slide elements upwards (relative to their current position)
+    private fun animateSlideUp(view: View) {
+        // Save the current position before animating
+        val currentTranslationY = view.translationY
+
+        // Animate to move upwards from the current position
+        ObjectAnimator.ofFloat(view, "translationY", currentTranslationY, -view.height.toFloat()).apply {
+            duration = 300 // Slide duration
+            start()
+        }
+    }
+
+    // Slide elements downwards (relative to their current position)
+    private fun animateSlideDown(view: View) {
+        // Save the current position before animating
+        val currentTranslationY = view.translationY
+
+        // Animate to move back to the original position
+        ObjectAnimator.ofFloat(view, "translationY", currentTranslationY, 0f).apply {
+            duration = 300 // Slide duration
+            start()
+        }
+    }
+
 
     private fun showExportSettingsDialog() {
         val dialog = BottomSheetDialog(requireContext())

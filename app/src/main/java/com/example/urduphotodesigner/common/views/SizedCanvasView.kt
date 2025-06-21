@@ -160,7 +160,7 @@ class SizedCanvasView @JvmOverloads constructor(
      */
     fun syncElements(newElements: List<CanvasElement>) {
         canvasElements.clear()
-        canvasElements.addAll(newElements) // Add copies to avoid direct modification issues
+        canvasElements.addAll(newElements)
         selectedElements.clear()
         selectedElements.addAll(canvasElements.filter { it.isSelected }) // Rebuild selectedElements based on isSelected flags
         invalidate()
@@ -214,12 +214,6 @@ class SizedCanvasView @JvmOverloads constructor(
         return RectF(minX, minY, maxX, maxY)
     }
 
-    /**
-     * Sets the line spacing for the currently selected text element.
-     * Note: With multi-selection, this should ideally apply to all selected text elements.
-     * For now, it applies to the first selected text element found.
-     */
-    // Set line spacing for selected text elements
     fun setLineSpacing(multiplier: Float) {
         selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
             element.lineSpacing = multiplier
@@ -260,14 +254,13 @@ class SizedCanvasView @JvmOverloads constructor(
         invalidate()  // Redraw the canvas
     }
 
-    // Set text decoration (bold, italic, underline, strike-through) for selected text elements
     fun setTextDecoration(decorations: Set<TextDecoration>) {
         selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
             element.textDecoration = decorations
-            element.updatePaintProperties()  // Ensure paint is updated after decoration change
-            onElementChanged?.invoke(element)  // Notify listeners of the change
+            element.updatePaintProperties()
+            onElementChanged?.invoke(element)
         }
-        invalidate()  // Redraw the canvas
+        invalidate()
     }
 
     // Set text alignment for selected text elements
@@ -279,15 +272,6 @@ class SizedCanvasView @JvmOverloads constructor(
         }
         invalidate()  // Redraw the canvas
     }
-
-//    // Set paragraph indentation (increase or decrease) for selected text elements
-//    fun setParagraphIndentation(indent: ParagraphIndentation) {
-//        selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
-//            element.paragraphIndentation = indent
-//            onElementChanged?.invoke(element)  // Notify listeners of the change
-//        }
-//        invalidate()  // Redraw the canvas
-//    }
 
     // Set list style (bulleted or numbered) for selected text elements
     fun setListStyle(style: ListStyle) {
@@ -449,9 +433,6 @@ class SizedCanvasView @JvmOverloads constructor(
     }
 
     fun updateText(text: String) {
-        // This typically applies to a single text element, but for multi-selection,
-        // you might want to consider how this behaves (e.g., update first selected, or all).
-        // For now, let's assume it updates the first selected text element.
         selectedElements.firstOrNull { it.type == ElementType.TEXT }?.let { element ->
             element.text = text
             onElementChanged?.invoke(element)
@@ -1304,6 +1285,7 @@ class SizedCanvasView @JvmOverloads constructor(
                         element.shadowDy,
                         shadowColorWithOpacity
                     )
+                    shader = null
                 }
                 canvas.drawText(displayText, xPosition, yOffset, shadowPaint)
             }

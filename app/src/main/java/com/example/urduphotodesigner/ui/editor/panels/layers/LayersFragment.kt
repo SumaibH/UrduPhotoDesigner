@@ -53,18 +53,10 @@ class LayersFragment : Fragment() {
                 // Find the actual element object from the ViewModel's list to modify its isSelected state
                 val elementToToggle = currentElements.find { it.id == element.id }
 
-                elementToToggle?.let {
+                elementToToggle?.let { it ->
                     // Toggle its selection state
                     it.isSelected = !it.isSelected
 
-                    // If the clicked element is now selected, and it's the only one selected,
-                    // or if it was previously the only one selected and we're deselecting it,
-                    // we need to ensure other elements are deselected if not explicitly multi-selecting.
-                    // However, the requirement is that multi-selection is *only* from LayersFragment.
-                    // So, if an item is clicked, its selection state is simply toggled.
-                    // The SizedCanvasView will handle single-selection on canvas interaction.
-
-                    // Collect all currently selected elements after the toggle
                     val selectedElements = currentElements.filter { it.isSelected }
 
                     // Inform the ViewModel about the new selection state of all elements

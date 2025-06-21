@@ -56,6 +56,12 @@ class AppearanceFragment : Fragment() {
                 val selectedCategory = tabs[position]
                 handleAppearanceTabSelection(selectedCategory)
                 binding.categories.smoothScrollToPosition(position)
+
+                if (position >= 2) {
+                    binding.categories.smoothScrollToPosition(4)
+                }else{
+                    binding.categories.smoothScrollToPosition(0)
+                }
             }
         })
     }
@@ -66,8 +72,7 @@ class AppearanceFragment : Fragment() {
             tabs.add(PanelTabs(1, "Stroke", false))
             tabs.add(PanelTabs(2, "Shadow", false))
             tabs.add(PanelTabs(3, "Label", false))
-            tabs.add(PanelTabs(4, "Blur", false))
-            tabs.add(PanelTabs(5, "Blend", false))
+            tabs.add(PanelTabs(4, "Effect", false))
 
             adapter.submitList(ArrayList(tabs))
             handleAppearanceTabSelection(tabs.firstOrNull())
@@ -83,7 +88,6 @@ class AppearanceFragment : Fragment() {
                 it.copy(is_selected = it.tab_name == tab.tab_name)
             }
             adapter.submitList(updatedCategories)
-
             // Switch ViewPager page
             binding.viewPager.setCurrentItem(selectedIndex, true)
         }

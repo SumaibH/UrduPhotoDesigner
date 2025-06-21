@@ -1,5 +1,6 @@
 package com.example.urduphotodesigner.ui.editor.panels.text.appearance.childs
 
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -273,6 +274,8 @@ class FillStrokeFragment : Fragment() {
                 }
                 .start()
 
+                binding.gradient.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.contrast))
+                binding.solid.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.white))
         } else {
             // Fade out solid and hide it
             binding.colors.animate()
@@ -289,6 +292,8 @@ class FillStrokeFragment : Fragment() {
                         .start()
                 }
                 .start()
+            binding.gradient.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.white))
+            binding.solid.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.contrast))
         }
     }
 

@@ -32,10 +32,10 @@ class ColorsAdapter(
                 field = value
 
                 if (oldSelectedPosition != -1) {
-                    notifyItemChanged(oldSelectedPosition + 1) // +1 because of color picker at pos 0
+                    notifyItemChanged(oldSelectedPosition + 2)
                 }
                 if (newSelectedPosition != -1 && newSelectedPosition != oldSelectedPosition) {
-                    notifyItemChanged(newSelectedPosition + 1) // +1 because of color picker at pos 0
+                    notifyItemChanged(newSelectedPosition + 2)
                 }
             }
         }
@@ -105,12 +105,11 @@ class ColorsAdapter(
         }
     }
 
-    override fun getItemCount() = colorList.size + 1 // +1 for the color picker
+    override fun getItemCount() = colorList.size + 2
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         if (holder.itemViewType == VIEW_TYPE_COLOR_ITEM) {
-            (holder as ColorViewHolder).bind(colorList[position - 1]) // -1 because of color picker at pos 0
+            (holder as ColorViewHolder).bind(colorList[position - 2])
         }
-        // No binding needed for the color picker as it's static
     }
 }
