@@ -5,8 +5,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <ImageView
-        android:layout_width="@dimen/_30sdp"
-        android:layout_height="@dimen/_30sdp"
+        android:layout_width="@dimen/_20sdp"
+        android:layout_height="@dimen/_20sdp"
         android:layout_margin="@dimen/_5sdp"
         android:padding="@dimen/_7sdp"
         app:tint="@color/black"
@@ -26,12 +26,23 @@
         android:maxLines="1"
         android:textSize="@dimen/_10sdp"
         android:textColor="@color/black"
-        android:layout_marginHorizontal="@dimen/_5sdp"
+        android:paddingHorizontal="@dimen/_5sdp"
         android:ellipsize="end"
-        app:layout_constraintEnd_toStartOf="@id/lock"
+        app:layout_constraintEnd_toStartOf="@id/visibility"
         app:layout_constraintStart_toEndOf="@id/image"
         app:layout_constraintTop_toTopOf="@id/image"
         app:layout_constraintBottom_toBottomOf="@id/image"/>
+
+    <ImageView
+        android:layout_width="@dimen/_16sdp"
+        android:layout_height="@dimen/_16sdp"
+        app:tint="@color/black"
+        android:layout_marginEnd="@dimen/_5sdp"
+        app:layout_constraintTop_toTopOf="@id/title"
+        app:layout_constraintBottom_toBottomOf="@id/title"
+        app:layout_constraintEnd_toStartOf="@id/lock"
+        android:src="@drawable/ic_hide_pass"
+        android:id="@+id/visibility"/>
 
     <ImageView
         android:layout_width="@dimen/_16sdp"

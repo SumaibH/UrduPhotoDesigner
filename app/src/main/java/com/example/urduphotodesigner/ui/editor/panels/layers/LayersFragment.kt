@@ -1,6 +1,7 @@
 package com.example.urduphotodesigner.ui.editor.panels.layers
 
 import android.content.ContentValues.TAG
+import android.graphics.Canvas
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -12,7 +13,10 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.example.urduphotodesigner.common.canvas.model.CanvasElement
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
+import com.example.urduphotodesigner.data.model.FontCategory
 import com.example.urduphotodesigner.databinding.FragmentLayersBinding
+import com.example.urduphotodesigner.ui.editor.panels.text.fonts.FontCategoryAdapter
+import com.example.urduphotodesigner.ui.editor.panels.text.fonts.FontsPagerAdapter
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -22,6 +26,8 @@ class LayersFragment : Fragment() {
 
     private val viewModel: CanvasViewModel by activityViewModels()
     private lateinit var adapter: LayersAdapter
+    private lateinit var categories: ArrayList<CanvasElement>
+    private lateinit var pagerAdapter: LayersPagerAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

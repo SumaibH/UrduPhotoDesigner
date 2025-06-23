@@ -17,30 +17,65 @@
     <androidx.constraintlayout.widget.Guideline
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintGuide_percent="0.98"
+        app:layout_constraintGuide_percent="0.3"
+        android:orientation="vertical"
+        android:id="@+id/centerGuide"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintGuide_percent="0.99"
         android:orientation="horizontal"
         android:id="@+id/bottomGuide"/>
 
     <androidx.constraintlayout.widget.Guideline
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintGuide_percent="0.05"
+        app:layout_constraintGuide_percent="0.01"
         android:orientation="vertical"
         android:id="@+id/startGuide"/>
 
     <androidx.constraintlayout.widget.Guideline
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintGuide_percent="0.95"
+        app:layout_constraintGuide_percent="0.99"
         android:orientation="vertical"
         android:id="@+id/endGuide"/>
+
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/layers"
+        android:textColor="@color/appColor"
+        app:layout_constraintStart_toStartOf="@id/startGuide"
+        app:layout_constraintTop_toBottomOf="@id/topGuide"
+        app:layout_constraintEnd_toStartOf="@id/centerGuide"
+        android:fontFamily="@font/medium"
+        android:textSize="@dimen/_12sdp"
+        android:layout_marginEnd="@dimen/_10sdp"
+        android:id="@+id/title"/>
+
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/properties"
+        android:textColor="@color/appColor"
+        app:layout_constraintTop_toBottomOf="@id/topGuide"
+        app:layout_constraintEnd_toStartOf="@id/endGuide"
+        app:layout_constraintStart_toEndOf="@id/centerGuide"
+        android:fontFamily="@font/medium"
+        android:textSize="@dimen/_12sdp"
+        android:layout_marginEnd="@dimen/_10sdp"
+        android:id="@+id/properties"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintStart_toEndOf="@id/startGuide"
-        app:layout_constraintEnd_toStartOf="@id/endGuide"
-        app:layout_constraintTop_toBottomOf="@id/topGuide"
+        app:layout_constraintEnd_toStartOf="@id/centerGuide"
+        app:layout_constraintTop_toBottomOf="@id/title"
         app:layout_constraintBottom_toTopOf="@id/bottomGuide"
+        android:layout_marginEnd="@dimen/_10sdp"
         android:layout_marginTop="@dimen/_5sdp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         android:orientation="vertical"
@@ -48,5 +83,14 @@
         app:spanCount="7"
         android:id="@+id/layers"
         tools:listitem="@layout/layout_layers_item"/>
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPager"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/properties"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/centerGuide"
+        app:layout_constraintEnd_toStartOf="@id/endGuide" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

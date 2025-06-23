@@ -1,7 +1,6 @@
 package com.example.urduphotodesigner.ui.editor
 
 import android.Manifest
-import android.animation.ObjectAnimator
 import android.app.Dialog
 import android.content.ContentValues
 import android.content.pm.PackageManager
@@ -16,6 +15,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.view.animation.AnimationUtils
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.RadioButton
@@ -41,9 +41,12 @@ import com.example.urduphotodesigner.common.utils.Converter.inchesToPx
 import com.example.urduphotodesigner.common.canvas.CanvasManager
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.common.canvas.enums.ElementType
+import com.example.urduphotodesigner.common.canvas.enums.HAlign
+import com.example.urduphotodesigner.common.canvas.enums.MultiAlignMode
 import com.example.urduphotodesigner.common.canvas.model.CanvasElement
 import com.example.urduphotodesigner.common.canvas.model.CanvasSize
 import com.example.urduphotodesigner.common.canvas.enums.UnitType
+import com.example.urduphotodesigner.common.canvas.enums.VAlign
 import com.example.urduphotodesigner.common.views.SizedCanvasView
 import com.example.urduphotodesigner.databinding.BottomSheetExportSettingsBinding
 import com.example.urduphotodesigner.databinding.FragmentEditorBinding
@@ -54,7 +57,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
-import kotlin.math.roundToInt
 
 @AndroidEntryPoint
 class EditorFragment : Fragment() {
@@ -72,6 +74,7 @@ class EditorFragment : Fragment() {
     private var currentPanelItemId: Int? = null
 
     private lateinit var sizedCanvasView: SizedCanvasView
+    private var currentMode: MultiAlignMode = MultiAlignMode.CANVAS
 
     private var requestPermissionLauncher: ActivityResultLauncher<String> = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -201,7 +204,59 @@ class EditorFragment : Fragment() {
 
         viewModel.opacity.observe(viewLifecycleOwner) { opacity ->
             binding.seekBar.progress = opacity
+            binding.opacityValue.text = "${opacity?.toInt() ?: 255}"
         }
+
+        viewModel.currentTextSize.observe(viewLifecycleOwner) { size ->
+            binding.fontSize.text = "${size?.toInt() ?: 40}"
+            binding.seekBarFontSize.progress = size?.toInt() ?: 40
+        }
+
+        viewModel.selectedElements.observe(viewLifecycleOwner) { selectedList ->
+            val shouldShow = selectedList.isNotEmpty()
+            val isShowing = binding.copyIcon.isVisible
+
+            if (shouldShow != isShowing){
+                if (shouldShow) {
+                    // 1) make them visible
+                    binding.copyIcon.visibility   = View.VISIBLE
+                    binding.opacityIcon.visibility= View.VISIBLE
+                    binding.alignmentKit.visibility= View.VISIBLE
+                    binding.seekBar.visibility    = View.GONE
+
+                    val inAnim = AnimationUtils.loadAnimation(requireActivity(), R.anim.slide_up_2)
+                    binding.copyIcon.startAnimation(inAnim)
+                    binding.opacityIcon.startAnimation(inAnim)
+                    for (element in selectedList){
+                        if (element.type == ElementType.TEXT){
+                            binding.fontSizeIcon.visibility = View.VISIBLE
+                            binding.fontSizeIcon.startAnimation(inAnim)
+                        }
+                    }
+                    binding.alignmentKit.startAnimation(
+                        AnimationUtils.loadAnimation(requireActivity(), R.anim.slide_in)
+                    )
+                } else {
+                    val outAnim = AnimationUtils.loadAnimation(requireActivity(), R.anim.slide_down_2)
+                    binding.copyIcon.startAnimation(outAnim)
+                    binding.opacityIcon.startAnimation(outAnim)
+                    binding.fontSizeIcon.startAnimation(outAnim)
+                    binding.alignmentKit.startAnimation(
+                        AnimationUtils.loadAnimation(requireActivity(), R.anim.slide_out)
+                    )
+
+                    binding.seekBarFontSize.visibility   = View.GONE
+                    binding.fontSize.visibility   = View.GONE
+                    binding.opacityValue.visibility   = View.GONE
+                    binding.fontSizeIcon.visibility   = View.GONE
+                    binding.copyIcon.visibility   = View.GONE
+                    binding.opacityIcon.visibility= View.GONE
+                    binding.alignmentKit.visibility= View.GONE
+                    binding.seekBar.visibility    = View.GONE
+                }
+            }
+        }
+
     }
 
     private fun setEvents() {
@@ -271,28 +326,6 @@ class EditorFragment : Fragment() {
                 }
             }, onElementSelected = { elements ->
                 viewModel.onCanvasSelectionChanged(elements)
-
-                if (elements.isNotEmpty()){
-                    animateSlideUp(binding.copyIcon)
-                    animateSlideUp(binding.opacityIcon)
-
-                    animateSlideDown(binding.alignmentKit)
-
-                    binding.alignmentKit.visibility = View.VISIBLE
-                    binding.copyIcon.visibility = View.VISIBLE
-                    binding.seekBar.visibility = View.GONE
-                    binding.opacityIcon.visibility = View.VISIBLE
-                }else{
-                    animateSlideDown(binding.copyIcon)
-                    animateSlideDown(binding.opacityIcon)
-
-                    animateSlideUp(binding.alignmentKit)
-
-                    binding.alignmentKit.visibility = View.GONE
-                    binding.copyIcon.visibility = View.GONE
-                    binding.seekBar.visibility = View.GONE
-                    binding.opacityIcon.visibility = View.GONE
-                }
             },
             onEndBatchUpdate = { elementId ->
                 viewModel.endBatchUpdate(elementId)
@@ -310,9 +343,39 @@ class EditorFragment : Fragment() {
         binding.redo.setOnClickListener { viewModel.redo() }
 
         binding.opacityIcon.setOnClickListener {
-            binding.seekBar.visibility =
-                if (binding.seekBar.isVisible) View.INVISIBLE else View.VISIBLE
+            togglePanel(showOpacityPanel = true)
         }
+        binding.fontSizeIcon.setOnClickListener {
+            togglePanel(showOpacityPanel = false)
+        }
+
+        binding.artBoard.setOnClickListener {
+            if (currentMode != MultiAlignMode.CANVAS) {
+                currentMode = MultiAlignMode.CANVAS
+                updateModeDrawables()
+            }
+        }
+        binding.selection.setOnClickListener {
+            if (currentMode != MultiAlignMode.SELECTION) {
+                currentMode = MultiAlignMode.SELECTION
+                updateModeDrawables()
+            }
+        }
+
+        binding.leftAlign.setOnClickListener  {
+            sizedCanvasView.alignHorizontal(HAlign.LEFT, currentMode) }
+        binding.centerHorizontal.setOnClickListener{
+            sizedCanvasView.alignHorizontal(HAlign.CENTER, currentMode) }
+        binding.rightAlign.setOnClickListener {
+            sizedCanvasView.alignHorizontal(HAlign.RIGHT, currentMode) }
+
+        binding.topAlign.setOnClickListener   {
+            sizedCanvasView.alignVertical(VAlign.TOP, currentMode) }
+        binding.centerVertical.setOnClickListener{
+            sizedCanvasView.alignVertical(VAlign.MIDDLE, currentMode) }
+        binding.bottomAlign.setOnClickListener{
+            sizedCanvasView.alignVertical(VAlign.BOTTOM, currentMode) }
+
 
         binding.seekBar.apply {
             min = 1
@@ -328,6 +391,22 @@ class EditorFragment : Fragment() {
             })
         }
 
+        binding.seekBarFontSize.apply {
+            min = 0
+            max = 100
+            setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(sb: SeekBar, progress: Int, fromUser: Boolean) {
+                    if (fromUser){
+                        binding.fontSize.text = "$progress"
+                        viewModel.setTextSize(progress.toFloat())
+                    }
+                }
+                override fun onStartTrackingTouch(sb: SeekBar) {}
+                override fun onStopTrackingTouch(sb: SeekBar) {}
+            })
+        }
+
+
         binding.copyIcon.setOnClickListener {
             viewModel.copySelectedElement()
         }
@@ -337,30 +416,49 @@ class EditorFragment : Fragment() {
         }
     }
 
-    // Slide elements upwards (relative to their current position)
-    private fun animateSlideUp(view: View) {
-        // Save the current position before animating
-        val currentTranslationY = view.translationY
-
-        // Animate to move upwards from the current position
-        ObjectAnimator.ofFloat(view, "translationY", currentTranslationY, -view.height.toFloat()).apply {
-            duration = 300 // Slide duration
-            start()
+    private fun togglePanel(showOpacityPanel: Boolean) {
+        if (showOpacityPanel) {
+            val isCurrentlyVisible = binding.seekBar.isVisible
+            if (isCurrentlyVisible) {
+                // hide opacity panel
+                binding.seekBar.isVisible = false
+                binding.opacityValue.isVisible = false
+            } else {
+                // show opacity, hide font-size
+                binding.seekBar.isVisible = true
+                binding.opacityValue.isVisible = true
+                binding.seekBarFontSize.isVisible = false
+                binding.seekBarFontSize.isVisible = false
+                binding.fontSize.isVisible = false
+            }
+        } else {
+            val isCurrentlyVisible = binding.seekBarFontSize.isVisible
+            if (isCurrentlyVisible) {
+                // hide font-size panel
+                binding.seekBarFontSize.isVisible = false
+                binding.fontSize.isVisible = false
+            } else {
+                // show font-size, hide opacity
+                binding.seekBarFontSize.isVisible = true
+                binding.fontSize.isVisible = true
+                binding.seekBar.isVisible = false
+                binding.opacityValue.isVisible = false
+            }
         }
     }
 
-    // Slide elements downwards (relative to their current position)
-    private fun animateSlideDown(view: View) {
-        // Save the current position before animating
-        val currentTranslationY = view.translationY
-
-        // Animate to move back to the original position
-        ObjectAnimator.ofFloat(view, "translationY", currentTranslationY, 0f).apply {
-            duration = 300 // Slide duration
-            start()
+    private fun updateModeDrawables() {
+        when (currentMode) {
+            MultiAlignMode.CANVAS -> {
+                binding.artBoard.setImageResource(R.drawable.ic_align_art_board_filled)
+                binding.selection.setImageResource(R.drawable.ic_align_selection_stroke)
+            }
+            MultiAlignMode.SELECTION -> {
+                binding.artBoard.setImageResource(R.drawable.ic_align_art_board_stroke)
+                binding.selection.setImageResource(R.drawable.ic_align_selection_filled)
+            }
         }
     }
-
 
     private fun showExportSettingsDialog() {
         val dialog = BottomSheetDialog(requireContext())

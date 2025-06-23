@@ -70,6 +70,14 @@ class LayersAdapter(
                         }
                     )
 
+                    visibility.setImageResource(
+                        if (element.paintAlpha == 255) {
+                            R.drawable.ic_lock
+                        } else {
+                            R.drawable.ic_unlock
+                        }
+                    )
+
                     // Set up click listeners
                     lock.setOnClickListener {
                         element.isLocked = !element.isLocked

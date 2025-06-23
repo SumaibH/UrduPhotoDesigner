@@ -32,12 +32,15 @@ import androidx.core.graphics.withTranslation
 import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.canvas.enums.BlendType
 import com.example.urduphotodesigner.common.canvas.enums.ElementType
+import com.example.urduphotodesigner.common.canvas.enums.HAlign
 import com.example.urduphotodesigner.common.canvas.enums.LabelShape
 import com.example.urduphotodesigner.common.canvas.enums.LetterCasing
 import com.example.urduphotodesigner.common.canvas.enums.ListStyle
 import com.example.urduphotodesigner.common.canvas.enums.Mode
+import com.example.urduphotodesigner.common.canvas.enums.MultiAlignMode
 import com.example.urduphotodesigner.common.canvas.enums.TextAlignment
 import com.example.urduphotodesigner.common.canvas.enums.TextDecoration
+import com.example.urduphotodesigner.common.canvas.enums.VAlign
 import com.example.urduphotodesigner.common.canvas.model.CanvasElement
 import com.example.urduphotodesigner.common.canvas.model.ExportOptions
 import com.example.urduphotodesigner.common.canvas.sealed.ImageFilter
@@ -152,6 +155,146 @@ class SizedCanvasView @JvmOverloads constructor(
         drawable.setBounds(0, 0, canvas.width, canvas.height)
         drawable.draw(canvas)
         return bmp
+    }
+
+    /**
+     * Call this for your horizontal buttons:
+     *  – if one element: snaps to canvas LEFT/CENTER/RIGHT
+     *  – if many:
+     *     • CANVAS: treat group as block and snap its LEFT/CENTER/RIGHT to the artboard
+     *     • SELECTION: snap each element’s own LEFT/CENTER/RIGHT to the first element
+     */
+    fun alignHorizontal(
+        align: HAlign,
+        mode: MultiAlignMode = MultiAlignMode.CANVAS
+    ) {
+        when {
+            selectedElements.isEmpty() -> return
+
+            selectedElements.size == 1 -> {
+                // single-select → canvas behavior
+                val elem = selectedElements.first()
+                val halfW = elem.getLocalContentWidth() * elem.scale / 2f
+                val rawX = when (align) {
+                    HAlign.LEFT   -> halfW
+                    HAlign.CENTER -> canvasWidth / 2f
+                    HAlign.RIGHT  -> canvasWidth - halfW
+                }
+                elem.x = rawX.coerceIn(halfW, canvasWidth - halfW)
+                onElementChanged?.invoke(elem)
+            }
+
+            mode == MultiAlignMode.CANVAS -> {
+                // group-to-canvas: move the whole group block
+                val edges = selectedElements.map { e ->
+                    val half = e.getLocalContentWidth() * e.scale / 2f
+                    e.x - half to e.x + half
+                }
+                val groupLeft  = edges.minOf { it.first }
+                val groupRight = edges.maxOf { it.second }
+                val groupW     = groupRight - groupLeft
+                val targetLeft = when (align) {
+                    HAlign.LEFT   -> 0f
+                    HAlign.CENTER -> (canvasWidth - groupW) / 2f
+                    HAlign.RIGHT  -> canvasWidth - groupW
+                }
+                val dx = targetLeft - groupLeft
+                selectedElements.forEach { e ->
+                    e.x += dx
+                    onElementChanged?.invoke(e)
+                }
+            }
+
+            else /* mode == MultiAlignMode.SELECTION */ -> {
+                // each-to-first, but leave the first element unchanged
+                val first = selectedElements.first()
+                val firstHalf = first.getLocalContentWidth() * first.scale / 2f
+                val firstLeft = first.x - firstHalf
+                val firstCenter = first.x
+                val firstRight = first.x + firstHalf
+
+                // Align other elements relative to first
+                selectedElements.drop(1).forEach { e ->
+                    val half = e.getLocalContentWidth() * e.scale / 2f
+                    e.x = when (align) {
+                        HAlign.LEFT   -> firstLeft + half
+                        HAlign.CENTER -> firstCenter
+                        HAlign.RIGHT  -> firstRight - half
+                    }
+                    onElementChanged?.invoke(e)
+                }
+            }
+        }
+
+        invalidate()
+    }
+
+    /**
+     * Exactly the same, but for vertical TOP/MIDDLE/BOTTOM.
+     */
+    fun alignVertical(
+        align: VAlign,
+        mode: MultiAlignMode = MultiAlignMode.CANVAS
+    ) {
+        when {
+            selectedElements.isEmpty() -> return
+
+            selectedElements.size == 1 -> {
+                // single-select → canvas behavior
+                val elem = selectedElements.first()
+                val halfH = elem.getLocalContentHeight() * elem.scale / 2f
+                val rawY = when (align) {
+                    VAlign.TOP    -> halfH
+                    VAlign.MIDDLE -> canvasHeight / 2f
+                    VAlign.BOTTOM -> canvasHeight - halfH
+                }
+                elem.y = rawY.coerceIn(halfH, canvasHeight - halfH)
+                onElementChanged?.invoke(elem)
+            }
+
+            mode == MultiAlignMode.CANVAS -> {
+                // group-to-canvas: move the whole group block
+                val edges = selectedElements.map { e ->
+                    val half = e.getLocalContentHeight() * e.scale / 2f
+                    e.y - half to e.y + half
+                }
+                val groupTop    = edges.minOf { it.first }
+                val groupBottom = edges.maxOf { it.second }
+                val groupH      = groupBottom - groupTop
+                val targetTop   = when (align) {
+                    VAlign.TOP    -> 0f
+                    VAlign.MIDDLE -> (canvasHeight - groupH) / 2f
+                    VAlign.BOTTOM -> canvasHeight - groupH
+                }
+                val dy = targetTop - groupTop
+                selectedElements.forEach { e ->
+                    e.y += dy
+                    onElementChanged?.invoke(e)
+                }
+            }
+
+            else /* mode == MultiAlignMode.SELECTION */ -> {
+                // each-to-first, but leave the first element unchanged
+                val first = selectedElements.first()
+                val firstHalf = first.getLocalContentHeight() * first.scale / 2f
+                val firstTop = first.y - firstHalf
+                val firstCenter = first.y
+                val firstBottom = first.y + firstHalf
+
+                // Align other elements relative to first
+                selectedElements.drop(1).forEach { e ->
+                    val half = e.getLocalContentHeight() * e.scale / 2f
+                    e.y = when (align) {
+                        VAlign.TOP    -> firstTop + half
+                        VAlign.MIDDLE -> firstCenter
+                        VAlign.BOTTOM -> firstBottom - half
+                    }
+                    onElementChanged?.invoke(e)
+                }
+            }
+        }
+
+        invalidate()
     }
 
     /**

@@ -73,4 +73,8 @@
     <string name="radius">Radius</string>
     <string name="blur_radius">Blur Radius</string>
     <string name="blending_options">Blending Options</string>
+    <string name="align_to_canvas">Align to Canvas</string>
+    <string name="align_to_selection">Align to Selection</string>
+    <string name="layer_name">Layer name</string>
+    <string name="properties">Properties</string>
 </resources>

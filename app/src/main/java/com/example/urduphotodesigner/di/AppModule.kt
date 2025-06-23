@@ -53,15 +53,15 @@ object AppModule {
         val httpClient: OkHttpClient.Builder = OkHttpClient.Builder()
             .socketFactory(SocketFactoryWithTcpNoDelay())
             .addInterceptor(logging)
-            .addInterceptor(Interceptor { chain ->
-                val original: Request = chain.request()
+            .addInterceptor(Interceptor {
+                val original: Request = it.request()
                 val originalHttpUrl: HttpUrl = original.url
                 val url = originalHttpUrl.newBuilder()
                     .build()
                 val requestBuilder: Request.Builder = original.newBuilder()
                     .url(url)
                 val request: Request = requestBuilder.build()
-                chain.proceed(request)
+                it.proceed(request)
             })
             .readTimeout(120, TimeUnit.SECONDS)
             .connectTimeout(120, TimeUnit.SECONDS)

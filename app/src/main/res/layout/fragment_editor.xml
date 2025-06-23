@@ -56,14 +56,13 @@
         android:id="@+id/done"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/button_bg"
-        android:paddingHorizontal="@dimen/_10sdp"
-        android:paddingVertical="@dimen/_7sdp"
+        android:paddingVertical="@dimen/_10sdp"
+        android:paddingStart="@dimen/_10sdp"
         android:src="@drawable/ic_done"
+        app:tint="@color/black"
         app:layout_constraintBottom_toBottomOf="@id/back"
         app:layout_constraintEnd_toStartOf="@id/endGuide"
-        app:layout_constraintTop_toTopOf="@id/back"
-        app:tint="@color/whiteText" />
+        app:layout_constraintTop_toTopOf="@id/back" />
 
     <FrameLayout
         android:id="@+id/canvasContainer"
@@ -80,97 +79,159 @@
         android:visibility="gone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toEndOf="@id/startGuide"
-        app:layout_constraintEnd_toStartOf="@id/endGuide"
-        app:layout_constraintTop_toBottomOf="@id/redoUndo"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/canvasContainer"
+        app:layout_constraintBottom_toBottomOf="@id/canvasContainer"
         android:background="@drawable/button_bg"
-        android:backgroundTint="@color/white"
-        android:layout_marginTop="@dimen/_10sdp"
-        android:translationZ="@dimen/_5sdp"
+        android:backgroundTint="@color/white80"
         android:padding="@dimen/_5sdp">
 
         <ImageView
-            android:layout_width="@dimen/_20sdp"
-            android:layout_height="@dimen/_20sdp"
+            android:layout_width="@dimen/_25sdp"
+            android:layout_height="@dimen/_25sdp"
             android:src="@drawable/ic_left"
             android:background="@drawable/button_bg"
             android:backgroundTint="@color/contrast"
+            android:foreground="?selectableItemBackground"
+            android:tooltipText="Align Left"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/rightAlign"
             android:padding="@dimen/_5sdp"
-            app:layout_constraintEnd_toStartOf="@id/rightAlign"
             android:id="@+id/leftAlign"/>
 
         <ImageView
-            android:layout_width="@dimen/_20sdp"
-            android:layout_height="@dimen/_20sdp"
+            android:layout_width="@dimen/_25sdp"
+            android:layout_height="@dimen/_25sdp"
             android:src="@drawable/ic_right"
+            android:foreground="?selectableItemBackground"
             android:background="@drawable/button_bg"
             android:backgroundTint="@color/contrast"
-            app:layout_constraintStart_toEndOf="@id/leftAlign"
-            app:layout_constraintTop_toTopOf="@id/leftAlign"
-            app:layout_constraintBottom_toBottomOf="@id/leftAlign"
-            app:layout_constraintEnd_toStartOf="@id/center_vertical"
-            android:layout_marginStart="@dimen/_5sdp"
+            android:tooltipText="Align Right"
+            app:layout_constraintStart_toStartOf="@id/leftAlign"
+            app:layout_constraintTop_toBottomOf="@id/leftAlign"
+            app:layout_constraintEnd_toEndOf="@id/leftAlign"
+            app:layout_constraintBottom_toTopOf="@id/center_horizontal"
+            android:layout_marginTop="@dimen/_5sdp"
             android:padding="@dimen/_5sdp"
             android:id="@+id/rightAlign"/>
 
         <ImageView
-            android:layout_width="@dimen/_20sdp"
-            android:layout_height="@dimen/_20sdp"
+            android:layout_width="@dimen/_25sdp"
+            android:layout_height="@dimen/_25sdp"
             android:src="@drawable/ic_center_vertical"
             android:background="@drawable/button_bg"
+            android:foreground="?selectableItemBackground"
             android:backgroundTint="@color/contrast"
-            app:layout_constraintEnd_toStartOf="@id/center_horizontal"
-            app:layout_constraintStart_toEndOf="@id/rightAlign"
-            app:layout_constraintTop_toTopOf="@id/leftAlign"
-            app:layout_constraintBottom_toBottomOf="@id/leftAlign"
-            android:layout_marginStart="@dimen/_5sdp"
-            android:padding="@dimen/_5sdp"
-            android:id="@+id/center_vertical"/>
-
-        <ImageView
-            android:layout_width="@dimen/_20sdp"
-            android:layout_height="@dimen/_20sdp"
-            android:src="@drawable/ic_center_horizontal"
-            android:background="@drawable/button_bg"
-            android:backgroundTint="@color/contrast"
-            app:layout_constraintStart_toEndOf="@id/center_vertical"
-            app:layout_constraintTop_toTopOf="@id/leftAlign"
-            app:layout_constraintBottom_toBottomOf="@id/leftAlign"
-            app:layout_constraintEnd_toStartOf="@id/topAlign"
-            android:layout_marginStart="@dimen/_5sdp"
+            android:tooltipText="Align Center Horizontal"
+            app:layout_constraintStart_toStartOf="@id/leftAlign"
+            app:layout_constraintTop_toBottomOf="@id/rightAlign"
+            app:layout_constraintEnd_toEndOf="@id/leftAlign"
+            app:layout_constraintBottom_toTopOf="@id/center_vertical"
+            android:layout_marginTop="@dimen/_5sdp"
             android:padding="@dimen/_5sdp"
             android:id="@+id/center_horizontal"/>
 
         <ImageView
-            android:layout_width="@dimen/_20sdp"
-            android:layout_height="@dimen/_20sdp"
+            android:layout_width="@dimen/_25sdp"
+            android:layout_height="@dimen/_25sdp"
+            android:src="@drawable/ic_center_horizontal"
+            android:background="@drawable/button_bg"
+            android:foreground="?selectableItemBackground"
+            android:backgroundTint="@color/contrast"
+            android:tooltipText="Align Center Vertical"
+            app:layout_constraintStart_toStartOf="@id/leftAlign"
+            app:layout_constraintTop_toBottomOf="@id/center_horizontal"
+            app:layout_constraintEnd_toEndOf="@id/leftAlign"
+            app:layout_constraintBottom_toTopOf="@id/topAlign"
+            android:layout_marginTop="@dimen/_5sdp"
+            android:padding="@dimen/_5sdp"
+            android:id="@+id/center_vertical"/>
+
+        <ImageView
+            android:layout_width="@dimen/_25sdp"
+            android:layout_height="@dimen/_25sdp"
             android:src="@drawable/ic_top"
             android:background="@drawable/button_bg"
+            android:foreground="?selectableItemBackground"
             android:backgroundTint="@color/contrast"
-            app:layout_constraintStart_toEndOf="@id/center_horizontal"
-            app:layout_constraintTop_toTopOf="@id/leftAlign"
-            app:layout_constraintBottom_toBottomOf="@id/leftAlign"
-            app:layout_constraintEnd_toStartOf="@id/bottomAlign"
-            android:layout_marginStart="@dimen/_5sdp"
+            android:tooltipText="Align Top"
+            app:layout_constraintStart_toStartOf="@id/leftAlign"
+            app:layout_constraintTop_toBottomOf="@id/center_vertical"
+            app:layout_constraintEnd_toEndOf="@id/leftAlign"
+            app:layout_constraintBottom_toTopOf="@id/bottomAlign"
+            android:layout_marginTop="@dimen/_5sdp"
             android:padding="@dimen/_5sdp"
             android:id="@+id/topAlign"/>
 
         <ImageView
-            android:layout_width="@dimen/_20sdp"
-            android:layout_height="@dimen/_20sdp"
+            android:layout_width="@dimen/_25sdp"
+            android:layout_height="@dimen/_25sdp"
             android:src="@drawable/ic_bottom"
             android:background="@drawable/button_bg"
+            android:foreground="?selectableItemBackground"
             android:backgroundTint="@color/contrast"
-            app:layout_constraintStart_toEndOf="@id/topAlign"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/leftAlign"
-            app:layout_constraintBottom_toBottomOf="@id/leftAlign"
-            android:layout_marginStart="@dimen/_5sdp"
+            android:tooltipText="Align Bottom"
+            app:layout_constraintStart_toStartOf="@id/leftAlign"
+            app:layout_constraintTop_toBottomOf="@id/topAlign"
+            app:layout_constraintEnd_toEndOf="@id/leftAlign"
+            app:layout_constraintBottom_toTopOf="@id/view"
+            android:layout_marginTop="@dimen/_5sdp"
             android:padding="@dimen/_5sdp"
             android:id="@+id/bottomAlign"/>
+
+        <View
+            android:layout_marginTop="@dimen/_5sdp"
+            android:id="@+id/view"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/_1sdp"
+            android:background="@color/appColor"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/bottomAlign"
+            app:layout_constraintBottom_toTopOf="@id/alignType"/>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/alignType"
+            android:layout_width="@dimen/_25sdp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_5sdp"
+            android:background="@drawable/button_bg"
+            android:backgroundTint="@color/contrast"
+            android:padding="@dimen/_5sdp"
+            app:layout_constraintStart_toStartOf="@id/leftAlign"
+            app:layout_constraintTop_toBottomOf="@id/view"
+            app:layout_constraintEnd_toEndOf="@id/leftAlign"
+            app:layout_constraintBottom_toBottomOf="parent">
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_align_art_board_filled"
+                android:id="@+id/art_board"
+                android:foreground="?selectableItemBackground"
+                android:layout_marginBottom="@dimen/_10sdp"
+                android:tooltipText="Align to Artboard"
+                android:contentDescription="@string/align_to_canvas"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/selection"/>
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:foreground="?selectableItemBackground"
+                android:src="@drawable/ic_align_selection_stroke"
+                android:id="@+id/selection"
+                android:tooltipText="Align to Selection"
+                android:contentDescription="@string/align_to_selection"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/art_board"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/panelNavHost"
@@ -216,11 +277,59 @@
         android:layout_marginStart="@dimen/_5sdp"
         app:tint="@color/black"/>
 
+    <ImageView
+        android:visibility="gone"
+        android:id="@+id/fontSizeIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/button_bg"
+        android:backgroundTint="@color/white80"
+        android:padding="@dimen/_10sdp"
+        android:foreground="?selectableItemBackground"
+        android:src="@drawable/ic_font_size"
+        app:layout_constraintTop_toTopOf="@id/copyIcon"
+        app:layout_constraintBottom_toBottomOf="@id/copyIcon"
+        app:layout_constraintStart_toEndOf="@id/opacityIcon"
+        android:layout_marginStart="@dimen/_5sdp"
+        app:tint="@color/black"/>
+
+    <SeekBar
+        android:visibility="gone"
+        android:id="@+id/seekBarFontSize"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintStart_toEndOf="@id/fontSizeIcon"
+        app:layout_constraintEnd_toStartOf="@id/endGuide"
+        app:layout_constraintTop_toTopOf="@id/fontSizeIcon"
+        app:layout_constraintBottom_toBottomOf="@id/fontSizeIcon"
+        android:thumbTint="@color/appColor"
+        android:indeterminateTint="@color/appColor"
+        android:progressTint="@color/appColor"
+        android:backgroundTint="@color/white"
+        android:background="@drawable/button_bg"
+        android:paddingEnd="@dimen/_30sdp"
+        android:layout_marginStart="@dimen/_5sdp"/>
+
+    <TextView
+        android:id="@+id/fontSize"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="32"
+        android:visibility="gone"
+        android:fontFamily="@font/regular"
+        android:textColor="@color/black"
+        android:layout_marginEnd="@dimen/_5sdp"
+        android:textSize="@dimen/_10sdp"
+        app:layout_constraintTop_toTopOf="@id/seekBarFontSize"
+        app:layout_constraintBottom_toBottomOf="@id/seekBarFontSize"
+        app:layout_constraintEnd_toEndOf="@id/seekBarFontSize"/>
+
     <SeekBar
         android:visibility="gone"
         android:id="@+id/seekBar"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:paddingEnd="@dimen/_30sdp"
         app:layout_constraintStart_toEndOf="@id/opacityIcon"
         app:layout_constraintEnd_toStartOf="@id/endGuide"
         app:layout_constraintTop_toTopOf="@id/opacityIcon"
@@ -228,9 +337,23 @@
         android:thumbTint="@color/appColor"
         android:indeterminateTint="@color/appColor"
         android:progressTint="@color/appColor"
-        android:backgroundTint="@color/white80"
+        android:backgroundTint="@color/white"
         android:background="@drawable/button_bg"
         android:layout_marginStart="@dimen/_5sdp"/>
+
+    <TextView
+        android:id="@+id/opacityValue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="32"
+        android:visibility="gone"
+        android:fontFamily="@font/regular"
+        android:textColor="@color/black"
+        android:layout_marginEnd="@dimen/_5sdp"
+        android:textSize="@dimen/_10sdp"
+        app:layout_constraintTop_toTopOf="@id/seekBar"
+        app:layout_constraintBottom_toBottomOf="@id/seekBar"
+        app:layout_constraintEnd_toEndOf="@id/seekBar"/>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/redoUndo"

@@ -49,6 +49,9 @@ class CanvasViewModel @Inject constructor(
     private val _canvasElements = MutableLiveData<List<CanvasElement>>(emptyList())
     val canvasElements: MutableLiveData<List<CanvasElement>> = _canvasElements
 
+    private val _selectedElements = MutableLiveData<List<CanvasElement>>(emptyList())
+    val selectedElements: LiveData<List<CanvasElement>> = _selectedElements
+
     private val _exportOptions = MutableLiveData<ExportOptions>()
     val exportOptions: LiveData<ExportOptions> = _exportOptions
 
@@ -705,6 +708,7 @@ class CanvasViewModel @Inject constructor(
 
         this.selectedElement = selectedCopy
         _canvasElements.value = currentList
+        refreshSelectedElements()
     }
 
     private fun getTypefaceForElement(element: CanvasElement, context: Context?): Typeface {
@@ -735,6 +739,7 @@ class CanvasViewModel @Inject constructor(
         }
 
         _canvasElements.value = updatedList
+        refreshSelectedElements()
 
         val firstText = selectedListFromCanvas.firstOrNull { it.type == ElementType.TEXT }
         val firstImage = selectedListFromCanvas.firstOrNull { it.type == ElementType.IMAGE }
@@ -842,6 +847,12 @@ class CanvasViewModel @Inject constructor(
         _blendingType.value = BlendType.SRC_OVER
     }
 
+    private fun refreshSelectedElements() {
+        val currentList = _canvasElements.value ?: emptyList()
+        // Filter the elements currently marked isSelected == true
+        _selectedElements.value = currentList.filter { it.isSelected }
+    }
+
     fun setSelectedElementsFromLayers(elementsToSelect: List<CanvasElement>) {
         val currentElements = _canvasElements.value?.toMutableList() ?: mutableListOf()
         val context = currentElements.firstOrNull()?.context
@@ -863,6 +874,7 @@ class CanvasViewModel @Inject constructor(
         }
 
         _canvasElements.value = updatedList
+        refreshSelectedElements()
 
         // 🛑 Don't sync formatting if more than 1 item is selected
         val selectedTextElements = elementsToSelect.filter { it.type == ElementType.TEXT }
@@ -877,7 +889,7 @@ class CanvasViewModel @Inject constructor(
         _currentImageFilter.value = firstSelectedImageElement?.imageFilter
     }
 
-    fun getSelectedElement(): CanvasElement? {
+    private fun getSelectedElement(): CanvasElement? {
         return _canvasElements.value?.find { it.isSelected } ?: selectedElement
     }
 
@@ -1199,6 +1211,24 @@ class CanvasViewModel @Inject constructor(
         }
     }
 
+    fun removeSelectedElements() {
+        val currentList = _canvasElements.value ?: return
+        val toRemove = currentList.filter { it.isSelected }
+        if (toRemove.isEmpty()) return
+
+        // Push a grouped action for undo if desired; here we push each individually:
+        toRemove.forEach { elem ->
+            _canvasActions.push(CanvasAction.RemoveElement(elem.copy(context = null, bitmap = null)))
+        }
+        _redoStack.clear()
+
+        // Remove them all in one filter:
+        _canvasElements.value = currentList.filter { !it.isSelected }
+        refreshSelectedElements()
+        selectedElement = null
+        notifyUndoRedoChanged()
+    }
+
     fun removeElement(element: CanvasElement) {
         val currentList = _canvasElements.value ?: emptyList()
         if (currentList.any { it.id == element.id }) { // Check by ID in case it's a copy
@@ -1211,6 +1241,7 @@ class CanvasViewModel @Inject constructor(
             ) // Push a copy for undo, without transient data
             _redoStack.clear()
             _canvasElements.value = currentList.filter { it.id != element.id }
+            refreshSelectedElements()
             selectedElement = null
             notifyUndoRedoChanged()
         }
@@ -1235,6 +1266,7 @@ class CanvasViewModel @Inject constructor(
     private fun notifyUndoRedoChanged() {
         _canUndo.value = _canvasActions.isNotEmpty()
         _canRedo.value = _redoStack.isNotEmpty()
+        refreshSelectedElements()
     }
 
     private fun applyAction(action: CanvasAction, isRedo: Boolean) {
@@ -1705,6 +1737,7 @@ class CanvasViewModel @Inject constructor(
         _currentTextSize.value = 40f
         _currentTextAlignment.value = TextAlignment.CENTER
         _opacity.value = 255
+        _selectedElements.value = emptyList()
 
         notifyUndoRedoChanged()
     }
