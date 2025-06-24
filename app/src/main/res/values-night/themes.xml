@@ -4,4 +4,22 @@
         <!-- Customize your dark theme here. -->
         <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
     </style>
+
+
+    <!-- in res/values/styles.xml -->
+    <style name="CustomToolbarTitleText" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
+        <!-- fontFamily can reference res/font -->
+        <item name="fontFamily">@font/medium</item>
+        <!-- textSize in sp -->
+        <item name="android:textSize">@dimen/_12sdp</item>
+        <!-- textColor -->
+        <item name="android:textColor">@color/black</item>
+    </style>
+
+    <style name="CustomToolbarSubtitleText" parent="TextAppearance.Widget.AppCompat.Toolbar.Subtitle">
+        <item name="fontFamily">@font/regular</item>
+        <item name="android:textSize">@dimen/_10sdp</item>
+        <item name="android:textColor">@android:color/darker_gray</item>
+    </style>
+
 </resources>

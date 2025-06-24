@@ -6,41 +6,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".ui.editor.panels.text.appearance.childs.BlendFragment">
 
-    <TextView
-        android:id="@+id/blendTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/blending_options"
-        android:fontFamily="@font/medium"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:textSize="@dimen/_10sdp"
-        android:textColor="@color/black"/>
-
-    <TextView
-        android:id="@+id/blend_spinner"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/blendTitle"
-        android:background="@drawable/edit_bg_stroke"
-        android:dropDownWidth="wrap_content"
-        android:popupBackground="@color/white"
-        android:padding="@dimen/_5sdp"
-        android:textColor="@color/black"
-        android:fontFamily="@font/regular"
-        android:textSize="@dimen/_10sdp"
-        android:layout_marginTop="@dimen/_5sdp"/>
-
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/opacityCard"
         android:visibility="visible"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/radiusCard"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/radiusCard">
 
         <TextView
             android:id="@+id/opacityTitle"
@@ -88,9 +62,10 @@
         android:visibility="visible"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toEndOf="@id/opacityCard"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/opacityCard">
 
         <TextView
             android:id="@+id/radiusTitle"

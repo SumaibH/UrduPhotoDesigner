@@ -23,25 +23,6 @@ class BlendFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: CanvasViewModel by activityViewModels()
-    private lateinit var adapter: CustomSpinnerAdapter
-    private val blendingOptions = listOf(
-        BlendType.SRC,
-        BlendType.DST,
-        BlendType.SRC_OVER,
-        BlendType.DST_OVER,
-        BlendType.SRC_IN,
-        BlendType.DST_IN,
-        BlendType.SRC_OUT,
-        BlendType.DST_OUT,
-        BlendType.SRC_ATOP,
-        BlendType.DST_ATOP,
-        BlendType.XOR,
-        BlendType.DARKEN,
-        BlendType.LIGHTEN,
-        BlendType.ADD,
-        BlendType.MULTIPLY,
-        BlendType.SCREEN
-    )
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -59,21 +40,6 @@ class BlendFragment : Fragment() {
     }
 
     private fun setEvents() {
-
-        adapter = CustomSpinnerAdapter(blendingOptions)
-
-        binding.blendSpinner.setOnClickListener {
-            val popupMenu = PopupMenu(requireActivity(), binding.blendSpinner)
-            blendingOptions.forEachIndexed { index, blendType ->
-                popupMenu.menu.add(0, index, index, blendType.name)
-            }
-            popupMenu.setOnMenuItemClickListener { menuItem ->
-                val selectedBlendType = blendingOptions[menuItem.itemId]
-                viewModel.setBlendingType(selectedBlendType)
-                true
-            }
-            popupMenu.show()
-        }
 
         binding.opacity.apply {
             min = 1
@@ -107,9 +73,6 @@ class BlendFragment : Fragment() {
     }
 
     private fun initObservers() {
-        viewModel.blendingType.observe(viewLifecycleOwner) { type ->
-            binding.blendSpinner.text = type.name
-        }
 
         viewModel.opacity.observe(viewLifecycleOwner) { opacity ->
             binding.opacitySize.text = "${opacity?.toInt() ?: 0}"

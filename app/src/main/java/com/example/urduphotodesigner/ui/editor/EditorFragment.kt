@@ -18,6 +18,7 @@ import android.view.WindowManager
 import android.view.animation.AnimationUtils
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.PopupMenu
 import android.widget.RadioButton
 import android.widget.SeekBar
 import android.widget.Toast
@@ -40,6 +41,7 @@ import com.example.urduphotodesigner.common.utils.Converter.cmToPx
 import com.example.urduphotodesigner.common.utils.Converter.inchesToPx
 import com.example.urduphotodesigner.common.canvas.CanvasManager
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
+import com.example.urduphotodesigner.common.canvas.enums.BlendType
 import com.example.urduphotodesigner.common.canvas.enums.ElementType
 import com.example.urduphotodesigner.common.canvas.enums.HAlign
 import com.example.urduphotodesigner.common.canvas.enums.MultiAlignMode
@@ -47,9 +49,11 @@ import com.example.urduphotodesigner.common.canvas.model.CanvasElement
 import com.example.urduphotodesigner.common.canvas.model.CanvasSize
 import com.example.urduphotodesigner.common.canvas.enums.UnitType
 import com.example.urduphotodesigner.common.canvas.enums.VAlign
+import com.example.urduphotodesigner.common.canvas.enums.displayName
 import com.example.urduphotodesigner.common.views.SizedCanvasView
 import com.example.urduphotodesigner.databinding.BottomSheetExportSettingsBinding
 import com.example.urduphotodesigner.databinding.FragmentEditorBinding
+import com.example.urduphotodesigner.ui.editor.panels.text.appearance.adapters.CustomSpinnerAdapter
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -91,6 +95,25 @@ class EditorFragment : Fragment() {
             ).show()
         }
     }
+
+    private val blendingOptions = listOf(
+        BlendType.SRC,
+        BlendType.DST,
+        BlendType.SRC_OVER,
+        BlendType.DST_OVER,
+        BlendType.SRC_IN,
+        BlendType.DST_IN,
+        BlendType.SRC_OUT,
+        BlendType.DST_OUT,
+        BlendType.SRC_ATOP,
+        BlendType.DST_ATOP,
+        BlendType.XOR,
+        BlendType.DARKEN,
+        BlendType.LIGHTEN,
+        BlendType.ADD,
+        BlendType.MULTIPLY,
+        BlendType.SCREEN
+    )
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -212,6 +235,10 @@ class EditorFragment : Fragment() {
             binding.seekBarFontSize.progress = size?.toInt() ?: 40
         }
 
+        viewModel.blendingType.observe(viewLifecycleOwner) { type ->
+            binding.blendSpinner.text = type.name
+        }
+
         viewModel.selectedElements.observe(viewLifecycleOwner) { selectedList ->
             val shouldShow = selectedList.isNotEmpty()
             val isShowing = binding.copyIcon.isVisible
@@ -222,11 +249,14 @@ class EditorFragment : Fragment() {
                     binding.copyIcon.visibility   = View.VISIBLE
                     binding.opacityIcon.visibility= View.VISIBLE
                     binding.alignmentKit.visibility= View.VISIBLE
+                    binding.blendIcon.visibility= View.VISIBLE
                     binding.seekBar.visibility    = View.GONE
+                    binding.blendSpinner.visibility    = View.GONE
 
                     val inAnim = AnimationUtils.loadAnimation(requireActivity(), R.anim.slide_up_2)
                     binding.copyIcon.startAnimation(inAnim)
                     binding.opacityIcon.startAnimation(inAnim)
+                    binding.blendIcon.startAnimation(inAnim)
                     for (element in selectedList){
                         if (element.type == ElementType.TEXT){
                             binding.fontSizeIcon.visibility = View.VISIBLE
@@ -241,6 +271,7 @@ class EditorFragment : Fragment() {
                     binding.copyIcon.startAnimation(outAnim)
                     binding.opacityIcon.startAnimation(outAnim)
                     binding.fontSizeIcon.startAnimation(outAnim)
+                    binding.blendIcon.startAnimation(outAnim)
                     binding.alignmentKit.startAnimation(
                         AnimationUtils.loadAnimation(requireActivity(), R.anim.slide_out)
                     )
@@ -250,17 +281,17 @@ class EditorFragment : Fragment() {
                     binding.opacityValue.visibility   = View.GONE
                     binding.fontSizeIcon.visibility   = View.GONE
                     binding.copyIcon.visibility   = View.GONE
+                    binding.blendIcon.visibility= View.GONE
+                    binding.blendSpinner.visibility= View.GONE
                     binding.opacityIcon.visibility= View.GONE
                     binding.alignmentKit.visibility= View.GONE
                     binding.seekBar.visibility    = View.GONE
                 }
             }
         }
-
     }
 
     private fun setEvents() {
-
         binding.back.setOnClickListener { findNavController().navigateUp() }
 
         val widthPx = when (currentUnit) {
@@ -349,6 +380,10 @@ class EditorFragment : Fragment() {
             togglePanel(showOpacityPanel = false)
         }
 
+        binding.blendIcon.setOnClickListener {
+            toggleBlendPanel()
+        }
+
         binding.artBoard.setOnClickListener {
             if (currentMode != MultiAlignMode.CANVAS) {
                 currentMode = MultiAlignMode.CANVAS
@@ -360,6 +395,19 @@ class EditorFragment : Fragment() {
                 currentMode = MultiAlignMode.SELECTION
                 updateModeDrawables()
             }
+        }
+
+        binding.blendSpinner.setOnClickListener {
+            val popupMenu = PopupMenu(requireActivity(), binding.blendSpinner)
+            blendingOptions.forEachIndexed { index, blendType ->
+                popupMenu.menu.add(0, index, index, blendType.displayName())
+            }
+            popupMenu.setOnMenuItemClickListener { menuItem ->
+                val selectedBlendType = blendingOptions[menuItem.itemId]
+                viewModel.setBlendingType(selectedBlendType)
+                true
+            }
+            popupMenu.show()
         }
 
         binding.leftAlign.setOnClickListener  {
@@ -398,7 +446,7 @@ class EditorFragment : Fragment() {
                 override fun onProgressChanged(sb: SeekBar, progress: Int, fromUser: Boolean) {
                     if (fromUser){
                         binding.fontSize.text = "$progress"
-                        viewModel.setTextSize(progress.toFloat())
+                        viewModel.setTextSizeForAllSelected(progress.toFloat())
                     }
                 }
                 override fun onStartTrackingTouch(sb: SeekBar) {}
@@ -408,7 +456,7 @@ class EditorFragment : Fragment() {
 
 
         binding.copyIcon.setOnClickListener {
-            viewModel.copySelectedElement()
+            viewModel.copySelectedElementsGroup()
         }
 
         binding.done.setOnClickListener {
@@ -416,33 +464,47 @@ class EditorFragment : Fragment() {
         }
     }
 
+    private fun toggleBlendPanel() {
+        val isCurrentlyVisible = binding.blendSpinner.isVisible
+        if (isCurrentlyVisible) {
+            // hide blend panel
+            binding.blendSpinner.isVisible = false
+        } else {
+            // show blendSpinner, hide other panels
+            binding.blendSpinner.isVisible = true
+            binding.seekBar.isVisible = false
+            binding.opacityValue.isVisible = false
+            binding.seekBarFontSize.isVisible = false
+            binding.fontSize.isVisible = false
+        }
+    }
+
     private fun togglePanel(showOpacityPanel: Boolean) {
         if (showOpacityPanel) {
             val isCurrentlyVisible = binding.seekBar.isVisible
             if (isCurrentlyVisible) {
-                // hide opacity panel
                 binding.seekBar.isVisible = false
                 binding.opacityValue.isVisible = false
             } else {
-                // show opacity, hide font-size
                 binding.seekBar.isVisible = true
                 binding.opacityValue.isVisible = true
-                binding.seekBarFontSize.isVisible = false
+                // hide other panels
                 binding.seekBarFontSize.isVisible = false
                 binding.fontSize.isVisible = false
+                binding.blendSpinner.isVisible = false
             }
         } else {
             val isCurrentlyVisible = binding.seekBarFontSize.isVisible
             if (isCurrentlyVisible) {
-                // hide font-size panel
                 binding.seekBarFontSize.isVisible = false
                 binding.fontSize.isVisible = false
             } else {
-                // show font-size, hide opacity
                 binding.seekBarFontSize.isVisible = true
                 binding.fontSize.isVisible = true
+                // hide other panels
                 binding.seekBar.isVisible = false
                 binding.opacityValue.isVisible = false
+                binding.blendSpinner.isVisible = false
             }
         }
     }

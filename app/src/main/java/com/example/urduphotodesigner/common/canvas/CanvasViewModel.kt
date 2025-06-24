@@ -386,6 +386,52 @@ class CanvasViewModel @Inject constructor(
         applyChangesToSelectedTextElements()
     }
 
+    fun setTextSizeForAllSelected(size: Float) {
+        val currentList = _canvasElements.value ?: return
+        val selectedElements = currentList.filter { it.isSelected }
+
+        // If there are no selected elements, do nothing.
+        if (selectedElements.isEmpty()) return
+
+        // Prepare to store old sizes for undo/redo purposes
+        val oldSizes = selectedElements.map { it.paintTextSize }
+
+        // Update the font size for each selected element
+        val updatedList = currentList.map { element ->
+            if (element.isSelected && element.type == ElementType.TEXT) {
+                element.copy().apply {
+                    // Apply new font size
+                    paintTextSize = size
+                    paint.textSize = size
+                    paint.typeface = applyTypefaceFromFontList() // Reapply the typeface if needed
+                }
+            } else {
+                element
+            }
+        }
+
+        // Update the canvas with the new list of elements
+        _canvasElements.value = updatedList
+
+        // Push the undo action for all updated elements
+        selectedElements.forEachIndexed { idx, oldElement ->
+            val newElement = updatedList.find { it.id == oldElement.id }!!
+            _canvasActions.push(
+                CanvasAction.UpdateElement(
+                    elementId = newElement.id,
+                    newElement = newElement.copy(context = null, bitmap = null),
+                    oldElement = oldElement.copy(paintTextSize = oldSizes[idx]) // Revert back to old size on undo
+                )
+            )
+        }
+
+        // Clear redo stack after applying changes
+        _redoStack.clear()
+
+        // Notify UI to update undo/redo status
+        notifyUndoRedoChanged()
+    }
+
     private fun applyChangesToSelectedTextElements() {
         val currentList = _canvasElements.value?.toMutableList() ?: return
 
@@ -449,33 +495,48 @@ class CanvasViewModel @Inject constructor(
         _canvasElements.value = updatedList
     }
 
-    fun copySelectedElement() {
-        val selectedElement = getSelectedElement()
+    /**
+     * Copies all currently selected elements as a group, offset by a fixed delta.
+     */
+    fun copySelectedElementsGroup() {
+        val currentList = _canvasElements.value ?: return
+        val selected = currentList.filter { it.isSelected }
+        if (selected.isEmpty()) return
 
-        // Check if an element is selected
-        if (selectedElement != null) {
-            // Create a copy of the selected element
-            val copiedElement = selectedElement.copy(
-                id = UUID.randomUUID().toString(),
+        // Compute a group offset. For simplicity, offset all copies by +20f in x and y.
+        val offsetX = 20f
+        val offsetY = 20f
+
+        // Prepare list of copied elements
+        val copiedElements = selected.map { element ->
+            val newId = UUID.randomUUID().toString()
+            val copied = element.copy(
+                id = newId,
+                // Deselect copies by default:
                 isSelected = false,
-                x = selectedElement.x + 20f,
-                y = selectedElement.y + 20f
+                // Offset position:
+                x = element.x + offsetX,
+                y = element.y + offsetY
             )
-            copiedElement.paint.typeface = copiedElement.applyTypefaceFromFontList()
-            // Add the copied element to the list
-            _canvasElements.value = _canvasElements.value?.plus(copiedElement)
-
-            // Optionally push the action to the undo stack
-            if (copiedElement.type == ElementType.TEXT){
-                _canvasActions.push(CanvasAction.AddText(copiedElement.text, copiedElement))
-            }else{
-                _canvasActions.push(CanvasAction.AddSticker(copiedElement))
-            }
-            _redoStack.clear()
-
-            // Notify observers
-            notifyUndoRedoChanged()
+            // Re-apply paint/typeface if needed:
+            copied.paint.typeface = copied.applyTypefaceFromFontList()
+            copied
         }
+
+        // Add all copies to the canvas
+        _canvasElements.value = currentList + copiedElements
+
+        // Push undo actions: you can push individually, or if you have a grouped action type, push once.
+        // Here, pushing individually:
+        copiedElements.forEach { copied ->
+            if (copied.type == ElementType.TEXT) {
+                _canvasActions.push(CanvasAction.AddText(copied.text, copied))
+            } else {
+                _canvasActions.push(CanvasAction.AddSticker(copied))
+            }
+        }
+        _redoStack.clear()
+        notifyUndoRedoChanged()
     }
 
     fun setCanvasSize(newSize: CanvasSize) {
@@ -1209,6 +1270,100 @@ class CanvasViewModel @Inject constructor(
             _isExplicitChange = false
             notifyUndoRedoChanged()
         }
+    }
+
+    /**
+     * Toggle lock status on all selected elements.
+     * If all selected are locked, this unlocks them; otherwise locks all.
+     */
+    fun toggleLockOnSelected() {
+        val currentList = _canvasElements.value ?: return
+        // Filter currently selected elements
+        val selected = currentList.filter { it.isSelected }
+        if (selected.isEmpty()) return
+
+        // Determine target: if all locked, then unlock; else lock all
+        val allLocked = selected.all { it.isLocked }
+        val newLockState = !allLocked
+
+        // Prepare old copies for undo
+        val oldCopies = selected.map { it.copy(context = null, bitmap = null) }
+
+        // Build updated list
+        val updatedList = currentList.map { element ->
+            if (element.isSelected) {
+                element.copy(isLocked = newLockState).apply {
+                    if (type == ElementType.TEXT) {
+                        paint.typeface = element.applyTypefaceFromFontList()
+                    }
+                }
+            } else element
+        }
+
+        // Update LiveData
+        _canvasElements.value = updatedList
+        refreshSelectedElements()
+
+        // Push undo actions for each element changed
+        selected.forEachIndexed { idx, oldElem ->
+            val newElem = updatedList.find { it.id == oldElem.id }!!
+            _canvasActions.push(
+                CanvasAction.UpdateElement(
+                    elementId = newElem.id,
+                    newElement = newElem.copy(context = null, bitmap = null),
+                    oldElement = oldCopies[idx]
+                )
+            )
+        }
+        _redoStack.clear()
+        notifyUndoRedoChanged()
+    }
+
+    /**
+     * Toggle visibility (opacity) on all selected elements.
+     * If all selected are hidden (opacity == 0), sets them to fully visible (255); otherwise hides all.
+     */
+    fun toggleVisibilityOnSelected() {
+        val currentList = _canvasElements.value ?: return
+        val selected = currentList.filter { it.isSelected }
+        if (selected.isEmpty()) return
+
+        // Determine if all currently hidden
+        val allHidden = selected.all { it.paintAlpha == 0 }
+        val newOpacity = if (allHidden) 255 else 0
+        // Prepare old copies for undo
+        val oldCopies = selected.map { it.copy(context = null, bitmap = null) }
+
+        // Build updated list
+        val updatedList = currentList.map { element ->
+            if (element.isSelected) {
+                // update paintAlpha and also paint.alpha if needed in rendering logic
+                element.copy(paintAlpha = newOpacity).apply {
+                    if (type == ElementType.TEXT) {
+                        paint.typeface = element.applyTypefaceFromFontList()
+                    }
+                }
+            } else element
+        }
+
+        // Update LiveData
+        _canvasElements.value = updatedList
+        _opacity.value = newOpacity
+        refreshSelectedElements()
+
+        // Push undo actions for each element changed
+        selected.forEachIndexed { idx, oldElem ->
+            val newElem = updatedList.find { it.id == oldElem.id }!!
+            _canvasActions.push(
+                CanvasAction.UpdateElement(
+                    elementId = newElem.id,
+                    newElement = newElem.copy(context = null, bitmap = null),
+                    oldElement = oldCopies[idx]
+                )
+            )
+        }
+        _redoStack.clear()
+        notifyUndoRedoChanged()
     }
 
     fun removeSelectedElements() {

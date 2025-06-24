@@ -77,4 +77,24 @@
     <string name="align_to_selection">Align to Selection</string>
     <string name="layer_name">Layer name</string>
     <string name="properties">Properties</string>
+    <string name="blending">Blending</string>
+    <string name="lock">Lock</string>
+    <string name="unlock">Unlock</string>
+    <string name="lock_all">Lock All</string>
+    <string name="unlock_all">Unlock All</string>
+    <string name="visibility">Visibility</string>
+    <string name="hide">Hide</string>
+    <string name="show">Show</string>
+    <string name="hide_all">Hide All</string>
+    <string name="show_all">Show All</string>
+    <string name="delete">Delete</string>
+    <string name="confirm_delete">Confirm Delete</string>
+    <string name="delete_n_layers">Delete %1$d layers?</string>
+    <string name="selected_n_layers">%1$d selected</string>
+    <string name="choose_blend_mode">Choose Blend Mode</string>
+    <string name="layer_more_options">More options</string>
+    <string name="drag_to_rearrange">Drag to Rearrange</string>
+    <string name="copy">Copy</string>
+    <string name="blend">Blend</string>
+
 </resources>
