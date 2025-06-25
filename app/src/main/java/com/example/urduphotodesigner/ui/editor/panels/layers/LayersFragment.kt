@@ -57,7 +57,7 @@ class LayersFragment : Fragment() {
         val selected = viewModel.selectedElements.value ?: emptyList()
         if (selected.size>1) {
             enterSelectionMode()
-        } else {
+        }else {
             binding.toolbarLayers.title = getString(R.string.layers)
             binding.toolbarLayers.subtitle = getString(R.string.drag_to_rearrange)
         }
@@ -157,11 +157,26 @@ class LayersFragment : Fragment() {
         }
 
         // Observe selectedElements to update UI (e.g., enable/disable toolbar icons if you have a separate toolbar)
-        lifecycleScope.launch {
-            viewModel.selectedElements.observe(viewLifecycleOwner) { selectedList ->
-                if (isAdded){
-                    updateSelectionToolbar()
+        viewModel.selectedElements.observe(viewLifecycleOwner) { selectedList ->
+            if (!isAdded) return@observe
+
+            when {
+                selectedList.isEmpty() && inSelectionMode -> {
+                    // No more selections: exit selection mode
+                    exitSelectionMode()
                 }
+                selectedList.isNotEmpty() -> {
+                    if (!inSelectionMode && selectedList.size > 1) {
+                        // Enter selection mode only when more than one (or your desired threshold)
+                        enterSelectionMode()
+                    }
+                    if (inSelectionMode) {
+                        // Update toolbar/menu state accordingly
+                        updateSelectionToolbar()
+                    }
+                    // If you want single-selection behavior (e.g., treat one as normal click), adjust here
+                }
+                // else: selectedList empty & not inSelectionMode: nothing to do
             }
         }
     }
@@ -170,59 +185,55 @@ class LayersFragment : Fragment() {
         inSelectionMode = true
         adapter.setSelectionMode(true)
         val count = viewModel.selectedElements.value?.size ?: 0
-        if (count>1){
-            binding.toolbarLayers.title = getString(R.string.selected_n_layers, count)
-            binding.toolbarLayers.subtitle = ""  // or null
-            binding.toolbarLayers.menu.clear()
-            binding.toolbarLayers.inflateMenu(R.menu.menu_layers_action_mode)
-            binding.toolbarLayers.setNavigationIcon(R.drawable.ic_close)
-            binding.toolbarLayers.setNavigationOnClickListener {
-                exitSelectionMode()
-            }
-            binding.toolbarLayers.setOnMenuItemClickListener { item ->
-                // replicate onActionItemClicked logic:
-                when (item.itemId) {
-                    R.id.action_lock_toggle_all -> {
-                        viewModel.toggleLockOnSelected()
-                        updateSelectionToolbar()
-                        true
-                    }
-
-                    R.id.action_visibility_toggle_all -> {
-                        viewModel.toggleVisibilityOnSelected()
-                        updateSelectionToolbar()
-                        true
-                    }
-
-                    R.id.action_delete_all -> {
-                        AlertDialog.Builder(requireContext())
-                            .setTitle(R.string.confirm_delete)
-                            .setMessage(
-                                getString(
-                                    R.string.delete_n_layers,
-                                    viewModel.selectedElements.value?.size ?: 0
-                                )
-                            )
-                            .setPositiveButton(android.R.string.ok) { _, _ ->
-                                viewModel.removeSelectedElements()
-                                exitSelectionMode()
-                            }
-                            .setNegativeButton(android.R.string.cancel, null)
-                            .show()
-                        true
-                    }
-
-                    else -> false
+        binding.toolbarLayers.title = getString(R.string.selected_n_layers, count)
+        binding.toolbarLayers.subtitle = ""  // or null
+        binding.toolbarLayers.menu.clear()
+        binding.toolbarLayers.inflateMenu(R.menu.menu_layers_action_mode)
+        binding.toolbarLayers.setNavigationIcon(R.drawable.ic_close)
+        binding.toolbarLayers.setNavigationOnClickListener {
+            exitSelectionMode()
+        }
+        binding.toolbarLayers.setOnMenuItemClickListener { item ->
+            // replicate onActionItemClicked logic:
+            when (item.itemId) {
+                R.id.action_lock_toggle_all -> {
+                    viewModel.toggleLockOnSelected()
+                    updateSelectionToolbar()
+                    true
                 }
+
+                R.id.action_visibility_toggle_all -> {
+                    viewModel.toggleVisibilityOnSelected()
+                    updateSelectionToolbar()
+                    true
+                }
+
+                R.id.action_delete_all -> {
+                    AlertDialog.Builder(requireContext())
+                        .setTitle(R.string.confirm_delete)
+                        .setMessage(
+                            getString(
+                                R.string.delete_n_layers,
+                                viewModel.selectedElements.value?.size ?: 0
+                            )
+                        )
+                        .setPositiveButton(android.R.string.ok) { _, _ ->
+                            viewModel.removeSelectedElements()
+                            exitSelectionMode()
+                        }
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .show()
+                    true
+                }
+
+                else -> false
             }
         }
     }
 
     private fun updateSelectionToolbar() {
         val count = viewModel.selectedElements.value?.size ?: 0
-        if (count>1){
-            binding.toolbarLayers.title = getString(R.string.selected_n_layers, count)
-        }
+        binding.toolbarLayers.title = getString(R.string.selected_n_layers, count)
         // Update lock icon/title
         val menu = binding.toolbarLayers.menu
         val lockItem = menu.findItem(R.id.action_lock_toggle_all)
@@ -241,8 +252,8 @@ class LayersFragment : Fragment() {
         val visItem = menu.findItem(R.id.action_visibility_toggle_all)
         if (visItem != null) {
             val selected = viewModel.selectedElements.value ?: emptyList()
-            val allHidden = selected.isNotEmpty() && selected.all { it.paintAlpha == 0 }
-            val allVisible = selected.isNotEmpty() && selected.all { it.paintAlpha == 255 }
+            val allHidden = selected.isNotEmpty() && selected.all { it.isVisible }
+            val allVisible = selected.isNotEmpty() && selected.all { !it.isVisible }
             when {
                 allHidden -> {
                     visItem.icon =
@@ -337,8 +348,8 @@ class LayersFragment : Fragment() {
         // Visibility toggle
         val visItem = menu.findItem(R.id.action_visibility_toggle_all)
         if (selected.isNotEmpty()) {
-            val allHidden = selected.all { it.paintAlpha == 0 }
-            val allVisible = selected.all { it.paintAlpha == 255 }
+            val allHidden = selected.all { it.isVisible }
+            val allVisible = selected.all { !it.isVisible }
             when {
                 allHidden -> {
                     visItem.title = getString(R.string.show_all)
@@ -361,15 +372,6 @@ class LayersFragment : Fragment() {
         }
     }
 
-    private fun updateActionModeTitleOrFinish() {
-        val count = viewModel.selectedElements.value?.size ?: 0
-        if (count == 0) {
-            actionMode?.finish()
-        } else {
-            updateActionModeTitle()
-        }
-    }
-
     // Show per-item popup menu anchored at the overflow icon
     private fun showItemPopupMenu(element: CanvasElement, anchorView: View) {
         val popup = PopupMenu(requireContext(), anchorView)
@@ -377,12 +379,12 @@ class LayersFragment : Fragment() {
 
         val visibilityItem = popup.menu.findItem(R.id.action_visibility_toggle)
         visibilityItem.title =
-            if (element.paintAlpha == 255) getString(R.string.hide) else getString(R.string.show)
+            if (isVisible) getString(R.string.hide) else getString(R.string.show)
 
         popup.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.action_visibility_toggle -> {
-                    viewModel.toggleVisibilityOnSelected()
+                    viewModel.toggleVisibility(element)
                     true
                 }
 

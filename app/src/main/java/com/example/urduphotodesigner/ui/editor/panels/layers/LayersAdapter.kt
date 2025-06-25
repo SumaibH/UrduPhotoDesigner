@@ -1,5 +1,6 @@
 package com.example.urduphotodesigner.ui.editor.panels.layers
 
+import android.annotation.SuppressLint
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
@@ -63,6 +64,7 @@ class LayersAdapter(
         private val binding: LayoutLayersItemBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
+        @SuppressLint("ClickableViewAccessibility")
         fun bind(element: CanvasElement) {
             binding.apply {
                 // Title: for TEXT use element.text, for IMAGE show "Sticker" or another label

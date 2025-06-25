@@ -82,7 +82,9 @@ data class CanvasElement(
     var originalTypeface: Typeface? = null,
     var hasBlur: Boolean = false,
     var blurValue: Float = 0f,
-    var blendType: BlendType = BlendType.SRC_OVER
+    var blendType: BlendType = BlendType.SRC_OVER,
+
+    var isVisible: Boolean = true
 ) : Serializable {
 
     @Transient
@@ -141,8 +143,8 @@ data class CanvasElement(
 
         return mapOf(
             "delete" to PointF(iconOffsetX, -iconOffsetY),
-            "rotate" to PointF(iconOffsetX, iconOffsetY),
-            "resize" to PointF(-iconOffsetX, iconOffsetY),
+            "resize" to PointF(iconOffsetX, iconOffsetY),
+            "rotate" to PointF(-iconOffsetX, iconOffsetY),
             "edit" to PointF(-iconOffsetX, -iconOffsetY)
         )
     }

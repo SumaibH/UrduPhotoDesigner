@@ -22,6 +22,8 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.text.TextPaint
 import android.util.AttributeSet
+import android.util.Log
+import android.util.Size
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
@@ -43,14 +45,15 @@ import com.example.urduphotodesigner.common.canvas.enums.TextDecoration
 import com.example.urduphotodesigner.common.canvas.enums.VAlign
 import com.example.urduphotodesigner.common.canvas.model.CanvasElement
 import com.example.urduphotodesigner.common.canvas.model.ExportOptions
+import com.example.urduphotodesigner.common.canvas.model.ExportResolution
 import com.example.urduphotodesigner.common.canvas.sealed.ImageFilter
 import com.example.urduphotodesigner.data.model.FontEntity
-import java.util.Locale
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.hypot
 import kotlin.math.max
+import kotlin.math.roundToInt
 
 class SizedCanvasView @JvmOverloads constructor(
     context: Context,
@@ -62,7 +65,8 @@ class SizedCanvasView @JvmOverloads constructor(
     var onElementRemoved: ((CanvasElement) -> Unit)? = null,
     var onElementSelected: ((List<CanvasElement>) -> Unit)? = null,
     var onStartBatchUpdate: ((String, String) -> Unit)? = null,
-    var onEndBatchUpdate: ((String) -> Unit)? = null
+    var onEndBatchUpdate: ((String) -> Unit)? = null,
+    var onColorPicked: ((Int) -> Unit)? = null
 ) : View(context, attrs) {
 
     private val backgroundPaint = Paint().apply {
@@ -72,8 +76,16 @@ class SizedCanvasView @JvmOverloads constructor(
 
     private var gestureDetector: GestureDetector
 
-    // Smaller icon size
-    private var desiredIconScreenSizePx = 36f // Changed from 48f to make icons smaller
+    private var isColorPickerMode = false
+    private var pickerX = 0f
+    private var pickerY = 0f
+    private var isDraggingPicker = false
+    private val pickerIcon: Bitmap by lazy {
+        drawableToBitmap(AppCompatResources.getDrawable(context, R.drawable.ic_color_picker))
+    }
+    private val desiredPickerIconSizePx = 64f
+
+    private var desiredIconScreenSizePx = 36f
     private var iconTouched: String? = null
 
     private var backgroundGradient: LinearGradient? = null
@@ -84,15 +96,13 @@ class SizedCanvasView @JvmOverloads constructor(
     private var touchStartY = 0f
     private var currentMode: Mode = Mode.NONE
 
-    // Store initial rotations for group rotation and single element rotation
     private var initialElementRotations = mutableMapOf<String, Float>()
 
-    // Store initial positions of elements relative to the group's pivot at ACTION_DOWN
     private var initialElementPositionsRelativeToGroupPivot =
         mutableMapOf<String, Pair<Float, Float>>()
-    private var initialAngle = 0f // For rotation calculation
-    private var initialGroupPivotX = 0f // Store the group's pivot X at ACTION_DOWN
-    private var initialGroupPivotY = 0f // Store the group's pivot Y at ACTION_DOWN
+    private var initialAngle = 0f
+    private var initialGroupPivotX = 0f
+    private var initialGroupPivotY = 0f
 
     private var initialPinchDistance = 0f
     private var initialPinchAngle = 0f
@@ -117,8 +127,8 @@ class SizedCanvasView @JvmOverloads constructor(
 
     private var showVerticalGuide = false
     private var showHorizontalGuide = false
-    private var showRotationVerticalGuide = false // New guide for 0/180 degree rotation
-    private var showRotationHorizontalGuide = false // New guide for 90/270 degree rotation
+    private var showRotationVerticalGuide = false
+    private var showRotationHorizontalGuide = false
 
 
     private val removeIcon: Bitmap by lazy {
@@ -134,11 +144,9 @@ class SizedCanvasView @JvmOverloads constructor(
         drawableToBitmap(AppCompatResources.getDrawable(context, R.drawable.ic_edit_text))
     }
 
-    // This list will contain references to elements from canvasElements that are currently selected.
-    // We update the 'isSelected' boolean on the CanvasElement directly.
     private var selectedElements: CopyOnWriteArrayList<CanvasElement> = CopyOnWriteArrayList()
     private var lastTouchedElement: CanvasElement? =
-        null // Keep track of the element that initiated the touch
+        null
 
     private fun drawableToBitmap(drawable: Drawable?): Bitmap {
         if (drawable == null) {
@@ -157,11 +165,31 @@ class SizedCanvasView @JvmOverloads constructor(
         return bmp
     }
 
+    fun enableColorPicker() {
+        isColorPickerMode = true
+        // Margin in logical coords so icon stays fully inside:
+        val margin = (desiredPickerIconSizePx / 2f) / scale
+        // Ensure canvasWidth/Height are correct and > 0
+        val usableW = (canvasWidth - 2*margin).coerceAtLeast(0f)
+        val usableH = (canvasHeight - 2*margin).coerceAtLeast(0f)
+        // Place at random within [margin .. canvasWidth-margin]:
+        pickerX = margin + Math.random().toFloat() * usableW
+        pickerY = margin + Math.random().toFloat() * usableH
+        Log.d("Picker", "Picker enabled at logical=($pickerX,$pickerY)")
+        invalidate()
+    }
+
+    fun disableColorPicker() {
+        isColorPickerMode = false
+        isDraggingPicker = false
+        invalidate()
+    }
+
     /**
      * Call this for your horizontal buttons:
      *  – if one element: snaps to canvas LEFT/CENTER/RIGHT
      *  – if many:
-     *     • CANVAS: treat group as block and snap its LEFT/CENTER/RIGHT to the artboard
+     *     • CANVAS: treat group as block and snap its LEFT/CENTER/RIGHT to the art board
      *     • SELECTION: snap each element’s own LEFT/CENTER/RIGHT to the first element
      */
     fun alignHorizontal(
@@ -172,7 +200,6 @@ class SizedCanvasView @JvmOverloads constructor(
             selectedElements.isEmpty() -> return
 
             selectedElements.size == 1 -> {
-                // single-select → canvas behavior
                 val elem = selectedElements.first()
                 val halfW = elem.getLocalContentWidth() * elem.scale / 2f
                 val rawX = when (align) {
@@ -185,7 +212,6 @@ class SizedCanvasView @JvmOverloads constructor(
             }
 
             mode == MultiAlignMode.CANVAS -> {
-                // group-to-canvas: move the whole group block
                 val edges = selectedElements.map { e ->
                     val half = e.getLocalContentWidth() * e.scale / 2f
                     e.x - half to e.x + half
@@ -205,15 +231,13 @@ class SizedCanvasView @JvmOverloads constructor(
                 }
             }
 
-            else /* mode == MultiAlignMode.SELECTION */ -> {
-                // each-to-first, but leave the first element unchanged
+            else  -> {
                 val first = selectedElements.first()
                 val firstHalf = first.getLocalContentWidth() * first.scale / 2f
                 val firstLeft = first.x - firstHalf
                 val firstCenter = first.x
                 val firstRight = first.x + firstHalf
 
-                // Align other elements relative to first
                 selectedElements.drop(1).forEach { e ->
                     val half = e.getLocalContentWidth() * e.scale / 2f
                     e.x = when (align) {
@@ -225,13 +249,9 @@ class SizedCanvasView @JvmOverloads constructor(
                 }
             }
         }
-
         invalidate()
     }
 
-    /**
-     * Exactly the same, but for vertical TOP/MIDDLE/BOTTOM.
-     */
     fun alignVertical(
         align: VAlign,
         mode: MultiAlignMode = MultiAlignMode.CANVAS
@@ -240,7 +260,6 @@ class SizedCanvasView @JvmOverloads constructor(
             selectedElements.isEmpty() -> return
 
             selectedElements.size == 1 -> {
-                // single-select → canvas behavior
                 val elem = selectedElements.first()
                 val halfH = elem.getLocalContentHeight() * elem.scale / 2f
                 val rawY = when (align) {
@@ -253,7 +272,6 @@ class SizedCanvasView @JvmOverloads constructor(
             }
 
             mode == MultiAlignMode.CANVAS -> {
-                // group-to-canvas: move the whole group block
                 val edges = selectedElements.map { e ->
                     val half = e.getLocalContentHeight() * e.scale / 2f
                     e.y - half to e.y + half
@@ -273,15 +291,13 @@ class SizedCanvasView @JvmOverloads constructor(
                 }
             }
 
-            else /* mode == MultiAlignMode.SELECTION */ -> {
-                // each-to-first, but leave the first element unchanged
+            else -> {
                 val first = selectedElements.first()
                 val firstHalf = first.getLocalContentHeight() * first.scale / 2f
                 val firstTop = first.y - firstHalf
                 val firstCenter = first.y
                 val firstBottom = first.y + firstHalf
 
-                // Align other elements relative to first
                 selectedElements.drop(1).forEach { e ->
                     val half = e.getLocalContentHeight() * e.scale / 2f
                     e.y = when (align) {
@@ -293,7 +309,6 @@ class SizedCanvasView @JvmOverloads constructor(
                 }
             }
         }
-
         invalidate()
     }
 
@@ -357,149 +372,7 @@ class SizedCanvasView @JvmOverloads constructor(
         return RectF(minX, minY, maxX, maxY)
     }
 
-    fun setLineSpacing(multiplier: Float) {
-        selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
-            element.lineSpacing = multiplier
-            element.updatePaintProperties()  // Ensure paint is updated after spacing change
-            onElementChanged?.invoke(element)  // Notify listeners of the change
-        }
-        invalidate()  // Redraw the canvas
-    }
-
-    // Set letter spacing for selected text elements
-    fun setLetterSpacing(spacing: Float) {
-        selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
-            element.letterSpacing = spacing
-            element.updatePaintProperties()  // Ensure paint is updated after spacing change
-            onElementChanged?.invoke(element)  // Notify listeners of the change
-        }
-        invalidate()  // Redraw the canvas
-    }
-
-    // Set letter casing for selected text elements
-    fun setLetterCasing(casing: LetterCasing) {
-        selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
-            element.letterCasing = casing
-            // Apply the appropriate letter casing
-            element.text = when (casing) {
-                LetterCasing.ALL_CAPS -> element.text.uppercase()
-                LetterCasing.LOWER_CASE -> element.text.lowercase()
-                LetterCasing.TITLE_CASE -> element.text.split(" ").joinToString(" ") {
-                    it.capitalize(
-                        Locale.ROOT
-                    )
-                }
-
-                else -> element.text
-            }
-            onElementChanged?.invoke(element)  // Notify listeners of the change
-        }
-        invalidate()  // Redraw the canvas
-    }
-
-    fun setTextDecoration(decorations: Set<TextDecoration>) {
-        selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
-            element.textDecoration = decorations
-            element.updatePaintProperties()
-            onElementChanged?.invoke(element)
-        }
-        invalidate()
-    }
-
-    // Set text alignment for selected text elements
-    fun setTextAlignment(alignment: TextAlignment) {
-        selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
-            element.alignment = alignment
-            element.updatePaintProperties()  // Ensure paint is updated after alignment change
-            onElementChanged?.invoke(element)  // Notify listeners of the change
-        }
-        invalidate()  // Redraw the canvas
-    }
-
-    // Set list style (bulleted or numbered) for selected text elements
-    fun setListStyle(style: ListStyle) {
-        selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
-            element.listStyle = style
-            onElementChanged?.invoke(element)  // Notify listeners of the change
-        }
-        invalidate()  // Redraw the canvas
-    }
-
-    fun clearCanvas() {
-        canvasElements.clear()
-        selectedElements.clear()
-        backgroundPaint.color = Color.WHITE // Or your default background color
-        backgroundGradient = null
-        backgroundImage = null
-        invalidate()
-    }
-
-    fun setTextBorder(enabled: Boolean, color: Int = Color.BLACK, width: Float = 2f) {
-        selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
-            element.hasStroke = enabled
-            element.strokeColor = color
-            element.strokeWidth = width
-            element.updatePaintProperties()
-            onElementChanged?.invoke(element)
-        }
-        invalidate()
-    }
-
-    fun removeTextBorder() = setTextBorder(false)
-
-    fun setTextShadow(enabled: Boolean, color: Int = Color.GRAY, dx: Float = 1f, dy: Float = 1f) {
-        selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
-            element.hasShadow = enabled
-            element.shadowColor = color
-            element.shadowDx = dx
-            element.shadowDy = dy
-            element.updatePaintProperties()
-            onElementChanged?.invoke(element)
-        }
-        invalidate()
-    }
-
-    fun removeTextShadow() = setTextShadow(false)
-
-    fun setTextLabel(
-        enabled: Boolean,
-        color: Int = Color.YELLOW,
-        shape: LabelShape = LabelShape.RECTANGLE_FILL
-    ) {
-        selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
-            element.hasLabel = enabled
-            element.labelColor = color
-            element.labelShape = shape
-            // If label rendering is in your onDraw, call invalidate
-            onElementChanged?.invoke(element)
-        }
-        invalidate()
-    }
-
-    fun removeTextLabel() = setTextLabel(false)
-
-    fun addText(text: String, context: Context) {
-        val element = CanvasElement(
-            context = context,
-            type = ElementType.TEXT,
-            text = text,
-            x = canvasWidth / 2f,
-            y = canvasHeight / 2f
-        ).apply {
-            // Assign a new zIndex (top of stack)
-            zIndex = (canvasElements.maxByOrNull { it.zIndex }?.zIndex ?: 0) + 1
-        }
-        // Deselect all existing elements before adding and selecting the new one
-        canvasElements.forEach { it.isSelected = false }
-        selectedElements.clear() // Clear internal selected list as well
-        element.isSelected = true // Select the new element
-        canvasElements.add(element)
-        selectedElements.add(element) // Add to internal selected list
-        onElementSelected?.invoke(selectedElements) // Notify ViewModel of the new single selection
-        invalidate()
-    }
-
-    fun removeSelectedElement() {
+    private fun removeSelectedElement() {
         // Remove all selected elements
         val elementsToRemove =
             selectedElements.toList() // Create a copy to avoid concurrent modification
@@ -551,33 +424,9 @@ class SizedCanvasView @JvmOverloads constructor(
         invalidate()
     }
 
-    fun setTextColor(color: Int) {
-        selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
-            element.paint.color = color
-            onElementChanged?.invoke(element)
-        }
-        invalidate()
-    }
-
-    fun setTextSize(size: Float) {
-        selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
-            element.paint.textSize = size
-            onElementChanged?.invoke(element)
-        }
-        invalidate()
-    }
-
     fun setOpacity(opacity: Int) {
         selectedElements.forEach { element ->
             element.paint.alpha = opacity
-            onElementChanged?.invoke(element)
-        }
-        invalidate()
-    }
-
-    fun updateText(text: String) {
-        selectedElements.firstOrNull { it.type == ElementType.TEXT }?.let { element ->
-            element.text = text
             onElementChanged?.invoke(element)
         }
         invalidate()
@@ -631,260 +480,157 @@ class SizedCanvasView @JvmOverloads constructor(
         invalidate()
     }
 
-    /** Apply a horizontal fill gradient across the text bounds */
-    fun setTextFillGradient(colors: IntArray, positions: FloatArray? = null) {
-        selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
-            element.fillGradientColors = colors
-            element.fillGradientPositions = positions
-            onElementChanged?.invoke(element)
-        }
-        invalidate()
-    }
-
-    /** Apply a horizontal stroke gradient across the text bounds */
-    fun setTextStrokeGradient(colors: IntArray, positions: FloatArray? = null) {
-        selectedElements.filter { it.type == ElementType.TEXT }.forEach { element ->
-            element.strokeGradientColors = colors
-            element.strokeGradientPositions = positions
-            onElementChanged?.invoke(element)
-        }
-        invalidate()
-    }
-
-    fun addSticker(bitmap: Bitmap, context: Context) {
-        val canvasCenterX = canvasWidth / 2f
-        val canvasCenterY = canvasHeight / 2f
-
-        val widthRatio = canvasWidth.toFloat() / bitmap.width
-        val heightRatio = canvasHeight.toFloat() / bitmap.height
-        val minScale = minOf(1f, widthRatio, heightRatio)
-
-        val element = CanvasElement(
-            context = context,
-            type = ElementType.IMAGE,
-            bitmap = bitmap,
-            x = canvasCenterX,
-            y = canvasCenterY,
-            scale = minScale
-        )
-        element.zIndex = (canvasElements.maxByOrNull { it.zIndex }?.zIndex ?: 0) + 1
-        // Deselect all existing elements before adding and selecting the new one
-        canvasElements.forEach { it.isSelected = false }
-        selectedElements.clear() // Clear internal selected list as well
-        element.isSelected = true // Select the new element
-        canvasElements.add(element)
-        selectedElements.add(element) // Add to internal selected list
-        onElementSelected?.invoke(selectedElements) // Notify ViewModel of the new single selection
-        invalidate()
-    }
-
     /**
      * Exports the current canvas content to a Bitmap with specified resolution and quality.
      * @param options The export options including resolution, quality, and format.
      * @return A Bitmap representing the exported canvas.
      */
     fun exportCanvasToBitmap(options: ExportOptions): Bitmap {
-        val outputWidth: Int
-        val outputHeight: Int
-        if (options.resolution.width == 0 && options.resolution.height == 0) {
-            outputWidth = width
-            outputHeight = height
-        } else {
-            outputWidth = options.resolution.width
-            outputHeight = options.resolution.height
-        }
+        // 1) Determine logical dimensions:
+        val logicalW = if (options.resolution.width > 0) options.resolution.width else canvasWidth
+        val logicalH = if (options.resolution.height > 0) options.resolution.height else canvasHeight
+        // 2) Determine scaleFactor from ExportResolution:
+        val scaleFactor = options.resolution.scaleFactor.takeIf { it > 0f } ?: 1f
+        // 3) Compute output pixel dimensions:
+        val outW = (logicalW * scaleFactor).roundToInt().coerceAtLeast(1)
+        val outH = (logicalH * scaleFactor).roundToInt().coerceAtLeast(1)
 
-        val outputBitmap = createBitmap(outputWidth, outputHeight, Bitmap.Config.ARGB_8888)
+        // 4) Create bitmap & canvas:
+        val outputBitmap = createBitmap(outW, outH)
         val outputCanvas = Canvas(outputBitmap)
 
-        // Draw background
-        outputCanvas.drawRect(
-            0f,
-            0f,
-            outputWidth.toFloat(),
-            outputHeight.toFloat(),
-            backgroundPaint
-        )
+        // OPTIONAL: fill background with transparent or white before drawing:
+        // outputCanvas.drawColor(Color.TRANSPARENT) or Color.WHITE
 
-        // Draw background gradient if exists
-        backgroundGradient?.let {
-            val gradientMatrix = Matrix()
-            // Scale gradient to fill the output canvas dimensions
-            gradientMatrix.setScale(
-                outputWidth.toFloat() / canvasWidth,
-                outputHeight.toFloat() / canvasHeight
-            )
-            it.setLocalMatrix(gradientMatrix)
-            outputCanvas.drawRect(
-                0f,
-                0f,
-                outputWidth.toFloat(),
-                outputHeight.toFloat(),
-                Paint().apply { shader = it })
+        // 5) Compute global scale to map logical units → pixels:
+        val scaleX = outW.toFloat() / logicalW
+        val scaleY = outH.toFloat() / logicalH
+
+        // 6) Apply global scale:
+        outputCanvas.save()
+        outputCanvas.scale(scaleX, scaleY)
+
+        // 7) Draw background & content in logical space:
+        drawBackgroundOnCanvas(outputCanvas)
+        drawCanvasContent(outputCanvas)
+
+        outputCanvas.restore()
+        return outputBitmap
+    }
+
+    private fun drawBackgroundOnCanvas(canvas: Canvas) {
+        if (backgroundImage != null) {
+            // backgroundImage is already sized to canvasWidth x canvasHeight in setCanvasBackgroundImage
+            canvas.drawBitmap(backgroundImage!!, 0f, 0f, null)
+        } else if (backgroundGradient != null) {
+            val gradientPaint = Paint().apply { shader = backgroundGradient }
+            canvas.drawRect(0f, 0f, canvasWidth.toFloat(), canvasHeight.toFloat(), gradientPaint)
+        } else {
+            canvas.drawRect(0f, 0f, canvasWidth.toFloat(), canvasHeight.toFloat(), backgroundPaint)
         }
+    }
 
-        // Draw background image if exists
-        backgroundImage?.let {
-            val imagePaint = Paint(Paint.ANTI_ALIAS_FLAG)
-            val srcRect = Rect(0, 0, it.width, it.height)
-            val destRect = Rect(0, 0, outputWidth, outputHeight)
-            outputCanvas.drawBitmap(it, srcRect, destRect, imagePaint)
-        }
-
-        // Calculate scaling factor for elements
-        val scaleFactorX = outputWidth.toFloat() / canvasWidth
-        val scaleFactorY = outputHeight.toFloat() / canvasHeight
-
-        // Draw elements to the output canvas
+    private fun drawCanvasContent(canvas: Canvas) {
         canvasElements.sortedBy { it.zIndex }.forEach { element ->
-            val elementMatrix = Matrix()
-            // Translate to element's scaled position
-            elementMatrix.postTranslate(element.x * scaleFactorX, element.y * scaleFactorY)
-            // Apply element's rotation
-            elementMatrix.postRotate(element.rotation)
-            // Apply element's scale (combined with canvas scale)
-            elementMatrix.postScale(element.scale * scaleFactorX, element.scale * scaleFactorY)
+            if (!element.isVisible) return@forEach
+            canvas.save()
+            // translate to element center
+            canvas.translate(element.x, element.y)
+            // rotate around center
+            canvas.rotate(element.rotation)
+            // scale by element.scale
+            canvas.scale(element.scale, element.scale)
 
-
-            outputCanvas.withMatrix(elementMatrix) {
-                val elementPaint = Paint(element.paint) // Create a copy of the element's paint
-
-                // Apply filter to the elementPaint if it's an image
-                if (element.type == ElementType.IMAGE && element.bitmap != null) {
-                    elementPaint.colorFilter = when (element.imageFilter) {
-                        ImageFilter.Grayscale -> ColorMatrixColorFilter(ColorMatrix().apply {
-                            setSaturation(0f)
-                        })
-
-                        ImageFilter.Sepia -> ColorMatrixColorFilter(ColorMatrix().apply {
-                            set(
-                                floatArrayOf(
-                                    0.393f, 0.769f, 0.189f, 0f, 0f,
-                                    0.349f, 0.686f, 0.168f, 0f, 0f,
-                                    0.272f, 0.534f, 0.131f, 0f, 0f,
-                                    0f, 0f, 0f, 1f, 0f
-                                )
-                            )
-                        })
-
-                        ImageFilter.Invert -> ColorMatrixColorFilter(ColorMatrix().apply {
-                            set(
-                                floatArrayOf(
-                                    -1f, 0f, 0f, 0f, 255f,
-                                    0f, -1f, 0f, 0f, 255f,
-                                    0f, 0f, -1f, 0f, 255f,
-                                    0f, 0f, 0f, 1f, 0f
-                                )
-                            )
-                        })
-
-                        ImageFilter.CoolTint -> ColorMatrixColorFilter(ColorMatrix().apply {
-                            set(
-                                floatArrayOf(
-                                    1.1f, 0f, 0f, 0f, -20f,  // Red decrease
-                                    0f, 1f, 0f, 0f, 0f,      // Green
-                                    0f, 0f, 1.3f, 0f, 20f,   // Blue boost
-                                    0f, 0f, 0f, 1f, 0f
-                                )
-                            )
-                        })
-
-                        ImageFilter.WarmTint -> ColorMatrixColorFilter(ColorMatrix().apply {
-                            set(
-                                floatArrayOf(
-                                    1.3f, 0f, 0f, 0f, 30f,   // Red boost
-                                    0f, 1f, 0f, 0f, 0f,      // Green
-                                    0f, 0f, 0.8f, 0f, -20f,  // Blue reduce
-                                    0f, 0f, 0f, 1f, 0f
-                                )
-                            )
-                        })
-
-                        ImageFilter.Vintage -> ColorMatrixColorFilter(ColorMatrix().apply {
-                            set(
-                                floatArrayOf(
-                                    0.9f, 0.3f, 0.1f, 0f, 5f,
-                                    0.2f, 0.8f, 0.2f, 0f, 5f,
-                                    0.1f, 0.2f, 0.7f, 0f, -10f,
-                                    0f, 0f, 0f, 1f, 0f
-                                )
-                            )
-                        })
-
-                        ImageFilter.Film -> ColorMatrixColorFilter(ColorMatrix().apply {
-                            // High red + green, faded blue for a film-like tone
-                            set(
-                                floatArrayOf(
-                                    1.2f, 0.1f, 0.1f, 0f, 15f,
-                                    0.1f, 1.2f, 0.1f, 0f, 10f,
-                                    0.1f, 0.1f, 0.9f, 0f, -10f,
-                                    0f, 0f, 0f, 1f, 0f
-                                )
-                            )
-                        })
-
-                        ImageFilter.TealOrange -> ColorMatrixColorFilter(ColorMatrix().apply {
-                            // Teal shadows, orange highlights – a Hollywood-style grade
-                            set(
-                                floatArrayOf(
-                                    1.2f, 0f, 0f, 0f, 20f,
-                                    0f, 1.0f, 0f, 0f, 0f,
-                                    0f, 0f, 0.8f, 0f, -10f,
-                                    0f, 0f, 0f, 1f, 0f
-                                )
-                            )
-                        })
-
-                        ImageFilter.HighContrast -> ColorMatrixColorFilter(ColorMatrix().apply {
-                            set(
-                                floatArrayOf(
-                                    1.5f, 0f, 0f, 0f, -50f,
-                                    0f, 1.5f, 0f, 0f, -50f,
-                                    0f, 0f, 1.5f, 0f, -50f,
-                                    0f, 0f, 0f, 1f, 0f
-                                )
-                            )
-                        })
-
-                        ImageFilter.BlackWhite -> ColorMatrixColorFilter(ColorMatrix().apply {
-                            setSaturation(0f)
-                            val contrast = ColorMatrix().apply {
-                                set(
-                                    floatArrayOf(
-                                        1.4f, 0f, 0f, 0f, -50f,
-                                        0f, 1.4f, 0f, 0f, -50f,
-                                        0f, 0f, 1.4f, 0f, -50f,
-                                        0f, 0f, 0f, 1f, 0f
-                                    )
-                                )
-                            }
-                            postConcat(contrast)
-                        })
-
-                        else -> null
-                    }
-                }
-
-                when (element.type) {
-                    ElementType.TEXT -> {
-                        // Adjust text size based on export scale
-                        elementPaint.textSize = element.paintTextSize * scaleFactorX
-                        // Text is drawn centered around its (x,y)
-                        drawText(element.text, 0f, 0f, elementPaint)
-                    }
-
-                    ElementType.IMAGE -> {
-                        element.bitmap?.let {
-                            drawBitmap(it, -it.width / 2f, -it.height / 2f, elementPaint)
+            if (element.type == ElementType.TEXT) {
+                drawTextElement(canvas, element)
+            } else if (element.type == ElementType.IMAGE) {
+                // apply colorFilter as in onDraw
+                element.paint.colorFilter = when (element.imageFilter) {
+                    ImageFilter.Grayscale -> ColorMatrixColorFilter(ColorMatrix().apply { setSaturation(0f) })
+                    ImageFilter.Sepia -> ColorMatrixColorFilter(ColorMatrix().apply {
+                        set(floatArrayOf(
+                            0.393f, 0.769f, 0.189f, 0f, 0f,
+                            0.349f, 0.686f, 0.168f, 0f, 0f,
+                            0.272f, 0.534f, 0.131f, 0f, 0f,
+                            0f, 0f, 0f, 1f, 0f
+                        ))
+                    })
+                    ImageFilter.Invert -> ColorMatrixColorFilter(ColorMatrix().apply {
+                        set(floatArrayOf(
+                            -1f, 0f, 0f, 0f, 255f,
+                            0f, -1f, 0f, 0f, 255f,
+                            0f, 0f, -1f, 0f, 255f,
+                            0f, 0f, 0f, 1f, 0f
+                        ))
+                    })
+                    ImageFilter.CoolTint -> ColorMatrixColorFilter(ColorMatrix().apply {
+                        set(floatArrayOf(
+                            1.1f, 0f, 0f, 0f, -20f,
+                            0f, 1f, 0f, 0f, 0f,
+                            0f, 0f, 1.3f, 0f, 20f,
+                            0f, 0f, 0f, 1f, 0f
+                        ))
+                    })
+                    ImageFilter.WarmTint -> ColorMatrixColorFilter(ColorMatrix().apply {
+                        set(floatArrayOf(
+                            1.3f, 0f, 0f, 0f, 30f,
+                            0f, 1f, 0f, 0f, 0f,
+                            0f, 0f, 0.8f, 0f, -20f,
+                            0f, 0f, 0f, 1f, 0f
+                        ))
+                    })
+                    ImageFilter.Vintage -> ColorMatrixColorFilter(ColorMatrix().apply {
+                        set(floatArrayOf(
+                            0.9f, 0.3f, 0.1f, 0f, 5f,
+                            0.2f, 0.8f, 0.2f, 0f, 5f,
+                            0.1f, 0.2f, 0.7f, 0f, -10f,
+                            0f, 0f, 0f, 1f, 0f
+                        ))
+                    })
+                    ImageFilter.Film -> ColorMatrixColorFilter(ColorMatrix().apply {
+                        set(floatArrayOf(
+                            1.2f, 0.1f, 0.1f, 0f, 15f,
+                            0.1f, 1.2f, 0.1f, 0f, 10f,
+                            0.1f, 0.1f, 0.9f, 0f, -10f,
+                            0f, 0f, 0f, 1f, 0f
+                        ))
+                    })
+                    ImageFilter.TealOrange -> ColorMatrixColorFilter(ColorMatrix().apply {
+                        set(floatArrayOf(
+                            1.2f, 0f, 0f, 0f, 20f,
+                            0f, 1f, 0f, 0f, 0f,
+                            0f, 0f, 0.8f, 0f, -10f,
+                            0f, 0f, 0f, 1f, 0f
+                        ))
+                    })
+                    ImageFilter.HighContrast -> ColorMatrixColorFilter(ColorMatrix().apply {
+                        set(floatArrayOf(
+                            1.5f, 0f, 0f, 0f, -50f,
+                            0f, 1.5f, 0f, 0f, -50f,
+                            0f, 0f, 1.5f, 0f, -50f,
+                            0f, 0f, 0f, 1f, 0f
+                        ))
+                    })
+                    ImageFilter.BlackWhite -> ColorMatrixColorFilter(ColorMatrix().apply {
+                        setSaturation(0f)
+                        val contrast = ColorMatrix().apply {
+                            set(floatArrayOf(
+                                1.4f, 0f, 0f, 0f, -50f,
+                                0f, 1.4f, 0f, 0f, -50f,
+                                0f, 0f, 1.4f, 0f, -50f,
+                                0f, 0f, 0f, 1f, 0f
+                            ))
                         }
-                    }
-
-                    else -> { /* Handle other element types if necessary */
-                    }
+                        postConcat(contrast)
+                    })
+                    else -> null
+                }
+                element.bitmap?.let { bmp ->
+                    canvas.drawBitmap(bmp, -bmp.width / 2f, -bmp.height / 2f, element.paint)
                 }
             }
+            canvas.restore()
         }
-        return outputBitmap
     }
 
     private fun checkAlignment(element: CanvasElement) {
@@ -990,8 +736,30 @@ class SizedCanvasView @JvmOverloads constructor(
                 )
             }
 
+            if (isColorPickerMode) {
+                // compute screen position and draw icon
+                val iconSize = desiredPickerIconSizePx
+                val halfIcon = iconSize / 2f
+                val screenCx = offsetX + pickerX * scale
+                val screenCy = offsetY + pickerY * scale
+                Log.d("SizedCanvasView", "Drawing picker at screen=($screenCx,$screenCy), viewSize=(${width}x${height})")
+
+                val dst = RectF(
+                    screenCx - halfIcon,
+                    screenCy - halfIcon,
+                    screenCx + halfIcon,
+                    screenCy + halfIcon
+                )
+                val paint = Paint().apply {
+                    style = Paint.Style.FILL
+                    color = Color.MAGENTA
+                }
+                canvas.drawBitmap(pickerIcon, null, dst, paint)
+            }
+
             // Draw all elements
             canvasElements.sortedBy { it.zIndex }.forEach { element ->
+                if (!element.isVisible) return@forEach
                 canvas.withTranslation(element.x, element.y) {
                     canvas.rotate(element.rotation)
                     canvas.scale(element.scale, element.scale)
@@ -1265,7 +1033,7 @@ class SizedCanvasView @JvmOverloads constructor(
 
                 LabelShape.CIRCLE_FILL -> {
                     labelPaint.style = Paint.Style.FILL
-                    val radius = Math.min(labelRect.width(), labelRect.height()) / 2f
+                    val radius = labelRect.width().coerceAtMost(labelRect.height()) / 2f
                     val centerX = labelRect.centerX()
                     val centerY = labelRect.centerY()
                     canvas.drawCircle(centerX, centerY, radius, labelPaint)
@@ -1274,7 +1042,7 @@ class SizedCanvasView @JvmOverloads constructor(
                 LabelShape.CIRCLE_STROKE -> {
                     labelPaint.style = Paint.Style.STROKE
                     labelPaint.strokeWidth = 4f // Adjust stroke width as needed
-                    val radius = Math.min(labelRect.width(), labelRect.height()) / 2f
+                    val radius = labelRect.width().coerceAtMost(labelRect.height()) / 2f
                     val centerX = labelRect.centerX()
                     val centerY = labelRect.centerY()
                     canvas.drawCircle(centerX, centerY, radius, labelPaint)
@@ -1299,12 +1067,6 @@ class SizedCanvasView @JvmOverloads constructor(
                         20f,
                         labelPaint
                     ) // Adjust corner radius as needed
-                }
-
-                else -> {
-                    // Default to drawing a rectangle if no shape matches
-                    labelPaint.style = Paint.Style.FILL
-                    canvas.drawRect(labelRect, labelPaint)
                 }
             }
         }
@@ -1572,6 +1334,56 @@ class SizedCanvasView @JvmOverloads constructor(
         gestureDetector.onTouchEvent(event)
         val x = (event.x - offsetX) / scale
         val y = (event.y - offsetY) / scale
+
+        if (isColorPickerMode) {
+
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    // Always start dragging: compute logical coords and set picker there
+                    val canvasX = (x - offsetX) / scale
+                    val canvasY = (y - offsetY) / scale
+                    val margin = (desiredPickerIconSizePx / 2f) / scale
+                    pickerX = canvasX.coerceIn(margin, canvasWidth - margin)
+                    pickerY = canvasY.coerceIn(margin, canvasHeight - margin)
+                    isDraggingPicker = true
+                    Log.d("Picker", "Started dragging from DOWN at logical=($pickerX,$pickerY)")
+                    invalidate()
+                    return true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    if (isDraggingPicker) {
+                        val canvasX = (x - offsetX) / scale
+                        val canvasY = (y - offsetY) / scale
+                        val margin = (desiredPickerIconSizePx / 2f) / scale
+                        pickerX = canvasX.coerceIn(margin, canvasWidth - margin)
+                        pickerY = canvasY.coerceIn(margin, canvasHeight - margin)
+                        Log.d("Picker", "Dragging MOVE to logical=($pickerX,$pickerY)")
+                        invalidate()
+                    }
+                    return true
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    if (isDraggingPicker) {
+                        Log.d("Picker", "Released at logical=($pickerX,$pickerY)")
+                        // pick color as before...
+                        val options = ExportOptions(
+                            resolution = ExportResolution("picker", canvasWidth, canvasHeight, 1f),
+                            quality = 100,
+                            format = Bitmap.CompressFormat.PNG
+                        )
+                        val bmp = exportCanvasToBitmap(options)
+                        val px = pickerX.roundToInt().coerceIn(0, bmp.width - 1)
+                        val py = pickerY.roundToInt().coerceIn(0, bmp.height - 1)
+                        val color = bmp.getPixel(px, py)
+                        onColorPicked?.invoke(color)
+                        isDraggingPicker = false
+                        invalidate()
+                    }
+                    return true
+                }
+                else -> return true
+            }
+        }
 
         when (event.actionMasked) {
 

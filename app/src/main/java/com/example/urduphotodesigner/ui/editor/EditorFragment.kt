@@ -49,11 +49,10 @@ import com.example.urduphotodesigner.common.canvas.model.CanvasElement
 import com.example.urduphotodesigner.common.canvas.model.CanvasSize
 import com.example.urduphotodesigner.common.canvas.enums.UnitType
 import com.example.urduphotodesigner.common.canvas.enums.VAlign
-import com.example.urduphotodesigner.common.canvas.enums.displayName
+import com.example.urduphotodesigner.common.utils.displayName
 import com.example.urduphotodesigner.common.views.SizedCanvasView
 import com.example.urduphotodesigner.databinding.BottomSheetExportSettingsBinding
 import com.example.urduphotodesigner.databinding.FragmentEditorBinding
-import com.example.urduphotodesigner.ui.editor.panels.text.appearance.adapters.CustomSpinnerAdapter
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -363,6 +362,9 @@ class EditorFragment : Fragment() {
             },
             onStartBatchUpdate = { elementId, actionType ->
                 viewModel.startBatchUpdate(elementId, actionType)
+            }, onColorPicked = { colorInt ->
+                val hex = String.format("#%06X", 0xFFFFFF and colorInt)
+                Toast.makeText(context, "Picked color: $hex", Toast.LENGTH_SHORT).show()
             }
         ).apply {
             binding.canvasContainer.addView(this)
@@ -374,10 +376,12 @@ class EditorFragment : Fragment() {
         binding.redo.setOnClickListener { viewModel.redo() }
 
         binding.opacityIcon.setOnClickListener {
-            togglePanel(showOpacityPanel = true)
+            sizedCanvasView.disableColorPicker()
+//            togglePanel(showOpacityPanel = true)
         }
         binding.fontSizeIcon.setOnClickListener {
-            togglePanel(showOpacityPanel = false)
+            sizedCanvasView.enableColorPicker()
+//            togglePanel(showOpacityPanel = false)
         }
 
         binding.blendIcon.setOnClickListener {
