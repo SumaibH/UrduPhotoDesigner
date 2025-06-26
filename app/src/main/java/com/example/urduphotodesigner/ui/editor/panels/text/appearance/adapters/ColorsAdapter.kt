@@ -10,106 +10,103 @@ import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.canvas.model.ColorItem
 import com.example.urduphotodesigner.databinding.LayoutColorItemBinding
 import com.example.urduphotodesigner.databinding.LayoutColorPickerItemBinding // Assuming you create this layout
+import com.example.urduphotodesigner.databinding.LayoutEyeDropperItemBinding // New layout for eye dropper
 
 class ColorsAdapter(
     private val colorList: List<ColorItem>,
     private val onColorSelected: (ColorItem) -> Unit,
     private val onNoneSelected: () -> Unit,
-    private val onColorPickerClicked: () -> Unit // New callback for color picker
-) : RecyclerView.Adapter<RecyclerView.ViewHolder>() { // Change base class to RecyclerView.ViewHolder
+    private val onColorPickerClicked: () -> Unit,
+    private val onEyeDropperClicked: () -> Unit
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     // Define view types
-    private val VIEW_TYPE_COLOR_PICKER = 0
-    private val VIEW_TYPE_COLOR_ITEM = 1
-    private val VIEW_TYPE_NONE = 2
+    private val VIEW_TYPE_EYEDROPPER    = 0
+    private val VIEW_TYPE_NONE          = 1
+    private val VIEW_TYPE_COLOR_PICKER  = 2
+    private val VIEW_TYPE_COLOR_ITEM    = 3
 
     var selectedColor: Int = Color.BLACK
         set(value) {
             if (field != value) {
-                val oldSelectedPosition = colorList.indexOfFirst { it.colorCode.toColorInt() == field }
-                val newSelectedPosition = colorList.indexOfFirst { it.colorCode.toColorInt() == value }
-
+                val oldPos = colorList.indexOfFirst { it.colorCode.toColorInt() == field }
+                val newPos = colorList.indexOfFirst { it.colorCode.toColorInt() == value }
                 field = value
-
-                if (oldSelectedPosition != -1) {
-                    notifyItemChanged(oldSelectedPosition + 2)
-                }
-                if (newSelectedPosition != -1 && newSelectedPosition != oldSelectedPosition) {
-                    notifyItemChanged(newSelectedPosition + 2)
-                }
+                if (oldPos != -1) notifyItemChanged(oldPos + 4)
+                if (newPos != -1) notifyItemChanged(newPos + 4)
             }
         }
 
-    inner class ColorViewHolder(val binding: LayoutColorItemBinding) :
-        RecyclerView.ViewHolder(binding.root) {
+    inner class EyeDropperViewHolder(val binding: LayoutEyeDropperItemBinding) : RecyclerView.ViewHolder(binding.root) {
+        init {
+            binding.root.setOnClickListener { onEyeDropperClicked.invoke() }
+        }
+    }
+
+    inner class NoneViewHolder(val binding: LayoutColorPickerItemBinding) : RecyclerView.ViewHolder(binding.root) {
+        init {
+            binding.colorView.setImageResource(R.drawable.ic_none)
+            binding.root.setOnClickListener { onNoneSelected.invoke() }
+        }
+    }
+
+    inner class ColorPickerViewHolder(val binding: LayoutColorPickerItemBinding) : RecyclerView.ViewHolder(binding.root) {
+        init {
+            binding.root.setOnClickListener { onColorPickerClicked.invoke() }
+        }
+    }
+
+    inner class ColorViewHolder(val binding: LayoutColorItemBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(colorItem: ColorItem) {
             binding.colorView.setBackgroundColor(colorItem.colorCode.toColorInt())
-
-            val isCurrentItemSelected = colorItem.colorCode.toColorInt() == selectedColor
-
-            if (isCurrentItemSelected) {
+            val isSelected = colorItem.colorCode.toColorInt() == selectedColor
+            if (isSelected) {
                 binding.root.strokeWidth = 4
                 binding.root.setCardBackgroundColor(Color.WHITE)
-                binding.root.strokeColor =
-                    ContextCompat.getColor(binding.root.context, R.color.appColor)
+                binding.root.strokeColor = ContextCompat.getColor(binding.root.context, R.color.appColor)
             } else {
                 binding.root.strokeWidth = 0
                 binding.root.setCardBackgroundColor(Color.WHITE)
             }
-
-            binding.root.setOnClickListener {
-                onColorSelected.invoke(colorItem)
-            }
-        }
-    }
-
-    inner class ColorPickerViewHolder(val binding: LayoutColorPickerItemBinding) :
-        RecyclerView.ViewHolder(binding.root) {
-        init {
-            binding.root.setOnClickListener {
-                onColorPickerClicked.invoke()
-            }
-        }
-    }
-
-    inner class NoneViewHolder(val binding: LayoutColorPickerItemBinding) :
-        RecyclerView.ViewHolder(binding.root) {
-        init {
-            binding.colorView.setImageResource(R.drawable.ic_none)
-            binding.root.setOnClickListener {
-                onNoneSelected.invoke()
-            }
+            binding.root.setOnClickListener { onColorSelected.invoke(colorItem) }
         }
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (position == 0) VIEW_TYPE_NONE else if (position==1) VIEW_TYPE_COLOR_PICKER else VIEW_TYPE_COLOR_ITEM
-    }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        return if (viewType == VIEW_TYPE_COLOR_PICKER) {
-            val binding = LayoutColorPickerItemBinding.inflate(
-                LayoutInflater.from(parent.context),
-                parent,
-                false
-            )
-            ColorPickerViewHolder(binding)
-        } else if (viewType == VIEW_TYPE_NONE){
-            val binding =
-                LayoutColorPickerItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-            NoneViewHolder(binding)
-        }else {
-            val binding =
-                LayoutColorItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-            ColorViewHolder(binding)
+        return when (position) {
+            0 -> VIEW_TYPE_EYEDROPPER
+            1 -> VIEW_TYPE_NONE
+            2 -> VIEW_TYPE_COLOR_PICKER
+            else -> VIEW_TYPE_COLOR_ITEM
         }
     }
 
-    override fun getItemCount() = colorList.size + 2
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return when (viewType) {
+            VIEW_TYPE_EYEDROPPER -> {
+                val binding = LayoutEyeDropperItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+                EyeDropperViewHolder(binding)
+            }
+            VIEW_TYPE_NONE -> {
+                val binding = LayoutColorPickerItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+                NoneViewHolder(binding)
+            }
+            VIEW_TYPE_COLOR_PICKER -> {
+                val binding = LayoutColorPickerItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+                ColorPickerViewHolder(binding)
+            }
+            else -> {
+                val binding = LayoutColorItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+                ColorViewHolder(binding)
+            }
+        }
+    }
+
+    override fun getItemCount(): Int = colorList.size + 3
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        if (holder.itemViewType == VIEW_TYPE_COLOR_ITEM) {
-            (holder as ColorViewHolder).bind(colorList[position - 2])
+        if (holder is ColorViewHolder) {
+            holder.bind(colorList[position - 3])
         }
     }
 }

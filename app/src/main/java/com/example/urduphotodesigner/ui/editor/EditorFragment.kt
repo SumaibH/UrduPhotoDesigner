@@ -238,6 +238,14 @@ class EditorFragment : Fragment() {
             binding.blendSpinner.text = type.name
         }
 
+        viewModel.activePicker.observe(viewLifecycleOwner) { slot ->
+            if (slot != null) {
+                sizedCanvasView.enableColorPicker()
+            } else {
+                sizedCanvasView.disableColorPicker()
+            }
+        }
+
         viewModel.selectedElements.observe(viewLifecycleOwner) { selectedList ->
             val shouldShow = selectedList.isNotEmpty()
             val isShowing = binding.copyIcon.isVisible
@@ -362,9 +370,10 @@ class EditorFragment : Fragment() {
             },
             onStartBatchUpdate = { elementId, actionType ->
                 viewModel.startBatchUpdate(elementId, actionType)
-            }, onColorPicked = { colorInt ->
-                val hex = String.format("#%06X", 0xFFFFFF and colorInt)
-                Toast.makeText(context, "Picked color: $hex", Toast.LENGTH_SHORT).show()
+            },
+            onColorPicked = { colorInt ->
+                val opaque = (colorInt and 0x00FFFFFF) or (0xFF shl 24)
+                viewModel.finishPicking(opaque)
             }
         ).apply {
             binding.canvasContainer.addView(this)
@@ -376,12 +385,10 @@ class EditorFragment : Fragment() {
         binding.redo.setOnClickListener { viewModel.redo() }
 
         binding.opacityIcon.setOnClickListener {
-            sizedCanvasView.disableColorPicker()
-//            togglePanel(showOpacityPanel = true)
+            togglePanel(showOpacityPanel = true)
         }
         binding.fontSizeIcon.setOnClickListener {
-            sizedCanvasView.enableColorPicker()
-//            togglePanel(showOpacityPanel = false)
+            togglePanel(showOpacityPanel = false)
         }
 
         binding.blendIcon.setOnClickListener {

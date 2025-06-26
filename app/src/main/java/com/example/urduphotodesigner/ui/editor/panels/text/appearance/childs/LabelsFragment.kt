@@ -12,6 +12,7 @@ import androidx.fragment.app.activityViewModels
 import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.common.canvas.enums.LabelShape
+import com.example.urduphotodesigner.common.canvas.enums.PickerTarget
 import com.example.urduphotodesigner.common.utils.Constants
 import com.example.urduphotodesigner.data.model.ShapeItem
 import com.example.urduphotodesigner.databinding.FragmentLabelsBinding
@@ -75,9 +76,11 @@ class LabelsFragment : Fragment() {
                 android.R.color.transparent,
                 viewModel.labelShape.value!!
             )
-        }) {
+        },{
             openColorPickerDialog()
-        }
+        },{
+            viewModel.startPicking(PickerTarget.LABEL)
+        })
 
         binding.colors.apply {
             adapter = colorsAdapter
@@ -134,6 +137,11 @@ class LabelsFragment : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
+    }
+
+    override fun onPause() {
+        super.onPause()
+        viewModel.stopPicking()
     }
 
     companion object {

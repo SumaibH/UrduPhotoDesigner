@@ -12,6 +12,7 @@ import androidx.fragment.app.activityViewModels
 import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.utils.Constants
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
+import com.example.urduphotodesigner.common.canvas.enums.PickerTarget
 import com.example.urduphotodesigner.databinding.FragmentFillStrokeBinding
 import com.example.urduphotodesigner.ui.editor.panels.text.appearance.adapters.ColorsAdapter
 import com.flask.colorpicker.ColorPickerView
@@ -44,10 +45,11 @@ class ColorsListFragment : Fragment() {
             viewModel.setCanvasBackgroundColor(color.colorCode.toColorInt())
         },{
             viewModel.setCanvasBackgroundColor(android.R.color.transparent)
-        }) {
-            // This is the lambda for when the color picker is clicked
+        },{
             openColorPickerDialog()
-        }
+        },{
+            viewModel.startPicking(PickerTarget.BACKGROUND)
+        })
         binding.colors.apply {
             adapter = colorsAdapter
         }
@@ -79,6 +81,11 @@ class ColorsListFragment : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
+    }
+
+    override fun onPause() {
+        super.onPause()
+        viewModel.stopPicking()
     }
 
     companion object {

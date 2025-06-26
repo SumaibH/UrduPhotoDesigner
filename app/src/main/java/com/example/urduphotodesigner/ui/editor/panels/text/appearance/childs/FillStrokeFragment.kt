@@ -14,6 +14,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
+import com.example.urduphotodesigner.common.canvas.enums.PickerTarget
 import com.example.urduphotodesigner.common.utils.Constants
 import com.example.urduphotodesigner.databinding.FragmentFillStrokeBinding
 import com.example.urduphotodesigner.ui.editor.panels.background.gradients.GradientsAdapter
@@ -77,9 +78,15 @@ class FillStrokeFragment : Fragment() {
                 }
                 else -> viewModel.setTextColor(android.R.color.transparent)
             }
-        }) {
+        },{
             openColorPickerDialog()
-        }
+        },{
+            if (currentTab?.lowercase() == "stroke") {
+                viewModel.startPicking(PickerTarget.TEXT_STROKE)
+            }else{
+                viewModel.startPicking(PickerTarget.TEXT_FILL)
+            }
+        })
 
         gradientsAdapter = GradientsAdapter(
             gradientList = Constants.gradientList,
@@ -126,7 +133,7 @@ class FillStrokeFragment : Fragment() {
 
     private fun initObservers(){
         viewModel.currentTextSize.observe(viewLifecycleOwner) { size ->
-            if (currentTab?.lowercase() == "text") {
+            if (currentTab?.lowercase() == "fill") {
                 binding.fontSize.text = "${size?.toInt() ?: 40}"
                 binding.font.progress = size?.toInt() ?: 40
             }
@@ -317,6 +324,11 @@ class FillStrokeFragment : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
+    }
+
+    override fun onPause() {
+        super.onPause()
+        viewModel.stopPicking()
     }
 
     companion object {

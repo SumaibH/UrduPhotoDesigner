@@ -17,6 +17,7 @@ import com.example.urduphotodesigner.common.canvas.enums.ElementType
 import com.example.urduphotodesigner.common.canvas.enums.LabelShape
 import com.example.urduphotodesigner.common.canvas.enums.LetterCasing
 import com.example.urduphotodesigner.common.canvas.enums.ListStyle
+import com.example.urduphotodesigner.common.canvas.enums.PickerTarget
 import com.example.urduphotodesigner.common.canvas.enums.TextAlignment
 import com.example.urduphotodesigner.common.canvas.enums.TextDecoration
 import com.example.urduphotodesigner.common.canvas.model.CanvasElement
@@ -54,6 +55,9 @@ class CanvasViewModel @Inject constructor(
 
     private val _exportOptions = MutableLiveData<ExportOptions>()
     val exportOptions: LiveData<ExportOptions> = _exportOptions
+
+    private val _activePicker = MutableLiveData<PickerTarget?>(null)
+    val activePicker: LiveData<PickerTarget?> = _activePicker
 
     private val _localFonts = MutableStateFlow<List<FontEntity>>(emptyList())
     private val localFonts: StateFlow<List<FontEntity>> = _localFonts.asStateFlow()
@@ -282,6 +286,26 @@ class CanvasViewModel @Inject constructor(
                     }
                 }
             }
+        }
+    }
+
+    fun startPicking(slot: PickerTarget) {
+        _activePicker.value = slot
+    }
+
+    fun stopPicking() {
+        _activePicker.value = null
+    }
+
+    /** Call this when the CanvasView fires “I just picked this color: 0xAARRGGBB” */
+    fun finishPicking(color: Int) {
+        when (_activePicker.value) {
+            PickerTarget.BACKGROUND  -> setCanvasBackgroundColor(color)
+            PickerTarget.TEXT_FILL   -> setTextColor(color)
+            PickerTarget.TEXT_STROKE -> setTextBorder(true, color, _borderWidth.value!!)
+            PickerTarget.SHADOW      -> setTextShadow(true, color, _shadowDx.value!!, _shadowDy.value!!)
+            PickerTarget.LABEL       -> setTextLabel(true, color, _labelShape.value!!)
+            null                  -> { /* nothing to do */ }
         }
     }
 

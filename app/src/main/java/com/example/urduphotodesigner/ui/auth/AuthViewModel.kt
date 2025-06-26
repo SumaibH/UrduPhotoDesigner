@@ -69,7 +69,7 @@ class AuthViewModel @Inject constructor(
                 _signInState.value = SignInUiState.Success(
                     idToken = loginResponse.token,
                     email = loginResponse.user?.email,
-                    displayName = loginResponse.user?.email
+                    displayName =  loginResponse.user?.email
                 )
             } else {
                 _signInState.value = SignInUiState.Error(result.exceptionOrNull()?.localizedMessage ?: "API Login failed")

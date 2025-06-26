@@ -28,6 +28,7 @@ class MainActivity : AppCompatActivity() {
     private val navController get() = _navController!!
 
     private val mainViewModel: MainViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

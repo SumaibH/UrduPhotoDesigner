@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
+import com.example.urduphotodesigner.common.canvas.enums.PickerTarget
 import com.example.urduphotodesigner.common.utils.Constants
 import com.example.urduphotodesigner.databinding.FragmentShadowsBinding
 import com.example.urduphotodesigner.ui.editor.panels.text.appearance.adapters.ColorsAdapter
@@ -53,9 +54,11 @@ class ShadowsFragment : Fragment() {
             val dx = viewModel.shadowDx.value ?: 0f
             val dy = viewModel.shadowDy.value ?: 0f
             viewModel.setTextShadow(false, android.R.color.transparent, dx, dy)
-        }) {
+        },{
             openColorPickerDialog()
-        }
+        },{
+            viewModel.startPicking(PickerTarget.SHADOW)
+        })
 
         binding.colors.apply {
             adapter = colorsAdapter
@@ -202,6 +205,11 @@ class ShadowsFragment : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
+    }
+
+    override fun onPause() {
+        super.onPause()
+        viewModel.stopPicking()
     }
 
     companion object {
