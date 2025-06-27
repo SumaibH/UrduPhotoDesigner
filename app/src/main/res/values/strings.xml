@@ -96,5 +96,15 @@
     <string name="drag_to_rearrange">Drag to Rearrange</string>
     <string name="copy">Copy</string>
     <string name="blend">Blend</string>
+    <string name="color_picker">Color Picker</string>
 
+    <array name="hue_colors">
+        <item>#FF0000</item>  <!-- Red -->
+        <item>#FFFF00</item>  <!-- Yellow -->
+        <item>#00FF00</item>  <!-- Green -->
+        <item>#00FFFF</item>  <!-- Cyan -->
+        <item>#0000FF</item>  <!-- Blue -->
+        <item>#FF00FF</item>  <!-- Magenta -->
+        <item>#FF0000</item>  <!-- Back to Red -->
+    </array>
 </resources>

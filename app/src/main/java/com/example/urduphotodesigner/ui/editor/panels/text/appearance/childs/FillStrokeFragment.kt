@@ -12,6 +12,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.toColorInt
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.Navigation
+import androidx.navigation.fragment.findNavController
 import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.common.canvas.enums.PickerTarget
@@ -79,7 +81,12 @@ class FillStrokeFragment : Fragment() {
                 else -> viewModel.setTextColor(android.R.color.transparent)
             }
         },{
-            openColorPickerDialog()
+//            openColorPickerDialog()
+            val navController = Navigation.findNavController(
+                requireActivity(),
+                R.id.panelNavHost
+            )
+            navController.navigate(R.id.colorPickerFragment)
         },{
             if (currentTab?.lowercase() == "stroke") {
                 viewModel.startPicking(PickerTarget.TEXT_STROKE)
