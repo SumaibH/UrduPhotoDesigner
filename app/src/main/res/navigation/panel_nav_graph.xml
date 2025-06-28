@@ -37,7 +37,7 @@
         tools:layout="@layout/fragment_filters" />
     <fragment
         android:id="@+id/colorPickerFragment"
-        android:name="com.example.urduphotodesigner.ui.editor.panels.text.appearance.childs.ColorPickerFragment"
+        android:name="com.example.urduphotodesigner.ui.editor.panels.text.appearance.childs.gradient.ColorPickerFragment"
         android:label="fragment_color_picker"
         tools:layout="@layout/fragment_color_picker" />
 </navigation>

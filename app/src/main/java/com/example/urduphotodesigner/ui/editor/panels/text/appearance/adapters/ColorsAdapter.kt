@@ -28,13 +28,9 @@ class ColorsAdapter(
 
     var selectedColor: Int = Color.BLACK
         set(value) {
-            if (field != value) {
-                val oldPos = colorList.indexOfFirst { it.colorCode.toColorInt() == field }
-                val newPos = colorList.indexOfFirst { it.colorCode.toColorInt() == value }
-                field = value
-                if (oldPos != -1) notifyItemChanged(oldPos + 4)
-                if (newPos != -1) notifyItemChanged(newPos + 4)
-            }
+            field = value
+            colorList.forEach { it.isSelected = (it.colorCode.toColorInt() == value) }
+            notifyDataSetChanged()
         }
 
     inner class EyeDropperViewHolder(val binding: LayoutEyeDropperItemBinding) : RecyclerView.ViewHolder(binding.root) {

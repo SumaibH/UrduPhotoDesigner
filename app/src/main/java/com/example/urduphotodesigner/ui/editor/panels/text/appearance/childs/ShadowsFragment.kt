@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
-import androidx.core.content.ContextCompat
 import androidx.core.graphics.toColorInt
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -16,8 +15,7 @@ import com.example.urduphotodesigner.common.canvas.enums.PickerTarget
 import com.example.urduphotodesigner.common.utils.Constants
 import com.example.urduphotodesigner.databinding.FragmentShadowsBinding
 import com.example.urduphotodesigner.ui.editor.panels.text.appearance.adapters.ColorsAdapter
-import com.flask.colorpicker.ColorPickerView
-import com.flask.colorpicker.builder.ColorPickerDialogBuilder
+import com.example.urduphotodesigner.ui.editor.panels.text.appearance.childs.gradient.ColorPickerFragment
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -54,10 +52,15 @@ class ShadowsFragment : Fragment() {
             val dx = viewModel.shadowDx.value ?: 0f
             val dy = viewModel.shadowDy.value ?: 0f
             viewModel.setTextShadow(false, android.R.color.transparent, dx, dy)
-        },{
-            openColorPickerDialog()
-        },{
-            viewModel.startPicking(PickerTarget.SHADOW)
+        }, {
+            viewModel.startPicking(PickerTarget.COLOR_PICKER_SHADOW)
+            childFragmentManager
+                .beginTransaction()
+                .replace(R.id.shadowsFragment, ColorPickerFragment())
+                .addToBackStack(null)
+                .commit()
+        }, {
+            viewModel.startPicking(PickerTarget.EYE_DROPPER_SHADOW)
         })
 
         binding.colors.apply {
@@ -143,37 +146,6 @@ class ShadowsFragment : Fragment() {
                 override fun onStopTrackingTouch(sb: SeekBar) {}
             })
         }
-    }
-
-    private fun openColorPickerDialog() {
-        // Get the current text color from the ViewModel to set as the initial color in the picker
-        val initialColor = viewModel.currentTextColor.value ?: Color.BLACK
-
-        ColorPickerDialogBuilder
-            .with(requireContext())
-            .setTitle("Choose Color")
-            .initialColor(initialColor)
-            .wheelType(ColorPickerView.WHEEL_TYPE.CIRCLE) // You can choose different wheel types
-            .density(6) // Density of the color wheel
-            .lightnessSliderOnly() // If you want only lightness slider
-            .setPositiveButton("Select") { _, selectedColor, _ ->
-                val dx = viewModel.shadowDx.value ?: 0f
-                val dy = viewModel.shadowDy.value ?: 0f
-                viewModel.setTextShadow(true, selectedColor, dx, dy)
-            }
-
-            .setNegativeButton("Cancel") { _, _ ->
-                // Do nothing or handle cancellation
-            }
-            .showColorEdit(true) // Show hex/rgb editor
-            .setColorEditTextColor(
-                ContextCompat.getColor(
-                    requireContext(),
-                    R.color.black
-                )
-            ) // Set text color of the editor
-            .build()
-            .show()
     }
 
     private fun initObservers() {

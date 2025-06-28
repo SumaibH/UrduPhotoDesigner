@@ -110,6 +110,16 @@ class CanvasViewModel @Inject constructor(
     private val _strokeGradientPositions = MutableLiveData<FloatArray?>()
     val strokeGradientPositions: LiveData<FloatArray?> = _strokeGradientPositions
 
+    // Stroke gradient
+    private val _labelGradientColors = MutableLiveData<IntArray?>()
+    val labelGradientColors: LiveData<IntArray?> = _labelGradientColors
+
+    private val _labelGradientPositions = MutableLiveData<FloatArray?>()
+    val labelGradientPositions: LiveData<FloatArray?> = _labelGradientPositions
+
+    private val _gradientStopColor = MutableLiveData<Int>(Color.BLACK)
+    val gradientStopColor: LiveData<Int> = _gradientStopColor
+
     // 🔷 Shadow
     private val _hasShadow = MutableLiveData<Boolean>(false)
     val hasShadow: LiveData<Boolean> = _hasShadow
@@ -290,7 +300,11 @@ class CanvasViewModel @Inject constructor(
     }
 
     fun startPicking(slot: PickerTarget) {
-        _activePicker.value = slot
+        if (_activePicker.value == null){
+            _activePicker.value = slot
+        }else{
+            _activePicker.value = null
+        }
     }
 
     fun stopPicking() {
@@ -300,11 +314,17 @@ class CanvasViewModel @Inject constructor(
     /** Call this when the CanvasView fires “I just picked this color: 0xAARRGGBB” */
     fun finishPicking(color: Int) {
         when (_activePicker.value) {
-            PickerTarget.BACKGROUND  -> setCanvasBackgroundColor(color)
-            PickerTarget.TEXT_FILL   -> setTextColor(color)
-            PickerTarget.TEXT_STROKE -> setTextBorder(true, color, _borderWidth.value!!)
-            PickerTarget.SHADOW      -> setTextShadow(true, color, _shadowDx.value!!, _shadowDy.value!!)
-            PickerTarget.LABEL       -> setTextLabel(true, color, _labelShape.value!!)
+            PickerTarget.EYE_DROPPER_BACKGROUND  -> setCanvasBackgroundColor(color)
+            PickerTarget.EYE_DROPPER_TEXT_FILL   -> setTextColor(color)
+            PickerTarget.EYE_DROPPER_TEXT_STROKE -> setTextBorder(true, color, _borderWidth.value!!)
+            PickerTarget.EYE_DROPPER_SHADOW      -> setTextShadow(true, color, _shadowDx.value!!, _shadowDy.value!!)
+            PickerTarget.EYE_DROPPER_LABEL       -> setTextLabel(true, color, _labelShape.value!!)
+            PickerTarget.COLOR_PICKER_BACKGROUND -> setCanvasBackgroundColor(color)
+            PickerTarget.COLOR_PICKER_TEXT_FILL -> setTextColor(color)
+            PickerTarget.COLOR_PICKER_TEXT_STROKE -> setTextBorder(true, color, _borderWidth.value!!)
+            PickerTarget.COLOR_PICKER_SHADOW -> setTextShadow(true, color, _shadowDx.value!!, _shadowDy.value!!)
+            PickerTarget.COLOR_PICKER_LABEL -> setTextLabel(true, color, _labelShape.value!!)
+            PickerTarget.COLOR_PICKER_GRADIENT -> {_gradientStopColor.value = color}
             null                  -> { /* nothing to do */ }
         }
     }
@@ -410,6 +430,28 @@ class CanvasViewModel @Inject constructor(
         applyChangesToSelectedTextElements()
     }
 
+    fun setTextLabelGradient(enabled: Boolean, shape: LabelShape, colors: IntArray, positions: FloatArray) {
+        _labelGradientColors.value = colors
+        _labelGradientPositions.value = positions
+        _labelShape.value = shape
+        _hasLabel.value = enabled
+        applyChangesToSelectedTextElements()
+    }
+
+    fun setTextLabel(enabled: Boolean, color: Int, shape: LabelShape) {
+        _labelColor.value = color
+        _labelShape.value = shape
+        _hasLabel.value = enabled
+        applyChangesToSelectedTextElements()
+    }
+
+    fun clearLabelGradients() {
+        _hasLabel.value = false
+        _labelGradientColors.value = null
+        _labelGradientPositions.value = null
+        applyChangesToSelectedTextElements()
+    }
+
     fun setTextSizeForAllSelected(size: Float) {
         val currentList = _canvasElements.value ?: return
         val selectedElements = currentList.filter { it.isSelected }
@@ -501,6 +543,12 @@ class CanvasViewModel @Inject constructor(
                         ?: element.strokeGradientColors,
                     strokeGradientPositions = if (_strokeGradientPositions.value == null) null else _strokeGradientPositions.value
                         ?: element.strokeGradientPositions,
+
+                    labelGradientColors = if (_labelGradientColors.value == null) null else _labelGradientColors.value
+                        ?: element.labelGradientColors,
+                    labelGradientPositions = if (_labelGradientPositions.value == null) null else _labelGradientPositions.value
+                        ?: element.labelGradientPositions,
+
                     blurValue = _blurValue.value ?: element.blurValue,
                     hasBlur = _hasBlur.value ?: element.hasBlur,
                     paintAlpha = _opacity.value ?: element.paintAlpha,
@@ -887,6 +935,8 @@ class CanvasViewModel @Inject constructor(
             _fillGradientPositions.value = textElement.fillGradientPositions
             _strokeGradientColors.value = textElement.strokeGradientColors
             _strokeGradientPositions.value = textElement.strokeGradientPositions
+            _labelGradientColors.value = textElement.labelGradientColors
+            _labelGradientPositions.value = textElement.labelGradientPositions
 
             // 🟡 Blur and opacity settings
             _blurValue.value = textElement.blurValue
@@ -933,6 +983,8 @@ class CanvasViewModel @Inject constructor(
         _fillGradientPositions.value = null
         _strokeGradientColors.value = null
         _strokeGradientPositions.value = null
+        _labelGradientColors.value = null
+        _labelGradientPositions.value = null
 
         // Reset Blur
         _blurValue.value = 0f
@@ -1139,13 +1191,6 @@ class CanvasViewModel @Inject constructor(
         _borderColor.value = color
         _borderWidth.value = width
         _hasBorder.value = enabled
-        applyChangesToSelectedTextElements()
-    }
-
-    fun setTextLabel(enabled: Boolean, color: Int, shape: LabelShape) {
-        _labelColor.value = color
-        _labelShape.value = shape
-        _hasLabel.value = enabled
         applyChangesToSelectedTextElements()
     }
 

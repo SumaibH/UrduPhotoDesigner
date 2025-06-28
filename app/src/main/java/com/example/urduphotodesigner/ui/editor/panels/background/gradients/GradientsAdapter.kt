@@ -41,10 +41,10 @@ class GradientsAdapter(
 
         fun bind(item: GradientItem, isSelected: Boolean) {
             binding.colorView.background = GradientDrawable(
-                item.orientation,
+                GradientDrawable.Orientation.RIGHT_LEFT,
                 item.colors.toIntArray()
             )
-            val gradientDrawable = GradientDrawable(item.orientation, item.colors.toIntArray())
+            val gradientDrawable = GradientDrawable(GradientDrawable.Orientation.RIGHT_LEFT, item.colors.toIntArray())
 
             if (isSelected) {
                 binding.root.strokeWidth = 4
@@ -54,7 +54,6 @@ class GradientsAdapter(
                 binding.root.strokeWidth = 0
                 binding.root.setCardBackgroundColor(Color.WHITE)
             }
-
 
             binding.root.setOnClickListener {
                 val previousSelected = selectedPosition
@@ -97,7 +96,7 @@ class GradientsAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         init {
-            binding.colorView.setImageResource(R.drawable.ic_color_picker) // your "picker" icon
+            binding.colorView.setImageResource(R.drawable.ic_add)
             binding.root.setOnClickListener {
                 onGradientPickerClicked()
             }

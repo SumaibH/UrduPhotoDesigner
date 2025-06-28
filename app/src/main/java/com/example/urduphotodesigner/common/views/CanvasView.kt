@@ -21,7 +21,6 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.text.TextPaint
 import android.util.AttributeSet
-import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
@@ -53,7 +52,7 @@ import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.roundToInt
 
-class SizedCanvasView @JvmOverloads constructor(
+class CanvasView @JvmOverloads constructor(
     context: Context,
     private val canvasWidth: Int = 300,
     private val canvasHeight: Int = 300,
@@ -1075,6 +1074,21 @@ class SizedCanvasView @JvmOverloads constructor(
                 color = element.labelColor
                 style = Paint.Style.FILL
                 isAntiAlias = true
+            }
+
+            element.labelGradientColors?.let { colors ->
+                // measure the widest line so your gradient spans the text
+                val maxWidth = lines.maxOf { labelPaint.measureText(it) }
+                labelPaint.shader = LinearGradient(
+                    -maxWidth / 2f, 0f,
+                    maxWidth / 2f, 0f,
+                    colors,
+                    element.labelGradientPositions,
+                    Shader.TileMode.CLAMP
+                )
+            } ?: run {
+                labelPaint.shader = null
+                labelPaint.color = element.labelColor
             }
 
             when (element.labelShape) {

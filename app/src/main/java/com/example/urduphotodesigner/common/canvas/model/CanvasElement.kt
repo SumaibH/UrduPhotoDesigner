@@ -78,6 +78,10 @@ data class CanvasElement(
     var strokeGradientColors: IntArray? = null,
     var strokeGradientPositions: FloatArray? = null,
 
+    // text label gradient
+    var labelGradientColors: IntArray? = null,
+    var labelGradientPositions: FloatArray? = null,
+
     @Transient
     var originalTypeface: Typeface? = null,
     var hasBlur: Boolean = false,

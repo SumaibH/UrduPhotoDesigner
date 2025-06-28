@@ -97,6 +97,9 @@
     <string name="copy">Copy</string>
     <string name="blend">Blend</string>
     <string name="color_picker">Color Picker</string>
+    <string name="scale">Scale</string>
+    <string name="angle">Angle</string>
+    <string name="gradient_color_selector">Gradient Color Selector</string>
 
     <array name="hue_colors">
         <item>#FF0000</item>  <!-- Red -->

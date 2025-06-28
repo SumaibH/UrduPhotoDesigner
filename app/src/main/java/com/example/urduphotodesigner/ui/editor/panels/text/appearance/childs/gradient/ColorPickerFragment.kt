@@ -1,4 +1,4 @@
-package com.example.urduphotodesigner.ui.editor.panels.text.appearance.childs
+package com.example.urduphotodesigner.ui.editor.panels.text.appearance.childs.gradient
 
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
@@ -19,11 +19,15 @@ import dagger.hilt.android.AndroidEntryPoint
 class ColorPickerFragment : Fragment(R.layout.fragment_color_picker) {
     private var _binding: FragmentColorPickerBinding? = null
     private val binding get() = _binding!!
+
     private val viewModel: CanvasViewModel by activityViewModels()
     private val dp get() = resources.displayMetrics.density
     private var currentHue = 0f
     private lateinit var hueGradient: GradientDrawable
     private lateinit var alphaDrawable: GradientDrawable
+    private val trackHeightDp = 12f
+    private val trackHeightPx get() = (trackHeightDp * dp).toInt()
+    private val cornerRadiusPx get() = trackHeightPx / 2f
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -38,15 +42,33 @@ class ColorPickerFragment : Fragment(R.layout.fragment_color_picker) {
 
         setupColors()
         setupSeekbars()
+        setupEvents()
+    }
+
+    private fun setupEvents() {
+        binding.back.setOnClickListener {
+            parentFragment
+                ?.childFragmentManager
+                ?.popBackStack()
+        }
     }
 
     private fun setupSeekbars() {
         updateAlphaBar(0f)
 
+        val thumbOffset = (12f * dp).toInt()
+        binding.seekbarHue.thumbOffset = thumbOffset
+        binding.seekbarAlpha.thumbOffset = thumbOffset
+
         binding.seekbarHue.apply {
             max = 360
             progress = 0
-            progressDrawable = hueGradient
+            progressDrawable = hueGradient.apply {
+                // 2) pill shape at half-height
+                cornerRadius = cornerRadiusPx
+                setSize(0, trackHeightPx)
+            }
+
             thumb = ContextCompat.getDrawable(requireContext(), R.drawable.seekbar_thumb)
             setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(sb: SeekBar, prog: Int, fromUser: Boolean) {
@@ -54,17 +76,13 @@ class ColorPickerFragment : Fragment(R.layout.fragment_color_picker) {
                     // Wait until alphaBar has measured
                     binding.seekbarAlpha.post {
                         updateAlphaBar(currentHue)
-                        alphaDrawable.setBounds(
-                            0, 0,
-                            binding.seekbarAlpha.width,
-                            binding.seekbarAlpha.height
-                        )
                         binding.seekbarAlpha.progressDrawable = alphaDrawable
                     }
 
-                    // Immediately notify color with full opacity
-                    val rgb = Color.HSVToColor(floatArrayOf(currentHue, 1f, 1f))
-                    viewModel.finishPicking((255 shl 24) or (rgb and 0x00FFFFFF))
+                    val hsvRgb = Color.HSVToColor(floatArrayOf(currentHue, 1f, 1f)) and 0x00FFFFFF
+                    val alpha = binding.seekbarAlpha.progress
+                    val baked = bakeAlpha((alpha shl 24) or hsvRgb)
+                    viewModel.finishPicking(baked)
                 }
 
                 override fun onStartTrackingTouch(sb: SeekBar) {}
@@ -73,13 +91,8 @@ class ColorPickerFragment : Fragment(R.layout.fragment_color_picker) {
         }
 
         binding.seekbarAlpha.post {
-            val initialHue = binding.seekbarAlpha.progress.toFloat()
+            val initialHue = binding.seekbarHue.progress.toFloat()
             updateAlphaBar(initialHue)
-            alphaDrawable.setBounds(
-                0, 0,
-                binding.seekbarAlpha.width,
-                binding.seekbarAlpha.height
-            )
             binding.seekbarAlpha.progressDrawable = alphaDrawable
         }
 
@@ -90,8 +103,10 @@ class ColorPickerFragment : Fragment(R.layout.fragment_color_picker) {
             thumb = ContextCompat.getDrawable(requireContext(), R.drawable.seekbar_thumb)
             setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(sb: SeekBar, prog: Int, fromUser: Boolean) {
-                    val rgb = Color.HSVToColor(floatArrayOf(currentHue, 1f, 1f))
-                    viewModel.finishPicking((prog shl 24) or (rgb and 0x00FFFFFF))
+                    val hsvRgb = Color.HSVToColor(floatArrayOf(currentHue, 1f, 1f)) and 0x00FFFFFF
+                    val colorWithAlpha = (prog shl 24) or hsvRgb
+                    val solidColor = bakeAlpha(colorWithAlpha)
+                    viewModel.finishPicking(solidColor)
                 }
 
                 override fun onStartTrackingTouch(sb: SeekBar) {}
@@ -110,7 +125,8 @@ class ColorPickerFragment : Fragment(R.layout.fragment_color_picker) {
             GradientDrawable.Orientation.LEFT_RIGHT,
             rainbow
         ).apply {
-            cornerRadius = 8f * dp
+            cornerRadius = cornerRadiusPx
+            setSize(0, trackHeightPx)
             gradientType = GradientDrawable.LINEAR_GRADIENT
         }
     }
@@ -122,10 +138,29 @@ class ColorPickerFragment : Fragment(R.layout.fragment_color_picker) {
             GradientDrawable.Orientation.LEFT_RIGHT,
             intArrayOf(transparent, opaque)
         ).apply {
-            cornerRadius = 8f * dp
+            setSize(0, trackHeightPx)
+            cornerRadius = cornerRadiusPx
         }
         // and then later in your post:
         binding.seekbarAlpha.progressDrawable = alphaDrawable
+    }
+
+    fun bakeAlpha(srcColor: Int, bgColor: Int = Color.WHITE): Int {
+        val a = Color.alpha(srcColor)
+        val r = Color.red(srcColor)
+        val g = Color.green(srcColor)
+        val b = Color.blue(srcColor)
+
+        val br = Color.red(bgColor)
+        val bg = Color.green(bgColor)
+        val bb = Color.blue(bgColor)
+
+        // composite formula: out = src * α + bg * (1 – α)
+        val outR = (r * a + br * (255 - a)) / 255
+        val outG = (g * a + bg * (255 - a)) / 255
+        val outB = (b * a + bb * (255 - a)) / 255
+
+        return Color.rgb(outR, outG, outB)
     }
 
     override fun onDestroyView() {

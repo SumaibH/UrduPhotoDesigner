@@ -3,10 +3,10 @@ package com.example.urduphotodesigner.common.canvas
 import android.graphics.Bitmap
 import com.example.urduphotodesigner.common.canvas.model.CanvasElement
 import com.example.urduphotodesigner.common.canvas.sealed.ImageFilter
-import com.example.urduphotodesigner.common.views.SizedCanvasView
+import com.example.urduphotodesigner.common.views.CanvasView
 import com.example.urduphotodesigner.data.model.FontEntity
 
-class CanvasManager(private val canvasView: SizedCanvasView) {
+class CanvasManager(private val canvasView: CanvasView) {
     fun setCanvasBackgroundColor(color: Int) {
         canvasView.setCanvasBackgroundColor(color)
     }

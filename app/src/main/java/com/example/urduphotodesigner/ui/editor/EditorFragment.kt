@@ -45,12 +45,13 @@ import com.example.urduphotodesigner.common.canvas.enums.BlendType
 import com.example.urduphotodesigner.common.canvas.enums.ElementType
 import com.example.urduphotodesigner.common.canvas.enums.HAlign
 import com.example.urduphotodesigner.common.canvas.enums.MultiAlignMode
+import com.example.urduphotodesigner.common.canvas.enums.PickerTarget
 import com.example.urduphotodesigner.common.canvas.model.CanvasElement
 import com.example.urduphotodesigner.common.canvas.model.CanvasSize
 import com.example.urduphotodesigner.common.canvas.enums.UnitType
 import com.example.urduphotodesigner.common.canvas.enums.VAlign
 import com.example.urduphotodesigner.common.utils.displayName
-import com.example.urduphotodesigner.common.views.SizedCanvasView
+import com.example.urduphotodesigner.common.views.CanvasView
 import com.example.urduphotodesigner.databinding.BottomSheetExportSettingsBinding
 import com.example.urduphotodesigner.databinding.FragmentEditorBinding
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -76,7 +77,7 @@ class EditorFragment : Fragment() {
     private val viewModel: CanvasViewModel by activityViewModels()
     private var currentPanelItemId: Int? = null
 
-    private lateinit var sizedCanvasView: SizedCanvasView
+    private lateinit var sizedCanvasView: CanvasView
     private var currentMode: MultiAlignMode = MultiAlignMode.CANVAS
 
     private var requestPermissionLauncher: ActivityResultLauncher<String> = registerForActivityResult(
@@ -239,10 +240,17 @@ class EditorFragment : Fragment() {
         }
 
         viewModel.activePicker.observe(viewLifecycleOwner) { slot ->
-            if (slot != null) {
-                sizedCanvasView.enableColorPicker()
-            } else {
-                sizedCanvasView.disableColorPicker()
+            when (slot) {
+                PickerTarget.EYE_DROPPER_LABEL,
+                PickerTarget.EYE_DROPPER_SHADOW,
+                PickerTarget.EYE_DROPPER_BACKGROUND,
+                PickerTarget.EYE_DROPPER_TEXT_FILL,
+                PickerTarget.EYE_DROPPER_TEXT_STROKE -> {
+                    sizedCanvasView.enableColorPicker()
+                }
+                else -> {
+                    sizedCanvasView.disableColorPicker()
+                }
             }
         }
 
@@ -340,7 +348,7 @@ class EditorFragment : Fragment() {
             true
         }
 
-        sizedCanvasView = SizedCanvasView(
+        sizedCanvasView = CanvasView(
             requireContext(),
             canvasWidth = widthPx,
             canvasHeight = heightPx,

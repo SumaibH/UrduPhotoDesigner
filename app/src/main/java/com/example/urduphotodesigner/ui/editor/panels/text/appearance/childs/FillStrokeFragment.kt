@@ -3,7 +3,6 @@ package com.example.urduphotodesigner.ui.editor.panels.text.appearance.childs
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,9 +10,10 @@ import android.widget.SeekBar
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.toColorInt
 import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.Navigation
-import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.common.canvas.enums.PickerTarget
@@ -21,8 +21,8 @@ import com.example.urduphotodesigner.common.utils.Constants
 import com.example.urduphotodesigner.databinding.FragmentFillStrokeBinding
 import com.example.urduphotodesigner.ui.editor.panels.background.gradients.GradientsAdapter
 import com.example.urduphotodesigner.ui.editor.panels.text.appearance.adapters.ColorsAdapter
-import com.flask.colorpicker.ColorPickerView
-import com.flask.colorpicker.builder.ColorPickerDialogBuilder
+import com.example.urduphotodesigner.ui.editor.panels.text.appearance.childs.gradient.ColorPickerFragment
+import com.example.urduphotodesigner.ui.editor.panels.text.appearance.childs.gradient.GradientEditorFragment
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -58,7 +58,7 @@ class FillStrokeFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        colorsAdapter = ColorsAdapter(Constants.colorList, { color ->
+        colorsAdapter = ColorsAdapter(Constants.colorList, onColorSelected = { color ->
             val selectedColor = color.colorCode.toColorInt()
             when (currentTab?.lowercase()) {
                 "stroke" -> {
@@ -67,31 +67,38 @@ class FillStrokeFragment : Fragment() {
                     viewModel.clearStrokeGradients()
                     viewModel.setTextBorder(true, selectedColor, width)
                 }
+
                 else -> {
                     viewModel.clearFillGradients()
                     viewModel.setTextColor(selectedColor)
                 }
             }
-        },{
+        }, onNoneSelected = {
             when (currentTab?.lowercase()) {
                 "stroke" -> {
-                    // preserve existing width
                     viewModel.setTextBorder(false, android.R.color.transparent, 0f)
                 }
+
                 else -> viewModel.setTextColor(android.R.color.transparent)
             }
-        },{
-//            openColorPickerDialog()
-            val navController = Navigation.findNavController(
-                requireActivity(),
-                R.id.panelNavHost
-            )
-            navController.navigate(R.id.colorPickerFragment)
-        },{
+        }, onColorPickerClicked = {
+            viewModel.clearLabelGradients()
             if (currentTab?.lowercase() == "stroke") {
-                viewModel.startPicking(PickerTarget.TEXT_STROKE)
-            }else{
-                viewModel.startPicking(PickerTarget.TEXT_FILL)
+                viewModel.startPicking(PickerTarget.COLOR_PICKER_TEXT_STROKE)
+            } else {
+                viewModel.startPicking(PickerTarget.COLOR_PICKER_TEXT_FILL)
+            }
+            childFragmentManager
+                .beginTransaction()
+                .replace(R.id.fillStroke, ColorPickerFragment())
+                .addToBackStack(null)
+                .commit()
+        }, onEyeDropperClicked =  {
+            viewModel.clearLabelGradients()
+            if (currentTab?.lowercase() == "stroke") {
+                viewModel.startPicking(PickerTarget.EYE_DROPPER_TEXT_STROKE)
+            } else {
+                viewModel.startPicking(PickerTarget.EYE_DROPPER_TEXT_FILL)
             }
         })
 
@@ -105,11 +112,12 @@ class FillStrokeFragment : Fragment() {
                             if (colorsArray.size == 1) 0f else i.toFloat() / (colorsArray.size - 1)
                         }
                         val width = viewModel.borderWidth.value ?: 1f
-                        viewModel.setTextStrokeGradient(colorsArray, positions,width)
+                        viewModel.setTextStrokeGradient(colorsArray, positions, width)
                     }
+
                     else -> {
                         val colorsArray = item.colors.toIntArray()
-                        val positions   = FloatArray(colorsArray.size) { i ->
+                        val positions = FloatArray(colorsArray.size) { i ->
                             if (colorsArray.size == 1) 0f else i.toFloat() / (colorsArray.size - 1)
                         }
                         viewModel.setTextFillGradient(colorsArray, positions)
@@ -121,11 +129,16 @@ class FillStrokeFragment : Fragment() {
                     "stroke" -> {
                         viewModel.clearStrokeGradients()
                     }
+
                     else -> viewModel.clearFillGradients()
                 }
             },
             onGradientPickerClicked = {
-//                openColorPickerDialog()
+                childFragmentManager
+                    .beginTransaction()
+                    .replace(R.id.fillStroke, GradientEditorFragment())
+                    .addToBackStack(null)
+                    .commit()
             }
         )
 
@@ -138,13 +151,7 @@ class FillStrokeFragment : Fragment() {
         }
     }
 
-    private fun initObservers(){
-        viewModel.currentTextSize.observe(viewLifecycleOwner) { size ->
-            if (currentTab?.lowercase() == "fill") {
-                binding.fontSize.text = "${size?.toInt() ?: 40}"
-                binding.font.progress = size?.toInt() ?: 40
-            }
-        }
+    private fun initObservers() {
 
         viewModel.borderWidth.observe(viewLifecycleOwner) { width ->
             if (currentTab?.lowercase() == "stroke") {
@@ -174,75 +181,22 @@ class FillStrokeFragment : Fragment() {
                 gradientsAdapter.selectedItem = match
             }
         }
-
-
     }
-
-    private fun openColorPickerDialog() {
-        // Get the current text color from the ViewModel to set as the initial color in the picker
-        val initialColor = viewModel.currentTextColor.value ?: Color.BLACK
-
-        ColorPickerDialogBuilder
-            .with(requireContext())
-            .setTitle("Choose Color")
-            .initialColor(initialColor)
-            .wheelType(ColorPickerView.WHEEL_TYPE.CIRCLE) // You can choose different wheel types
-            .density(6) // Density of the color wheel
-            .lightnessSliderOnly() // If you want only lightness slider
-            .setPositiveButton("Select") { _, selectedColor, _ ->
-                when (currentTab?.lowercase()) {
-                    "stroke" -> {
-                        // preserve existing width
-                        val width = viewModel.borderWidth.value ?: 1f
-                        viewModel.setTextBorder(true, selectedColor, width)
-                    }
-                    else -> viewModel.setTextColor(selectedColor)
-                }
-            }
-
-            .setNegativeButton("Cancel") { _, _ ->
-                // Do nothing or handle cancellation
-            }
-            .showColorEdit(true) // Show hex/rgb editor
-            .setColorEditTextColor(
-                ContextCompat.getColor(
-                    requireContext(),
-                    R.color.black
-                )
-            ) // Set text color of the editor
-            .build()
-            .show()
-    }
-
 
     private fun setEvents() {
-        // Font Size SeekBar
-        binding.font.apply {
-            min = 0
-            max = 100
-            setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
-                override fun onProgressChanged(sb: SeekBar, progress: Int, fromUser: Boolean) {
-                    if (fromUser){
-                        binding.fontSize.text = "$progress"
-                        viewModel.setTextSize(progress.toFloat())
-                    }
-                }
-                override fun onStartTrackingTouch(sb: SeekBar) {}
-                override fun onStopTrackingTouch(sb: SeekBar) {}
-            })
-        }
 
         binding.border.apply {
             min = 0
             max = 10
-            setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
+            setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(sb: SeekBar, progress: Int, fromUser: Boolean) {
-                    if (fromUser){
+                    if (fromUser) {
                         binding.borderSize.text = "$progress"
                         val color = viewModel.borderColor.value ?: Color.BLACK
                         viewModel.setTextBorder(true, color, progress.toFloat())
                     }
                 }
+
                 override fun onStartTrackingTouch(sb: SeekBar) {}
                 override fun onStopTrackingTouch(sb: SeekBar) {}
             })
@@ -288,8 +242,10 @@ class FillStrokeFragment : Fragment() {
                 }
                 .start()
 
-                binding.gradient.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.contrast))
-                binding.solid.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.white))
+            binding.gradient.backgroundTintList =
+                ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.contrast))
+            binding.solid.backgroundTintList =
+                ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.white))
         } else {
             // Fade out solid and hide it
             binding.colors.animate()
@@ -306,8 +262,10 @@ class FillStrokeFragment : Fragment() {
                         .start()
                 }
                 .start()
-            binding.gradient.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.white))
-            binding.solid.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.contrast))
+            binding.gradient.backgroundTintList =
+                ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.white))
+            binding.solid.backgroundTintList =
+                ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.contrast))
         }
     }
 
@@ -319,11 +277,13 @@ class FillStrokeFragment : Fragment() {
                 binding.borderCard.visibility = View.VISIBLE
                 binding.borderSize.text = "${viewModel.borderWidth.value!!}"
                 binding.border.progress = viewModel.borderWidth.value?.toInt()!!
+                binding.gradients.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+                binding.colors.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
             }
+
             else -> {
-                binding.fontCard.visibility = View.VISIBLE
-                binding.fontSize.text = "${viewModel.currentTextSize.value!!}"
-                binding.font.progress = viewModel.currentTextSize.value?.toInt()!!
+                binding.gradients.layoutManager = GridLayoutManager(requireContext(), 3, GridLayoutManager.HORIZONTAL, false)
+                binding.colors.layoutManager = GridLayoutManager(requireContext(), 3, GridLayoutManager.HORIZONTAL, false)
             }
         }
     }
