@@ -4,9 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/gradientColorFragment"
-    android:background="@color/white"
-    tools:context=".ui.editor.panels.text.appearance.childs.gradient.GradientColorListFragment">
+    tools:context=".ui.editor.panels.text.appearance.childs.gradient.GradientSettingFragment">
 
     <ImageView
         android:layout_width="@dimen/_24sdp"
@@ -20,15 +18,6 @@
     <ImageView
         android:layout_width="@dimen/_24sdp"
         android:layout_height="@dimen/_24sdp"
-        android:src="@drawable/ic_delete"
-        android:padding="@dimen/_5sdp"
-        android:id="@+id/delete"
-        app:layout_constraintEnd_toStartOf="@id/done"
-        app:layout_constraintTop_toTopOf="parent"/>
-
-    <ImageView
-        android:layout_width="@dimen/_24sdp"
-        android:layout_height="@dimen/_24sdp"
         android:src="@drawable/ic_done"
         android:padding="@dimen/_5sdp"
         android:id="@+id/done"
@@ -37,44 +26,34 @@
         app:layout_constraintTop_toTopOf="parent"/>
 
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/gradient_color_selector"
+        android:text="@string/gradient_setting"
         android:fontFamily="@font/medium"
+        android:gravity="start"
+        android:maxLines="1"
+        android:ellipsize="end"
+        app:layout_constraintEnd_toStartOf="@id/done"
         app:layout_constraintStart_toEndOf="@id/back"
         app:layout_constraintTop_toTopOf="@id/back"
         app:layout_constraintBottom_toBottomOf="@id/back"
         android:textColor="@color/black"
         android:paddingHorizontal="@dimen/_5sdp"/>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/colors"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_5sdp"
-        android:orientation="horizontal"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/opacityCard"
-        app:layout_constraintTop_toBottomOf="@id/back"
-        tools:itemCount="100"
-        tools:listitem="@layout/layout_color_item" />
-
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/opacityCard"
+        android:id="@+id/scaleCard"
         android:visibility="visible"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/locationCard"
+        app:layout_constraintEnd_toStartOf="@id/angleCard"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <TextView
-            android:id="@+id/opacityTitle"
+            android:id="@+id/scaleTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/opacity"
+            android:text="@string/scale"
             android:fontFamily="@font/medium"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -87,26 +66,26 @@
             android:layout_height="wrap_content"
             android:text="10"
             android:fontFamily="@font/regular"
-            app:layout_constraintTop_toTopOf="@id/opacityTitle"
-            app:layout_constraintBottom_toBottomOf="@id/opacityTitle"
-            app:layout_constraintStart_toEndOf="@id/opacityTitle"
+            app:layout_constraintTop_toTopOf="@id/scaleTitle"
+            app:layout_constraintBottom_toBottomOf="@id/scaleTitle"
+            app:layout_constraintStart_toEndOf="@id/scaleTitle"
             android:textSize="@dimen/_10sdp"
             android:background="@drawable/edit_bg_stroke"
             android:paddingHorizontal="@dimen/_5sdp"
             android:paddingVertical="@dimen/_3sdp"
             android:textColor="@color/black"
             android:layout_marginStart="@dimen/_5sdp"
-            android:id="@+id/opacitySize"/>
+            android:id="@+id/scaleSize"/>
 
         <SeekBar
-            android:id="@+id/opacity"
+            android:id="@+id/scale"
             android:layout_marginTop="@dimen/_2sdp"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/opacitySize"
+            app:layout_constraintTop_toBottomOf="@id/scaleSize"
             android:thumbTint="@color/appColor"
             android:indeterminateTint="@color/appColor"
             android:progressTint="@color/appColor"
@@ -114,19 +93,19 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/locationCard"
+        android:id="@+id/angleCard"
         android:visibility="visible"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toEndOf="@id/opacityCard"
+        app:layout_constraintStart_toEndOf="@id/scaleCard"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <TextView
-            android:id="@+id/locationTitle"
+            android:id="@+id/angleTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/location"
+            android:text="@string/angle"
             android:fontFamily="@font/medium"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -139,27 +118,27 @@
             android:layout_height="wrap_content"
             android:text="10"
             android:fontFamily="@font/regular"
-            app:layout_constraintTop_toTopOf="@id/locationTitle"
-            app:layout_constraintStart_toEndOf="@id/locationTitle"
-            app:layout_constraintBottom_toBottomOf="@id/locationTitle"
+            app:layout_constraintTop_toTopOf="@id/angleTitle"
+            app:layout_constraintStart_toEndOf="@id/angleTitle"
+            app:layout_constraintBottom_toBottomOf="@id/angleTitle"
             android:textSize="@dimen/_10sdp"
             android:background="@drawable/edit_bg_stroke"
             android:paddingHorizontal="@dimen/_5sdp"
             android:paddingVertical="@dimen/_3sdp"
             android:textColor="@color/black"
             android:layout_marginStart="@dimen/_5sdp"
-            android:id="@+id/locationSize"/>
+            android:id="@+id/angleSize"/>
 
 
         <SeekBar
-            android:id="@+id/location"
+            android:id="@+id/angle"
             android:layout_marginTop="@dimen/_2sdp"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/locationSize"
+            app:layout_constraintTop_toBottomOf="@id/angleSize"
             android:thumbTint="@color/appColor"
             android:indeterminateTint="@color/appColor"
             android:progressTint="@color/appColor"

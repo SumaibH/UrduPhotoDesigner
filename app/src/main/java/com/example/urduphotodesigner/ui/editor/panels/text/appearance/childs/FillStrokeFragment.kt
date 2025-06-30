@@ -134,6 +134,7 @@ class FillStrokeFragment : Fragment() {
                 }
             },
             onGradientPickerClicked = {
+                viewModel.setPagingLocked(true)
                 childFragmentManager
                     .beginTransaction()
                     .replace(R.id.fillStroke, GradientEditorFragment())
@@ -173,7 +174,6 @@ class FillStrokeFragment : Fragment() {
         }
 
         viewModel.fillGradientColors.observe(viewLifecycleOwner) { colorsArray ->
-            // once you know which colors are active, find the matching preset
             val match = Constants.gradientList.find {
                 it.colors.toIntArray().contentEquals(colorsArray)
             }

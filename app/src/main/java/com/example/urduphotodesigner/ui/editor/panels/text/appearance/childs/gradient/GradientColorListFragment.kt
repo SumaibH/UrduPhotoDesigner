@@ -20,8 +20,8 @@ class GradientColorListFragment : Fragment() {
     private var _binding: FragmentGradientColorListBinding? = null
     private val binding get() = _binding!!
     private lateinit var colorsAdapter: ColorsAdapter
-    private val viewModel: GradientViewModel by activityViewModels()
-    private val canvasViewModel: CanvasViewModel by activityViewModels()
+    private val viewModel: CanvasViewModel by activityViewModels()
+    private var selectedColor:Int = 0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -40,30 +40,47 @@ class GradientColorListFragment : Fragment() {
 
     private fun setupRecyclerView() {
         colorsAdapter = ColorsAdapter(Constants.colorList, { color ->
-            viewModel.updateSelectedStopColor(color.colorCode.toColorInt())
+            selectedColor = color.colorCode.toColorInt()
         }, {
-            viewModel.updateSelectedStopColor(android.R.color.transparent)
+            selectedColor = android.R.color.transparent
         }, {
-            canvasViewModel.startPicking(PickerTarget.COLOR_PICKER_GRADIENT)
+            viewModel.startPicking(PickerTarget.COLOR_PICKER_GRADIENT)
             childFragmentManager
                 .beginTransaction()
                 .replace(R.id.gradientColorFragment, ColorPickerFragment())
                 .addToBackStack(null)
                 .commit()
         }, {
-            canvasViewModel.startPicking(PickerTarget.COLOR_PICKER_GRADIENT)
-            //need to update gradient viewmodel here for new color
-
-            //from editor to list, list to picker, update viewmodels as well
+            viewModel.startPicking(PickerTarget.COLOR_PICKER_GRADIENT)
         })
+
         binding.colors.apply {
             adapter = colorsAdapter
         }
+
+        binding.back.setOnClickListener {
+            parentFragment
+                ?.childFragmentManager
+                ?.popBackStack()
+        }
+
+        binding.done.setOnClickListener {
+            viewModel.updateSelectedStopColor(selectedColor)
+            parentFragment
+                ?.childFragmentManager
+                ?.popBackStack()
+        }
+
+        binding.delete.setOnClickListener {
+            viewModel.removeSelectedStop()
+            parentFragment
+                ?.childFragmentManager
+                ?.popBackStack()}
     }
 
     private fun initObserver() {
-        canvasViewModel.gradientStopColor.observe(viewLifecycleOwner) { color ->
-            viewModel.updateSelectedStopColor(color)
+        viewModel.gradientStopColor.observe(viewLifecycleOwner) { color ->
+            selectedColor = color
         }
     }
 

@@ -100,6 +100,12 @@
     <string name="scale">Scale</string>
     <string name="angle">Angle</string>
     <string name="gradient_color_selector">Gradient Color Selector</string>
+    <string name="gradient_editor">Gradient Editor</string>
+    <string name="sweep">Sweep</string>
+    <string name="radial">Radial</string>
+    <string name="linear">Linear</string>
+    <string name="location">Location</string>
+    <string name="gradient_setting">Gradient Setting</string>
 
     <array name="hue_colors">
         <item>#FF0000</item>  <!-- Red -->

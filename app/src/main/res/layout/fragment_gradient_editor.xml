@@ -20,9 +20,32 @@
     <ImageView
         android:layout_width="@dimen/_24sdp"
         android:layout_height="@dimen/_24sdp"
+        android:src="@drawable/ic_swap"
+        android:padding="@dimen/_7sdp"
+        android:id="@+id/swap"
+        app:tint="@color/black"
+        android:layout_marginEnd="@dimen/_5sdp"
+        app:layout_constraintEnd_toStartOf="@id/delete"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <ImageView
+        android:layout_width="@dimen/_24sdp"
+        android:layout_height="@dimen/_24sdp"
+        android:src="@drawable/ic_setting"
+        android:padding="@dimen/_5sdp"
+        android:id="@+id/settings"
+        app:tint="@color/black"
+        android:layout_marginEnd="@dimen/_5sdp"
+        app:layout_constraintEnd_toStartOf="@id/swap"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <ImageView
+        android:layout_width="@dimen/_24sdp"
+        android:layout_height="@dimen/_24sdp"
         android:src="@drawable/ic_delete"
         android:padding="@dimen/_5sdp"
         android:id="@+id/delete"
+        android:layout_marginEnd="@dimen/_5sdp"
         app:layout_constraintEnd_toStartOf="@id/done"
         app:layout_constraintTop_toTopOf="parent"/>
 
@@ -37,130 +60,92 @@
         app:layout_constraintTop_toTopOf="parent"/>
 
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/gradient_color_selector"
+        android:text="@string/gradient_editor"
         android:fontFamily="@font/medium"
+        android:gravity="start"
+        android:maxLines="1"
+        android:ellipsize="end"
+        app:layout_constraintEnd_toStartOf="@id/settings"
         app:layout_constraintStart_toEndOf="@id/back"
         app:layout_constraintTop_toTopOf="@id/back"
         app:layout_constraintBottom_toBottomOf="@id/back"
         android:textColor="@color/black"
         android:paddingHorizontal="@dimen/_5sdp"/>
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/toolbar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/_1sdp"
+        android:layout_marginTop="@dimen/_5sdp"
+        android:background="@drawable/button_bg"
+        android:backgroundTint="@color/selection"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/back">
+
+        <TextView
+            android:id="@+id/linear"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/button_bg"
+            android:backgroundTint="@color/white"
+            android:fontFamily="@font/medium"
+            android:gravity="center"
+            android:paddingVertical="@dimen/_2sdp"
+            android:text="@string/linear"
+            android:textColor="@color/black"
+            android:textSize="@dimen/_10sdp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/radial"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/radial"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/button_bg"
+            android:backgroundTint="@color/contrast"
+            android:fontFamily="@font/medium"
+            android:gravity="center"
+            android:paddingVertical="@dimen/_2sdp"
+            android:text="@string/radial"
+            android:textColor="@color/black"
+            android:textSize="@dimen/_10sdp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/sweep"
+            app:layout_constraintStart_toEndOf="@id/linear"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/sweep"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/button_bg"
+            android:backgroundTint="@color/contrast"
+            android:fontFamily="@font/medium"
+            android:gravity="center"
+            android:paddingVertical="@dimen/_2sdp"
+            android:text="@string/sweep"
+            android:textColor="@color/black"
+            android:textSize="@dimen/_10sdp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/radial"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
     <com.example.urduphotodesigner.common.views.GradientBarView
         android:id="@+id/gradientBar"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_marginTop="16dp"
+        android:layout_height="@dimen/_40sdp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/scaleCard"/>
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/scaleCard"
-        android:visibility="visible"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/_2sdp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/angleCard"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-        <TextView
-            android:id="@+id/scaleTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/scale"
-            android:fontFamily="@font/medium"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:textSize="@dimen/_10sdp"
-            android:layout_marginStart="@dimen/_10sdp"
-            android:textColor="@color/black"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="10"
-            android:fontFamily="@font/regular"
-            app:layout_constraintTop_toTopOf="@id/scaleTitle"
-            app:layout_constraintBottom_toBottomOf="@id/scaleTitle"
-            app:layout_constraintStart_toEndOf="@id/scaleTitle"
-            android:textSize="@dimen/_10sdp"
-            android:background="@drawable/edit_bg_stroke"
-            android:paddingHorizontal="@dimen/_5sdp"
-            android:paddingVertical="@dimen/_3sdp"
-            android:textColor="@color/black"
-            android:layout_marginStart="@dimen/_5sdp"
-            android:id="@+id/scaleSize"/>
-
-        <SeekBar
-            android:id="@+id/scale"
-            android:layout_marginTop="@dimen/_2sdp"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/scaleSize"
-            android:thumbTint="@color/appColor"
-            android:indeterminateTint="@color/appColor"
-            android:progressTint="@color/appColor"
-            android:progress="20"/>
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/angleCard"
-        android:visibility="visible"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/_2sdp"
-        app:layout_constraintStart_toEndOf="@id/scaleCard"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-        <TextView
-            android:id="@+id/angleTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/angle"
-            android:fontFamily="@font/medium"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:textSize="@dimen/_10sdp"
-            android:layout_marginStart="@dimen/_10sdp"
-            android:textColor="@color/black"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="10"
-            android:fontFamily="@font/regular"
-            app:layout_constraintTop_toTopOf="@id/angleTitle"
-            app:layout_constraintStart_toEndOf="@id/angleTitle"
-            app:layout_constraintBottom_toBottomOf="@id/angleTitle"
-            android:textSize="@dimen/_10sdp"
-            android:background="@drawable/edit_bg_stroke"
-            android:paddingHorizontal="@dimen/_5sdp"
-            android:paddingVertical="@dimen/_3sdp"
-            android:textColor="@color/black"
-            android:layout_marginStart="@dimen/_5sdp"
-            android:id="@+id/angleSize"/>
-
-
-        <SeekBar
-            android:id="@+id/angle"
-            android:layout_marginTop="@dimen/_2sdp"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/angleSize"
-            android:thumbTint="@color/appColor"
-            android:indeterminateTint="@color/appColor"
-            android:progressTint="@color/appColor"
-            android:progress="20"/>
-    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

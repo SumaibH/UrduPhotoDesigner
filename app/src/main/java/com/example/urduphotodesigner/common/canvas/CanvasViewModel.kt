@@ -14,6 +14,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.canvas.enums.BlendType
 import com.example.urduphotodesigner.common.canvas.enums.ElementType
+import com.example.urduphotodesigner.common.canvas.enums.GradientOrientation
+import com.example.urduphotodesigner.common.canvas.enums.GradientType
 import com.example.urduphotodesigner.common.canvas.enums.LabelShape
 import com.example.urduphotodesigner.common.canvas.enums.LetterCasing
 import com.example.urduphotodesigner.common.canvas.enums.ListStyle
@@ -25,6 +27,7 @@ import com.example.urduphotodesigner.common.canvas.model.CanvasSize
 import com.example.urduphotodesigner.common.canvas.model.CanvasTemplate
 import com.example.urduphotodesigner.common.canvas.model.ExportOptions
 import com.example.urduphotodesigner.common.canvas.model.ExportResolution
+import com.example.urduphotodesigner.common.canvas.model.GradientItem
 import com.example.urduphotodesigner.common.canvas.sealed.BatchedCanvasAction
 import com.example.urduphotodesigner.common.canvas.sealed.CanvasAction
 import com.example.urduphotodesigner.common.canvas.sealed.ImageFilter
@@ -45,6 +48,10 @@ import javax.inject.Inject
 class CanvasViewModel @Inject constructor(
     private val getFontsUseCase: GetFontsUseCase,
 ) : ViewModel() {
+
+    private val _pagingLocked = MutableLiveData<Boolean>(false)
+    val pagingLocked: LiveData<Boolean> = _pagingLocked
+
     private val _canvasActions = Stack<CanvasAction>()
     private val _redoStack = Stack<CanvasAction>()
     private val _canvasElements = MutableLiveData<List<CanvasElement>>(emptyList())
@@ -116,9 +123,6 @@ class CanvasViewModel @Inject constructor(
 
     private val _labelGradientPositions = MutableLiveData<FloatArray?>()
     val labelGradientPositions: LiveData<FloatArray?> = _labelGradientPositions
-
-    private val _gradientStopColor = MutableLiveData<Int>(Color.BLACK)
-    val gradientStopColor: LiveData<Int> = _gradientStopColor
 
     // 🔷 Shadow
     private val _hasShadow = MutableLiveData<Boolean>(false)
@@ -213,6 +217,23 @@ class CanvasViewModel @Inject constructor(
 
     val exportResolutions: List<ExportResolution> = availableResolutions
 
+    private val _gradient = MutableLiveData<GradientItem>(
+        GradientItem(
+            colors = listOf(Color.BLACK, Color.GRAY),
+            positions = listOf(0f, 1f),
+            angle = 0f,
+            scale = 1f,
+            type = GradientType.LINEAR
+        )
+    )
+    val gradient: LiveData<GradientItem> = _gradient
+
+    private val _gradientStopColor = MutableLiveData<Int>(Color.BLACK)
+    val gradientStopColor: LiveData<Int> = _gradientStopColor
+
+    private val _selectedStopIndex = MutableLiveData<Int?>(null)
+    val selectedStopIndex: LiveData<Int?> = _selectedStopIndex
+
     init {
         observeLocalFonts()
         // Initialize exportOptions with a default value
@@ -221,6 +242,136 @@ class CanvasViewModel @Inject constructor(
             quality = 100, // Default to High quality
             format = Bitmap.CompressFormat.PNG // Default to PNG format
         )
+    }
+
+    fun setPagingLocked(locked: Boolean) {
+        _pagingLocked.value = locked
+    }
+
+    /**
+     * Remove the stop at [index], if valid.
+     * Clears the selection if it was the removed stop.
+     */
+    fun removeStop(index: Int) {
+        val item = _gradient.value ?: return
+        val c = item.colors.toMutableList()
+        val p = item.positions.toMutableList()
+
+        // only remove if we have more than two stops (to keep a valid gradient)
+        if (c.size <= 2 || index !in c.indices) return
+
+        c.removeAt(index)
+        p.removeAt(index)
+        _gradient.value = item.copy(colors = c, positions = p)
+
+        // if the removed stop was selected, clear selection
+        if (_selectedStopIndex.value == index) {
+            _selectedStopIndex.value = null
+        } else if (_selectedStopIndex.value != null && _selectedStopIndex.value!! > index) {
+            // shift selection down if it was after the removed index
+            _selectedStopIndex.value = _selectedStopIndex.value!! - 1
+        }
+    }
+
+    /**
+     * Remove whichever stop is currently selected (if any).
+     */
+    fun removeSelectedStop() {
+        val idx = _selectedStopIndex.value ?: return
+        removeStop(idx)
+        // clear selection once removed
+        _selectedStopIndex.value = null
+    }
+
+    fun swapGradientStops() {
+        _gradient.value = _gradient.value?.swapped()
+    }
+
+    /** For linear gradients: flip between HORIZONTAL ↔ VERTICAL */
+    fun flipGradientOrientation() {
+        _gradient.value = _gradient.value?.withOrientation(
+            when (_gradient.value?.orientation) {
+                GradientOrientation.VERTICAL   -> GradientOrientation.HORIZONTAL
+                else                   -> GradientOrientation.VERTICAL
+            }
+        )
+    }
+
+    /** For sweep gradients: rotate the start‐angle */
+    fun setSweepStartAngle(deg: Float) {
+        _gradient.value = _gradient.value?.withSweepStart(deg)
+    }
+
+    /** For radial gradients: move the center point (normalized 0f…1f) */
+    fun setRadialCenter(xNorm: Float, yNorm: Float) {
+        _gradient.value = _gradient.value?.withRadialCenter(xNorm, yNorm)
+    }
+
+    /** Call when the user taps on an empty spot and you want to add a stop */
+    fun addStop(position: Float, sampledColor: Int) {
+        val item = _gradient.value ?: return
+        val (c, p) = insertAt(item, position to sampledColor)
+        _gradient.value = item.copy(colors = c, positions = p)
+        // auto-select new stop
+        _selectedStopIndex.value = c.indexOf(sampledColor)
+    }
+
+    /** Call when the user drags a handle to a new position */
+    fun moveStop(index: Int, newPosition: Float) {
+        val item = _gradient.value ?: return
+        val c = item.colors.toMutableList()
+        val p = item.positions.toMutableList()
+        if (index in p.indices) {
+            p[index] = newPosition.coerceIn(0f,1f)
+            _gradient.value = item.copy(colors = c, positions = p)
+        }
+    }
+
+    /** Call when the user taps an existing handle */
+    fun selectStop(index: Int) {
+        _selectedStopIndex.value = index
+    }
+
+    /** Call after the color‐picker fragment returns a new color */
+    fun updateSelectedStopColor(newColor: Int) {
+        val idx = _selectedStopIndex.value ?: return
+        val item = _gradient.value ?: return
+        val c = item.colors.toMutableList()
+        if (idx in c.indices) {
+            c[idx] = newColor
+            _gradient.value = item.copy(colors = c)
+        }
+    }
+
+    /** Adjust gradient angle (in degrees) */
+    fun setAngle(deg: Float) {
+        val item = _gradient.value ?: return
+        _gradient.value = item.copy(angle = deg)
+    }
+
+    /** Adjust overall scale (0…1+) */
+    fun setScale(scale: Float) {
+        val item = _gradient.value ?: return
+        _gradient.value = item.copy(scale = scale)
+    }
+
+    /** Switch between LINEAR / RADIAL / SWEEP */
+    fun setType(type: GradientType) {
+        val item = _gradient.value ?: return
+        _gradient.value = item.copy(type = type)
+    }
+
+    private fun insertAt(
+        item: GradientItem,
+        newEntry: Pair<Float,Int>
+    ): Pair<List<Int>,List<Float>> {
+        val (pos, color) = newEntry
+        val c = item.colors.toMutableList()
+        val p = item.positions.toMutableList()
+        val idx = p.indexOfFirst { it > pos }.takeIf { it >= 0 } ?: p.size
+        c.add(idx, color)
+        p.add(idx, pos.coerceIn(0f,1f))
+        return c to p
     }
 
     fun updateExportOptions(newOptions: ExportOptions) {
@@ -327,6 +478,7 @@ class CanvasViewModel @Inject constructor(
             PickerTarget.COLOR_PICKER_GRADIENT -> {_gradientStopColor.value = color}
             null                  -> { /* nothing to do */ }
         }
+        _activePicker.value = null
     }
 
     fun setLineSpacing(spacing: Float) {

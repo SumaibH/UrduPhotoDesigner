@@ -245,7 +245,8 @@ class EditorFragment : Fragment() {
                 PickerTarget.EYE_DROPPER_SHADOW,
                 PickerTarget.EYE_DROPPER_BACKGROUND,
                 PickerTarget.EYE_DROPPER_TEXT_FILL,
-                PickerTarget.EYE_DROPPER_TEXT_STROKE -> {
+                PickerTarget.EYE_DROPPER_TEXT_STROKE,
+                PickerTarget.COLOR_PICKER_GRADIENT -> {
                     sizedCanvasView.enableColorPicker()
                 }
                 else -> {

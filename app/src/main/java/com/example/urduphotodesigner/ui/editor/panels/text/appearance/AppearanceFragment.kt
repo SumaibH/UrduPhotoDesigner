@@ -4,9 +4,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
+import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.data.model.PanelTabs
 import com.example.urduphotodesigner.databinding.FragmentAppearanceBinding
 import com.example.urduphotodesigner.ui.editor.panels.text.appearance.adapters.AppearancePagerAdapter
@@ -22,6 +25,7 @@ class AppearanceFragment : Fragment() {
     private lateinit var tabs: ArrayList<PanelTabs>
     private lateinit var adapter: PanelTabsAdapter
     private lateinit var pagerAdapter: AppearancePagerAdapter
+    private val viewModel: CanvasViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -76,6 +80,10 @@ class AppearanceFragment : Fragment() {
 
             adapter.submitList(ArrayList(tabs))
             handleAppearanceTabSelection(tabs.firstOrNull())
+        }
+
+        viewModel.pagingLocked.observe(viewLifecycleOwner){ lock ->
+            binding.viewPager.isUserInputEnabled = !lock
         }
     }
 
