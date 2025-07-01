@@ -51,7 +51,7 @@ class GradientColorListFragment : Fragment() {
                 .addToBackStack(null)
                 .commit()
         }, {
-            viewModel.startPicking(PickerTarget.COLOR_PICKER_GRADIENT)
+            viewModel.startPicking(PickerTarget.EYE_DROPPER_GRADIENT)
         })
 
         binding.colors.apply {
@@ -80,6 +80,7 @@ class GradientColorListFragment : Fragment() {
 
     private fun initObserver() {
         viewModel.gradientStopColor.observe(viewLifecycleOwner) { color ->
+            colorsAdapter.selectedColor = color
             selectedColor = color
         }
     }

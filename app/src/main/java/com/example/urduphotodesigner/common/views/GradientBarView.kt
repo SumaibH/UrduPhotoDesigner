@@ -5,10 +5,8 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.LinearGradient
 import android.graphics.Paint
-import android.graphics.RadialGradient
 import android.graphics.RectF
 import android.graphics.Shader
-import android.graphics.SweepGradient
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
@@ -74,27 +72,24 @@ class GradientBarView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        // Inset bar so handles stay fully inside
+        // Draw gradient bar background
         val barLeft   = barPadding
         val barTop    = barPadding + handleRadius
         val barRight  = width  - barPadding
         val barBottom = height - barPadding - handleRadius
-
-        // Draw gradient-filled bar background
         val rect = RectF(barLeft, barTop, barRight, barBottom)
         fillPaint.style = Paint.Style.FILL
         canvas.drawRoundRect(rect, barCornerRadius, barCornerRadius, fillPaint)
 
-        // Compute handle travel width (excluding both radii)
-        // but also inset by extraInset on each side
+        // Handle position calculations
         val minX = barLeft + handleRadius + extraInset
         val maxX = barRight - handleRadius - extraInset
         val effWidth = maxX - minX
+        val cy = height / 2f
 
-        // Draw each handle
+        // Draw each stop handle
         positions.forEachIndexed { i, pos ->
             val cx = minX + (pos.coerceIn(0f, 1f) * effWidth)
-            val cy = height / 2f
             fillPaint.shader = null
             fillPaint.color = colors[i]
             canvas.drawCircle(cx, cy, handleRadius, fillPaint)
@@ -106,32 +101,26 @@ class GradientBarView @JvmOverloads constructor(
         val rawX = ev.x
         val rawY = ev.y
 
-        // horizontal limits for a handle center
-        val minX = barPadding + handleRadius + extraInset + handleRadius
-        val maxX = width - (barPadding + handleRadius + extraInset + handleRadius)
-        val x = rawX.coerceIn(minX, maxX)
-        val effWidth = maxX - minX
-        val pos = (x - minX) / effWidth
+        val minHandleX = barPadding + handleRadius + extraInset + handleRadius
+        val maxHandleX = width - minHandleX
+        val x = rawX.coerceIn(minHandleX, maxHandleX)
+        val effWidth = maxHandleX - minHandleX
+        val pos = (x - minHandleX) / effWidth
 
         when (ev.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 downX = rawX
                 downY = rawY
-
-                val touchSize = resources.displayMetrics.density * 48
-                val hitRadius = touchSize / 2f
-
                 pendingHandle = if (rawY in (barPadding + handleRadius)..(height - barPadding - handleRadius)) {
                     positions.indexOfFirst {
-                        val handleX = minX + (it * effWidth)
-                        abs(handleX - rawX) < hitRadius
+                        val handleX = minHandleX + (it * effWidth)
+                        abs(handleX - rawX) < resources.displayMetrics.density * 24
                     }
                 } else -1
 
                 if (pendingHandle >= 0) {
                     activeHandle = pendingHandle
                 } else {
-                    // only queue an add if we really clicked *away* from any handle
                     pendingAdd = true
                 }
                 return true
@@ -139,23 +128,19 @@ class GradientBarView @JvmOverloads constructor(
 
             MotionEvent.ACTION_MOVE -> {
                 if (activeHandle >= 0) {
-                    // you’re dragging an existing handle
                     if (abs(rawX - downX) > touchSlop || abs(rawY - downY) > touchSlop) {
-                        // normal move logic
-                        if (rawY > height + handleRadius) {
-                            removeHandle(activeHandle)
-                            return true
-                        }
-                        positions[activeHandle] = pos.coerceIn(0f, 1f)
+                        // Prevent handles from crossing neighbors
+                        val lower = if (activeHandle > 0) positions[activeHandle - 1] else 0f
+                        val upper = if (activeHandle < positions.lastIndex) positions[activeHandle + 1] else 1f
+                        val clamped = pos.coerceIn(lower, upper)
+                        positions[activeHandle] = clamped
                         gradientItem.positions = positions.toList()
-                        onStopMoved?.invoke(activeHandle, pos)
+                        onStopMoved?.invoke(activeHandle, clamped)
                         invalidateShader()
                     }
-                    // once we start dragging a handle, cancel any pending add
                     pendingAdd = false
                     return true
                 } else if (pendingAdd) {
-                    // if user moves more than slop, they’re *not* tapping to add
                     if (abs(rawX - downX) > touchSlop || abs(rawY - downY) > touchSlop) {
                         pendingAdd = false
                     }
@@ -164,7 +149,6 @@ class GradientBarView @JvmOverloads constructor(
 
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                 if (activeHandle >= 0) {
-                    // short tap on an existing handle = select
                     if (pendingHandle == activeHandle
                         && abs(rawX - downX) <= touchSlop
                         && abs(rawY - downY) <= touchSlop
@@ -172,22 +156,17 @@ class GradientBarView @JvmOverloads constructor(
                         onStopSelected?.invoke(activeHandle)
                     }
                 } else if (pendingAdd) {
-                    // 2) only add if finger never strayed outside slop
                     if (abs(rawX - downX) <= touchSlop && abs(rawY - downY) <= touchSlop) {
                         val idx = positions.indexOfFirst { it > pos }.takeIf { it >= 0 } ?: positions.size
                         val sampled = sampleColorAt(pos)
-
                         onStopAdded?.invoke(idx, sampled, pos)
                         invalidateShader()
                     }
-                    // either way, consume the tap and clear
                     pendingAdd = false
                     activeHandle = -1
                     pendingHandle = -1
                     return true
                 }
-
-                // fallback clean up
                 activeHandle = -1
                 pendingHandle = -1
                 pendingAdd = false
@@ -199,59 +178,29 @@ class GradientBarView @JvmOverloads constructor(
 
     private fun removeHandle(index: Int) {
         if (colors.size <= 2 || index !in colors.indices) return
-
         onStopRemoved?.invoke(index)
         invalidateShader()
     }
 
     private fun invalidateShader() {
         if (width == 0 || height == 0) return
-        val barLeft   = barPadding + handleRadius
-        val barRight  = width  - barPadding - handleRadius
-        val extraW    = extraInset + handleRadius
-        val leftEdge  = barLeft + extraW
+        val barLeft = barPadding + handleRadius
+        val barRight = width - barPadding - handleRadius
+        val extraW = extraInset + handleRadius
+        val leftEdge = barLeft + extraW
         val rightEdge = barRight - extraW
-        when (gradientItem.type) {
-            GradientType.LINEAR -> {
-                val w = (rightEdge - leftEdge) * gradientItem.scale
-                val h = (height - 2 * (barPadding + handleRadius)) * gradientItem.scale
-                val rad = Math.toRadians(gradientItem.angle.toDouble())
-                val dx = (cos(rad) * w).toFloat()
-                val dy = (sin(rad) * h).toFloat()
-                val cx = leftEdge + (w * 0.5f)
-                val cy = barPadding + handleRadius + ((height - 2 * (barPadding + handleRadius)) - h) / 2f
-                fillPaint.shader = LinearGradient(
-                    cx - dx/2, cy - dy/2,
-                    cx + dx/2, cy + dy/2,
-                    colors.toIntArray(), positions.toFloatArray(), Shader.TileMode.CLAMP
-                )
-            }
-            GradientType.RADIAL -> {
-                val cx     = width  * gradientItem.centerX
-                val cy     = height * gradientItem.centerY
-                val radius = min(rightEdge - leftEdge, height - 2*(barPadding+handleRadius)) *
-                        gradientItem.radialRadiusFactor * gradientItem.scale
-                fillPaint.shader = RadialGradient(
-                    cx, cy, radius,
-                    colors.toIntArray(), positions.toFloatArray(),
-                    Shader.TileMode.CLAMP
-                )
-            }
-            GradientType.SWEEP -> {
-                val cx = width  * gradientItem.centerX
-                val cy = height * gradientItem.centerY
-                val shader = SweepGradient(
-                    cx, cy,
-                    colors.toIntArray(), positions.toFloatArray()
-                )
-                // rotate by start‐angle
-                val matrix = android.graphics.Matrix().apply {
-                    setRotate(gradientItem.sweepStartAngle, cx, cy)
-                }
-                shader.setLocalMatrix(matrix)
-                fillPaint.shader = shader
-            }
-        }
+        val w = (rightEdge - leftEdge) * gradientItem.scale
+        val h = (height - 2 * (barPadding + handleRadius)) * gradientItem.scale
+        val rad = Math.toRadians(gradientItem.angle.toDouble())
+        val dx = (cos(rad) * w).toFloat()
+        val dy = (sin(rad) * h).toFloat()
+        val cx = leftEdge + (w / 2f)
+        val cy = barPadding + handleRadius + ((height - 2 * (barPadding + handleRadius)) - h) / 2f
+        fillPaint.shader = LinearGradient(
+            cx - dx/2, cy - dy/2,
+            cx + dx/2, cy + dy/2,
+            colors.toIntArray(), positions.toFloatArray(), Shader.TileMode.CLAMP
+        )
         invalidate()
     }
 
@@ -261,18 +210,15 @@ class GradientBarView @JvmOverloads constructor(
         val start = positions[i]
         val end = positions[i + 1]
         val t = (pos - start) / (end - start)
-        val c0 = colors[i]
-        val c1 = colors[i + 1]
         fun lerp(a: Int, b: Int) = (a + ((b - a) * t)).toInt()
-        val a = lerp(Color.alpha(c0), Color.alpha(c1))
-        val r = lerp(Color.red(c0), Color.red(c1))
-        val g = lerp(Color.green(c0), Color.green(c1))
-        val b = lerp(Color.blue(c0), Color.blue(c1))
+        val a = lerp(Color.alpha(colors[i]), Color.alpha(colors[i + 1]))
+        val r = lerp(Color.red(colors[i]), Color.red(colors[i + 1]))
+        val g = lerp(Color.green(colors[i]), Color.green(colors[i + 1]))
+        val b = lerp(Color.blue(colors[i]), Color.blue(colors[i + 1]))
         return Color.argb(a, r, g, b)
     }
 
     fun swapStops() {
-        // reverse stops and rebind
         gradientItem = gradientItem.swapped()
     }
 
@@ -287,5 +233,4 @@ class GradientBarView @JvmOverloads constructor(
     fun setRadialCenter(x: Float, y: Float) {
         gradientItem = gradientItem.withRadialCenter(x, y)
     }
-
 }

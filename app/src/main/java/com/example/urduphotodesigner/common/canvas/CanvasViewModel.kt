@@ -476,6 +476,7 @@ class CanvasViewModel @Inject constructor(
             PickerTarget.COLOR_PICKER_SHADOW -> setTextShadow(true, color, _shadowDx.value!!, _shadowDy.value!!)
             PickerTarget.COLOR_PICKER_LABEL -> setTextLabel(true, color, _labelShape.value!!)
             PickerTarget.COLOR_PICKER_GRADIENT -> {_gradientStopColor.value = color}
+            PickerTarget.EYE_DROPPER_GRADIENT -> {_gradientStopColor.value = color}
             null                  -> { /* nothing to do */ }
         }
         _activePicker.value = null

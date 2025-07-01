@@ -2,6 +2,7 @@ package com.example.urduphotodesigner.ui.editor.panels.text.appearance.childs.gr
 
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,11 +11,13 @@ import android.widget.SeekBar
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.common.canvas.enums.GradientType
 import com.example.urduphotodesigner.databinding.FragmentGradientEditorBinding
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class GradientEditorFragment : Fragment() {
@@ -40,21 +43,13 @@ class GradientEditorFragment : Fragment() {
     private fun initObservers() {
         viewModel.gradient.observe(viewLifecycleOwner) { gradient ->
             binding.gradientBar.gradientItem = gradient
+            val drawable = gradient.createGradientPreviewDrawable(
+                gradient = gradient,
+                width = binding.preview.width.takeIf { it > 0 } ?: 600,
+                height = binding.preview.height.takeIf { it > 0 } ?: 200
+            )
+            binding.preview.setImageDrawable(drawable)
             binding.gradientBar.invalidate()
-        }
-    }
-
-    private fun updateButtonTints(selected: View) {
-        // Colors
-        val contrastColor = ContextCompat.getColor(requireContext(), R.color.contrast)
-        val defaultColor  = ContextCompat.getColor(requireContext(), R.color.white)
-
-        // List your three buttons here
-        val buttons = listOf(binding.linear, binding.radial, binding.sweep)
-
-        buttons.forEach { btn ->
-            val tint = if (btn == selected) contrastColor else defaultColor
-            btn.backgroundTintList = ColorStateList.valueOf(tint)
         }
     }
 
@@ -89,20 +84,6 @@ class GradientEditorFragment : Fragment() {
 
         binding.swap.setOnClickListener { viewModel.swapGradientStops() }
 
-        binding.linear.setOnClickListener {
-            viewModel.setType(GradientType.LINEAR)
-            updateButtonTints(binding.linear)
-        }
-
-        binding.radial.setOnClickListener {
-            viewModel.setType(GradientType.RADIAL)
-            updateButtonTints(binding.radial)
-        }
-
-        binding.sweep.setOnClickListener {
-            viewModel.setType(GradientType.SWEEP)
-            updateButtonTints(binding.sweep)
-        }
         binding.settings.setOnClickListener {
             childFragmentManager
                 .beginTransaction()
