@@ -42,19 +42,129 @@
         android:paddingHorizontal="@dimen/_5sdp"/>
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/linearEditor"
+        android:id="@+id/editor"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/back"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/shadowXCard"
+            android:visibility="gone"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/_2sdp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/shadowYCard"
+            app:layout_constraintBottom_toTopOf="@id/scaleCard">
+
+            <TextView
+                android:id="@+id/shadowXTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/center_x"
+                android:fontFamily="@font/medium"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:textSize="@dimen/_10sdp"
+                android:layout_marginStart="@dimen/_10sdp"
+                android:textColor="@color/black"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="10"
+                android:fontFamily="@font/regular"
+                app:layout_constraintTop_toTopOf="@id/shadowXTitle"
+                app:layout_constraintBottom_toBottomOf="@id/shadowXTitle"
+                app:layout_constraintStart_toEndOf="@id/shadowXTitle"
+                android:textSize="@dimen/_10sdp"
+                android:background="@drawable/edit_bg_stroke"
+                android:paddingHorizontal="@dimen/_5sdp"
+                android:paddingVertical="@dimen/_3sdp"
+                android:textColor="@color/black"
+                android:layout_marginStart="@dimen/_5sdp"
+                android:id="@+id/shadowXSize"/>
+
+            <SeekBar
+                android:id="@+id/shadowX"
+                android:layout_marginTop="@dimen/_2sdp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/shadowXSize"
+                android:thumbTint="@color/appColor"
+                android:indeterminateTint="@color/appColor"
+                android:min="10"
+                android:max="100"
+                android:progressTint="@color/appColor"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/shadowYCard"
+            android:visibility="gone"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/_2sdp"
+            app:layout_constraintStart_toEndOf="@id/shadowXCard"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/scaleCard">
+
+            <TextView
+                android:id="@+id/shadowYTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/center_y"
+                android:fontFamily="@font/medium"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:textSize="@dimen/_10sdp"
+                android:layout_marginStart="@dimen/_10sdp"
+                android:textColor="@color/black"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="10"
+                android:fontFamily="@font/regular"
+                app:layout_constraintTop_toTopOf="@id/shadowYTitle"
+                app:layout_constraintBottom_toBottomOf="@id/shadowYTitle"
+                app:layout_constraintStart_toEndOf="@id/shadowYTitle"
+                android:textSize="@dimen/_10sdp"
+                android:background="@drawable/edit_bg_stroke"
+                android:paddingHorizontal="@dimen/_5sdp"
+                android:paddingVertical="@dimen/_3sdp"
+                android:textColor="@color/black"
+                android:layout_marginStart="@dimen/_5sdp"
+                android:id="@+id/shadowYSize"/>
+
+
+            <SeekBar
+                android:id="@+id/shadowY"
+                android:layout_marginTop="@dimen/_2sdp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/shadowYSize"
+                android:thumbTint="@color/appColor"
+                android:indeterminateTint="@color/appColor"
+                android:progressTint="@color/appColor"
+                android:min="10"
+                android:max="100"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/scaleCard"
             android:visibility="visible"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/angleCard"
+            app:layout_constraintEnd_toStartOf="@id/angleLayout"
             app:layout_constraintBottom_toBottomOf="parent">
 
             <TextView
@@ -98,62 +208,180 @@
                 android:indeterminateTint="@color/appColor"
                 android:progressTint="@color/appColor"
                 android:min="10"
-                android:max="200"
+                android:max="300"
                 android:progress="100"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/angleCard"
-            android:visibility="visible"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:id="@+id/angleLayout"
             app:layout_constraintStart_toEndOf="@id/scaleCard"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent">
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
-            <TextView
-                android:id="@+id/angleTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/angle"
-                android:fontFamily="@font/medium"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                android:textSize="@dimen/_10sdp"
-                android:layout_marginStart="@dimen/_10sdp"
-                android:textColor="@color/black"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="10"
-                android:fontFamily="@font/regular"
-                app:layout_constraintTop_toTopOf="@id/angleTitle"
-                app:layout_constraintStart_toEndOf="@id/angleTitle"
-                app:layout_constraintBottom_toBottomOf="@id/angleTitle"
-                android:textSize="@dimen/_10sdp"
-                android:background="@drawable/edit_bg_stroke"
-                android:paddingHorizontal="@dimen/_5sdp"
-                android:paddingVertical="@dimen/_3sdp"
-                android:textColor="@color/black"
-                android:layout_marginStart="@dimen/_5sdp"
-                android:id="@+id/angleSize"/>
-
-
-            <SeekBar
-                android:id="@+id/angle"
-                android:layout_marginTop="@dimen/_2sdp"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/angleCard"
+                android:visibility="gone"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/angleSize"
-                android:thumbTint="@color/appColor"
-                android:indeterminateTint="@color/appColor"
-                android:progressTint="@color/appColor"
-                android:max="360"
-                android:progress="0" />
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <TextView
+                    android:id="@+id/angleTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/angle"
+                    android:fontFamily="@font/medium"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:textSize="@dimen/_10sdp"
+                    android:layout_marginStart="@dimen/_10sdp"
+                    android:textColor="@color/black"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="10"
+                    android:fontFamily="@font/regular"
+                    app:layout_constraintTop_toTopOf="@id/angleTitle"
+                    app:layout_constraintStart_toEndOf="@id/angleTitle"
+                    app:layout_constraintBottom_toBottomOf="@id/angleTitle"
+                    android:textSize="@dimen/_10sdp"
+                    android:background="@drawable/edit_bg_stroke"
+                    android:paddingHorizontal="@dimen/_5sdp"
+                    android:paddingVertical="@dimen/_3sdp"
+                    android:textColor="@color/black"
+                    android:layout_marginStart="@dimen/_5sdp"
+                    android:id="@+id/angleSize"/>
+
+
+                <SeekBar
+                    android:id="@+id/angle"
+                    android:layout_marginTop="@dimen/_2sdp"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/angleSize"
+                    android:thumbTint="@color/appColor"
+                    android:indeterminateTint="@color/appColor"
+                    android:progressTint="@color/appColor"
+                    android:max="360"
+                    android:progress="0" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/sweepAngleCard"
+                android:visibility="gone"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <TextView
+                    android:id="@+id/sweepAngleTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/sweep_angle"
+                    android:fontFamily="@font/medium"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:textSize="@dimen/_10sdp"
+                    android:layout_marginStart="@dimen/_10sdp"
+                    android:textColor="@color/black"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="10"
+                    android:fontFamily="@font/regular"
+                    app:layout_constraintTop_toTopOf="@id/sweepAngleTitle"
+                    app:layout_constraintStart_toEndOf="@id/sweepAngleTitle"
+                    app:layout_constraintBottom_toBottomOf="@id/sweepAngleTitle"
+                    android:textSize="@dimen/_10sdp"
+                    android:background="@drawable/edit_bg_stroke"
+                    android:paddingHorizontal="@dimen/_5sdp"
+                    android:paddingVertical="@dimen/_3sdp"
+                    android:textColor="@color/black"
+                    android:layout_marginStart="@dimen/_5sdp"
+                    android:id="@+id/sweepAngleSize"/>
+
+
+                <SeekBar
+                    android:id="@+id/sweepAngle"
+                    android:layout_marginTop="@dimen/_2sdp"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/sweepAngleSize"
+                    android:thumbTint="@color/appColor"
+                    android:indeterminateTint="@color/appColor"
+                    android:progressTint="@color/appColor"
+                    android:max="360"
+                    android:progress="0" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/radiusCard"
+                android:visibility="gone"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <TextView
+                    android:id="@+id/radiusTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/radius"
+                    android:fontFamily="@font/medium"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:textSize="@dimen/_10sdp"
+                    android:layout_marginStart="@dimen/_10sdp"
+                    android:textColor="@color/black"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="10"
+                    android:fontFamily="@font/regular"
+                    app:layout_constraintTop_toTopOf="@id/radiusTitle"
+                    app:layout_constraintStart_toEndOf="@id/radiusTitle"
+                    app:layout_constraintBottom_toBottomOf="@id/radiusTitle"
+                    android:textSize="@dimen/_10sdp"
+                    android:background="@drawable/edit_bg_stroke"
+                    android:paddingHorizontal="@dimen/_5sdp"
+                    android:paddingVertical="@dimen/_3sdp"
+                    android:textColor="@color/black"
+                    android:layout_marginStart="@dimen/_5sdp"
+                    android:id="@+id/radiusSize"/>
+
+
+                <SeekBar
+                    android:id="@+id/radius"
+                    android:layout_marginTop="@dimen/_2sdp"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/radiusSize"
+                    android:thumbTint="@color/appColor"
+                    android:indeterminateTint="@color/appColor"
+                    android:progressTint="@color/appColor"
+                    android:min="10"
+                    android:max="100"
+                    android:progress="0" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 

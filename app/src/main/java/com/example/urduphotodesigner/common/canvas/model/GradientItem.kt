@@ -12,7 +12,6 @@ import android.graphics.Shader
 import android.graphics.SweepGradient
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
-import com.example.urduphotodesigner.common.canvas.enums.GradientOrientation
 import com.example.urduphotodesigner.common.canvas.enums.GradientType
 import kotlin.math.cos
 import kotlin.math.min
@@ -28,7 +27,6 @@ data class GradientItem(
     val sweepStartAngle: Float = 0f,
     val centerX: Float = 0.5f,
     val centerY: Float = 0.5f,
-    val orientation: GradientOrientation = GradientOrientation.HORIZONTAL,
     var isSelected: Boolean = false
 ) {
     init {
@@ -50,18 +48,9 @@ data class GradientItem(
     fun swapped(): GradientItem {
         val invPos = positions.map { 1f - it }.reversed()
         return copy(
-            colors    = colors.reversed(),
+            colors = colors.reversed(),
             positions = invPos
         )
-    }
-
-    /** Helper to copy with a new orientation (linear only). */
-    fun withOrientation(o: GradientOrientation): GradientItem {
-        val newAngle = when(o) {
-            GradientOrientation.HORIZONTAL -> 0f
-            GradientOrientation.VERTICAL   -> 90f
-        }
-        return copy(orientation = o, angle = newAngle)
     }
 
     /** Helper for sweep start-angle. */
@@ -70,7 +59,7 @@ data class GradientItem(
 
     /** Helper for radial center. */
     fun withRadialCenter(x: Float, y: Float): GradientItem =
-        copy(centerX = x.coerceIn(0f,1f), centerY = y.coerceIn(0f,1f))
+        copy(centerX = x.coerceIn(0f, 1f), centerY = y.coerceIn(0f, 1f))
 
     fun createGradientPreviewDrawable(
         gradient: GradientItem,
@@ -87,6 +76,7 @@ data class GradientItem(
         when (gradient.type) {
             GradientType.LINEAR -> {
                 val angleRad = Math.toRadians(gradient.angle.toDouble())
+
                 val scaledWidth = width * gradient.scale
                 val scaledHeight = height * gradient.scale
 

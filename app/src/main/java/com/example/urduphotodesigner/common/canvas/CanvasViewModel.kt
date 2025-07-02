@@ -287,16 +287,6 @@ class CanvasViewModel @Inject constructor(
         _gradient.value = _gradient.value?.swapped()
     }
 
-    /** For linear gradients: flip between HORIZONTAL ↔ VERTICAL */
-    fun flipGradientOrientation() {
-        _gradient.value = _gradient.value?.withOrientation(
-            when (_gradient.value?.orientation) {
-                GradientOrientation.VERTICAL   -> GradientOrientation.HORIZONTAL
-                else                   -> GradientOrientation.VERTICAL
-            }
-        )
-    }
-
     /** For sweep gradients: rotate the start‐angle */
     fun setSweepStartAngle(deg: Float) {
         _gradient.value = _gradient.value?.withSweepStart(deg)
@@ -359,6 +349,48 @@ class CanvasViewModel @Inject constructor(
     fun setType(type: GradientType) {
         val item = _gradient.value ?: return
         _gradient.value = item.copy(type = type)
+    }
+
+    /** Adjust the list of colors & their relative positions */
+    fun setStops(colors: List<Int>, positions: List<Float>) {
+        require(colors.size == positions.size) {
+            "colors and positions must have the same length"
+        }
+        val item = _gradient.value ?: return
+        _gradient.value = item.copy(
+            colors = colors,
+            positions = positions
+        )
+    }
+
+    /** Adjust the radial radius factor (0…1) */
+    fun setRadialRadiusFactor(factor: Float) {
+        val item = _gradient.value ?: return
+        _gradient.value = item.copy(radialRadiusFactor = factor.coerceIn(0f, 1f))
+    }
+
+    fun updateGradient(
+        scale: Float,
+        angle: Float,
+        sweepStartAngle: Float,
+        radialRadiusFactor: Float,
+        centerX: Float,
+        centerY: Float,
+    ) {
+        _gradient.value = _gradient.value?.copy(
+            scale             = scale,
+            angle             = angle,
+            sweepStartAngle   = sweepStartAngle,
+            radialRadiusFactor= radialRadiusFactor,
+            centerX           = centerX,
+            centerY           = centerY,
+        )
+    }
+
+    /** Toggle whether this gradient is selected (e.g. in a list) */
+    fun setSelected(selected: Boolean) {
+        val item = _gradient.value ?: return
+        _gradient.value = item.copy(isSelected = selected)
     }
 
     private fun insertAt(

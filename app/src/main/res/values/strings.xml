@@ -107,6 +107,11 @@
     <string name="location">Location</string>
     <string name="gradient_setting">Gradient Setting</string>
     <string name="gradient_type">Gradient Type</string>
+    <string name="sweep_angle">Sweep Angle</string>
+    <string name="horizontal">Horizontal</string>
+    <string name="vertical">Vertical</string>
+    <string name="center_y">Center Y</string>
+    <string name="center_x">Center X</string>
 
     <array name="hue_colors">
         <item>#FF0000</item>  <!-- Red -->

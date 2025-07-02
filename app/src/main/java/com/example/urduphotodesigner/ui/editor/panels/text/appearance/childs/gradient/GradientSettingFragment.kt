@@ -1,20 +1,17 @@
 package com.example.urduphotodesigner.ui.editor.panels.text.appearance.childs.gradient
 
-import android.content.res.ColorStateList
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
-import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.common.canvas.enums.GradientType
-import com.example.urduphotodesigner.databinding.FragmentGradientEditorBinding
 import com.example.urduphotodesigner.databinding.FragmentGradientSettingBinding
 import dagger.hilt.android.AndroidEntryPoint
+import kotlin.math.roundToInt
 
 @AndroidEntryPoint
 class GradientSettingFragment : Fragment() {
@@ -22,8 +19,12 @@ class GradientSettingFragment : Fragment() {
     private val binding get() = _binding!!
     private val viewModel: CanvasViewModel by activityViewModels()
 
-    private var pendingScale: Float    = 1f
-    private var pendingAngle: Float    = 0f
+    private var pendingScale: Float = 1f
+    private var pendingAngle: Float = 0f
+    private var pendingX: Float = 0f
+    private var pendingY: Float = 0f
+    private var pendingSweepAngle: Float = 0f
+    private var pendingRadius: Float = 0f
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -40,29 +41,64 @@ class GradientSettingFragment : Fragment() {
         initObservers()
     }
 
-    private fun syncUiToPending() {
-        // update the SeekBars/text fields
-        binding.scale.progress     = (pendingScale.coerceIn(0.1f,2f) * 100).toInt()
-        binding.scaleSize.text     = String.format("%.2f", pendingScale)
-        binding.angle.progress     = pendingAngle.mod(360f).toInt()
-        binding.angleSize.text     = "${pendingAngle.mod(360f).toInt()}°"
-    }
-
     private fun initObservers() {
-        viewModel.gradient.value?.let {
-            pendingScale = it.scale
-            pendingAngle = it.angle
-            syncUiToPending()
-        }
-
         viewModel.gradient.observe(viewLifecycleOwner) { gradient ->
-            val safeScale = gradient.scale.coerceIn(0.1f, 2f)
-            binding.scale.progress = (safeScale * 100).toInt()
-            binding.scaleSize.text = String.format("%.2f", safeScale)
+            pendingScale = gradient.scale.coerceIn(0.1f, 3f)
+            binding.scale.progress = (pendingScale * 100).toInt()
+            binding.scaleSize.text = String.format("%.2f", pendingScale)
 
-            val safeAngle = gradient.angle.mod(360f).toInt()
-            binding.angle.progress = safeAngle
-            binding.angleSize.text = "$safeAngle\u00B0"
+            pendingRadius = gradient.radialRadiusFactor.coerceIn(0.1f, 1f)
+            binding.radius.progress = (pendingRadius * 100).toInt()
+            binding.radiusSize.text = String.format("%.2f°", pendingRadius)
+
+            pendingSweepAngle = gradient.sweepStartAngle.mod(360f)
+            binding.sweepAngle.progress = pendingSweepAngle.roundToInt()
+            binding.sweepAngleSize.text = String.format("%d°", pendingSweepAngle.toInt())
+
+            pendingX = gradient.centerX.coerceIn(0.1f, 1f)
+            binding.shadowX.progress = (pendingX * 100).toInt()
+            binding.shadowXSize.text = String.format("%.2f°", pendingX)
+
+            pendingY = gradient.centerY.coerceIn(0.1f, 1f)
+            binding.shadowY.progress = (pendingY * 100).toInt()
+            binding.shadowYSize.text = String.format("%.2f°", pendingY)
+
+            pendingAngle = gradient.angle.mod(360f)
+            binding.angle.progress = pendingAngle.roundToInt()
+            binding.angleSize.text = String.format("%d°", pendingAngle.toInt())
+
+            val allCards = listOf(
+                binding.scaleCard,
+                binding.angleCard,
+                binding.sweepAngleCard,
+                binding.radiusCard,
+                binding.shadowXCard,
+                binding.shadowYCard
+            )
+
+            val visibleCardsByType = mapOf(
+                GradientType.LINEAR to listOf(
+                    binding.scaleCard,
+                    binding.angleCard,
+                ),
+                GradientType.RADIAL to listOf(
+                    binding.scaleCard,
+                    binding.radiusCard,
+                    binding.shadowXCard,
+                    binding.shadowYCard
+                ),
+                GradientType.SWEEP to listOf(
+                    binding.scaleCard,
+                    binding.sweepAngleCard,
+                    binding.shadowXCard,
+                    binding.shadowYCard
+                )
+            )
+
+            val shouldShow = visibleCardsByType[gradient.type] ?: emptyList()
+            allCards.forEach { card ->
+                card.visibility = if (card in shouldShow) View.VISIBLE else View.GONE
+            }
         }
     }
 
@@ -74,8 +110,14 @@ class GradientSettingFragment : Fragment() {
         }
 
         binding.done.setOnClickListener {
-            viewModel.setScale(pendingScale)
-            viewModel.setAngle(pendingAngle)
+            viewModel.updateGradient(
+                pendingScale,
+                pendingAngle,
+                pendingSweepAngle,
+                pendingRadius,
+                pendingX,
+                pendingY,
+            )
             parentFragment?.childFragmentManager?.popBackStack()
         }
 
@@ -86,6 +128,7 @@ class GradientSettingFragment : Fragment() {
                     binding.scaleSize.text = String.format("%.2f", pendingScale)
                 }
             }
+
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
@@ -97,6 +140,55 @@ class GradientSettingFragment : Fragment() {
                     binding.angleSize.text = "${progress}°"
                 }
             }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+        binding.sweepAngle.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(sb: SeekBar, progress: Int, fromUser: Boolean) {
+                if (fromUser) {
+                    pendingSweepAngle = progress.toFloat()
+                    binding.sweepAngleSize.text = "${progress}°"
+                }
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+        binding.radius.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(sb: SeekBar, progress: Int, fromUser: Boolean) {
+                if (fromUser) {
+                    pendingRadius = progress / 100f
+                    binding.radiusSize.text = String.format("%.2f", pendingRadius)
+                }
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+        binding.shadowX.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(sb: SeekBar, progress: Int, fromUser: Boolean) {
+                if (fromUser) {
+                    pendingX = progress / 100f
+                    binding.shadowXSize.text = String.format("%.2f", pendingX)
+                }
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+        binding.shadowY.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(sb: SeekBar, progress: Int, fromUser: Boolean) {
+                if (fromUser) {
+                    pendingY = progress / 100f
+                    binding.shadowYSize.text = String.format("%.2f", pendingY)
+                }
+            }
+
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
