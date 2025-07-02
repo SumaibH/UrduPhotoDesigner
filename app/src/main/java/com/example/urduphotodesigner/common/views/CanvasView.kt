@@ -707,7 +707,7 @@ class CanvasView @JvmOverloads constructor(
     /**
      * @return true if the color is “dark”, false if it’s “light”
      */
-    fun isColorDark(@ColorInt color: Int): Boolean {
+    private fun isColorDark(@ColorInt color: Int): Boolean {
         val r = Color.red(color)
         val g = Color.green(color)
         val b = Color.blue(color)

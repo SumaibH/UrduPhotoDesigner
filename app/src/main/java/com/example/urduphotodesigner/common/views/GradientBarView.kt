@@ -11,6 +11,7 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
+import androidx.annotation.ColorInt
 import com.example.urduphotodesigner.common.canvas.enums.GradientOrientation
 import com.example.urduphotodesigner.common.canvas.enums.GradientType
 import com.example.urduphotodesigner.common.canvas.model.GradientItem
@@ -49,7 +50,7 @@ class GradientBarView @JvmOverloads constructor(
     }
 
     private val handleRadius = resources.displayMetrics.density * 10
-    private val barCornerRadius = resources.displayMetrics.density * 12
+    private val barCornerRadius = resources.displayMetrics.density * 18
     private val barPadding = resources.displayMetrics.density
     private val extraInset = handleRadius / 2.5f
 
@@ -74,9 +75,9 @@ class GradientBarView @JvmOverloads constructor(
 
         // Draw gradient bar background
         val barLeft   = barPadding
-        val barTop    = barPadding + handleRadius
+        val barTop    = barPadding
         val barRight  = width  - barPadding
-        val barBottom = height - barPadding - handleRadius
+        val barBottom = height - barPadding
         val rect = RectF(barLeft, barTop, barRight, barBottom)
         fillPaint.style = Paint.Style.FILL
         canvas.drawRoundRect(rect, barCornerRadius, barCornerRadius, fillPaint)
@@ -93,6 +94,11 @@ class GradientBarView @JvmOverloads constructor(
             fillPaint.shader = null
             fillPaint.color = colors[i]
             canvas.drawCircle(cx, cy, handleRadius, fillPaint)
+            strokePaint.color = if (isColorDark(colors[i])) {
+                Color.WHITE
+            } else {
+                Color.BLACK
+            }
             canvas.drawCircle(cx, cy, handleRadius, strokePaint)
         }
     }
@@ -111,17 +117,27 @@ class GradientBarView @JvmOverloads constructor(
             MotionEvent.ACTION_DOWN -> {
                 downX = rawX
                 downY = rawY
-                pendingHandle = if (rawY in (barPadding + handleRadius)..(height - barPadding - handleRadius)) {
-                    positions.indexOfFirst {
-                        val handleX = minHandleX + (it * effWidth)
-                        abs(handleX - rawX) < resources.displayMetrics.density * 24
-                    }
-                } else -1
+
+                // bar geometry
+                val barTop    = barPadding
+                val barBottom = height - barPadding
+                val cy        = height / 2f
+
+                val hitRadius = resources.displayMetrics.density * 24  // 48dp diameter
+                pendingHandle = positions.indexOfFirst { pos ->
+                    val handleX = minHandleX + pos * effWidth
+                    val dx = rawX - handleX
+                    val dy = rawY - cy
+                    dx*dx + dy*dy <= hitRadius*hitRadius
+                }
 
                 if (pendingHandle >= 0) {
+                    // Tapped directly on a handle
                     activeHandle = pendingHandle
+                    pendingAdd = false
                 } else {
-                    pendingAdd = true
+                    // Allow adding only if tap is near the bar vertically
+                    pendingAdd = rawY in (barTop - hitRadius)..(barBottom + hitRadius)
                 }
                 return true
             }
@@ -129,10 +145,11 @@ class GradientBarView @JvmOverloads constructor(
             MotionEvent.ACTION_MOVE -> {
                 if (activeHandle >= 0) {
                     if (abs(rawX - downX) > touchSlop || abs(rawY - downY) > touchSlop) {
-                        // Prevent handles from crossing neighbors
+                        // Prevent handles from crossing neighbors by enforcing a small separation
                         val lower = if (activeHandle > 0) positions[activeHandle - 1] else 0f
                         val upper = if (activeHandle < positions.lastIndex) positions[activeHandle + 1] else 1f
-                        val clamped = pos.coerceIn(lower, upper)
+                        val minSeparation = 0.001f
+                        val clamped = pos.coerceIn(lower + minSeparation, upper - minSeparation)
                         positions[activeHandle] = clamped
                         gradientItem.positions = positions.toList()
                         onStopMoved?.invoke(activeHandle, clamped)
@@ -184,21 +201,12 @@ class GradientBarView @JvmOverloads constructor(
 
     private fun invalidateShader() {
         if (width == 0 || height == 0) return
-        val barLeft = barPadding + handleRadius
-        val barRight = width - barPadding - handleRadius
-        val extraW = extraInset + handleRadius
-        val leftEdge = barLeft + extraW
-        val rightEdge = barRight - extraW
-        val w = (rightEdge - leftEdge) * gradientItem.scale
-        val h = (height - 2 * (barPadding + handleRadius)) * gradientItem.scale
-        val rad = Math.toRadians(gradientItem.angle.toDouble())
-        val dx = (cos(rad) * w).toFloat()
-        val dy = (sin(rad) * h).toFloat()
-        val cx = leftEdge + (w / 2f)
-        val cy = barPadding + handleRadius + ((height - 2 * (barPadding + handleRadius)) - h) / 2f
+        val barLeft = barPadding + handleRadius + extraInset
+        val barRight = width - barPadding - handleRadius - extraInset
+        val cy = height / 2f
         fillPaint.shader = LinearGradient(
-            cx - dx/2, cy - dy/2,
-            cx + dx/2, cy + dy/2,
+            barLeft, cy,
+            barRight, cy,
             colors.toIntArray(), positions.toFloatArray(), Shader.TileMode.CLAMP
         )
         invalidate()
@@ -207,9 +215,7 @@ class GradientBarView @JvmOverloads constructor(
     private fun sampleColorAt(pos: Float): Int {
         val i = positions.indexOfLast { it <= pos }.coerceAtLeast(0)
         if (i == positions.lastIndex) return colors.last()
-        val start = positions[i]
-        val end = positions[i + 1]
-        val t = (pos - start) / (end - start)
+        val t = (pos - positions[i]) / (positions[i + 1] - positions[i])
         fun lerp(a: Int, b: Int) = (a + ((b - a) * t)).toInt()
         val a = lerp(Color.alpha(colors[i]), Color.alpha(colors[i + 1]))
         val r = lerp(Color.red(colors[i]), Color.red(colors[i + 1]))
@@ -217,6 +223,42 @@ class GradientBarView @JvmOverloads constructor(
         val b = lerp(Color.blue(colors[i]), Color.blue(colors[i + 1]))
         return Color.argb(a, r, g, b)
     }
+
+//    private fun invalidateShader() {
+//        if (width == 0 || height == 0) return
+//        val barLeft = barPadding + handleRadius
+//        val barRight = width - barPadding - handleRadius
+//        val extraW = extraInset + handleRadius
+//        val leftEdge = barLeft + extraW
+//        val rightEdge = barRight - extraW
+//        val w = (rightEdge - leftEdge) * gradientItem.scale
+//        val h = (height - 2 * (barPadding + handleRadius)) * gradientItem.scale
+//        val rad = Math.toRadians(gradientItem.angle.toDouble())
+//        val dx = (cos(rad) * w).toFloat()
+//        val dy = (sin(rad) * h).toFloat()
+//        val cx = leftEdge + (w / 2f)
+//        val cy = barPadding + handleRadius + ((height - 2 * (barPadding + handleRadius)) - h) / 2f
+//        fillPaint.shader = LinearGradient(
+//            cx - dx/2, cy - dy/2,
+//            cx + dx/2, cy + dy/2,
+//            colors.toIntArray(), positions.toFloatArray(), Shader.TileMode.CLAMP
+//        )
+//        invalidate()
+//    }
+//
+//    private fun sampleColorAt(pos: Float): Int {
+//        val i = positions.indexOfLast { it <= pos }.coerceAtLeast(0)
+//        if (i == positions.lastIndex) return colors.last()
+//        val start = positions[i]
+//        val end = positions[i + 1]
+//        val t = (pos - start) / (end - start)
+//        fun lerp(a: Int, b: Int) = (a + ((b - a) * t)).toInt()
+//        val a = lerp(Color.alpha(colors[i]), Color.alpha(colors[i + 1]))
+//        val r = lerp(Color.red(colors[i]), Color.red(colors[i + 1]))
+//        val g = lerp(Color.green(colors[i]), Color.green(colors[i + 1]))
+//        val b = lerp(Color.blue(colors[i]), Color.blue(colors[i + 1]))
+//        return Color.argb(a, r, g, b)
+//    }
 
     fun swapStops() {
         gradientItem = gradientItem.swapped()
@@ -232,5 +274,20 @@ class GradientBarView @JvmOverloads constructor(
 
     fun setRadialCenter(x: Float, y: Float) {
         gradientItem = gradientItem.withRadialCenter(x, y)
+    }
+
+    /**
+     * @return true if the color is “dark”, false if it’s “light”
+     */
+    private fun isColorDark(@ColorInt color: Int): Boolean {
+        val r = Color.red(color)
+        val g = Color.green(color)
+        val b = Color.blue(color)
+
+        // compute luminance (0…255)
+        val luminance = 0.299 * r + 0.587 * g + 0.114 * b
+
+        // threshold at 128 (mid‐point). <128 → dark; ≥128 → light
+        return luminance < 128
     }
 }

@@ -1,23 +1,19 @@
 package com.example.urduphotodesigner.ui.editor.panels.text.appearance.childs.gradient
 
 import android.content.res.ColorStateList
-import android.graphics.Color
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.SeekBar
 import androidx.core.content.ContextCompat
+import androidx.core.view.doOnLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
 import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.common.canvas.enums.GradientType
 import com.example.urduphotodesigner.databinding.FragmentGradientEditorBinding
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class GradientEditorFragment : Fragment() {
@@ -36,6 +32,7 @@ class GradientEditorFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        view.setOnTouchListener { _, _ -> true }
         setEvents()
         initObservers()
     }
@@ -43,17 +40,65 @@ class GradientEditorFragment : Fragment() {
     private fun initObservers() {
         viewModel.gradient.observe(viewLifecycleOwner) { gradient ->
             binding.gradientBar.gradientItem = gradient
-            val drawable = gradient.createGradientPreviewDrawable(
-                gradient = gradient,
-                width = binding.preview.width.takeIf { it > 0 } ?: 600,
-                height = binding.preview.height.takeIf { it > 0 } ?: 200
-            )
-            binding.preview.setImageDrawable(drawable)
+            binding.preview.doOnLayout {
+                val w = it.width
+                val h = it.height
+                val drawable = gradient.createGradientPreviewDrawable(
+                    gradient,
+                    width = w,
+                    height = h
+                )
+                it.background = drawable
+            }
+            // redraw your gradientBar as well
+            when (gradient.type) {
+                GradientType.LINEAR -> {
+                    updateButtonTints(binding.linear)
+                }
+
+                GradientType.RADIAL -> {
+                    updateButtonTints(binding.radial)
+                }
+
+                else -> {
+                    updateButtonTints(binding.sweep)
+                }
+            }
             binding.gradientBar.invalidate()
         }
     }
 
+    private fun updateButtonTints(selected: View) {
+        // Colors
+        val contrastColor = ContextCompat.getColor(requireContext(), R.color.contrast)
+        val defaultColor = ContextCompat.getColor(requireContext(), R.color.white)
+
+        // List your three buttons here
+        val buttons = listOf(binding.linear, binding.radial, binding.sweep)
+
+        buttons.forEach { btn ->
+            val tint = if (btn == selected) defaultColor else contrastColor
+            btn.backgroundTintList = ColorStateList.valueOf(tint)
+        }
+        if (selected == binding.linear){binding.previewCard.radius = 10f}
+        else { binding.previewCard.radius = 100f }
+    }
+
     private fun setEvents() {
+
+        binding.linear.setOnClickListener {
+            viewModel.setType(GradientType.LINEAR)
+            updateButtonTints(binding.linear)
+        }
+        binding.radial.setOnClickListener {
+            viewModel.setType(GradientType.RADIAL)
+            updateButtonTints(binding.radial)
+        }
+        binding.sweep.setOnClickListener {
+            viewModel.setType(GradientType.SWEEP)
+            updateButtonTints(binding.sweep)
+        }
+
         binding.back.setOnClickListener {
             viewModel.setPagingLocked(false)
             parentFragment
@@ -77,7 +122,7 @@ class GradientEditorFragment : Fragment() {
                     .addToBackStack(null)
                     .commit()
             }
-            onStopRemoved = {idx ->
+            onStopRemoved = { idx ->
                 viewModel.removeStop(idx)
             }
         }

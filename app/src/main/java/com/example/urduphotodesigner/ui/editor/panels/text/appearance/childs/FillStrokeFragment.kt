@@ -62,7 +62,6 @@ class FillStrokeFragment : Fragment() {
             val selectedColor = color.colorCode.toColorInt()
             when (currentTab?.lowercase()) {
                 "stroke" -> {
-                    // preserve existing width
                     val width = viewModel.borderWidth.value ?: 1f
                     viewModel.clearStrokeGradients()
                     viewModel.setTextBorder(true, selectedColor, width)

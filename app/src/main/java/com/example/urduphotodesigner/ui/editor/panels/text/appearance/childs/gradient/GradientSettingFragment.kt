@@ -22,6 +22,9 @@ class GradientSettingFragment : Fragment() {
     private val binding get() = _binding!!
     private val viewModel: CanvasViewModel by activityViewModels()
 
+    private var pendingScale: Float    = 1f
+    private var pendingAngle: Float    = 0f
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -37,7 +40,21 @@ class GradientSettingFragment : Fragment() {
         initObservers()
     }
 
+    private fun syncUiToPending() {
+        // update the SeekBars/text fields
+        binding.scale.progress     = (pendingScale.coerceIn(0.1f,2f) * 100).toInt()
+        binding.scaleSize.text     = String.format("%.2f", pendingScale)
+        binding.angle.progress     = pendingAngle.mod(360f).toInt()
+        binding.angleSize.text     = "${pendingAngle.mod(360f).toInt()}°"
+    }
+
     private fun initObservers() {
+        viewModel.gradient.value?.let {
+            pendingScale = it.scale
+            pendingAngle = it.angle
+            syncUiToPending()
+        }
+
         viewModel.gradient.observe(viewLifecycleOwner) { gradient ->
             val safeScale = gradient.scale.coerceIn(0.1f, 2f)
             binding.scale.progress = (safeScale * 100).toInt()
@@ -46,85 +63,45 @@ class GradientSettingFragment : Fragment() {
             val safeAngle = gradient.angle.mod(360f).toInt()
             binding.angle.progress = safeAngle
             binding.angleSize.text = "$safeAngle\u00B0"
-
-            when (gradient.type) {
-                GradientType.LINEAR -> { updateButtonTints(binding.linear)}
-                GradientType.RADIAL -> { updateButtonTints(binding.radial)}
-                else -> {updateButtonTints(binding.sweep)}
-            }
-        }
-    }
-
-    private fun updateButtonTints(selected: View) {
-        // Colors
-        val contrastColor = ContextCompat.getColor(requireContext(), R.color.contrast)
-        val defaultColor  = ContextCompat.getColor(requireContext(), R.color.white)
-
-        // List your three buttons here
-        val buttons = listOf(binding.linear, binding.radial, binding.sweep)
-
-        buttons.forEach { btn ->
-            val tint = if (btn == selected) defaultColor else contrastColor
-            btn.backgroundTintList = ColorStateList.valueOf(tint)
         }
     }
 
     private fun setEvents() {
         binding.back.setOnClickListener {
-            viewModel.setPagingLocked(false)
             parentFragment
                 ?.childFragmentManager
                 ?.popBackStack()
         }
 
-        binding.linear.setOnClickListener {
-            viewModel.setType(GradientType.LINEAR)
+        binding.done.setOnClickListener {
+            viewModel.setScale(pendingScale)
+            viewModel.setAngle(pendingAngle)
+            parentFragment?.childFragmentManager?.popBackStack()
         }
 
-        binding.radial.setOnClickListener {
-            viewModel.setType(GradientType.RADIAL)
-        }
-
-        binding.sweep.setOnClickListener {
-            viewModel.setType(GradientType.SWEEP)
-        }
-
-        binding.scale.apply {
-            min = 10
-            max = 200
-            val initScale = (viewModel.gradient.value?.scale ?: 1f)
-                .coerceIn(0.1f, 2f)
-            progress = (initScale * 100).toInt()
-            setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-                override fun onProgressChanged(sb: SeekBar, progress: Int, fromUser: Boolean) {
-                    if (fromUser) {
-                        val scale = (progress.coerceIn(10, 200) / 100f)
-                        viewModel.setScale(scale)
-                    }
+        binding.scale.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(sb: SeekBar, progress: Int, fromUser: Boolean) {
+                if (fromUser) {
+                    pendingScale = progress / 100f
+                    binding.scaleSize.text = String.format("%.2f", pendingScale)
                 }
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
 
-                override fun onStartTrackingTouch(sb: SeekBar) {}
-                override fun onStopTrackingTouch(sb: SeekBar) {}
-            })
-        }
-
-        binding.angle.apply {
-            min = 0
-            max = 360
-            setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-                override fun onProgressChanged(sb: SeekBar, progress: Int, fromUser: Boolean) {
-                    if (fromUser) {
-                        viewModel.setAngle(progress.toFloat())
-                    }
+        binding.angle.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(sb: SeekBar, progress: Int, fromUser: Boolean) {
+                if (fromUser) {
+                    pendingAngle = progress.toFloat()
+                    binding.angleSize.text = "${progress}°"
                 }
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
 
-                override fun onStartTrackingTouch(sb: SeekBar) {}
-                override fun onStopTrackingTouch(sb: SeekBar) {}
-            })
-        }
     }
-
-
 
     override fun onDestroy() {
         super.onDestroy()

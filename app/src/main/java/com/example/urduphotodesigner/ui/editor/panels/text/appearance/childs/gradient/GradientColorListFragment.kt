@@ -10,6 +10,7 @@ import androidx.fragment.app.activityViewModels
 import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.common.canvas.enums.PickerTarget
+import com.example.urduphotodesigner.common.canvas.model.GradientItem
 import com.example.urduphotodesigner.common.utils.Constants
 import com.example.urduphotodesigner.databinding.FragmentGradientColorListBinding
 import com.example.urduphotodesigner.ui.editor.panels.text.appearance.adapters.ColorsAdapter
@@ -21,7 +22,7 @@ class GradientColorListFragment : Fragment() {
     private val binding get() = _binding!!
     private lateinit var colorsAdapter: ColorsAdapter
     private val viewModel: CanvasViewModel by activityViewModels()
-    private var selectedColor:Int = 0
+    private var selectedColor: Int = 0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -34,6 +35,7 @@ class GradientColorListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        view.setOnTouchListener { _, _ -> true }
         setupRecyclerView()
         initObserver()
     }
@@ -41,6 +43,7 @@ class GradientColorListFragment : Fragment() {
     private fun setupRecyclerView() {
         colorsAdapter = ColorsAdapter(Constants.colorList, { color ->
             selectedColor = color.colorCode.toColorInt()
+            colorsAdapter.selectedColor = selectedColor
         }, {
             selectedColor = android.R.color.transparent
         }, {
@@ -75,13 +78,19 @@ class GradientColorListFragment : Fragment() {
             viewModel.removeSelectedStop()
             parentFragment
                 ?.childFragmentManager
-                ?.popBackStack()}
+                ?.popBackStack()
+        }
     }
 
     private fun initObserver() {
-        viewModel.gradientStopColor.observe(viewLifecycleOwner) { color ->
-            colorsAdapter.selectedColor = color
-            selectedColor = color
+        viewModel.selectedStopIndex.observe(viewLifecycleOwner) { index ->
+            // index is guaranteed non-null here
+            val gradient = viewModel.gradient.value ?: return@observe
+            if (index in gradient.colors.indices) {
+                val color = gradient.colors[index!!]
+                colorsAdapter.selectedColor = color
+                selectedColor = color
+            }
         }
     }
 

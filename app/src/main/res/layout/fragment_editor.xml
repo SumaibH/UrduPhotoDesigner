@@ -380,7 +380,6 @@
         android:id="@+id/blend_spinner"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:text="fsdfsd"
         android:backgroundTint="@color/white"
         android:background="@drawable/button_bg"
         app:layout_constraintStart_toEndOf="@id/blendIcon"

@@ -106,6 +106,7 @@
     <string name="linear">Linear</string>
     <string name="location">Location</string>
     <string name="gradient_setting">Gradient Setting</string>
+    <string name="gradient_type">Gradient Type</string>
 
     <array name="hue_colors">
         <item>#FF0000</item>  <!-- Red -->
