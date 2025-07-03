@@ -67,7 +67,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/locationCard"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <TextView
@@ -107,59 +107,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toBottomOf="@id/opacitySize"
-            android:thumbTint="@color/appColor"
-            android:indeterminateTint="@color/appColor"
-            android:progressTint="@color/appColor"
-            android:progress="20"/>
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/locationCard"
-        android:visibility="visible"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toEndOf="@id/opacityCard"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-        <TextView
-            android:id="@+id/locationTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/location"
-            android:fontFamily="@font/medium"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:textSize="@dimen/_10sdp"
-            android:layout_marginStart="@dimen/_10sdp"
-            android:textColor="@color/black"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="10"
-            android:fontFamily="@font/regular"
-            app:layout_constraintTop_toTopOf="@id/locationTitle"
-            app:layout_constraintStart_toEndOf="@id/locationTitle"
-            app:layout_constraintBottom_toBottomOf="@id/locationTitle"
-            android:textSize="@dimen/_10sdp"
-            android:background="@drawable/edit_bg_stroke"
-            android:paddingHorizontal="@dimen/_5sdp"
-            android:paddingVertical="@dimen/_3sdp"
-            android:textColor="@color/black"
-            android:layout_marginStart="@dimen/_5sdp"
-            android:id="@+id/locationSize"/>
-
-
-        <SeekBar
-            android:id="@+id/location"
-            android:layout_marginTop="@dimen/_2sdp"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/locationSize"
             android:thumbTint="@color/appColor"
             android:indeterminateTint="@color/appColor"
             android:progressTint="@color/appColor"

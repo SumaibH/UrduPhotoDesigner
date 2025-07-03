@@ -18,6 +18,7 @@ import kotlin.math.min
 import kotlin.math.sin
 
 data class GradientItem(
+    var id: Long = 0,
     var colors: List<Int> = listOf(Color.BLACK, Color.GRAY),
     var positions: List<Float> = listOf(0f, 1f),
     val angle: Float = 0f,

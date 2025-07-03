@@ -6,10 +6,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import com.example.urduphotodesigner.common.utils.Constants
+import androidx.lifecycle.lifecycleScope
+import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.databinding.FragmentFillStrokeBinding
+import com.example.urduphotodesigner.ui.editor.panels.text.appearance.childs.gradient.GradientEditorFragment
+import com.example.urduphotodesigner.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class GradientsListFragment : Fragment() {
@@ -18,6 +22,7 @@ class GradientsListFragment : Fragment() {
 
     private lateinit var gradientsAdapter: GradientsAdapter
     private val viewModel: CanvasViewModel by activityViewModels()
+    private val mainViewModel: MainViewModel by activityViewModels()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -30,19 +35,46 @@ class GradientsListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupRecyclerView()
+        initObservers()
+    }
+
+    private fun initObservers() {
+        lifecycleScope.launch {
+            mainViewModel.gradients.observe(viewLifecycleOwner) { gradients ->
+                gradientsAdapter.updateList(gradients)
+            }
+        }
     }
 
     private fun setupRecyclerView() {
         gradientsAdapter = GradientsAdapter(
-            gradientList = Constants.gradientList,
-            onGradientSelected = { selectedGradient, item ->
-                viewModel.setCanvasBackgroundImage(selectedGradient)
+            gradientList = emptyList(),
+            onGradientSelected = { _, gradient ->
+                viewModel.setCanvasGradient(gradient)
             },
             onNoneSelected = {
                 viewModel.removeCanvasBackgroundImage()
             },
+            onGradientEditSelected = { _, item ->
+                viewModel.setGradient(item)
+                childFragmentManager
+                    .beginTransaction()
+                    .replace(R.id.fillStroke, GradientEditorFragment().apply {
+                        arguments = Bundle().apply {
+                            putBoolean("IS_EDIT", true)
+                        }})
+                    .addToBackStack(null)
+                    .commit()
+            },
             onGradientPickerClicked = {
-//                openColorPickerDialog()
+                childFragmentManager
+                    .beginTransaction()
+                    .replace(R.id.fillStroke, GradientEditorFragment().apply {
+                        arguments = Bundle().apply {
+                            putBoolean("IS_EDIT", false)
+                        }})
+                    .addToBackStack(null)
+                    .commit()
             }
         )
         binding.colors.apply {

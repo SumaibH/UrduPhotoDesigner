@@ -2,6 +2,7 @@ package com.example.urduphotodesigner.common.canvas
 
 import android.graphics.Bitmap
 import com.example.urduphotodesigner.common.canvas.model.CanvasElement
+import com.example.urduphotodesigner.common.canvas.model.GradientItem
 import com.example.urduphotodesigner.common.canvas.sealed.ImageFilter
 import com.example.urduphotodesigner.common.views.CanvasView
 import com.example.urduphotodesigner.data.model.FontEntity
@@ -15,8 +16,8 @@ class CanvasManager(private val canvasView: CanvasView) {
         canvasView.setCanvasBackgroundImage(bitmap)
     }
 
-    fun setCanvasBackgroundGradient(colors: IntArray, positions: FloatArray? = null) {
-        canvasView.setCanvasBackgroundGradient(colors, positions)
+    fun setCanvasBackgroundGradient(gradientItem: GradientItem) {
+        canvasView.setCanvasBackgroundGradient(gradientItem)
     }
 
     fun setFont(fontEntity: FontEntity) {

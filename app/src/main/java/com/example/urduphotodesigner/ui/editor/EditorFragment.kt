@@ -208,8 +208,8 @@ class EditorFragment : Fragment() {
         }
 
         viewModel.backgroundGradient.observe(viewLifecycleOwner) { gradient ->
-            gradient?.let { (colors, positions) ->
-                canvasManager.setCanvasBackgroundGradient(colors ?: intArrayOf(), positions)
+            gradient?.let {
+                canvasManager.setCanvasBackgroundGradient(it)
             }
         }
 

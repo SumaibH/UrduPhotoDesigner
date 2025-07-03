@@ -1,16 +1,17 @@
 package com.example.urduphotodesigner.ui.editor.panels.text.appearance.childs.gradient
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.SeekBar
 import androidx.core.graphics.toColorInt
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.common.canvas.enums.PickerTarget
-import com.example.urduphotodesigner.common.canvas.model.GradientItem
 import com.example.urduphotodesigner.common.utils.Constants
 import com.example.urduphotodesigner.databinding.FragmentGradientColorListBinding
 import com.example.urduphotodesigner.ui.editor.panels.text.appearance.adapters.ColorsAdapter
@@ -80,18 +81,42 @@ class GradientColorListFragment : Fragment() {
                 ?.childFragmentManager
                 ?.popBackStack()
         }
+
+        binding.opacity.setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(sb: SeekBar, alpha: Int, fromUser: Boolean) {
+                if (fromUser) {
+                    // extract RGB from the original stop color
+                    val rgb = selectedColor and 0x00FFFFFF
+                    // bake new alpha in front of that
+                    selectedColor = bakeAlpha((alpha shl 24) or rgb)
+                }
+            }
+            override fun onStartTrackingTouch(sb: SeekBar) {}
+            override fun onStopTrackingTouch(sb: SeekBar) {}
+        })
     }
 
     private fun initObserver() {
-        viewModel.selectedStopIndex.observe(viewLifecycleOwner) { index ->
-            // index is guaranteed non-null here
-            val gradient = viewModel.gradient.value ?: return@observe
-            if (index in gradient.colors.indices) {
-                val color = gradient.colors[index!!]
-                colorsAdapter.selectedColor = color
-                selectedColor = color
-            }
+        viewModel.gradientStopColor.observe(viewLifecycleOwner) { color ->
+            selectedColor = color
+            colorsAdapter.selectedColor = selectedColor
+            val alpha = Color.alpha(selectedColor)
+            binding.opacity.progress = alpha
         }
+    }
+
+    private fun bakeAlpha(srcColor: Int, bgColor: Int = Color.WHITE): Int {
+        val a = Color.alpha(srcColor)
+        val r = Color.red(srcColor)
+        val g = Color.green(srcColor)
+        val b = Color.blue(srcColor)
+        val br = Color.red(bgColor)
+        val bg = Color.green(bgColor)
+        val bb = Color.blue(bgColor)
+        val outR = (r * a + br * (255 - a)) / 255
+        val outG = (g * a + bg * (255 - a)) / 255
+        val outB = (b * a + bb * (255 - a)) / 255
+        return Color.rgb(outR, outG, outB)
     }
 
     override fun onDestroyView() {

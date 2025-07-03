@@ -15,4 +15,13 @@
         android:layout_height="match_parent"
         android:background="@color/appColor"/>
 
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/ic_edit_gradient"
+        app:tint="@color/white"
+        android:padding="@dimen/_5sdp"
+        android:id="@+id/edit"
+        android:visibility="gone"/>
+
 </com.google.android.material.card.MaterialCardView>

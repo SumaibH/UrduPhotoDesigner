@@ -11,6 +11,7 @@ import androidx.core.graphics.toColorInt
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.common.canvas.enums.LabelShape
@@ -22,7 +23,10 @@ import com.example.urduphotodesigner.ui.editor.panels.background.gradients.Gradi
 import com.example.urduphotodesigner.ui.editor.panels.text.appearance.adapters.ColorsAdapter
 import com.example.urduphotodesigner.ui.editor.panels.text.appearance.adapters.ShapesAdapter
 import com.example.urduphotodesigner.ui.editor.panels.text.appearance.childs.gradient.ColorPickerFragment
+import com.example.urduphotodesigner.ui.editor.panels.text.appearance.childs.gradient.GradientEditorFragment
+import com.example.urduphotodesigner.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class LabelsFragment : Fragment() {
@@ -30,6 +34,7 @@ class LabelsFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: CanvasViewModel by activityViewModels()
+    private val mainViewModel: MainViewModel by activityViewModels()
     private lateinit var colorsAdapter: ColorsAdapter
     private lateinit var gradientsAdapter: GradientsAdapter
 
@@ -94,7 +99,7 @@ class LabelsFragment : Fragment() {
         })
 
         gradientsAdapter = GradientsAdapter(
-            gradientList = Constants.gradientList,
+            gradientList = emptyList(),
             onGradientSelected = { _, item ->
                 val colorsArray = item.colors.toIntArray()
                 val positions = FloatArray(colorsArray.size) { i ->
@@ -103,11 +108,30 @@ class LabelsFragment : Fragment() {
                 val labelShape = viewModel.labelShape.value ?: LabelShape.RECTANGLE_FILL
                 viewModel.setTextLabelGradient(true, labelShape, colorsArray, positions)
             },
+            onGradientEditSelected = { _, item ->
+                viewModel.setGradient(item)
+                childFragmentManager
+                    .beginTransaction()
+                    .replace(R.id.labelsFragment, GradientEditorFragment().apply {
+                        arguments = Bundle().apply {
+                            putBoolean("IS_EDIT", true)
+                        }})
+                    .addToBackStack(null)
+                    .commit()
+            },
             onNoneSelected = {
                viewModel.clearLabelGradients()
             },
             onGradientPickerClicked = {
-//                openColorPickerDialog()
+                viewModel.setPagingLocked(true)
+                childFragmentManager
+                    .beginTransaction()
+                    .replace(R.id.labelsFragment, GradientEditorFragment().apply {
+                        arguments = Bundle().apply {
+                            putBoolean("IS_EDIT", false)
+                        }})
+                    .addToBackStack(null)
+                    .commit()
             }
         )
 
@@ -197,6 +221,12 @@ class LabelsFragment : Fragment() {
 
         viewModel.labelShape.observe(viewLifecycleOwner) { shape ->
             shapesAdapter.selectedShape = shape
+        }
+
+        lifecycleScope.launch {
+            mainViewModel.gradients.observe(viewLifecycleOwner) { gradients ->
+                gradientsAdapter.updateList(gradients)
+            }
         }
     }
 

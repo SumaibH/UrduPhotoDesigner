@@ -14,8 +14,10 @@ import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
+import android.graphics.RadialGradient
 import android.graphics.RectF
 import android.graphics.Shader
+import android.graphics.SweepGradient
 import android.graphics.Typeface
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
@@ -31,6 +33,7 @@ import androidx.core.graphics.withTranslation
 import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.canvas.enums.BlendType
 import com.example.urduphotodesigner.common.canvas.enums.ElementType
+import com.example.urduphotodesigner.common.canvas.enums.GradientType
 import com.example.urduphotodesigner.common.canvas.enums.HAlign
 import com.example.urduphotodesigner.common.canvas.enums.LabelShape
 import com.example.urduphotodesigner.common.canvas.enums.LetterCasing
@@ -43,14 +46,18 @@ import com.example.urduphotodesigner.common.canvas.enums.VAlign
 import com.example.urduphotodesigner.common.canvas.model.CanvasElement
 import com.example.urduphotodesigner.common.canvas.model.ExportOptions
 import com.example.urduphotodesigner.common.canvas.model.ExportResolution
+import com.example.urduphotodesigner.common.canvas.model.GradientItem
 import com.example.urduphotodesigner.common.canvas.sealed.ImageFilter
 import com.example.urduphotodesigner.data.model.FontEntity
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.math.abs
 import kotlin.math.atan2
+import kotlin.math.cos
 import kotlin.math.hypot
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.roundToInt
+import kotlin.math.sin
 
 class CanvasView @JvmOverloads constructor(
     context: Context,
@@ -82,7 +89,7 @@ class CanvasView @JvmOverloads constructor(
     private var desiredIconScreenSizePx = 36f
     private var iconTouched: String? = null
 
-    private var backgroundGradient: LinearGradient? = null
+    private var backgroundGradient: GradientItem? = null
     private var backgroundImage: Bitmap? = null
     private val canvasElements = mutableListOf<CanvasElement>()
 
@@ -425,18 +432,74 @@ class CanvasView @JvmOverloads constructor(
     }
 
     fun setCanvasBackgroundColor(color: Int) {
+        backgroundPaint.shader = null
         backgroundPaint.color = color
         backgroundGradient = null
         backgroundImage = null
         invalidate()
     }
 
-    fun setCanvasBackgroundGradient(colors: IntArray, positions: FloatArray? = null) {
-        backgroundGradient = LinearGradient(
-            0f, 0f, canvasWidth.toFloat(), canvasHeight.toFloat(),
-            colors, positions, Shader.TileMode.CLAMP
-        )
+    fun setCanvasBackgroundGradient(gradientItem: GradientItem) {
+        // clear any image
         backgroundImage = null
+
+        // build a shader matching your preview logic
+        val w = canvasWidth.toFloat()
+        val h = canvasHeight.toFloat()
+        val colors    = gradientItem.colors.toIntArray()
+        val positions = gradientItem.positions.toFloatArray()
+
+        backgroundPaint.shader = when (gradientItem.type) {
+            GradientType.LINEAR -> {
+                // same math as createGradientPreviewDrawable
+                val angleRad    = Math.toRadians(gradientItem.angle.toDouble())
+                val scaledW     = w * gradientItem.scale
+                val scaledH     = h * gradientItem.scale
+                val dx          = (cos(angleRad) * scaledW).toFloat()
+                val dy          = (sin(angleRad) * scaledH).toFloat()
+                val cx          = w/2f
+                val cy          = h/2f
+                val x0          = cx - dx/2f
+                val y0          = cy - dy/2f
+                val x1          = cx + dx/2f
+                val y1          = cy + dy/2f
+
+                LinearGradient(
+                    x0, y0, x1, y1,
+                    colors, positions,
+                    Shader.TileMode.CLAMP
+                )
+            }
+
+            GradientType.RADIAL -> {
+                val cx        = w * gradientItem.centerX
+                val cy        = h * gradientItem.centerY
+                val maxRadius = min(w, h)/2f
+                val radius    = maxRadius * gradientItem.radialRadiusFactor * gradientItem.scale
+
+                RadialGradient(
+                    cx, cy, radius,
+                    colors, positions,
+                    Shader.TileMode.CLAMP
+                )
+            }
+
+            GradientType.SWEEP -> {
+                val cx = w * gradientItem.centerX
+                val cy = h * gradientItem.centerY
+                SweepGradient(cx, cy, colors, positions).apply {
+                    // rotate start angle
+                    val mat = Matrix()
+                    mat.setRotate(gradientItem.sweepStartAngle, cx, cy)
+                    setLocalMatrix(mat)
+                }
+            }
+        }
+
+        // remember current gradient in case you need undo/redo
+        backgroundGradient = gradientItem
+
+        // redraw
         invalidate()
     }
 
@@ -516,8 +579,7 @@ class CanvasView @JvmOverloads constructor(
             // backgroundImage is already sized to canvasWidth x canvasHeight in setCanvasBackgroundImage
             canvas.drawBitmap(backgroundImage!!, 0f, 0f, null)
         } else if (backgroundGradient != null) {
-            val gradientPaint = Paint().apply { shader = backgroundGradient }
-            canvas.drawRect(0f, 0f, canvasWidth.toFloat(), canvasHeight.toFloat(), gradientPaint)
+            canvas.drawRect(0f, 0f, canvasWidth.toFloat(), canvasHeight.toFloat(), backgroundPaint)
         } else {
             canvas.drawRect(0f, 0f, canvasWidth.toFloat(), canvasHeight.toFloat(), backgroundPaint)
         }
@@ -734,8 +796,7 @@ class CanvasView @JvmOverloads constructor(
             if (backgroundImage != null) {
                 drawBitmap(backgroundImage!!, 0f, 0f, null)
             } else if (backgroundGradient != null) {
-                val gradientPaint = Paint().apply { shader = backgroundGradient }
-                drawRect(0f, 0f, canvasWidth.toFloat(), canvasHeight.toFloat(), gradientPaint)
+                drawRect(0f, 0f, canvasWidth.toFloat(), canvasHeight.toFloat(), backgroundPaint)
             } else {
                 drawRect(0f, 0f, canvasWidth.toFloat(), canvasHeight.toFloat(), backgroundPaint)
             }

@@ -7,17 +7,25 @@ import com.example.urduphotodesigner.common.utils.SocketFactoryWithTcpNoDelay
 import com.example.urduphotodesigner.common.datastore.PreferenceDataStoreAPI
 import com.example.urduphotodesigner.common.datastore.PreferencesDataStoreHelper
 import com.example.urduphotodesigner.data.local.AppDatabase
+import com.example.urduphotodesigner.data.local.GradientDao
 import com.example.urduphotodesigner.data.remote.EndPointsInterface
 import com.example.urduphotodesigner.data.repository.AuthRepositoryImpl
 import com.example.urduphotodesigner.data.repository.FetchFontsRepoImpl
 import com.example.urduphotodesigner.data.repository.FetchImagesRepoImpl
 import com.example.urduphotodesigner.data.repository.FontsRepoImpl
+import com.example.urduphotodesigner.data.repository.GradientRepositoryImpl
 import com.example.urduphotodesigner.data.repository.ImagesRepoImpl
 import com.example.urduphotodesigner.domain.repo.AuthRepository
 import com.example.urduphotodesigner.domain.repo.FetchFontsRepo
 import com.example.urduphotodesigner.domain.repo.FetchImagesRepo
 import com.example.urduphotodesigner.domain.repo.FontsRepo
+import com.example.urduphotodesigner.domain.repo.GradientRepository
 import com.example.urduphotodesigner.domain.repo.ImagesRepo
+import com.example.urduphotodesigner.domain.usecase.DeleteGradientUseCase
+import com.example.urduphotodesigner.domain.usecase.GetAllGradientsUseCase
+import com.example.urduphotodesigner.domain.usecase.InsertGradientUseCase
+import com.example.urduphotodesigner.domain.usecase.SeedGradientsUseCase
+import com.example.urduphotodesigner.domain.usecase.UpdateGradientUseCase
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.identity.SignInClient
@@ -151,4 +159,27 @@ object AppModule {
     ): AuthRepository {
         return AuthRepositoryImpl(oneTapClient, signInRequest, preferenceDataStoreAPI, authApiService)
     }
+
+    @Provides @Singleton
+    fun provideGradientDao(db: AppDatabase): GradientDao =
+        db.gradientDao()
+
+    @Provides @Singleton
+    fun provideGradientRepository(dao: GradientDao): GradientRepository =
+        GradientRepositoryImpl(dao)
+
+    @Provides @Singleton
+    fun provideGetAllUseCase(repo: GradientRepository) = GetAllGradientsUseCase(repo)
+
+    @Provides @Singleton
+    fun provideSeedUseCase(repo: GradientRepository) = SeedGradientsUseCase(repo)
+
+    @Provides @Singleton
+    fun provideDeleteUseCase(repo: GradientRepository) = DeleteGradientUseCase(repo)
+
+    @Provides @Singleton
+    fun provideUpdateUseCase(repo: GradientRepository) = UpdateGradientUseCase(repo)
+
+    @Provides @Singleton
+    fun provideInsertUseCase(repo: GradientRepository) = InsertGradientUseCase(repo)
 }

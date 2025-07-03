@@ -5,9 +5,12 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.createBitmap
+import androidx.core.view.doOnLayout
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.canvas.model.GradientItem
@@ -15,8 +18,9 @@ import com.example.urduphotodesigner.databinding.LayoutColorItemBinding
 import com.example.urduphotodesigner.databinding.LayoutColorPickerItemBinding
 
 class GradientsAdapter(
-    private val gradientList: List<GradientItem>,
+    private var gradientList: List<GradientItem>,
     private val onGradientSelected: (Bitmap, GradientItem) -> Unit,
+    private val onGradientEditSelected: (Bitmap, GradientItem) -> Unit,
     private val onNoneSelected: () -> Unit,
     private val onGradientPickerClicked: () -> Unit
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -40,6 +44,16 @@ class GradientsAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: GradientItem, isSelected: Boolean) {
+//            binding.colorView.doOnLayout {
+//                val w = it.width
+//                val h = it.height
+//                val drawable = item.createGradientPreviewDrawable(
+//                    item,
+//                    width = w,
+//                    height = h
+//                )
+//                it.background = drawable
+//            }
             binding.colorView.background = GradientDrawable(
                 GradientDrawable.Orientation.RIGHT_LEFT,
                 item.colors.toIntArray()
@@ -49,9 +63,11 @@ class GradientsAdapter(
             if (isSelected) {
                 binding.root.strokeWidth = 4
                 binding.root.setCardBackgroundColor(Color.WHITE)
+                binding.edit.visibility = View.VISIBLE
                 binding.root.strokeColor = ContextCompat.getColor(binding.root.context, R.color.appColor)
             } else {
                 binding.root.strokeWidth = 0
+                binding.edit.visibility = View.GONE
                 binding.root.setCardBackgroundColor(Color.WHITE)
             }
 
@@ -59,20 +75,29 @@ class GradientsAdapter(
                 val previousSelected = selectedPosition
                 selectedPosition = adapterPosition
 
+                val width = if (gradientDrawable.intrinsicWidth > 0) gradientDrawable.intrinsicWidth else 100
+                val height = if (gradientDrawable.intrinsicHeight > 0) gradientDrawable.intrinsicHeight else 100
+                val drawable = item.createGradientPreviewDrawable(
+                    item,
+                    width = width,
+                    height = height
+                )
+                val bmp = createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                val canvas = Canvas(bmp)
+                drawable.setBounds(0, 0, canvas.width, canvas.height)
+                drawable.draw(canvas)
+
+                if (binding.edit.isVisible){
+                    onGradientEditSelected(bmp, item)
+                    selectedItem = item
+                }else{
+                    onGradientSelected(bmp, item)
+                    selectedItem = item
+                }
                 if (previousSelected != RecyclerView.NO_POSITION && previousSelected != selectedPosition) {
                     notifyItemChanged(previousSelected)
                 }
                 notifyItemChanged(selectedPosition)
-
-                val width = if (gradientDrawable.intrinsicWidth > 0) gradientDrawable.intrinsicWidth else 100
-                val height = if (gradientDrawable.intrinsicHeight > 0) gradientDrawable.intrinsicHeight else 100
-                val bmp = createBitmap(width, height, Bitmap.Config.ARGB_8888)
-                val canvas = Canvas(bmp)
-                gradientDrawable.setBounds(0, 0, canvas.width, canvas.height)
-                gradientDrawable.draw(canvas)
-
-                onGradientSelected(bmp, item)
-                selectedItem = item
             }
         }
     }
@@ -135,5 +160,10 @@ class GradientsAdapter(
             val gradientItem = gradientList[position - 2]
             holder.bind(gradientItem, position == selectedPosition)
         }
+    }
+
+    fun updateList(new:List<GradientItem>){
+        gradientList = new
+        notifyDataSetChanged()
     }
 }

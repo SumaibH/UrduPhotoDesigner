@@ -10,6 +10,7 @@ import androidx.fragment.app.activityViewModels
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.databinding.FragmentColorPickerBinding
 import dagger.hilt.android.AndroidEntryPoint
+import kotlin.math.roundToInt
 
 @AndroidEntryPoint
 class ColorPickerFragment : Fragment() {
@@ -17,6 +18,7 @@ class ColorPickerFragment : Fragment() {
     private val binding get() = _binding!!
     private val viewModel: CanvasViewModel by activityViewModels()
     private var currentHue = 0f
+    private var tempColor: Int = Color.RED
 
     // rainbow stops for hue bar
     private val rainbow = intArrayOf(
@@ -37,7 +39,22 @@ class ColorPickerFragment : Fragment() {
         binding.back.setOnClickListener { parentFragment?.childFragmentManager?.popBackStack() }
         setupHueBar()
         setupAlphaBar()
-        binding.seekbarHue.onProgressChanged?.invoke(binding.seekbarHue.progress.toInt())
+        val hueBar   = binding.seekbarHue
+        val alphaBar = binding.seekbarAlpha
+
+        val initialHue   = (hueBar.progress   * hueBar.max).roundToInt()
+        val initialAlpha = (alphaBar.progress * alphaBar.max).roundToInt()
+
+        hueBar.onProgressChanged  ?.invoke(initialHue)
+        alphaBar.onProgressChanged?.invoke(initialAlpha)
+        binding.back.setOnClickListener {
+            viewModel.stopPicking()
+            parentFragment?.childFragmentManager?.popBackStack()
+        }
+        binding.done.setOnClickListener {
+            viewModel.finishPicking(tempColor)
+            parentFragment?.childFragmentManager?.popBackStack()
+        }
     }
 
     private fun setupHueBar() {
@@ -53,11 +70,9 @@ class ColorPickerFragment : Fragment() {
                 val bakedTransparent = bakeAlpha(rawTransparent)
                 binding.seekbarAlpha.setGradient(intArrayOf(bakedTransparent, opaque))
 
+                val alphaInt = binding.seekbarAlpha.progress.toInt() * binding.seekbarAlpha.max
                 binding.seekbarAlpha.progress = binding.seekbarAlpha.progress
-
-                val alphaInt = binding.seekbarAlpha.progress.toInt()
-                val composite = bakeAlpha((alphaInt shl 24) or (opaque and 0x00FFFFFF))
-                viewModel.finishPicking(composite)
+                tempColor = bakeAlpha((alphaInt shl 24) or (opaque and 0x00FFFFFF))
             }
         }
     }
@@ -73,8 +88,7 @@ class ColorPickerFragment : Fragment() {
             progress = max.toFloat()
             onProgressChanged = { alphaVal ->
                 val hsvRgb = Color.HSVToColor(floatArrayOf(currentHue, 1f, 1f)) and 0x00FFFFFF
-                val composite = bakeAlpha((alphaVal shl 24) or hsvRgb)
-                viewModel.finishPicking(composite)
+                tempColor = bakeAlpha((alphaVal shl 24) or hsvRgb)
             }
         }
     }

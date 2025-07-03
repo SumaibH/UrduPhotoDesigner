@@ -13,6 +13,7 @@ import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.common.canvas.enums.GradientType
 import com.example.urduphotodesigner.databinding.FragmentGradientEditorBinding
+import com.example.urduphotodesigner.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -20,6 +21,15 @@ class GradientEditorFragment : Fragment() {
     private var _binding: FragmentGradientEditorBinding? = null
     private val binding get() = _binding!!
     private val viewModel: CanvasViewModel by activityViewModels()
+    private val mainViewModel: MainViewModel by activityViewModels()
+
+    private var isEdit: Boolean = false
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // pull the boolean out of arguments
+        isEdit = arguments?.getBoolean("IS_EDIT", false) ?: false
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -86,6 +96,10 @@ class GradientEditorFragment : Fragment() {
 
     private fun setEvents() {
 
+        binding.delete.visibility = if (isEdit) View.VISIBLE else View.GONE
+
+        binding.delete.setOnClickListener { mainViewModel.deleteGradient(viewModel.gradient.value?.id ?: -1) }
+
         binding.linear.setOnClickListener {
             viewModel.setType(GradientType.LINEAR)
             updateButtonTints(binding.linear)
@@ -101,6 +115,7 @@ class GradientEditorFragment : Fragment() {
 
         binding.back.setOnClickListener {
             viewModel.setPagingLocked(false)
+            viewModel.clearGradient()
             parentFragment
                 ?.childFragmentManager
                 ?.popBackStack()
@@ -135,6 +150,19 @@ class GradientEditorFragment : Fragment() {
                 .replace(R.id.gradientEditor, GradientSettingFragment())
                 .addToBackStack(null)
                 .commit()
+        }
+
+        binding.done.setOnClickListener {
+            if (isEdit){
+                mainViewModel.updateGradient(viewModel.gradient.value!!)
+            }else{
+                mainViewModel.insertGradient(viewModel.gradient.value!!)
+            }
+            viewModel.setPagingLocked(false)
+            viewModel.clearGradient()
+            parentFragment
+                ?.childFragmentManager
+                ?.popBackStack()
         }
     }
 

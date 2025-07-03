@@ -12,6 +12,7 @@ import androidx.core.graphics.toColorInt
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.urduphotodesigner.R
@@ -23,7 +24,9 @@ import com.example.urduphotodesigner.ui.editor.panels.background.gradients.Gradi
 import com.example.urduphotodesigner.ui.editor.panels.text.appearance.adapters.ColorsAdapter
 import com.example.urduphotodesigner.ui.editor.panels.text.appearance.childs.gradient.ColorPickerFragment
 import com.example.urduphotodesigner.ui.editor.panels.text.appearance.childs.gradient.GradientEditorFragment
+import com.example.urduphotodesigner.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class FillStrokeFragment : Fragment() {
@@ -33,6 +36,7 @@ class FillStrokeFragment : Fragment() {
     private lateinit var colorsAdapter: ColorsAdapter
     private lateinit var gradientsAdapter: GradientsAdapter
     private val viewModel: CanvasViewModel by activityViewModels()
+    private val mainViewModel: MainViewModel by activityViewModels()
     private var currentTab: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,9 +56,9 @@ class FillStrokeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupControlsVisibility()
+        setupRecyclerView()
         initObservers()
         setEvents()
-        setupRecyclerView()
     }
 
     private fun setupRecyclerView() {
@@ -102,7 +106,7 @@ class FillStrokeFragment : Fragment() {
         })
 
         gradientsAdapter = GradientsAdapter(
-            gradientList = Constants.gradientList,
+            gradientList = emptyList(),
             onGradientSelected = { _, item ->
                 when (currentTab?.lowercase()) {
                     "stroke" -> {
@@ -123,6 +127,17 @@ class FillStrokeFragment : Fragment() {
                     }
                 }
             },
+            onGradientEditSelected = { _, item ->
+                viewModel.setGradient(item)
+                childFragmentManager
+                    .beginTransaction()
+                    .replace(R.id.fillStroke, GradientEditorFragment().apply {
+                        arguments = Bundle().apply {
+                            putBoolean("IS_EDIT", true)
+                        }})
+                    .addToBackStack(null)
+                    .commit()
+            },
             onNoneSelected = {
                 when (currentTab?.lowercase()) {
                     "stroke" -> {
@@ -136,7 +151,10 @@ class FillStrokeFragment : Fragment() {
                 viewModel.setPagingLocked(true)
                 childFragmentManager
                     .beginTransaction()
-                    .replace(R.id.fillStroke, GradientEditorFragment())
+                    .replace(R.id.fillStroke, GradientEditorFragment().apply {
+                        arguments = Bundle().apply {
+                            putBoolean("IS_EDIT", false)
+                        }})
                     .addToBackStack(null)
                     .commit()
             }
@@ -178,6 +196,12 @@ class FillStrokeFragment : Fragment() {
             }
             if (match != null) {
                 gradientsAdapter.selectedItem = match
+            }
+        }
+
+        lifecycleScope.launch {
+            mainViewModel.gradients.observe(viewLifecycleOwner) { gradients ->
+                gradientsAdapter.updateList(gradients)
             }
         }
     }
