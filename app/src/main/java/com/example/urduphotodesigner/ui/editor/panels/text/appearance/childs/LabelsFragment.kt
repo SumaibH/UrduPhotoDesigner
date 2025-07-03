@@ -101,12 +101,8 @@ class LabelsFragment : Fragment() {
         gradientsAdapter = GradientsAdapter(
             gradientList = emptyList(),
             onGradientSelected = { _, item ->
-                val colorsArray = item.colors.toIntArray()
-                val positions = FloatArray(colorsArray.size) { i ->
-                    if (colorsArray.size == 1) 0f else i.toFloat() / (colorsArray.size - 1)
-                }
                 val labelShape = viewModel.labelShape.value ?: LabelShape.RECTANGLE_FILL
-                viewModel.setTextLabelGradient(true, labelShape, colorsArray, positions)
+                viewModel.setTextLabelGradient(true, labelShape, item)
             },
             onGradientEditSelected = { _, item ->
                 viewModel.setGradient(item)
@@ -221,6 +217,10 @@ class LabelsFragment : Fragment() {
 
         viewModel.labelShape.observe(viewLifecycleOwner) { shape ->
             shapesAdapter.selectedShape = shape
+        }
+
+        viewModel.labelGradient.observe(viewLifecycleOwner) { gradient ->
+            gradientsAdapter.selectedItem = gradient
         }
 
         lifecycleScope.launch {

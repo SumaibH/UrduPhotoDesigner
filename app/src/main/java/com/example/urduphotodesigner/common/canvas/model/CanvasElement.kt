@@ -71,16 +71,13 @@ data class CanvasElement(
     var listStyle: ListStyle = ListStyle.NONE,
 
     // text fill gradient
-    var fillGradientColors: IntArray? = null,
-    var fillGradientPositions: FloatArray? = null,
+    var fillGradient: GradientItem? = null,
 
     // text stroke gradient
-    var strokeGradientColors: IntArray? = null,
-    var strokeGradientPositions: FloatArray? = null,
+    var strokeGradient: GradientItem? = null,
 
     // text label gradient
-    var labelGradientColors: IntArray? = null,
-    var labelGradientPositions: FloatArray? = null,
+    var labelGradient: GradientItem? = null,
 
     @Transient
     var originalTypeface: Typeface? = null,

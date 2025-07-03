@@ -443,63 +443,11 @@ class CanvasView @JvmOverloads constructor(
         // clear any image
         backgroundImage = null
 
-        // build a shader matching your preview logic
         val w = canvasWidth.toFloat()
         val h = canvasHeight.toFloat()
-        val colors    = gradientItem.colors.toIntArray()
-        val positions = gradientItem.positions.toFloatArray()
-
-        backgroundPaint.shader = when (gradientItem.type) {
-            GradientType.LINEAR -> {
-                // same math as createGradientPreviewDrawable
-                val angleRad    = Math.toRadians(gradientItem.angle.toDouble())
-                val scaledW     = w * gradientItem.scale
-                val scaledH     = h * gradientItem.scale
-                val dx          = (cos(angleRad) * scaledW).toFloat()
-                val dy          = (sin(angleRad) * scaledH).toFloat()
-                val cx          = w/2f
-                val cy          = h/2f
-                val x0          = cx - dx/2f
-                val y0          = cy - dy/2f
-                val x1          = cx + dx/2f
-                val y1          = cy + dy/2f
-
-                LinearGradient(
-                    x0, y0, x1, y1,
-                    colors, positions,
-                    Shader.TileMode.CLAMP
-                )
-            }
-
-            GradientType.RADIAL -> {
-                val cx        = w * gradientItem.centerX
-                val cy        = h * gradientItem.centerY
-                val maxRadius = min(w, h)/2f
-                val radius    = maxRadius * gradientItem.radialRadiusFactor * gradientItem.scale
-
-                RadialGradient(
-                    cx, cy, radius,
-                    colors, positions,
-                    Shader.TileMode.CLAMP
-                )
-            }
-
-            GradientType.SWEEP -> {
-                val cx = w * gradientItem.centerX
-                val cy = h * gradientItem.centerY
-                SweepGradient(cx, cy, colors, positions).apply {
-                    // rotate start angle
-                    val mat = Matrix()
-                    mat.setRotate(gradientItem.sweepStartAngle, cx, cy)
-                    setLocalMatrix(mat)
-                }
-            }
-        }
-
-        // remember current gradient in case you need undo/redo
+        backgroundPaint.shader = createGradientShader(gradientItem, w, h)
         backgroundGradient = gradientItem
 
-        // redraw
         invalidate()
     }
 
@@ -1116,6 +1064,59 @@ class CanvasView @JvmOverloads constructor(
         }
     }
 
+    private fun createGradientShader(
+        gradientItem: GradientItem,
+        width: Float,
+        height: Float,
+        centered: Boolean = false
+    ): Shader {
+        val colors    = gradientItem.colors.toIntArray()
+        val positions = gradientItem.positions.toFloatArray()
+
+        // center point
+        val cx = if (centered) 0f else width  / 2f
+        val cy = if (centered) 0f else height / 2f
+
+        return when (gradientItem.type) {
+            GradientType.LINEAR -> {
+                // angle in radians
+                val θ    = Math.toRadians(gradientItem.angle.toDouble())
+                // scaled vector
+                val dx   = (cos(θ) * width  * gradientItem.scale).toFloat()
+                val dy   = (sin(θ) * height * gradientItem.scale).toFloat()
+                // half-length
+                val hx   = dx / 2f
+                val hy   = dy / 2f
+
+                LinearGradient(
+                    cx - hx, cy - hy,
+                    cx + hx, cy + hy,
+                    colors, positions,
+                    Shader.TileMode.CLAMP
+                )
+            }
+
+            GradientType.RADIAL -> {
+                val radius = min(width, height) / 2f * gradientItem.radialRadiusFactor * gradientItem.scale
+                RadialGradient(
+                    cx, cy, radius,
+                    colors, positions,
+                    Shader.TileMode.CLAMP
+                )
+            }
+
+            GradientType.SWEEP -> {
+                SweepGradient(cx, cy, colors, positions).apply {
+                    // rotate start angle around center
+                    val m = Matrix().apply {
+                        postRotate(gradientItem.sweepStartAngle, cx, cy)
+                    }
+                    setLocalMatrix(m)
+                }
+            }
+        }
+    }
+
     private fun drawTextElement(canvas: Canvas, element: CanvasElement) {
         val lines = element.text.split("\n")
         val fm = element.paint.fontMetrics
@@ -1137,15 +1138,14 @@ class CanvasView @JvmOverloads constructor(
                 isAntiAlias = true
             }
 
-            element.labelGradientColors?.let { colors ->
-                // measure the widest line so your gradient spans the text
-                val maxWidth = lines.maxOf { labelPaint.measureText(it) }
-                labelPaint.shader = LinearGradient(
-                    -maxWidth / 2f, 0f,
-                    maxWidth / 2f, 0f,
-                    colors,
-                    element.labelGradientPositions,
-                    Shader.TileMode.CLAMP
+            element.labelGradient?.let { gradient ->
+//                val maxWidth = lines.maxOf { labelPaint.measureText(it) }
+                val rectW = labelRect.width()
+                val rectH = labelRect.height()
+                labelPaint.shader = createGradientShader(
+                    gradientItem = gradient,  // assume you store gradient settings here
+                    width  = rectW,
+                    height = rectH
                 )
             } ?: run {
                 labelPaint.shader = null
@@ -1281,15 +1281,13 @@ class CanvasView @JvmOverloads constructor(
                 else -> 0f
             }
 
-            element.fillGradientColors?.let { colors ->
-                // measure the widest line so your gradient spans the text
-                val maxLineWidth = lines.maxOf { fillPaint.measureText(it) }
-                fillPaint.shader = LinearGradient(
-                    -maxLineWidth / 2f, 0f,
-                    maxLineWidth / 2f, 0f,
-                    colors,
-                    element.fillGradientPositions,
-                    Shader.TileMode.CLAMP
+            element.fillGradient?.let { gradient ->
+                val textWidth  = fillPaint.measureText(displayText)
+                val textHeight = fillPaint.textSize
+                fillPaint.shader = createGradientShader(
+                    gradientItem = gradient,
+                    width  = textWidth,
+                    height = textHeight
                 )
             } ?: run {
                 fillPaint.shader = null
@@ -1368,15 +1366,14 @@ class CanvasView @JvmOverloads constructor(
                     val strokePaint = TextPaint(fillPaint).apply {
                         style = Paint.Style.STROKE
                         strokeWidth = element.strokeWidth
-                        element.strokeGradientColors?.let { sColors ->
+                        element.strokeGradient?.let { gradient ->
                             // use same width to span stroke gradient
-                            val w = element.strokeWidth
-                            shader = LinearGradient(
-                                -w / 2f, 0f,
-                                w / 2f, 0f,
-                                sColors,
-                                element.strokeGradientPositions ?: floatArrayOf(0f, 1f),
-                                Shader.TileMode.CLAMP
+                            val textWidth  = fillPaint.measureText(displayText)
+                            val textHeight = fillPaint.textSize
+                            shader = createGradientShader(
+                                gradientItem = gradient,
+                                width  = textWidth,
+                                height = textHeight
                             )
                         } ?: run {
                             shader = null

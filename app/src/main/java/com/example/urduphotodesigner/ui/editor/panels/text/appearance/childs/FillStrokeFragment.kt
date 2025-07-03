@@ -110,20 +110,12 @@ class FillStrokeFragment : Fragment() {
             onGradientSelected = { _, item ->
                 when (currentTab?.lowercase()) {
                     "stroke" -> {
-                        val colorsArray = item.colors.toIntArray()
-                        val positions = FloatArray(colorsArray.size) { i ->
-                            if (colorsArray.size == 1) 0f else i.toFloat() / (colorsArray.size - 1)
-                        }
                         val width = viewModel.borderWidth.value ?: 1f
-                        viewModel.setTextStrokeGradient(colorsArray, positions, width)
+                        viewModel.setTextStrokeGradient(item, width)
                     }
 
                     else -> {
-                        val colorsArray = item.colors.toIntArray()
-                        val positions = FloatArray(colorsArray.size) { i ->
-                            if (colorsArray.size == 1) 0f else i.toFloat() / (colorsArray.size - 1)
-                        }
-                        viewModel.setTextFillGradient(colorsArray, positions)
+                        viewModel.setTextFillGradient(item)
                     }
                 }
             },
@@ -161,10 +153,12 @@ class FillStrokeFragment : Fragment() {
         )
 
         binding.colors.apply {
+            setHasFixedSize(true)
             adapter = colorsAdapter
         }
 
         binding.gradients.apply {
+            setHasFixedSize(true)
             adapter = gradientsAdapter
         }
     }
@@ -190,13 +184,8 @@ class FillStrokeFragment : Fragment() {
             }
         }
 
-        viewModel.fillGradientColors.observe(viewLifecycleOwner) { colorsArray ->
-            val match = Constants.gradientList.find {
-                it.colors.toIntArray().contentEquals(colorsArray)
-            }
-            if (match != null) {
-                gradientsAdapter.selectedItem = match
-            }
+        viewModel.fillGradient.observe(viewLifecycleOwner) { gradient ->
+            gradientsAdapter.selectedItem = gradient
         }
 
         lifecycleScope.launch {

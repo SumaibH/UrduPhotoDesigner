@@ -57,18 +57,20 @@
         android:layout_marginTop="@dimen/_5sdp"
         android:id="@+id/views"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@id/labels"
         app:layout_constraintTop_toBottomOf="@id/toolbar">
         <androidx.recyclerview.widget.RecyclerView
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+            app:spanCount="2"
             tools:itemCount="100"
             android:orientation="horizontal"
             android:id="@+id/colors"
@@ -77,11 +79,13 @@
         <androidx.recyclerview.widget.RecyclerView
             android:layout_width="0dp"
             android:visibility="gone"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+            app:spanCount="2"
             tools:itemCount="100"
             android:orientation="horizontal"
             android:id="@+id/gradients"
@@ -100,6 +104,5 @@
         android:orientation="horizontal"
         android:id="@+id/labels"
         tools:listitem="@layout/layout_shape_item"/>
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

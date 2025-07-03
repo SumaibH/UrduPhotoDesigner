@@ -104,25 +104,16 @@ class CanvasViewModel @Inject constructor(
     private val _currentImageFilter = MutableLiveData<ImageFilter?>(null)
     val currentImageFilter: LiveData<ImageFilter?> = _currentImageFilter
 
-    private val _fillGradientColors = MutableLiveData<IntArray?>()
-    val fillGradientColors: LiveData<IntArray?> = _fillGradientColors
-
-    private val _fillGradientPositions = MutableLiveData<FloatArray?>()
-    val fillGradientPositions: LiveData<FloatArray?> = _fillGradientPositions
+    private val _fillGradient = MutableLiveData<GradientItem?>()
+    val fillGradient: LiveData<GradientItem?> = _fillGradient
 
     // Stroke gradient
-    private val _strokeGradientColors = MutableLiveData<IntArray?>()
-    val strokeGradientColors: LiveData<IntArray?> = _strokeGradientColors
-
-    private val _strokeGradientPositions = MutableLiveData<FloatArray?>()
-    val strokeGradientPositions: LiveData<FloatArray?> = _strokeGradientPositions
+    private val _strokeGradient = MutableLiveData<GradientItem?>()
+    val strokeGradient: LiveData<GradientItem?> = _strokeGradient
 
     // Stroke gradient
-    private val _labelGradientColors = MutableLiveData<IntArray?>()
-    val labelGradientColors: LiveData<IntArray?> = _labelGradientColors
-
-    private val _labelGradientPositions = MutableLiveData<FloatArray?>()
-    val labelGradientPositions: LiveData<FloatArray?> = _labelGradientPositions
+    private val _labelGradient = MutableLiveData<GradientItem?>()
+    val labelGradient: LiveData<GradientItem?> = _labelGradient
 
     // 🔷 Shadow
     private val _hasShadow = MutableLiveData<Boolean>(false)
@@ -600,9 +591,8 @@ class CanvasViewModel @Inject constructor(
         applyChangesToSelectedTextElements()
     }
 
-    fun setTextFillGradient(colors: IntArray, positions: FloatArray) {
-        _fillGradientColors.value = colors
-        _fillGradientPositions.value = positions
+    fun setTextFillGradient(gradientItem: GradientItem) {
+        _fillGradient.value = gradientItem
         applyChangesToSelectedTextElements()
     }
 
@@ -623,42 +613,29 @@ class CanvasViewModel @Inject constructor(
     }
 
     /** Call this when the user selects a new text‐stroke gradient */
-    fun setTextStrokeGradient(colors: IntArray, positions: FloatArray, width: Float) {
+    fun setTextStrokeGradient(gradientItem: GradientItem, width: Float) {
         _borderWidth.value = width
         _hasBorder.value = true
-        _strokeGradientColors.value = colors
-        _strokeGradientPositions.value = positions
-        applyChangesToSelectedTextElements()
-    }
-
-    /** Optional: clear gradients (back to solid color) */
-    fun clearGradients() {
-        _fillGradientColors.value = null
-        _fillGradientPositions.value = null
-        _strokeGradientColors.value = null
-        _strokeGradientPositions.value = null
+        _strokeGradient.value = gradientItem
         applyChangesToSelectedTextElements()
     }
 
     fun clearFillGradients() {
-        _fillGradientColors.value = null
-        _fillGradientPositions.value = null
+        _fillGradient.value = null
         applyChangesToSelectedTextElements()
     }
 
     fun clearStrokeGradients() {
         _borderWidth.value = 0f
         _hasBorder.value = false
-        _strokeGradientColors.value = null
-        _strokeGradientPositions.value = null
+        _strokeGradient.value = null
         applyChangesToSelectedTextElements()
     }
 
     fun setTextLabelGradient(
-        enabled: Boolean, shape: LabelShape, colors: IntArray, positions: FloatArray
+        enabled: Boolean, shape: LabelShape, gradientItem: GradientItem
     ) {
-        _labelGradientColors.value = colors
-        _labelGradientPositions.value = positions
+        _labelGradient.value = gradientItem
         _labelShape.value = shape
         _hasLabel.value = enabled
         applyChangesToSelectedTextElements()
@@ -673,8 +650,7 @@ class CanvasViewModel @Inject constructor(
 
     fun clearLabelGradients() {
         _hasLabel.value = false
-        _labelGradientColors.value = null
-        _labelGradientPositions.value = null
+        _labelGradient.value = null
         applyChangesToSelectedTextElements()
     }
 
@@ -760,20 +736,14 @@ class CanvasViewModel @Inject constructor(
                     labelColor = _labelColor.value ?: element.labelColor,
                     labelShape = _labelShape.value ?: element.labelShape,
 
-                    fillGradientColors = if (_fillGradientColors.value == null) null else _fillGradientColors.value
-                        ?: element.fillGradientColors,
-                    fillGradientPositions = if (_fillGradientPositions.value == null) null else _fillGradientPositions.value
-                        ?: element.fillGradientPositions,
+                    fillGradient = if (_fillGradient.value == null) null else _fillGradient.value
+                        ?: element.fillGradient,
 
-                    strokeGradientColors = if (_strokeGradientColors.value == null) null else _strokeGradientColors.value
-                        ?: element.strokeGradientColors,
-                    strokeGradientPositions = if (_strokeGradientPositions.value == null) null else _strokeGradientPositions.value
-                        ?: element.strokeGradientPositions,
+                    strokeGradient = if (_strokeGradient.value == null) null else _strokeGradient.value
+                        ?: element.strokeGradient,
 
-                    labelGradientColors = if (_labelGradientColors.value == null) null else _labelGradientColors.value
-                        ?: element.labelGradientColors,
-                    labelGradientPositions = if (_labelGradientPositions.value == null) null else _labelGradientPositions.value
-                        ?: element.labelGradientPositions,
+                    labelGradient = if (_labelGradient.value == null) null else _labelGradient.value
+                        ?: element.labelGradient,
 
                     blurValue = _blurValue.value ?: element.blurValue,
                     hasBlur = _hasBlur.value ?: element.hasBlur,
@@ -1155,12 +1125,9 @@ class CanvasViewModel @Inject constructor(
             _labelShape.value = textElement.labelShape
 
             // 🟡 Gradients
-            _fillGradientColors.value = textElement.fillGradientColors
-            _fillGradientPositions.value = textElement.fillGradientPositions
-            _strokeGradientColors.value = textElement.strokeGradientColors
-            _strokeGradientPositions.value = textElement.strokeGradientPositions
-            _labelGradientColors.value = textElement.labelGradientColors
-            _labelGradientPositions.value = textElement.labelGradientPositions
+            _fillGradient.value = textElement.fillGradient
+            _strokeGradient.value = textElement.strokeGradient
+            _labelGradient.value = textElement.labelGradient
 
             // 🟡 Blur and opacity settings
             _blurValue.value = textElement.blurValue
@@ -1203,12 +1170,9 @@ class CanvasViewModel @Inject constructor(
         _labelShape.value = LabelShape.RECTANGLE_FILL
 
         // Reset Gradients
-        _fillGradientColors.value = null
-        _fillGradientPositions.value = null
-        _strokeGradientColors.value = null
-        _strokeGradientPositions.value = null
-        _labelGradientColors.value = null
-        _labelGradientPositions.value = null
+        _fillGradient.value = null
+        _strokeGradient.value = null
+        _labelGradient.value = null
 
         // Reset Blur
         _blurValue.value = 0f
@@ -1301,7 +1265,7 @@ class CanvasViewModel @Inject constructor(
         // Only push if actually changed
         if (newGradient != previous) {
             // record the change (new, old)
-            _canvasActions.push(CanvasAction.SetBackgroundGradient(newGradient, previous!!))
+            _canvasActions.push(CanvasAction.SetBackgroundGradient(newGradient, previous))
             _redoStack.clear()
             _backgroundGradient.value = newGradient
             notifyUndoRedoChanged()

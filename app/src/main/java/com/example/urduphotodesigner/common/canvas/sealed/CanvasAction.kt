@@ -17,7 +17,7 @@ sealed class CanvasAction {
     data class SetBackgroundColor(val color: Int, val previousColor: Int) : CanvasAction()
     data class SetBackgroundImage(val bitmap: Bitmap?, val previousBitmap: Bitmap?) : CanvasAction()
     data class SetBackgroundGradient(
-        val gradientItem: GradientItem, val prevGradientItem: GradientItem
+        val gradientItem: GradientItem, val prevGradientItem: GradientItem?
     ) : CanvasAction()
 
     data class AddSticker(val sticker: CanvasElement) : CanvasAction()
