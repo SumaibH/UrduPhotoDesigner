@@ -23,6 +23,7 @@ class GradientEditorFragment : Fragment() {
     private val viewModel: CanvasViewModel by activityViewModels()
     private val mainViewModel: MainViewModel by activityViewModels()
 
+    private val vm: GradientViewModel by activityViewModels()
     private var isEdit: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -90,15 +91,22 @@ class GradientEditorFragment : Fragment() {
             val tint = if (btn == selected) defaultColor else contrastColor
             btn.backgroundTintList = ColorStateList.valueOf(tint)
         }
-        if (selected == binding.linear){binding.previewCard.radius = 10f}
-        else { binding.previewCard.radius = 100f }
+        if (selected == binding.linear) {
+            binding.previewCard.radius = 10f
+        } else {
+            binding.previewCard.radius = 100f
+        }
     }
 
     private fun setEvents() {
 
         binding.delete.visibility = if (isEdit) View.VISIBLE else View.GONE
 
-        binding.delete.setOnClickListener { mainViewModel.deleteGradient(viewModel.gradient.value?.id ?: -1) }
+        binding.delete.setOnClickListener {
+            mainViewModel.deleteGradient(
+                viewModel.gradient.value?.id ?: -1
+            )
+        }
 
         binding.linear.setOnClickListener {
             viewModel.setType(GradientType.LINEAR)
@@ -153,9 +161,9 @@ class GradientEditorFragment : Fragment() {
         }
 
         binding.done.setOnClickListener {
-            if (isEdit){
+            if (isEdit) {
                 mainViewModel.updateGradient(viewModel.gradient.value!!)
-            }else{
+            } else {
                 mainViewModel.insertGradient(viewModel.gradient.value!!)
             }
             viewModel.setPagingLocked(false)

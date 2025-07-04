@@ -87,6 +87,7 @@ class GradientColorListFragment : Fragment() {
                 if (fromUser) {
                     // extract RGB from the original stop color
                     val rgb = selectedColor and 0x00FFFFFF
+                    binding.opacitySize.text = "$alpha"
                     // bake new alpha in front of that
                     selectedColor = bakeAlpha((alpha shl 24) or rgb)
                 }

@@ -5,7 +5,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.urduphotodesigner.ui.editor.panels.background.backgrounds.BackgroundsListFragment
-import com.example.urduphotodesigner.ui.editor.panels.background.gradients.GradientsListFragment
 import com.example.urduphotodesigner.ui.editor.panels.background.colors.ColorsListFragment
 
 class BackgroundPagerAdapter(
@@ -18,9 +17,8 @@ class BackgroundPagerAdapter(
 
     override fun createFragment(position: Int): Fragment {
         return when (tabs[position]) {
-            "Image" -> BackgroundsListFragment.newInstance()
-            "Color" -> ColorsListFragment.newInstance()
-            "Gradient" -> GradientsListFragment.newInstance()
+            "Images" -> BackgroundsListFragment.newInstance()
+            "Colors" -> ColorsListFragment.newInstance()
             else -> BackgroundsListFragment.newInstance()
         }
     }

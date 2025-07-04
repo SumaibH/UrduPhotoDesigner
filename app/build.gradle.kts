@@ -115,4 +115,7 @@ dependencies {
     //ColorPicker
     implementation(libs.colorpicker)
 
+    //FancyToolTips
+    implementation (libs.fancyshowcase)
+
 }

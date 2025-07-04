@@ -37,7 +37,7 @@ class BackgroundsFragment : Fragment() {
     }
 
     private fun setEvents() {
-        tabs = listOf("Image", "Color", "Gradient")
+        tabs = listOf("Images", "Colors")
 
         val adapter = BackgroundPagerAdapter(
             requireActivity().supportFragmentManager,

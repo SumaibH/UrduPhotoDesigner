@@ -1,14 +1,18 @@
 package com.example.urduphotodesigner
 
+import android.graphics.Color
+import android.graphics.Typeface
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.util.TypedValue
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -18,6 +22,7 @@ import com.example.urduphotodesigner.databinding.ActivityMainBinding
 import com.example.urduphotodesigner.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import me.toptas.fancyshowcase.FancyShowCaseView
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -49,6 +54,17 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
             insets
         }
+
+        val customTitleFont: Typeface? = ResourcesCompat.getFont(
+            this,
+            R.font.regular
+        )
+
+        FancyShowCaseView.Builder(this)
+            .titleSize(12, TypedValue.COMPLEX_UNIT_SP)
+            .typeface(customTitleFont ?: Typeface.DEFAULT)
+            .backgroundColor(Color.BLACK)
+            .build()
 
         initObservers()
     }

@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.map
 import java.io.IOException
 
 private val Context.dataStore by preferencesDataStore(
-    name = "UserPreferenceDataStore"
+    name = "PreferenceDataStore"
 )
 
 class PreferencesDataStoreHelper(context: Context): PreferenceDataStoreAPI {

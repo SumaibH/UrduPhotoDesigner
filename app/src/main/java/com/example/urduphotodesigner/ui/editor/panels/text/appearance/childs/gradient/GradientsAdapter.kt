@@ -1,4 +1,4 @@
-package com.example.urduphotodesigner.ui.editor.panels.background.gradients
+package com.example.urduphotodesigner.ui.editor.panels.text.appearance.childs.gradient
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -9,7 +9,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.createBitmap
-import androidx.core.view.doOnLayout
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.example.urduphotodesigner.R

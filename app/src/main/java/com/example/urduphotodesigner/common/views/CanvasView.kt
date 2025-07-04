@@ -31,6 +31,7 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.withTranslation
 import com.example.urduphotodesigner.R
+import com.example.urduphotodesigner.common.canvas.enums.BackgroundScaleType
 import com.example.urduphotodesigner.common.canvas.enums.BlendType
 import com.example.urduphotodesigner.common.canvas.enums.ElementType
 import com.example.urduphotodesigner.common.canvas.enums.GradientType
@@ -439,46 +440,124 @@ class CanvasView @JvmOverloads constructor(
         invalidate()
     }
 
+    private fun createBackgroundGradientShader(
+        gradientItem: GradientItem,
+        width: Float,
+        height: Float
+    ): Shader {
+        val colors    = gradientItem.colors.toIntArray()
+        val positions = gradientItem.positions.toFloatArray()
+
+        // compute actual center from relative values
+        val cx = width  * gradientItem.centerX
+        val cy = height * gradientItem.centerY
+
+        val baseShader = when (gradientItem.type) {
+            GradientType.LINEAR -> {
+                // angle in radians
+                val theta = Math.toRadians(gradientItem.angle.toDouble())
+                // full hypotenuse scaled, half on each side
+                val halfLen = (hypot(width, height) * gradientItem.scale / 2f)
+                val dx = (cos(theta) * halfLen).toFloat()
+                val dy = (sin(theta) * halfLen).toFloat()
+
+                LinearGradient(
+                    cx - dx, cy - dy,
+                    cx + dx, cy + dy,
+                    colors, positions,
+                    Shader.TileMode.CLAMP
+                )
+            }
+            GradientType.RADIAL -> {
+                // radius based on the smaller dimension
+                val radius = min(width, height) / 2f * gradientItem.radialRadiusFactor * gradientItem.scale
+                RadialGradient(
+                    cx, cy,
+                    radius,
+                    colors, positions,
+                    Shader.TileMode.CLAMP
+                )
+            }
+            GradientType.SWEEP -> {
+                SweepGradient(cx, cy, colors, positions).apply {
+                    // rotate start angle around the chosen center
+                    val m = Matrix().apply {
+                        postRotate(gradientItem.sweepStartAngle, cx, cy)
+                    }
+                    setLocalMatrix(m)
+                }
+            }
+        }
+
+        return baseShader
+    }
+
     fun setCanvasBackgroundGradient(gradientItem: GradientItem) {
-        // clear any image
         backgroundImage = null
 
         val w = canvasWidth.toFloat()
         val h = canvasHeight.toFloat()
-        backgroundPaint.shader = createGradientShader(gradientItem, w, h)
+        backgroundPaint.shader = createBackgroundGradientShader(gradientItem, w, h)
         backgroundGradient = gradientItem
 
         invalidate()
     }
 
-    fun setCanvasBackgroundImage(bitmap: Bitmap) {
-        // Create a new bitmap with canvas dimensions
-        val resultBitmap = createBitmap(canvasWidth, canvasHeight)
-        val canvas = Canvas(resultBitmap)
+    fun setCanvasBackgroundImage(bitmap: Bitmap, bgElement: CanvasElement) {
+        // 1) bake all settings into local vars
+        val zoom     = bgElement.bgZoom.coerceAtLeast(0.1f)
+        val panX     = bgElement.bgPanX
+        val panY     = bgElement.bgPanY
+        val opacity  = bgElement.bgOpacity.coerceIn(0, 255)
+        val scaleType= bgElement.bgScaleType
+        val rotation = bgElement.bgRotation % 360f
+        val flipH    = if (bgElement.isBgFlippedH) -1f else 1f
+        val flipV    = if (bgElement.isBgFlippedV) -1f else 1f
 
-        // Calculate scale to maintain aspect ratio while filling canvas
-        val scale = max(
-            canvasWidth.toFloat() / bitmap.width,
-            canvasHeight.toFloat() / bitmap.height
-        )
+        // 2) prepare output bitmap & canvas
+        val output = createBitmap(canvasWidth, canvasHeight)
+        val c      = Canvas(output)
+        val paint  = Paint().apply { alpha = opacity }
 
-        // Create scaled version of source bitmap
-        val scaledBitmap = Bitmap.createScaledBitmap(
-            bitmap,
-            (bitmap.width * scale).toInt(),
-            (bitmap.height * scale).toInt(),
-            true
-        )
+        // 3) compute base scale for FIT/CROP/XY
+        val sx = canvasWidth.toFloat()  / bitmap.width
+        val sy = canvasHeight.toFloat() / bitmap.height
+        val base = when (scaleType) {
+            BackgroundScaleType.FIT_CENTER   -> min(sx, sy)
+            BackgroundScaleType.CENTER_CROP  -> max(sx, sy)
+            BackgroundScaleType.FIT_XY      -> 1f
+            BackgroundScaleType.MATRIX       -> 1f
+        }
 
-        // Calculate position to center the scaled bitmap
-        val left = (canvasWidth - scaledBitmap.width) / 2f
-        val top = (canvasHeight - scaledBitmap.height) / 2f
+        // 4) combine with zoom
+        val finalScale = base * zoom
 
-        // Draw the scaled bitmap onto our result bitmap
-        canvas.drawBitmap(scaledBitmap, left, top, null)
+        // 5) compute transformed size
+        val w = (bitmap.width  * finalScale).toInt()
+        val h = (bitmap.height * finalScale).toInt()
+        val scaled = Bitmap.createScaledBitmap(bitmap, w, h, true)
 
-        // Set as background
-        backgroundImage = resultBitmap
+        // 6) build a matrix: center → pan → flip/zoom → rotate
+        val m = Matrix().apply {
+            // pivot at canvas center
+            val cx = canvasWidth  / 2f
+            val cy = canvasHeight / 2f
+
+            // 6a) move so scaled bitmap will be centered
+            postTranslate(-w/2f, -h/2f)
+            // 6b) apply flip + scale
+            postScale(flipH * finalScale, flipV * finalScale)
+            // 6c) rotate around pivot
+            postRotate(rotation, 0f, 0f)
+            // 6d) move into canvas center, plus pan
+            postTranslate(cx + panX, cy + panY)
+        }
+
+        // 7) draw it
+        c.drawBitmap(scaled, m, paint)
+
+        // 8) commit
+        backgroundImage   = output
         backgroundGradient = null
         invalidate()
     }
@@ -1068,29 +1147,31 @@ class CanvasView @JvmOverloads constructor(
         gradientItem: GradientItem,
         width: Float,
         height: Float,
-        centered: Boolean = false
+        translateX: Float = 0f,
+        translateY: Float = 0f
     ): Shader {
         val colors    = gradientItem.colors.toIntArray()
         val positions = gradientItem.positions.toFloatArray()
 
-        // center point
-        val cx = if (centered) 0f else width  / 2f
-        val cy = if (centered) 0f else height / 2f
+        // relative center in element/canvas space
+        val cxRel = width  * gradientItem.centerX
+        val cyRel = height * gradientItem.centerY
 
-        return when (gradientItem.type) {
+        // build the core shader centered at (0,0)
+        val rawShader: Shader
+        // any rotation matrix (for sweep) that we'll need to merge later
+        var localMatrix: Matrix? = null
+
+        when (gradientItem.type) {
             GradientType.LINEAR -> {
-                // angle in radians
-                val θ    = Math.toRadians(gradientItem.angle.toDouble())
-                // scaled vector
-                val dx   = (cos(θ) * width  * gradientItem.scale).toFloat()
-                val dy   = (sin(θ) * height * gradientItem.scale).toFloat()
-                // half-length
-                val hx   = dx / 2f
-                val hy   = dy / 2f
+                val theta   = Math.toRadians(gradientItem.angle.toDouble())
+                val halfLen = (hypot(width, height) * gradientItem.scale / 2f)
+                val dx      = (cos(theta) * halfLen).toFloat()
+                val dy      = (sin(theta) * halfLen).toFloat()
 
-                LinearGradient(
-                    cx - hx, cy - hy,
-                    cx + hx, cy + hy,
+                rawShader = LinearGradient(
+                    -dx, -dy,
+                    dx,  dy,
                     colors, positions,
                     Shader.TileMode.CLAMP
                 )
@@ -1098,23 +1179,36 @@ class CanvasView @JvmOverloads constructor(
 
             GradientType.RADIAL -> {
                 val radius = min(width, height) / 2f * gradientItem.radialRadiusFactor * gradientItem.scale
-                RadialGradient(
-                    cx, cy, radius,
+
+                rawShader = RadialGradient(
+                    0f, 0f,
+                    radius,
                     colors, positions,
                     Shader.TileMode.CLAMP
                 )
             }
 
             GradientType.SWEEP -> {
-                SweepGradient(cx, cy, colors, positions).apply {
-                    // rotate start angle around center
-                    val m = Matrix().apply {
-                        postRotate(gradientItem.sweepStartAngle, cx, cy)
-                    }
-                    setLocalMatrix(m)
+                rawShader = SweepGradient(0f, 0f, colors, positions)
+                // pre-rotate the sweep start angle around the origin
+                localMatrix = Matrix().apply {
+                    postRotate(gradientItem.sweepStartAngle)
                 }
             }
         }
+
+        // now we need to translate the shader from (0,0) up to (cxRel, cyRel),
+        // plus any extra translateX/translateY
+        val finalMatrix = Matrix().apply {
+            // if we had a sweep-rotation, start with that
+            localMatrix?.let { set(it) }
+
+            // then move into place
+            postTranslate(cxRel + translateX, cyRel + translateY)
+        }
+
+        rawShader.setLocalMatrix(finalMatrix)
+        return rawShader
     }
 
     private fun drawTextElement(canvas: Canvas, element: CanvasElement) {
@@ -1828,11 +1922,11 @@ class CanvasView @JvmOverloads constructor(
                                     ?: 0f
 
                             val rotatedRelativeX =
-                                (initialRelativeX * kotlin.math.cos(Math.toRadians(deltaAngle.toDouble()))) - (initialRelativeY * kotlin.math.sin(
+                                (initialRelativeX * cos(Math.toRadians(deltaAngle.toDouble()))) - (initialRelativeY * sin(
                                     Math.toRadians(deltaAngle.toDouble())
                                 ))
                             val rotatedRelativeY =
-                                (initialRelativeX * kotlin.math.sin(Math.toRadians(deltaAngle.toDouble()))) + (initialRelativeY * kotlin.math.cos(
+                                (initialRelativeX * sin(Math.toRadians(deltaAngle.toDouble()))) + (initialRelativeY * cos(
                                     Math.toRadians(deltaAngle.toDouble())
                                 ))
 

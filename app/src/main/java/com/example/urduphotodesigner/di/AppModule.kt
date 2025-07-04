@@ -15,12 +15,14 @@ import com.example.urduphotodesigner.data.repository.FetchImagesRepoImpl
 import com.example.urduphotodesigner.data.repository.FontsRepoImpl
 import com.example.urduphotodesigner.data.repository.GradientRepositoryImpl
 import com.example.urduphotodesigner.data.repository.ImagesRepoImpl
+import com.example.urduphotodesigner.data.repository.TipManagerImpl
 import com.example.urduphotodesigner.domain.repo.AuthRepository
 import com.example.urduphotodesigner.domain.repo.FetchFontsRepo
 import com.example.urduphotodesigner.domain.repo.FetchImagesRepo
 import com.example.urduphotodesigner.domain.repo.FontsRepo
 import com.example.urduphotodesigner.domain.repo.GradientRepository
 import com.example.urduphotodesigner.domain.repo.ImagesRepo
+import com.example.urduphotodesigner.domain.repo.TipManager
 import com.example.urduphotodesigner.domain.usecase.DeleteGradientUseCase
 import com.example.urduphotodesigner.domain.usecase.GetAllGradientsUseCase
 import com.example.urduphotodesigner.domain.usecase.InsertGradientUseCase
@@ -30,6 +32,7 @@ import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.identity.SignInClient
 import com.google.gson.GsonBuilder
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -182,4 +185,5 @@ object AppModule {
 
     @Provides @Singleton
     fun provideInsertUseCase(repo: GradientRepository) = InsertGradientUseCase(repo)
+
 }

@@ -5,6 +5,8 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 
 object PreferenceDataStoreKeysConstants {
     val IS_FIRST_RUN = booleanPreferencesKey("IS_FIRST_RUN")
+    val PALETTE_SHOWN_KEY = booleanPreferencesKey("PALETTE_SHOWN_KEY")
+    val EDITOR_SHOWN_KEY  = booleanPreferencesKey("EDITOR_SHOWN_KEY")
     val USER_ID_TOKEN = stringPreferencesKey("USER_ID_TOKEN")
     val USER_DISPLAY_NAME = stringPreferencesKey("USER_DISPLAY_NAME")
 

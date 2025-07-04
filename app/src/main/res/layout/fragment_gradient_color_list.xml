@@ -85,7 +85,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="10"
+            android:text="255"
             android:fontFamily="@font/regular"
             app:layout_constraintTop_toTopOf="@id/opacityTitle"
             app:layout_constraintBottom_toBottomOf="@id/opacityTitle"
@@ -110,7 +110,8 @@
             android:thumbTint="@color/appColor"
             android:indeterminateTint="@color/appColor"
             android:progressTint="@color/appColor"
-            android:progress="20"/>
+            android:max="255"
+            android:progress="255"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

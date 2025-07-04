@@ -22,6 +22,8 @@ import com.example.urduphotodesigner.common.utils.Constants
 import com.example.urduphotodesigner.data.model.ImageEntity
 import com.example.urduphotodesigner.databinding.LayoutImagesItemBinding
 import androidx.core.graphics.createBitmap
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 
 class ImagesAdapter(
     private val onImageSelected: (Bitmap) -> Unit
@@ -64,27 +66,23 @@ class ImagesAdapter(
             }
 
             binding.root.setOnClickListener {
-                // Only proceed if image is loaded
-                currentDrawable?.let { drawable ->
-                    images.forEach { it.is_selected = false }
-                    image.is_selected = true
-                    notifyDataSetChanged()
+                // make sure we’ve got a URL to load
+                val url = Constants.BASE_URL_GLIDE + image.file_url
 
-                    val bitmap = when (drawable) {
-                        is BitmapDrawable -> drawable.bitmap
-                        else -> {
-                            val width = drawable.intrinsicWidth.coerceAtLeast(1)
-                            val height = drawable.intrinsicHeight.coerceAtLeast(1)
-                            val bmp = createBitmap(width, height)
-                            val canvas = Canvas(bmp)
-                            drawable.setBounds(0, 0, width, height)
-                            drawable.draw(canvas)
-                            bmp
+                // fire off a full-res bitmap request in the background
+                Glide.with(binding.root.context)
+                    .asBitmap()
+                    .load(url)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .into(object : CustomTarget<Bitmap>() {
+                        override fun onResourceReady(bitmap: Bitmap, transition: Transition<in Bitmap>?) {
+                            // this is guaranteed to be the full-size image
+                            onImageSelected(bitmap)
                         }
-                    }
-                    onImageSelected(bitmap)
-                }
+                        override fun onLoadCleared(placeholder: Drawable?) { /* no-op */ }
+                    })
             }
+
 
             val url = Constants.BASE_URL_GLIDE + image.file_url
             Glide.with(binding.root.context)
