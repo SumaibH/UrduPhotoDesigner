@@ -90,8 +90,8 @@ class CanvasView @JvmOverloads constructor(
     private var desiredIconScreenSizePx = 36f
     private var iconTouched: String? = null
 
-    private var backgroundGradient: GradientItem? = null
-    private var backgroundImage: Bitmap? = null
+    private var backgroundElement: CanvasElement? = null
+
     private val canvasElements = mutableListOf<CanvasElement>()
 
     private var touchStartX = 0f
@@ -432,134 +432,94 @@ class CanvasView @JvmOverloads constructor(
         invalidate()
     }
 
+    private fun drawBackgroundElement(canvas: Canvas, el: CanvasElement) {
+        el.bitmap?.let { bmp ->
+            // draw bitmap centered using el.paint
+            canvas.drawBitmap(bmp, -bmp.width / 2f, -bmp.height / 2f, el.paint)
+        } ?: run {
+            // gradient fill
+            el.fillGradient?.let {
+                canvas.drawRect(-width/2f, -height/2f, width/2f, height/2f, el.paint)
+            } ?: run {
+                // solid color
+                canvas.drawRect(-width/2f, -height/2f, width/2f, height/2f, el.paint)
+            }
+        }
+    }
+
+    fun setCanvasBackgroundImage(bitmap: Bitmap, scaleType: BackgroundScaleType) {
+        val el = backgroundElement ?: CanvasElement(context = context, type = ElementType.BACKGROUND).apply {
+            isLocked = true
+            zIndex = Int.MIN_VALUE
+            canvasElements.add(this)
+            backgroundElement = this
+        }
+        el.apply {
+            this.bitmap = bitmap
+            this.bitmapData = null
+            this.fillGradient = null
+            paint.shader = null
+            paint.color = Color.TRANSPARENT
+            bgScaleType = scaleType
+            // reset transforms
+            rotation = 0f
+        }
+        fitBackgroundElement(el)
+        invalidate()
+    }
+
+    // Set gradient background
+    fun setCanvasBackgroundGradient(gradient: GradientItem) {
+        val el = backgroundElement ?: CanvasElement(context = context, type = ElementType.BACKGROUND).apply {
+            isLocked = true
+            zIndex = Int.MIN_VALUE
+            canvasElements.add(this)
+            backgroundElement = this
+        }
+        el.apply {
+            bitmap = null
+            bitmapData = null
+            fillGradient = gradient
+            paint.shader = createGradientShader(gradient, width.toFloat(), height.toFloat())
+            paint.color = Color.TRANSPARENT
+            // reset transforms
+            x = width/2f; y = height/2f; scale = 1f; rotation = 0f
+        }
+        invalidate()
+    }
+
+    // Set solid color background
     fun setCanvasBackgroundColor(color: Int) {
-        backgroundPaint.shader = null
-        backgroundPaint.color = color
-        backgroundGradient = null
-        backgroundImage = null
+        val el = backgroundElement ?: CanvasElement(context = context, type = ElementType.BACKGROUND).apply {
+            isLocked = true
+            zIndex = Int.MIN_VALUE
+            canvasElements.add(this)
+            backgroundElement = this
+        }
+        el.apply {
+            bitmap = null
+            bitmapData = null
+            fillGradient = null
+            paint.shader = null
+            paint.color = color
+            // reset transforms
+            x = width/2f; y = height/2f; scale = 1f; rotation = 0f
+        }
         invalidate()
     }
 
-    private fun createBackgroundGradientShader(
-        gradientItem: GradientItem,
-        width: Float,
-        height: Float
-    ): Shader {
-        val colors    = gradientItem.colors.toIntArray()
-        val positions = gradientItem.positions.toFloatArray()
-
-        // compute actual center from relative values
-        val cx = width  * gradientItem.centerX
-        val cy = height * gradientItem.centerY
-
-        val baseShader = when (gradientItem.type) {
-            GradientType.LINEAR -> {
-                // angle in radians
-                val theta = Math.toRadians(gradientItem.angle.toDouble())
-                // full hypotenuse scaled, half on each side
-                val halfLen = (hypot(width, height) * gradientItem.scale / 2f)
-                val dx = (cos(theta) * halfLen).toFloat()
-                val dy = (sin(theta) * halfLen).toFloat()
-
-                LinearGradient(
-                    cx - dx, cy - dy,
-                    cx + dx, cy + dy,
-                    colors, positions,
-                    Shader.TileMode.CLAMP
-                )
-            }
-            GradientType.RADIAL -> {
-                // radius based on the smaller dimension
-                val radius = min(width, height) / 2f * gradientItem.radialRadiusFactor * gradientItem.scale
-                RadialGradient(
-                    cx, cy,
-                    radius,
-                    colors, positions,
-                    Shader.TileMode.CLAMP
-                )
-            }
-            GradientType.SWEEP -> {
-                SweepGradient(cx, cy, colors, positions).apply {
-                    // rotate start angle around the chosen center
-                    val m = Matrix().apply {
-                        postRotate(gradientItem.sweepStartAngle, cx, cy)
-                    }
-                    setLocalMatrix(m)
-                }
+    private fun fitBackgroundElement(el: CanvasElement) {
+        el.bitmap?.let { bmp ->
+            val sx = width.toFloat() / bmp.width
+            val sy = height.toFloat() / bmp.height
+            el.scale = when (el.bgScaleType) {
+                BackgroundScaleType.FIT_CENTER  -> min(sx, sy)
+                BackgroundScaleType.CENTER_CROP -> max(sx, sy)
+                BackgroundScaleType.FIT_XY      -> 1f
+                BackgroundScaleType.MATRIX      -> 1f
             }
         }
-
-        return baseShader
-    }
-
-    fun setCanvasBackgroundGradient(gradientItem: GradientItem) {
-        backgroundImage = null
-
-        val w = canvasWidth.toFloat()
-        val h = canvasHeight.toFloat()
-        backgroundPaint.shader = createBackgroundGradientShader(gradientItem, w, h)
-        backgroundGradient = gradientItem
-
-        invalidate()
-    }
-
-    fun setCanvasBackgroundImage(bitmap: Bitmap, bgElement: CanvasElement) {
-        // 1) bake all settings into local vars
-        val zoom     = bgElement.bgZoom.coerceAtLeast(0.1f)
-        val panX     = bgElement.bgPanX
-        val panY     = bgElement.bgPanY
-        val opacity  = bgElement.bgOpacity.coerceIn(0, 255)
-        val scaleType= bgElement.bgScaleType
-        val rotation = bgElement.bgRotation % 360f
-        val flipH    = if (bgElement.isBgFlippedH) -1f else 1f
-        val flipV    = if (bgElement.isBgFlippedV) -1f else 1f
-
-        // 2) prepare output bitmap & canvas
-        val output = createBitmap(canvasWidth, canvasHeight)
-        val c      = Canvas(output)
-        val paint  = Paint().apply { alpha = opacity }
-
-        // 3) compute base scale for FIT/CROP/XY
-        val sx = canvasWidth.toFloat()  / bitmap.width
-        val sy = canvasHeight.toFloat() / bitmap.height
-        val base = when (scaleType) {
-            BackgroundScaleType.FIT_CENTER   -> min(sx, sy)
-            BackgroundScaleType.CENTER_CROP  -> max(sx, sy)
-            BackgroundScaleType.FIT_XY      -> 1f
-            BackgroundScaleType.MATRIX       -> 1f
-        }
-
-        // 4) combine with zoom
-        val finalScale = base * zoom
-
-        // 5) compute transformed size
-        val w = (bitmap.width  * finalScale).toInt()
-        val h = (bitmap.height * finalScale).toInt()
-        val scaled = Bitmap.createScaledBitmap(bitmap, w, h, true)
-
-        // 6) build a matrix: center → pan → flip/zoom → rotate
-        val m = Matrix().apply {
-            // pivot at canvas center
-            val cx = canvasWidth  / 2f
-            val cy = canvasHeight / 2f
-
-            // 6a) move so scaled bitmap will be centered
-            postTranslate(-w/2f, -h/2f)
-            // 6b) apply flip + scale
-            postScale(flipH * finalScale, flipV * finalScale)
-            // 6c) rotate around pivot
-            postRotate(rotation, 0f, 0f)
-            // 6d) move into canvas center, plus pan
-            postTranslate(cx + panX, cy + panY)
-        }
-
-        // 7) draw it
-        c.drawBitmap(scaled, m, paint)
-
-        // 8) commit
-        backgroundImage   = output
-        backgroundGradient = null
-        invalidate()
+        el.x = width/2f; el.y = height/2f
     }
 
     /**
@@ -594,22 +554,11 @@ class CanvasView @JvmOverloads constructor(
         outputCanvas.scale(scaleX, scaleY)
 
         // 7) Draw background & content in logical space:
-        drawBackgroundOnCanvas(outputCanvas)
+        drawBackgroundElement(outputCanvas, backgroundElement!!)
         drawCanvasContent(outputCanvas)
 
         outputCanvas.restore()
         return outputBitmap
-    }
-
-    private fun drawBackgroundOnCanvas(canvas: Canvas) {
-        if (backgroundImage != null) {
-            // backgroundImage is already sized to canvasWidth x canvasHeight in setCanvasBackgroundImage
-            canvas.drawBitmap(backgroundImage!!, 0f, 0f, null)
-        } else if (backgroundGradient != null) {
-            canvas.drawRect(0f, 0f, canvasWidth.toFloat(), canvasHeight.toFloat(), backgroundPaint)
-        } else {
-            canvas.drawRect(0f, 0f, canvasWidth.toFloat(), canvasHeight.toFloat(), backgroundPaint)
-        }
     }
 
     private fun drawCanvasContent(canvas: Canvas) {
@@ -808,6 +757,16 @@ class CanvasView @JvmOverloads constructor(
         return luminance < 128
     }
 
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        if (backgroundElement == null) {
+            // initialize default white background when view size is known
+            setCanvasBackgroundColor(Color.WHITE)
+        } else {
+            fitBackgroundElement(backgroundElement!!)
+        }
+    }
+
     @SuppressLint("DrawAllocation")
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
@@ -819,14 +778,6 @@ class CanvasView @JvmOverloads constructor(
 
         canvas.withTranslation(offsetX, offsetY) {
             scale(scale, scale)
-
-            if (backgroundImage != null) {
-                drawBitmap(backgroundImage!!, 0f, 0f, null)
-            } else if (backgroundGradient != null) {
-                drawRect(0f, 0f, canvasWidth.toFloat(), canvasHeight.toFloat(), backgroundPaint)
-            } else {
-                drawRect(0f, 0f, canvasWidth.toFloat(), canvasHeight.toFloat(), backgroundPaint)
-            }
 
             // Draw alignment guides before elements
             if (showVerticalGuide) {
@@ -871,7 +822,10 @@ class CanvasView @JvmOverloads constructor(
                     canvas.rotate(element.rotation)
                     canvas.scale(element.scale, element.scale)
 
-                    if (element.type == ElementType.TEXT) {
+                    if (element.type == ElementType.BACKGROUND) {
+                        drawBackgroundElement(canvas, element)
+                    }
+                    else if (element.type == ElementType.TEXT) {
                         drawTextElement(canvas, element)
                     } else {
                         element.paint.colorFilter = when (element.imageFilter) {

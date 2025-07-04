@@ -80,10 +80,10 @@ class ColorsListFragment : Fragment() {
         gradientsAdapter = GradientsAdapter(
             gradientList = emptyList(),
             onGradientSelected = { _, gradient ->
-                viewModel.setCanvasGradient(gradient)
+                viewModel.setCanvasBackgroundGradient(gradient)
             },
             onNoneSelected = {
-                viewModel.removeCanvasBackgroundImage()
+                viewModel.removeCanvasBackgroundGradient()
             },
             onGradientEditSelected = { _, item ->
                 viewModel.setGradient(item)

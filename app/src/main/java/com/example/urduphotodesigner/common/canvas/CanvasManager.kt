@@ -1,6 +1,7 @@
 package com.example.urduphotodesigner.common.canvas
 
 import android.graphics.Bitmap
+import com.example.urduphotodesigner.common.canvas.enums.BackgroundScaleType
 import com.example.urduphotodesigner.common.canvas.model.CanvasElement
 import com.example.urduphotodesigner.common.canvas.model.GradientItem
 import com.example.urduphotodesigner.common.canvas.sealed.ImageFilter
@@ -12,8 +13,8 @@ class CanvasManager(private val canvasView: CanvasView) {
         canvasView.setCanvasBackgroundColor(color)
     }
 
-    fun setCanvasBackgroundImage(bitmap: Bitmap) {
-        canvasView.setCanvasBackgroundImage(bitmap)
+    fun setCanvasBackgroundImage(bitmap: Bitmap, scaleType: BackgroundScaleType) {
+        canvasView.setCanvasBackgroundImage(bitmap, scaleType)
     }
 
     fun setCanvasBackgroundGradient(gradientItem: GradientItem) {

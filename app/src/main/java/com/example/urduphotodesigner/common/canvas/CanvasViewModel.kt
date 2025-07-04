@@ -13,6 +13,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.urduphotodesigner.R
+import com.example.urduphotodesigner.common.canvas.enums.BackgroundScaleType
 import com.example.urduphotodesigner.common.canvas.enums.BlendType
 import com.example.urduphotodesigner.common.canvas.enums.ElementType
 import com.example.urduphotodesigner.common.canvas.enums.GradientType
@@ -35,6 +36,7 @@ import com.example.urduphotodesigner.data.model.FontEntity
 import com.example.urduphotodesigner.domain.usecase.GetFontsUseCase
 import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -47,6 +49,7 @@ import javax.inject.Inject
 @HiltViewModel
 class CanvasViewModel @Inject constructor(
     private val getFontsUseCase: GetFontsUseCase,
+    @ApplicationContext private val appContext: Context
 ) : ViewModel() {
 
     private val _pagingLocked = MutableLiveData<Boolean>(false)
@@ -1228,63 +1231,126 @@ class CanvasViewModel @Inject constructor(
         return _canvasElements.value?.find { it.isSelected } ?: selectedElement
     }
 
+    private fun upsertBackgroundElement(modifier: (CanvasElement) -> CanvasElement) {
+        val current = _canvasElements.value.orEmpty().toMutableList()
+        // find existing background
+        val idx = current.indexOfFirst { it.type == ElementType.BACKGROUND }
+        val updated = if (idx >= 0) {
+            // modify the existing one
+            modifier(current[idx]).copy(isLocked = true, zIndex = Int.MIN_VALUE)
+        } else {
+            // create a new one
+            modifier(CanvasElement(
+                context      = appContext,
+                type         = ElementType.BACKGROUND,
+                x            = 0f,
+                y            = 0f,
+                scale        = 1f,
+                rotation     = 0f,
+                isLocked     = true,
+                zIndex       = Int.MIN_VALUE
+            ))
+        }
+        if (idx >= 0) current[idx] = updated else current.add(0, updated)
+        _canvasElements.value = current
+    }
+
     fun setCanvasBackgroundColor(color: Int) {
-        val previousColor = _backgroundColor.value ?: Color.WHITE
-        if (color != previousColor) {
-            _canvasActions.push(CanvasAction.SetBackgroundColor(color, previousColor))
+        val prev = _backgroundColor.value ?: Color.WHITE
+        if (color != prev) {
+            _canvasActions.push(CanvasAction.SetBackgroundColor(color, prev))
             _redoStack.clear()
             _backgroundColor.value = color
+
+            upsertBackgroundElement { el ->
+                el.copy(
+                    bitmap       = null,
+                    bitmapData   = null,
+                    fillGradient = null,
+                    paintColor   = color,
+                    x            = canvasSize.value!!.width / 2f,
+                    y            = canvasSize.value!!.height / 2f,
+                    scale        = 1f,
+                    rotation     = 0f
+                )
+            }
             notifyUndoRedoChanged()
         }
     }
 
     fun setCanvasBackgroundImage(bitmap: Bitmap?) {
-        val previousBitmap = _backgroundImage.value
-        // Only push action if there's a change
-        if (bitmap != previousBitmap) {
-            _canvasActions.push(CanvasAction.SetBackgroundImage(bitmap, previousBitmap))
+        val prev = _backgroundImage.value
+        if (bitmap != prev) {
+            _canvasActions.push(CanvasAction.SetBackgroundImage(bitmap, prev))
             _redoStack.clear()
             _backgroundImage.value = bitmap
+
+            bitmap?.let {
+                upsertBackgroundElement { el ->
+                    el.copy(
+                        bitmap       = it,
+                        bitmapData   = encodeBitmapToBase64(it),
+                        fillGradient = null,
+                        paintColor   = Color.TRANSPARENT,
+                        bgScaleType  = BackgroundScaleType.FIT_CENTER, // or whatever default
+                        // transform will be re-fit by the View
+                    )
+                }
+            } ?: run {
+                // removing the image: fallback to white
+                setCanvasBackgroundColor(_backgroundColor.value ?: Color.WHITE)
+            }
+
             notifyUndoRedoChanged()
         }
     }
 
-    fun removeCanvasBackgroundImage() {
-        val previousBitmap = _backgroundImage.value
-        // Only push action if there's a change
-        if (previousBitmap != null) {
-            _canvasActions.push(CanvasAction.SetBackgroundImage(null, previousBitmap))
+    /** Set a gradient background */
+    fun setCanvasBackgroundGradient(gradient: GradientItem) {
+        val prev = _backgroundGradient.value
+        if (gradient != prev) {
+            _canvasActions.push(CanvasAction.SetBackgroundGradient(gradient, prev))
             _redoStack.clear()
-            _backgroundImage.value = null
+            _backgroundGradient.value = gradient
+
+            upsertBackgroundElement { el ->
+                el.copy(
+                    bitmap       = null,
+                    bitmapData   = null,
+                    fillGradient = gradient,
+                    paintColor   = Color.TRANSPARENT,
+                    x            = canvasSize.value!!.width / 2f,
+                    y            = canvasSize.value!!.height / 2f,
+                    scale        = 1f,
+                    rotation     = 0f
+                )
+            }
+
             notifyUndoRedoChanged()
         }
     }
 
-    fun setCanvasGradient(newGradient: GradientItem) {
-        val previous = _backgroundGradient.value
-        // Only push if actually changed
-        if (newGradient != previous) {
-            // record the change (new, old)
-            _canvasActions.push(CanvasAction.SetBackgroundGradient(newGradient, previous))
+    fun removeCanvasBackgroundGradient() {
+        val prevGradient = _backgroundGradient.value
+        if (prevGradient != null) {
+            // record action for undo/redo
+            _canvasActions.push(CanvasAction.SetBackgroundColor(Color.WHITE, Color.BLACK))
             _redoStack.clear()
-            _backgroundGradient.value = newGradient
+
+            // clear the stored gradient
+            _backgroundGradient.value = null
+
+            // update the canvasElements list
+            upsertBackgroundElement { el ->
+                el.copy(
+                    fillGradient = null,
+                    paintColor = Color.WHITE
+                )
+            }
+
             notifyUndoRedoChanged()
         }
     }
-
-    fun removeCanvasGradient() {
-        val previous = _backgroundGradient.value
-        // Only push if there is something to remove
-        if (previous != null) {
-            // push a “remove” by setting gradient back to some default (or null, if you allow it)
-            val defaultGradient = GradientItem()  // or however you define “no gradient”
-            _canvasActions.push(CanvasAction.SetBackgroundGradient(defaultGradient, previous))
-            _redoStack.clear()
-            _backgroundGradient.value = defaultGradient
-            notifyUndoRedoChanged()
-        }
-    }
-
 
     fun addSticker(bitmap: Bitmap?, context: Context) {
         val element = CanvasElement(

@@ -41,6 +41,7 @@ import com.example.urduphotodesigner.common.utils.Converter.cmToPx
 import com.example.urduphotodesigner.common.utils.Converter.inchesToPx
 import com.example.urduphotodesigner.common.canvas.CanvasManager
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
+import com.example.urduphotodesigner.common.canvas.enums.BackgroundScaleType
 import com.example.urduphotodesigner.common.canvas.enums.BlendType
 import com.example.urduphotodesigner.common.canvas.enums.ElementType
 import com.example.urduphotodesigner.common.canvas.enums.HAlign
@@ -204,7 +205,7 @@ class EditorFragment : Fragment() {
         }
 
         viewModel.backgroundImage.observe(viewLifecycleOwner) { bitmap ->
-            bitmap?.let { canvasManager.setCanvasBackgroundImage(it) }
+            bitmap?.let { canvasManager.setCanvasBackgroundImage(it, BackgroundScaleType.FIT_CENTER) }
         }
 
         viewModel.backgroundGradient.observe(viewLifecycleOwner) { gradient ->

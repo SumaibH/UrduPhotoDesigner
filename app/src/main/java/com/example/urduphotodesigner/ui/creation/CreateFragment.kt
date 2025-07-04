@@ -8,8 +8,10 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.PopupMenu
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.urduphotodesigner.R
+import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.common.utils.Converter.cmToPx
 import com.example.urduphotodesigner.common.utils.Converter.inchesToPx
 import com.example.urduphotodesigner.common.utils.Converter.pxToCm
@@ -26,6 +28,7 @@ class CreateFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val unitList = listOf("Pixels", "Inches", "Centimeters")
+    private val viewmodel:CanvasViewModel by activityViewModels()
 
     private val sizeList = listOf(
         CanvasSize("Billboard", R.drawable.ic_bill_board, 1920f, 1080f),
@@ -119,6 +122,7 @@ class CreateFragment : Fragment() {
                     putSerializable("unit_type", currentUnit)
                 }
 
+                viewmodel.setCanvasSize(selected)
                 findNavController().navigate(R.id.editorFragment, bundle)
             }
             sizesRV.adapter = adapter
