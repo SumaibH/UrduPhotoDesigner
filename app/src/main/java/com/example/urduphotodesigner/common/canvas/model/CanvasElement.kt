@@ -87,6 +87,10 @@ data class CanvasElement(
     var blendType: BlendType = BlendType.SRC_OVER,
 
     var isVisible: Boolean = true,
+    var backgroundColor: Int = Color.WHITE,
+
+    var logicalContentWidth:  Float = 0f,
+    var logicalContentHeight: Float = 0f
 ) : Serializable {
 
     @Transient
@@ -107,7 +111,9 @@ data class CanvasElement(
     }
 
     fun getLocalContentWidth(): Float {
-        return if (type == ElementType.TEXT) {
+        return if (type == ElementType.BACKGROUND) {
+            logicalContentWidth
+        } else if (type == ElementType.TEXT) {
             val lines = text.split("\n")
             // Ensure paint is initialized before using it
             if (::paint.isInitialized) {
@@ -121,7 +127,9 @@ data class CanvasElement(
     }
 
     fun getLocalContentHeight(): Float {
-        return if (type == ElementType.TEXT) {
+        return if (type == ElementType.BACKGROUND) {
+            logicalContentHeight
+        } else if (type == ElementType.TEXT) {
             // Ensure paint is initialized before using it
             if (::paint.isInitialized) {
                 val fm = paint.fontMetrics

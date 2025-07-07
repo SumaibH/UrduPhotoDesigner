@@ -390,6 +390,8 @@ class EditorFragment : Fragment() {
 
         canvasManager = CanvasManager(sizedCanvasView)
 
+        viewModel.ensureBackgroundElement(requireActivity(), canvasSize.width, canvasSize.height)
+
         binding.undo.setOnClickListener { viewModel.undo() }
         binding.redo.setOnClickListener { viewModel.redo() }
 

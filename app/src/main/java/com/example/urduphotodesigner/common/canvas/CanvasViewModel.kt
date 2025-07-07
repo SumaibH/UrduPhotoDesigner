@@ -1312,6 +1312,28 @@ class CanvasViewModel @Inject constructor(
         notifyUndoRedoChanged()
     }
 
+    fun ensureBackgroundElement(context: Context, canvasWidth: Float, canvasHeight: Float) {
+        // if we already have a background, do nothing
+        if ((_canvasElements.value ?: emptyList()).any { it.type == ElementType.BACKGROUND }) return
+
+        // otherwise create and insert one
+        val bg = CanvasElement(
+            context        = context,
+            type           = ElementType.BACKGROUND,
+            x              = canvasWidth  / 2f,
+            y              = canvasHeight / 2f,
+            paintColor     = Color.WHITE,     // your default solid
+            fillGradient   = null,            // or your default GradientItem
+            bitmap         = null             // or your default image
+        ).apply {
+            isLocked = true
+            updatePaintProperties()
+        }
+
+        // prepend it so it’s always drawn first
+        _canvasElements.value = listOf(bg) + (_canvasElements.value ?: emptyList())
+    }
+
     fun addText(text: String, context: Context) {
         val element = CanvasElement(
             context = context,
