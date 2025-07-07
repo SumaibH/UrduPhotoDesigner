@@ -7,7 +7,6 @@ import android.graphics.Paint
 import android.graphics.PointF
 import android.graphics.Typeface
 import android.text.TextPaint
-import com.example.urduphotodesigner.common.canvas.enums.BackgroundScaleType
 import com.example.urduphotodesigner.common.canvas.enums.BlendType
 import com.example.urduphotodesigner.common.canvas.enums.ElementType
 import com.example.urduphotodesigner.common.canvas.enums.LabelShape
@@ -19,7 +18,8 @@ import com.example.urduphotodesigner.common.canvas.sealed.ImageFilter
 import java.io.Serializable
 import java.util.UUID
 
-private const val ICON_PADDING = 10f // Or whatever value suits your icon sizes and visual preference
+private const val ICON_PADDING =
+    10f // Or whatever value suits your icon sizes and visual preference
 
 // Make CanvasElement Serializable to allow it to be passed via Bundles and saved.
 data class CanvasElement(

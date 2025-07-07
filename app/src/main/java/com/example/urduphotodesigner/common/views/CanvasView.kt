@@ -31,7 +31,6 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.withTranslation
 import com.example.urduphotodesigner.R
-import com.example.urduphotodesigner.common.canvas.enums.BackgroundScaleType
 import com.example.urduphotodesigner.common.canvas.enums.BlendType
 import com.example.urduphotodesigner.common.canvas.enums.ElementType
 import com.example.urduphotodesigner.common.canvas.enums.GradientType
@@ -445,11 +444,11 @@ class CanvasView @JvmOverloads constructor(
         width: Float,
         height: Float
     ): Shader {
-        val colors    = gradientItem.colors.toIntArray()
+        val colors = gradientItem.colors.toIntArray()
         val positions = gradientItem.positions.toFloatArray()
 
         // compute actual center from relative values
-        val cx = width  * gradientItem.centerX
+        val cx = width * gradientItem.centerX
         val cy = height * gradientItem.centerY
 
         val baseShader = when (gradientItem.type) {
@@ -468,9 +467,11 @@ class CanvasView @JvmOverloads constructor(
                     Shader.TileMode.CLAMP
                 )
             }
+
             GradientType.RADIAL -> {
                 // radius based on the smaller dimension
-                val radius = min(width, height) / 2f * gradientItem.radialRadiusFactor * gradientItem.scale
+                val radius =
+                    min(width, height) / 2f * gradientItem.radialRadiusFactor * gradientItem.scale
                 RadialGradient(
                     cx, cy,
                     radius,
@@ -478,6 +479,7 @@ class CanvasView @JvmOverloads constructor(
                     Shader.TileMode.CLAMP
                 )
             }
+
             GradientType.SWEEP -> {
                 SweepGradient(cx, cy, colors, positions).apply {
                     // rotate start angle around the chosen center
@@ -1075,8 +1077,8 @@ class CanvasView @JvmOverloads constructor(
                         format = Bitmap.CompressFormat.PNG
                     )
                 )
-                val px = pickerX.roundToInt().coerceIn(0, bmp.width -1)
-                val py = pickerY.roundToInt().coerceIn(0, bmp.height -1)
+                val px = pickerX.roundToInt().coerceIn(0, bmp.width - 1)
+                val py = pickerY.roundToInt().coerceIn(0, bmp.height - 1)
                 val pixelColor = bmp.getPixel(px, py)
                 val dark = isColorDark(pixelColor)
 
@@ -1123,11 +1125,11 @@ class CanvasView @JvmOverloads constructor(
         translateX: Float = 0f,
         translateY: Float = 0f
     ): Shader {
-        val colors    = gradientItem.colors.toIntArray()
+        val colors = gradientItem.colors.toIntArray()
         val positions = gradientItem.positions.toFloatArray()
 
         // relative center in element/canvas space
-        val cxRel = width  * gradientItem.centerX
+        val cxRel = width * gradientItem.centerX
         val cyRel = height * gradientItem.centerY
 
         // build the core shader centered at (0,0)
@@ -1137,21 +1139,22 @@ class CanvasView @JvmOverloads constructor(
 
         when (gradientItem.type) {
             GradientType.LINEAR -> {
-                val theta   = Math.toRadians(gradientItem.angle.toDouble())
+                val theta = Math.toRadians(gradientItem.angle.toDouble())
                 val halfLen = (hypot(width, height) * gradientItem.scale / 2f)
-                val dx      = (cos(theta) * halfLen).toFloat()
-                val dy      = (sin(theta) * halfLen).toFloat()
+                val dx = (cos(theta) * halfLen).toFloat()
+                val dy = (sin(theta) * halfLen).toFloat()
 
                 rawShader = LinearGradient(
                     -dx, -dy,
-                    dx,  dy,
+                    dx, dy,
                     colors, positions,
                     Shader.TileMode.CLAMP
                 )
             }
 
             GradientType.RADIAL -> {
-                val radius = min(width, height) / 2f * gradientItem.radialRadiusFactor * gradientItem.scale
+                val radius =
+                    min(width, height) / 2f * gradientItem.radialRadiusFactor * gradientItem.scale
 
                 rawShader = RadialGradient(
                     0f, 0f,
@@ -1211,7 +1214,7 @@ class CanvasView @JvmOverloads constructor(
                 val rectH = labelRect.height()
                 labelPaint.shader = createGradientShader(
                     gradientItem = gradient,  // assume you store gradient settings here
-                    width  = rectW,
+                    width = rectW,
                     height = rectH
                 )
             } ?: run {
@@ -1349,11 +1352,11 @@ class CanvasView @JvmOverloads constructor(
             }
 
             element.fillGradient?.let { gradient ->
-                val textWidth  = fillPaint.measureText(displayText)
+                val textWidth = fillPaint.measureText(displayText)
                 val textHeight = fillPaint.textSize
                 fillPaint.shader = createGradientShader(
                     gradientItem = gradient,
-                    width  = textWidth,
+                    width = textWidth,
                     height = textHeight
                 )
             } ?: run {
@@ -1435,11 +1438,11 @@ class CanvasView @JvmOverloads constructor(
                         strokeWidth = element.strokeWidth
                         element.strokeGradient?.let { gradient ->
                             // use same width to span stroke gradient
-                            val textWidth  = fillPaint.measureText(displayText)
+                            val textWidth = fillPaint.measureText(displayText)
                             val textHeight = fillPaint.textSize
                             shader = createGradientShader(
                                 gradientItem = gradient,
-                                width  = textWidth,
+                                width = textWidth,
                                 height = textHeight
                             )
                         } ?: run {
@@ -1562,8 +1565,8 @@ class CanvasView @JvmOverloads constructor(
         if (isColorPickerMode) {
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
-                    pickerX =  x.coerceIn(0f, canvasWidth.toFloat())
-                    pickerY =  y.coerceIn(0f, canvasHeight.toFloat())
+                    pickerX = x.coerceIn(0f, canvasWidth.toFloat())
+                    pickerY = y.coerceIn(0f, canvasHeight.toFloat())
                     isDraggingPicker = true
                     invalidate()
                     return true
