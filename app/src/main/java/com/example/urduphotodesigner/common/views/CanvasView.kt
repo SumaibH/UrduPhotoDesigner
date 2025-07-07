@@ -503,61 +503,34 @@ class CanvasView @JvmOverloads constructor(
         invalidate()
     }
 
-    fun setCanvasBackgroundImage(bitmap: Bitmap, bgElement: CanvasElement) {
-        // 1) bake all settings into local vars
-        val zoom     = bgElement.bgZoom.coerceAtLeast(0.1f)
-        val panX     = bgElement.bgPanX
-        val panY     = bgElement.bgPanY
-        val opacity  = bgElement.bgOpacity.coerceIn(0, 255)
-        val scaleType= bgElement.bgScaleType
-        val rotation = bgElement.bgRotation % 360f
-        val flipH    = if (bgElement.isBgFlippedH) -1f else 1f
-        val flipV    = if (bgElement.isBgFlippedV) -1f else 1f
+    fun setCanvasBackgroundImage(bitmap: Bitmap) {
+        // Create a new bitmap with canvas dimensions
+        val resultBitmap = createBitmap(canvasWidth, canvasHeight)
+        val canvas = Canvas(resultBitmap)
 
-        // 2) prepare output bitmap & canvas
-        val output = createBitmap(canvasWidth, canvasHeight)
-        val c      = Canvas(output)
-        val paint  = Paint().apply { alpha = opacity }
+        // Calculate scale to maintain aspect ratio while filling canvas
+        val scale = max(
+            canvasWidth.toFloat() / bitmap.width,
+            canvasHeight.toFloat() / bitmap.height
+        )
 
-        // 3) compute base scale for FIT/CROP/XY
-        val sx = canvasWidth.toFloat()  / bitmap.width
-        val sy = canvasHeight.toFloat() / bitmap.height
-        val base = when (scaleType) {
-            BackgroundScaleType.FIT_CENTER   -> min(sx, sy)
-            BackgroundScaleType.CENTER_CROP  -> max(sx, sy)
-            BackgroundScaleType.FIT_XY      -> 1f
-            BackgroundScaleType.MATRIX       -> 1f
-        }
+        // Create scaled version of source bitmap
+        val scaledBitmap = Bitmap.createScaledBitmap(
+            bitmap,
+            (bitmap.width * scale).toInt(),
+            (bitmap.height * scale).toInt(),
+            true
+        )
 
-        // 4) combine with zoom
-        val finalScale = base * zoom
+        // Calculate position to center the scaled bitmap
+        val left = (canvasWidth - scaledBitmap.width) / 2f
+        val top = (canvasHeight - scaledBitmap.height) / 2f
 
-        // 5) compute transformed size
-        val w = (bitmap.width  * finalScale).toInt()
-        val h = (bitmap.height * finalScale).toInt()
-        val scaled = Bitmap.createScaledBitmap(bitmap, w, h, true)
+        // Draw the scaled bitmap onto our result bitmap
+        canvas.drawBitmap(scaledBitmap, left, top, null)
 
-        // 6) build a matrix: center → pan → flip/zoom → rotate
-        val m = Matrix().apply {
-            // pivot at canvas center
-            val cx = canvasWidth  / 2f
-            val cy = canvasHeight / 2f
-
-            // 6a) move so scaled bitmap will be centered
-            postTranslate(-w/2f, -h/2f)
-            // 6b) apply flip + scale
-            postScale(flipH * finalScale, flipV * finalScale)
-            // 6c) rotate around pivot
-            postRotate(rotation, 0f, 0f)
-            // 6d) move into canvas center, plus pan
-            postTranslate(cx + panX, cy + panY)
-        }
-
-        // 7) draw it
-        c.drawBitmap(scaled, m, paint)
-
-        // 8) commit
-        backgroundImage   = output
+        // Set as background
+        backgroundImage = resultBitmap
         backgroundGradient = null
         invalidate()
     }

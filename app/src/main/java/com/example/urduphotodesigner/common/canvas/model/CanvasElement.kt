@@ -87,15 +87,6 @@ data class CanvasElement(
     var blendType: BlendType = BlendType.SRC_OVER,
 
     var isVisible: Boolean = true,
-
-    var bgZoom: Float = 1f,                  // 1.0 = native size
-    var bgPanX: Float = 0f,                     // in px or fraction of width
-    var bgPanY: Float = 0f,
-    var bgOpacity: Int = 255,                   // 0-255
-    var bgScaleType: BackgroundScaleType = BackgroundScaleType.FIT_CENTER,
-    var bgRotation: Float = 0f,                 // degrees
-    var isBgFlippedH: Boolean = false,
-    var isBgFlippedV: Boolean = false
 ) : Serializable {
 
     @Transient
