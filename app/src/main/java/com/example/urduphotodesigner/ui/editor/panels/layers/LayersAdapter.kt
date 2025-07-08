@@ -71,7 +71,7 @@ class LayersAdapter(
                 title.text = when (element.type) {
                     ElementType.TEXT -> element.text ?: "Text"
                     ElementType.IMAGE -> "Sticker"
-                    else -> "Element"
+                    else -> "Background"
                 }
 
                 // Icon based on type
@@ -79,7 +79,7 @@ class LayersAdapter(
                     when (element.type) {
                         ElementType.TEXT -> R.drawable.ic_text_layer
                         ElementType.IMAGE -> R.drawable.ic_image_layer
-                        else -> R.drawable.ic_objects
+                        else -> R.drawable.ic_background
                     }
                 )
 
@@ -101,16 +101,18 @@ class LayersAdapter(
                     // normal mode: show icons based on locked state
                     lock.visibility = View.VISIBLE
                     options.visibility = View.VISIBLE
-                    drag.visibility = if (element.isLocked) View.INVISIBLE else View.VISIBLE
+                    drag.visibility = if (element.isLocked) View.GONE else View.VISIBLE
                 }
-
 
                 // Lock icon
                 lock.setImageResource(
                     if (element.isLocked) R.drawable.ic_lock else R.drawable.ic_unlock
                 )
-                // Drag handle visibility
-                drag.visibility = if (element.isLocked) View.INVISIBLE else View.VISIBLE
+
+                val hideDragOrOptions = element.isLocked || element.type == ElementType.BACKGROUND
+
+                binding.drag.visibility    = if (hideDragOrOptions) View.GONE else View.VISIBLE
+                binding.options.visibility = if (hideDragOrOptions) View.GONE else View.VISIBLE
 
                 // Click listeners:
                 lock.setOnClickListener {
@@ -121,7 +123,6 @@ class LayersAdapter(
                     onMoreOptions(element, v)
                 }
                 drag.setOnTouchListener { v, event ->
-                    // You could check event.action == MotionEvent.ACTION_DOWN
                     onStartDrag(this@CanvasElementViewHolder)
                     false
                 }
@@ -129,7 +130,9 @@ class LayersAdapter(
                     onItemClick(element)
                 }
                 root.setOnLongClickListener {
-                    onItemLongClick(element)
+                    if (element.type!=ElementType.BACKGROUND){
+                        onItemLongClick(element)
+                    }
                     true
                 }
             }

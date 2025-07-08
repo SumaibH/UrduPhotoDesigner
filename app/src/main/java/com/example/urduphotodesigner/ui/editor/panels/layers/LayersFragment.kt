@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
+import com.example.urduphotodesigner.common.canvas.enums.ElementType
 import com.example.urduphotodesigner.common.canvas.model.CanvasElement
 import com.example.urduphotodesigner.databinding.FragmentLayersBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -143,40 +144,30 @@ class LayersFragment : Fragment() {
     }
 
     private fun observeViewModel() {
-        // Observe canvas elements to update adapter
         viewModel.canvasElements.observe(viewLifecycleOwner) { elements ->
-            // Sort by zIndex or keep order as needed
             CoroutineScope(Dispatchers.IO).launch {
                 val sortedElements = elements.sortedBy { it.zIndex }
-
-                // Switch back to the main thread for UI updates
                 withContext(Dispatchers.Main) {
                     adapter.submitList(sortedElements)
                 }
             }
         }
 
-        // Observe selectedElements to update UI (e.g., enable/disable toolbar icons if you have a separate toolbar)
         viewModel.selectedElements.observe(viewLifecycleOwner) { selectedList ->
             if (!isAdded) return@observe
 
             when {
                 selectedList.isEmpty() && inSelectionMode -> {
-                    // No more selections: exit selection mode
                     exitSelectionMode()
                 }
                 selectedList.isNotEmpty() -> {
                     if (!inSelectionMode && selectedList.size > 1) {
-                        // Enter selection mode only when more than one (or your desired threshold)
                         enterSelectionMode()
                     }
                     if (inSelectionMode) {
-                        // Update toolbar/menu state accordingly
                         updateSelectionToolbar()
                     }
-                    // If you want single-selection behavior (e.g., treat one as normal click), adjust here
                 }
-                // else: selectedList empty & not inSelectionMode: nothing to do
             }
         }
     }
@@ -289,6 +280,7 @@ class LayersFragment : Fragment() {
 
     private fun handleItemClick(element: CanvasElement) {
         if (inSelectionMode) {
+            if (element.type == ElementType.BACKGROUND) return
             toggleSelection(element)
             if ((viewModel.selectedElements.value?.size ?: 0) == 0) {
                 exitSelectionMode()
@@ -327,49 +319,6 @@ class LayersFragment : Fragment() {
 
     private fun clearSelection() {
         viewModel.setSelectedElementsFromLayers(emptyList())
-    }
-
-    private fun updateActionModeTitle() {
-        val selected = viewModel.selectedElements.value ?: emptyList()
-        actionMode?.title = getString(R.string.selected_n_layers, selected.size)
-        // Update icons/titles in the menu:
-        val menu = actionMode?.menu ?: return
-        // Lock/unlock
-        val lockItem = menu.findItem(R.id.action_lock_toggle_all)
-        if (selected.isNotEmpty()) {
-            val allLocked = selected.all { it.isLocked }
-            lockItem.title =
-                if (allLocked) getString(R.string.unlock_all) else getString(R.string.lock_all)
-            lockItem.icon = ContextCompat.getDrawable(
-                requireContext(),
-                if (allLocked) R.drawable.ic_unlock else R.drawable.ic_lock
-            )
-        }
-        // Visibility toggle
-        val visItem = menu.findItem(R.id.action_visibility_toggle_all)
-        if (selected.isNotEmpty()) {
-            val allHidden = selected.all { it.isVisible }
-            val allVisible = selected.all { !it.isVisible }
-            when {
-                allHidden -> {
-                    visItem.title = getString(R.string.show_all)
-                    visItem.icon =
-                        ContextCompat.getDrawable(requireContext(), R.drawable.ic_show_pass)
-                }
-
-                allVisible -> {
-                    visItem.title = getString(R.string.hide_all)
-                    visItem.icon =
-                        ContextCompat.getDrawable(requireContext(), R.drawable.ic_hide_pass)
-                }
-
-                else -> {
-                    visItem.title = getString(R.string.hide_all)
-                    visItem.icon =
-                        ContextCompat.getDrawable(requireContext(), R.drawable.ic_hide_pass)
-                }
-            }
-        }
     }
 
     // Show per-item popup menu anchored at the overflow icon

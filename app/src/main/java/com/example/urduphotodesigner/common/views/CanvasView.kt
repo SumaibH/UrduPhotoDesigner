@@ -1,5 +1,6 @@
 package com.example.urduphotodesigner.common.views
 
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
@@ -26,8 +27,8 @@ import android.util.AttributeSet
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
+import android.view.animation.DecelerateInterpolator
 import androidx.annotation.ColorInt
-import androidx.annotation.FloatRange
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.withTranslation
@@ -180,14 +181,12 @@ class CanvasView @JvmOverloads constructor(
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
-        canvasWidth  = w
-        canvasHeight = h
 
-         canvasElements
+        canvasElements
             .firstOrNull { it.type == ElementType.BACKGROUND }
             ?.apply {
-                logicalContentWidth  = w.toFloat()
-                logicalContentHeight = h.toFloat()
+                logicalContentWidth = canvasWidth.toFloat()
+                logicalContentHeight = canvasHeight.toFloat()
             }
         ensureBackgroundElement()
     }
@@ -550,7 +549,7 @@ class CanvasView @JvmOverloads constructor(
             .apply {
                 fillGradient = null
                 backgroundColor = Color.WHITE
-                bitmap       = src        // ← keep the full-size image
+                bitmap = src        // ← keep the full-size image
             }
         invalidate()
     }
@@ -792,18 +791,18 @@ class CanvasView @JvmOverloads constructor(
     }
 
     fun computeBackgroundPanBounds(e: CanvasElement): Pair<ClosedFloatingPointRange<Float>, ClosedFloatingPointRange<Float>> {
-        val w  = canvasWidth.toFloat()
-        val h  = canvasHeight.toFloat()
+        val w = canvasWidth.toFloat()
+        val h = canvasHeight.toFloat()
         val bmp = e.bitmap!!
-        val scale = max(w/bmp.width, h/bmp.height)
-        val sw = bmp.width  * scale
+        val scale = max(w / bmp.width, h / bmp.height)
+        val sw = bmp.width * scale
         val sh = bmp.height * scale
 
         // Center can move between these so you never expose blank
-        val xMin = w - sw/2f     // far right of image at right edge
-        val xMax =   sw/2f       // far left of image at left edge
-        val yMin = h - sh/2f
-        val yMax =   sh/2f
+        val xMin = w - sw / 2f     // far right of image at right edge
+        val xMax = sw / 2f       // far left of image at left edge
+        val yMin = h - sh / 2f
+        val yMax = sh / 2f
 
         return (xMin..xMax) to (yMin..yMax)
     }
@@ -1157,26 +1156,27 @@ class CanvasView @JvmOverloads constructor(
         canvas.save()
 
         e.bitmap?.let { bmp ->
-            val scale = max(w / bmp.width, h / bmp.height)
+            val baseScale = max(w / bmp.width, h / bmp.height)
+            val totalScale = baseScale * e.scale
 
-            val sw = bmp.width  * scale
-            val sh = bmp.height * scale
+            val sw = bmp.width * totalScale
+            val sh = bmp.height * totalScale
 
-            val xMin = w - sw/2f
-            val xMax =   sw/2f
-            val yMin = h - sh/2f
-            val yMax =   sh/2f
+            val xMin = w - sw / 2f
+            val xMax = sw / 2f
+            val yMin = h - sh / 2f
+            val yMax = sh / 2f
 
             e.x = e.x.coerceIn(xMin, xMax)
             e.y = e.y.coerceIn(yMin, yMax)
 
-            val left = e.x - sw/2f
-            val top  = e.y - sh/2f
+            val left = e.x - sw / 2f
+            val top  = e.y - sh / 2f
 
             canvas.save()
             canvas.clipRect(0f, 0f, w, h)
             canvas.translate(left, top)
-            canvas.scale(scale, scale)
+            canvas.scale(totalScale, totalScale)
             canvas.drawBitmap(bmp, 0f, 0f, null)
             canvas.restore()
             return
@@ -1609,7 +1609,7 @@ class CanvasView @JvmOverloads constructor(
             val y = (e.y - offsetY) / scale
 
             val touchedElement =
-                canvasElements.sortedByDescending { it.zIndex }.firstOrNull { element ->
+                canvasElements.filter { !it.isLocked }.sortedByDescending { it.zIndex }.firstOrNull { element ->
                     val matrix = Matrix()
                     matrix.postTranslate(-element.x, -element.y)
                     matrix.postRotate(-element.rotation)
@@ -1637,10 +1637,53 @@ class CanvasView @JvmOverloads constructor(
                 onEditTextRequested?.invoke(touchedElement)
                 invalidate()
                 return true
+            } else {
+                val bg = canvasElements
+                    .firstOrNull { it.type == ElementType.BACKGROUND && !it.isLocked }
+                if (bg?.bitmap != null) {
+                    stepZoom(bg)
+                    selectOnly(bg)
+                    onElementChanged?.invoke(bg)
+                    invalidate()
+                    return true
+                }
             }
             return false
         }
     }
+
+    private fun animateZoom(elem: CanvasElement, toScale: Float) {
+        val fromScale = elem.scale
+        ValueAnimator.ofFloat(fromScale, toScale).apply {
+            duration = 500L
+            interpolator = DecelerateInterpolator()
+            addUpdateListener { animation ->
+                elem.scale = animation.animatedValue as Float
+                onElementChanged?.invoke(elem)
+                invalidate()
+            }
+            start()
+        }
+    }
+
+    private fun stepZoom(elem: CanvasElement) {
+        val next = when (elem.scale) {
+            1f   -> 2f
+            2f   -> 4f
+            else -> 1f
+        }
+        animateZoom(elem, next)
+    }
+
+    // Helper: clear selection & select only this one
+    private fun selectOnly(elem: CanvasElement) {
+        canvasElements.forEach { it.isSelected = false }
+        selectedElements.clear()
+        elem.isSelected = true
+        selectedElements.add(elem)
+        onElementSelected?.invoke(selectedElements)
+    }
+
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -1709,7 +1752,7 @@ class CanvasView @JvmOverloads constructor(
 
 
                 // 1. Check for icon touch (regardless of single or multi-selection, based on combined bounds)
-                if (selectedElements.isNotEmpty() && selectedElements.any { !it.isLocked }) {
+                if (selectedElements.isNotEmpty()) {
                     val combinedBounds = getCombinedSelectedBounds()
                     val localSpacePadding = 10f / scale // Use the same padding as drawing
                     val adjustedIconHitSize = desiredIconScreenSizePx / scale * 1.5f
@@ -1831,23 +1874,24 @@ class CanvasView @JvmOverloads constructor(
 
                 // 2. If no icon was touched, check for element touch (single or multi-selection)
                 val touchedElement =
-                    canvasElements.sortedByDescending { it.zIndex }.firstOrNull { element ->
-                        val matrix = Matrix()
-                        matrix.postTranslate(-element.x, -element.y)
-                        matrix.postRotate(-element.rotation)
-                        matrix.postScale(1f / element.scale, 1f / element.scale)
+                    canvasElements.filter { !it.isLocked }.sortedByDescending { it.zIndex }
+                        .firstOrNull { element ->
+                            val matrix = Matrix()
+                            matrix.postTranslate(-element.x, -element.y)
+                            matrix.postRotate(-element.rotation)
+                            matrix.postScale(1f / element.scale, 1f / element.scale)
 
-                        val touchPoint = floatArrayOf(x, y)
-                        matrix.mapPoints(touchPoint)
+                            val touchPoint = floatArrayOf(x, y)
+                            matrix.mapPoints(touchPoint)
 
-                        val bounds = RectF(
-                            -element.getLocalContentWidth() / 2f,
-                            -element.getLocalContentHeight() / 2f,
-                            element.getLocalContentWidth() / 2f,
-                            element.getLocalContentHeight() / 2f
-                        )
-                        bounds.contains(touchPoint[0], touchPoint[1])
-                    }
+                            val bounds = RectF(
+                                -element.getLocalContentWidth() / 2f,
+                                -element.getLocalContentHeight() / 2f,
+                                element.getLocalContentWidth() / 2f,
+                                element.getLocalContentHeight() / 2f
+                            )
+                            bounds.contains(touchPoint[0], touchPoint[1])
+                        }
 
                 if (touchedElement != null) {
                     if (touchedElement.isSelected) {
@@ -1873,6 +1917,22 @@ class CanvasView @JvmOverloads constructor(
                     invalidate()
                     return true
                 } else {
+                    val bg =
+                        canvasElements.firstOrNull { it.type == ElementType.BACKGROUND && !it.isLocked }
+                    if (bg?.bitmap != null) {
+                        // select the background so ACTION_MOVE will pan it
+                        canvasElements.forEach { it.isSelected = false }
+                        selectedElements.clear()
+                        bg.isSelected = true
+                        selectedElements.add(bg)
+                        onElementSelected?.invoke(selectedElements)
+
+                        currentMode = Mode.DRAG
+                        touchStartX = x
+                        touchStartY = y
+                        invalidate()
+                        return true
+                    }
                     // 3. Tapped on empty canvas, deselect all elements
                     if (selectedElements.isNotEmpty()) {
                         canvasElements.forEach { it.isSelected = false }
@@ -1880,14 +1940,16 @@ class CanvasView @JvmOverloads constructor(
                         onElementSelected?.invoke(selectedElements) // Notify ViewModel of empty selection
                         invalidate()
                     }
-                    currentMode = Mode.NONE // Reset mode
+                    currentMode = Mode.NONE
                     return true
                 }
             }
 
             MotionEvent.ACTION_MOVE -> {
                 // Determine which elements to modify based on current mode and touch context
-                val elementsToModify = selectedElements.filter { !it.isLocked }
+                val elementsToModify = selectedElements.filter {
+                    !it.isLocked
+                }
 
                 if (elementsToModify.isEmpty()) return true // No elements to modify
 
@@ -1910,7 +1972,7 @@ class CanvasView @JvmOverloads constructor(
                         val actualDy = clampedTop - combinedBounds.top
 
                         elementsToModify.forEach { element ->
-                            if (element.type == ElementType.BACKGROUND) {
+                            if (element.type == ElementType.BACKGROUND && !element.isLocked) {
                                 element.x += dx
                                 element.y += dy
                             } else {
@@ -1928,7 +1990,9 @@ class CanvasView @JvmOverloads constructor(
 
                         // Check alignment for the first selected element (if only one is selected for single drag)
                         if (selectedElements.size == 1) {
-                            checkAlignment(selectedElements.first())
+                            if (selectedElements.first().type != ElementType.BACKGROUND) {
+                                checkAlignment(selectedElements.first())
+                            }
                         } else {
                             showVerticalGuide = false
                             showHorizontalGuide = false

@@ -35,6 +35,18 @@
         android:orientation="vertical"
         android:id="@+id/endGuide"/>
 
+    <ImageView
+        android:id="@+id/addImage"
+        android:layout_width="@dimen/_30sdp"
+        android:layout_height="@dimen/_30sdp"
+        android:background="@drawable/button_bg"
+        android:backgroundTint="@color/contrast"
+        android:src="@drawable/ic_import"
+        app:layout_constraintStart_toEndOf="@id/startGuide"
+        app:layout_constraintTop_toBottomOf="@id/topGuide"
+        android:padding="@dimen/_6sdp"
+        app:tint="@color/black"/>
+
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabLayout"
         android:layout_width="0dp"
@@ -47,7 +59,7 @@
         app:tabRippleColor="@android:color/transparent"
         app:tabTextColor="@color/black"
         app:tabSelectedTextColor="@color/whiteText"
-        app:layout_constraintStart_toEndOf="@id/startGuide"
+        app:layout_constraintStart_toEndOf="@id/addImage"
         app:layout_constraintEnd_toStartOf="@id/endGuide"
         app:layout_constraintTop_toBottomOf="@id/topGuide"/>
 

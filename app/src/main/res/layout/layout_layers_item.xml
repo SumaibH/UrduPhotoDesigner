@@ -45,8 +45,8 @@
             app:layout_constraintBottom_toBottomOf="@id/image"/>
 
         <ImageView
-            android:layout_width="@dimen/_16sdp"
-            android:layout_height="@dimen/_16sdp"
+            android:layout_width="@dimen/_14sdp"
+            android:layout_height="@dimen/_14sdp"
             app:tint="@color/black"
             android:layout_marginEnd="@dimen/_8sdp"
             app:layout_constraintTop_toTopOf="@id/title"
@@ -56,8 +56,8 @@
             android:id="@+id/lock"/>
 
         <ImageView
-            android:layout_width="@dimen/_14sdp"
-            android:layout_height="@dimen/_14sdp"
+            android:layout_width="@dimen/_12sdp"
+            android:layout_height="@dimen/_12sdp"
             app:tint="@color/black"
             android:layout_marginEnd="@dimen/_5sdp"
             app:layout_constraintTop_toTopOf="@id/title"
@@ -68,8 +68,8 @@
 
         <ImageView
             android:id="@+id/drag"
-            android:layout_width="@dimen/_16sdp"
-            android:layout_height="@dimen/_16sdp"
+            android:layout_width="@dimen/_14sdp"
+            android:layout_height="@dimen/_14sdp"
             android:layout_marginEnd="4dp"
             android:src="@drawable/ic_drag"
             app:layout_constraintBottom_toBottomOf="@id/title"

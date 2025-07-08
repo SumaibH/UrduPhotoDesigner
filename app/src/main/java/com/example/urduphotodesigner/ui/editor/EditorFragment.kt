@@ -256,7 +256,7 @@ class EditorFragment : Fragment() {
         }
 
         viewModel.selectedElements.observe(viewLifecycleOwner) { selectedList ->
-            val shouldShow = selectedList.isNotEmpty()
+            val shouldShow = selectedList.isNotEmpty() && selectedList.any { it.type != ElementType.BACKGROUND }
             val isShowing = binding.copyIcon.isVisible
 
             if (shouldShow != isShowing){
@@ -765,7 +765,7 @@ class EditorFragment : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
         _navController = null
-        viewModel.clearCanvas()
+//        viewModel.clearCanvas()
         _binding = null
     }
 }
