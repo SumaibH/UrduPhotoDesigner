@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.AppCompatTextView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/emojiText"
+    android:layout_width="@dimen/_32sdp"
+    android:layout_height="@dimen/_32sdp"
+    android:gravity="center"
+    android:textSize="@dimen/_20sdp"
+    android:clickable="true"
+    android:fontFamily="@font/symbols"
+    android:foreground="?attr/selectableItemBackgroundBorderless"/>

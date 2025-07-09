@@ -1,28 +1,29 @@
 package com.example.urduphotodesigner.ui.editor.panels.objects
 
-import android.graphics.Bitmap
+import android.annotation.SuppressLint
 import android.os.Bundle
+import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
+import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
-import com.example.urduphotodesigner.common.canvas.CanvasViewModel
+import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.databinding.FragmentObjectsBinding
-import com.example.urduphotodesigner.ui.editor.panels.background.backgrounds.ImagesAdapter
-import com.example.urduphotodesigner.viewmodels.MainViewModel
+import com.google.android.material.tabs.TabLayoutMediator
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class ObjectsFragment : Fragment() {
     private var _binding: FragmentObjectsBinding? = null
     private val binding get() = _binding!!
 
-    private val mainViewModel: MainViewModel by activityViewModels()
-    private val viewModel: CanvasViewModel by activityViewModels()
-    private lateinit var imagesAdapter: ImagesAdapter
+    private lateinit var adapter: ObjectsPagerAdapter
+    private var tabs = mutableListOf<String>()
+    private var isSearching = false
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -35,42 +36,65 @@ class ObjectsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setEvents()
-        initObservers()
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun setEvents() {
-        imagesAdapter = ImagesAdapter(){ image ->
-            val resized = bitmapCompress(image)
-            viewModel.addSticker(resized, requireActivity())
-        }
-        binding.objects.adapter = imagesAdapter
-    }
+        tabs.addAll(
+            listOf(
+                "Stickers",
+                "Emoticons",
+                "Animals",
+                "Nature",
+                "Food",
+                "Sports",
+                "Transport",
+                "Objects",
+                "Alchemy",
+                "Shapes",
+                "Arrows",
+                "Letters",
+                "Flags"
+            )
+        )
 
-    private fun bitmapCompress(image: Bitmap): Bitmap {
-        val canvasWidth = 300
-        val canvasHeight = 300
+        adapter = ObjectsPagerAdapter(
+            requireActivity().supportFragmentManager,
+            lifecycle,
+            tabs
+        )
 
-        val widthRatio = canvasWidth.toFloat() / image.width
-        val heightRatio = canvasHeight.toFloat() / image.height
-        val minScale = minOf(1f, widthRatio, heightRatio)
+        binding.viewPager.adapter = adapter
+        binding.viewPager.isUserInputEnabled = false
 
-        val newWidth = (image.width * minScale).toInt()
-        val newHeight = (image.height * minScale).toInt()
+        TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
+            val tabView = LayoutInflater.from(context).inflate(R.layout.custom_tab, null)
+            tabView.findViewById<TextView>(R.id.tabTitle).text = tabs[position]
+            tab.customView = tabView
+        }.attach()
 
-        val resized = Bitmap.createScaledBitmap(image, newWidth, newHeight, true)
-        return resized
-    }
+        binding.searchBar.imeOptions = EditorInfo.IME_ACTION_SEARCH
+        binding.searchBar.setRawInputType(InputType.TYPE_CLASS_TEXT)
 
-    private fun initObservers() {
+        binding.searchBar.setImeActionLabel("🔍", EditorInfo.IME_ACTION_SEARCH)
 
-        lifecycleScope.launch {
-            mainViewModel.localImages.collect { images ->
-                val imageList =
-                    images.filter { it.category.equals("Image", ignoreCase = true) }
-
-                imagesAdapter.submitList(imageList)
+        binding.searchBar.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                val query = binding.searchBar.text.toString()
+                adapter.filter(query)
+                hideKeyboard()
+                true
+            } else {
+                false
             }
         }
+    }
+
+    private fun hideKeyboard() {
+        val imm = requireContext()
+            .getSystemService(InputMethodManager::class.java)
+        imm.hideSoftInputFromWindow(binding.searchBar.windowToken, 0)
+        binding.searchBar.clearFocus()
     }
 
     override fun onDestroy() {

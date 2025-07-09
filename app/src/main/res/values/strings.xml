@@ -113,6 +113,7 @@
     <string name="center_y">Center Y</string>
     <string name="center_x">Center X</string>
     <string name="colors">Colors</string>
+    <string name="import_from_gallery">Import from gallery</string>
 
     <array name="hue_colors">
         <item>#FF0000</item>  <!-- Red -->

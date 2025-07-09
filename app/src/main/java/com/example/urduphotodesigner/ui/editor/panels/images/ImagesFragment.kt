@@ -1,11 +1,19 @@
 package com.example.urduphotodesigner.ui.editor.panels.images
 
 import android.content.res.ColorStateList
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.ImageDecoder
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -13,12 +21,16 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import com.example.urduphotodesigner.R
+import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.databinding.FragmentImagesBinding
 import com.example.urduphotodesigner.ui.editor.panels.background.BackgroundPagerAdapter
 import com.example.urduphotodesigner.viewmodels.MainViewModel
 import com.google.android.material.tabs.TabLayoutMediator
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.IOException
 
 @AndroidEntryPoint
 class ImagesFragment : Fragment() {
@@ -27,6 +39,12 @@ class ImagesFragment : Fragment() {
     private var tabs = mutableListOf<String>()
     private lateinit var adapter: ImagesPagerAdapter
     private val mainViewModel: MainViewModel by activityViewModels()
+    private val viewModel: CanvasViewModel by activityViewModels()
+    private val pickImage =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri?.let { handlePickedUri(it) }
+
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -39,7 +57,12 @@ class ImagesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        tabs.addAll(listOf("Image", "Color", "Gradient")) // static tabs first
+        setEvents()
+        observeCategories()
+    }
+
+    private fun setEvents() {
+        tabs.addAll(listOf("Image", "Color", "Gradient"))
 
         adapter = ImagesPagerAdapter(
             requireActivity().supportFragmentManager,
@@ -49,7 +72,51 @@ class ImagesFragment : Fragment() {
         binding.viewPager.adapter = adapter
         binding.viewPager.isUserInputEnabled = false
 
-        observeCategories()
+        binding.addImage.setOnClickListener {
+            pickImage.launch("image/*")
+        }
+    }
+
+    @Throws(IOException::class)
+    private fun getBitmapFromUri(uri: Uri): Bitmap {
+        val resolver = requireContext().contentResolver
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val source = ImageDecoder.createSource(resolver, uri)
+            ImageDecoder.decodeBitmap(source) { decoder, _, _ ->
+                decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+            }
+        } else {
+            @Suppress("DEPRECATION")
+            MediaStore.Images.Media.getBitmap(resolver, uri)
+        }
+    }
+
+    private fun handlePickedUri(uri: Uri) {
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val compressed = bitmapCompress(getBitmapFromUri(uri))
+                withContext(Dispatchers.Main) {
+                    viewModel.addSticker(compressed, requireActivity())
+                }
+            } catch (e: Exception) {
+                Log.e("PhotoPicker", "Failed compressing image", e)
+            }
+        }
+    }
+
+    private fun bitmapCompress(image: Bitmap): Bitmap {
+        val canvasWidth = 300
+        val canvasHeight = 300
+
+        val widthRatio = canvasWidth.toFloat() / image.width
+        val heightRatio = canvasHeight.toFloat() / image.height
+        val minScale = minOf(1f, widthRatio, heightRatio)
+
+        val newWidth = (image.width * minScale).toInt()
+        val newHeight = (image.height * minScale).toInt()
+
+        val resized = Bitmap.createScaledBitmap(image, newWidth, newHeight, true)
+        return resized
     }
 
     private fun observeCategories() {
@@ -60,11 +127,9 @@ class ImagesFragment : Fragment() {
                     .filterNot { it.equals("Background", true) || it.equals("Image", true) }
                     .distinct()
 
-                // Add unique new categories to tabs
                 tabs.clear()
                 tabs.addAll(additionalTabs)
 
-                // Update adapter and tabs
                 adapter.setTabs(tabs)
                 setupTabLayout()
             }
@@ -77,34 +142,6 @@ class ImagesFragment : Fragment() {
             tabView.findViewById<TextView>(R.id.tabTitle).text = tabs[position]
             tab.customView = tabView
         }.attach()
-
-        updateTabStyles(binding.tabLayout.selectedTabPosition)
-
-        binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-            override fun onPageSelected(position: Int) {
-                updateTabStyles(position)
-            }
-        })
-    }
-
-    fun updateTabStyles(selectedPosition: Int) {
-        for (i in 0 until binding.tabLayout.tabCount) {
-            val tabView = binding.tabLayout.getTabAt(i)?.customView
-            val root = tabView?.findViewById<ConstraintLayout>(R.id.tabRoot)
-            val text = tabView?.findViewById<TextView>(R.id.tabTitle)
-
-            if (i == selectedPosition) {
-                root?.backgroundTintList = ColorStateList.valueOf(
-                    ContextCompat.getColor(requireContext(), R.color.appColor)
-                )
-                text?.setTextColor(ContextCompat.getColor(requireContext(), R.color.whiteText))
-            } else {
-                root?.backgroundTintList = ColorStateList.valueOf(
-                    ContextCompat.getColor(requireContext(), R.color.contrast)
-                )
-                text?.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
-            }
-        }
     }
 
     override fun onDestroy() {

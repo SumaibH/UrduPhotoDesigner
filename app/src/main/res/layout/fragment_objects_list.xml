@@ -4,21 +4,21 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@color/white"
-    tools:context=".ui.editor.panels.background.backgrounds.BackgroundsListFragment">
+    tools:context=".ui.editor.panels.objects.ObjectsListFragment"
+    android:background="@color/white">
 
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="@dimen/_5sdp"
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
         tools:itemCount="100"
         android:orientation="horizontal"
         app:spanCount="3"
-        android:id="@+id/backgrounds"
+        android:id="@+id/objects"
         tools:listitem="@layout/layout_images_item"/>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

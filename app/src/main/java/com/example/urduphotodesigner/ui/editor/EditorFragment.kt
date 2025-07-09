@@ -765,7 +765,7 @@ class EditorFragment : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
         _navController = null
-//        viewModel.clearCanvas()
+        viewModel.clearCanvas()
         _binding = null
     }
 }

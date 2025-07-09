@@ -1,6 +1,5 @@
 package com.example.urduphotodesigner.ui.editor.panels.background
 
-import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
@@ -13,18 +12,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.viewpager2.widget.ViewPager2
 import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.databinding.FragmentBackgroundsBinding
-import com.example.urduphotodesigner.ui.editor.panels.text.TextPagerAdapter
 import com.google.android.material.tabs.TabLayoutMediator
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -77,16 +71,6 @@ class BackgroundsFragment : Fragment() {
             tab.customView = tabView
         }.attach()
 
-        // Initial style
-        updateTabStyles(binding.tabLayout.selectedTabPosition)
-
-        // Apply styles on swipe
-        binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-            override fun onPageSelected(position: Int) {
-                updateTabStyles(position)
-            }
-        })
-
         binding.addImage.setOnClickListener { pickImage.launch("image/*") }
 
     }
@@ -97,9 +81,11 @@ class BackgroundsFragment : Fragment() {
             try {
                 val compressedBytes = loadAndCompressImage(uri)
                 withContext(Dispatchers.Main) {
-                    viewModel.setCanvasBackgroundImage(BitmapFactory.decodeByteArray(
-                        compressedBytes, 0, compressedBytes.size
-                    ))
+                    viewModel.setCanvasBackgroundImage(
+                        BitmapFactory.decodeByteArray(
+                            compressedBytes, 0, compressedBytes.size
+                        )
+                    )
                 }
             } catch (e: Exception) {
                 Log.e("PhotoPicker", "Failed compressing image", e)
@@ -151,32 +137,6 @@ class BackgroundsFragment : Fragment() {
         } else {
             @Suppress("DEPRECATION")
             MediaStore.Images.Media.getBitmap(resolver, uri)
-        }
-    }
-
-    fun updateTabStyles(selectedPosition: Int) {
-        for (i in 0 until binding.tabLayout.tabCount) {
-            val tabView = binding.tabLayout.getTabAt(i)?.customView
-            val root = tabView?.findViewById<ConstraintLayout>(R.id.tabRoot)
-            val text = tabView?.findViewById<TextView>(R.id.tabTitle)
-
-            if (i == selectedPosition) {
-                root?.backgroundTintList = ColorStateList.valueOf(
-                    ContextCompat.getColor(
-                        requireContext(),
-                        R.color.appColor
-                    )
-                )
-                text?.setTextColor(ContextCompat.getColor(requireContext(), R.color.whiteText))
-            } else {
-                root?.backgroundTintList = ColorStateList.valueOf(
-                    ContextCompat.getColor(
-                        requireContext(),
-                        R.color.contrast
-                    )
-                )
-                text?.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
-            }
         }
     }
 
