@@ -76,7 +76,13 @@ class ObjectsListFragment : Fragment() {
             "Flags"       -> Constants.META_FLAGS
             else          -> emptyList()
         }
-        val emojiAdapter = EmojiAdapter(requireActivity(), data.filter { it.name.contains(filterText, true) }) { bmp ->
+        val filtered = data.filter { it.name.contains(filterText, true) }
+        if (filtered.isEmpty()){
+            binding.noEmojis.visibility = View.VISIBLE
+        }else{
+            binding.noEmojis.visibility = View.GONE
+        }
+        val emojiAdapter = EmojiAdapter(requireActivity(), filtered) { bmp ->
             viewModel.addSticker(bmp, requireActivity())
         }
 
@@ -127,6 +133,11 @@ class ObjectsListFragment : Fragment() {
                 img.category.equals("Image", true) || img.category.equals("Sticker", true) &&
                         img.alt_text.contains(filterText, ignoreCase = true)
             }
+        if (filtered.isEmpty()){
+            binding.noEmojis.visibility = View.VISIBLE
+        }else{
+            binding.noEmojis.visibility = View.GONE
+        }
         imagesAdapter.submitList(filtered)
     }
 

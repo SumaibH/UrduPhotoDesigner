@@ -819,6 +819,8 @@ class CanvasView @JvmOverloads constructor(
         canvas.withTranslation(offsetX, offsetY) {
             scale(scale, scale)
 
+            canvas.save()
+            canvas.clipRect(0f, 0f, canvasWidth.toFloat(), canvasHeight.toFloat())
             // Draw alignment guides before elements
             if (showVerticalGuide) {
                 drawLine(
@@ -1958,40 +1960,26 @@ class CanvasView @JvmOverloads constructor(
                         val dx = x - touchStartX
                         val dy = y - touchStartY
 
-                        val combinedBounds = getCombinedSelectedBounds()
-                        val newLeft = combinedBounds.left + dx
-                        val newTop = combinedBounds.top + dy
-
-                        // Clamp the new combined bounds to the canvas
-                        val maxLeft = max(0f, canvasWidth - combinedBounds.width())
-                        val clampedLeft = newLeft.coerceIn(0f, maxLeft)
-                        val maxTop = max(0f, canvasHeight - combinedBounds.height())
-                        val clampedTop = newTop.coerceIn(0f, maxTop)
-
-                        val actualDx = clampedLeft - combinedBounds.left
-                        val actualDy = clampedTop - combinedBounds.top
-
                         elementsToModify.forEach { element ->
-                            if (element.type == ElementType.BACKGROUND && !element.isLocked) {
-                                element.x += dx
-                                element.y += dy
-                            } else {
-                                // your existing element-clamp logic:
-                                element.x += actualDx
-                                element.y += actualDy
-                                val halfW = element.getLocalContentWidth() / 2f
-                                val halfH = element.getLocalContentHeight() / 2f
-                                element.x = element.x.coerceIn(halfW, canvasWidth - halfW)
-                                element.y = element.y.coerceIn(halfH, canvasHeight - halfH)
-                            }
-
+                            element.x += dx
+                            element.y += dy
                             onElementChanged?.invoke(element)
                         }
 
                         // Check alignment for the first selected element (if only one is selected for single drag)
-                        if (selectedElements.size == 1) {
-                            if (selectedElements.first().type != ElementType.BACKGROUND) {
+                        if (selectedElements.isNotEmpty()) {
+                            // If just one, check its own center
+                            if (selectedElements.size == 1) {
                                 checkAlignment(selectedElements.first())
+                            } else {
+                                // Multiple: compute combined bounds center
+                                val combined = getCombinedSelectedBounds()
+                                val centerX = combined.left + combined.width() / 2f
+                                val centerY = combined.top + combined.height() / 2f
+                                val threshold = 5f
+
+                                showVerticalGuide = abs(centerX - canvasWidth / 2f) < threshold
+                                showHorizontalGuide = abs(centerY - canvasHeight / 2f) < threshold
                             }
                         } else {
                             showVerticalGuide = false

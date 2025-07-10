@@ -114,6 +114,7 @@
     <string name="center_x">Center X</string>
     <string name="colors">Colors</string>
     <string name="import_from_gallery">Import from gallery</string>
+    <string name="we_couldn_t_find_this_one">We couldn\'t find this one</string>
 
     <array name="hue_colors">
         <item>#FF0000</item>  <!-- Red -->
