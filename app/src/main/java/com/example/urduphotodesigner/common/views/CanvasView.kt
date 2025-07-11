@@ -4,6 +4,7 @@ import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapShader
 import android.graphics.BlurMaskFilter
 import android.graphics.Canvas
 import android.graphics.Color
@@ -20,6 +21,7 @@ import android.graphics.RectF
 import android.graphics.Shader
 import android.graphics.SweepGradient
 import android.graphics.Typeface
+import android.graphics.Xfermode
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.text.TextPaint
@@ -85,8 +87,36 @@ class CanvasView @JvmOverloads constructor(
 
     private var desiredIconScreenSizePx = 36f
     private var iconTouched: String? = null
+    private var allowFreeDrag: Boolean = false
+    private val checkerSize = 20
+    private val light = Color.parseColor("#F5F5F5")
+    private val dark = Color.parseColor("#DDDDDD")
+
+    private val checkerShader: BitmapShader by lazy {
+        // create a 2×2 tile
+        val bmp = Bitmap.createBitmap(checkerSize * 2, checkerSize * 2, Bitmap.Config.ARGB_8888)
+        val c = Canvas(bmp)
+        val p = Paint()
+
+        // top-left & bottom-right = light
+        p.color = light
+        c.drawRect(0f, 0f, checkerSize.toFloat(), checkerSize.toFloat(), p)
+        c.drawRect(
+            checkerSize.toFloat(), checkerSize.toFloat(),
+            (checkerSize * 2).toFloat(), (checkerSize * 2).toFloat(),
+            p
+        )
+
+        // top-right & bottom-left = dark
+        p.color = dark
+        c.drawRect(checkerSize.toFloat(), 0f, (checkerSize * 2).toFloat(), checkerSize.toFloat(), p)
+        c.drawRect(0f, checkerSize.toFloat(), checkerSize.toFloat(), (checkerSize * 2).toFloat(), p)
+
+        BitmapShader(bmp, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT)
+    }
 
     private val canvasElements = mutableListOf<CanvasElement>()
+    private lateinit var backgroundElement : CanvasElement
 
     private var touchStartX = 0f
     private var touchStartY = 0f
@@ -188,6 +218,13 @@ class CanvasView @JvmOverloads constructor(
                 logicalContentWidth = canvasWidth.toFloat()
                 logicalContentHeight = canvasHeight.toFloat()
             }
+
+        val existingBg = canvasElements.firstOrNull { it.type == ElementType.BACKGROUND }
+        if (existingBg != null) {
+            backgroundElement = canvasElements
+                .firstOrNull { it.type == ElementType.BACKGROUND }!!
+        }
+
         ensureBackgroundElement()
     }
 
@@ -199,23 +236,9 @@ class CanvasView @JvmOverloads constructor(
         // only add once
         if (canvasElements.any { it.type == ElementType.BACKGROUND }) return
 
-        // build a new background element
-        val bg = CanvasElement(
-            id = "background",
-            type = ElementType.BACKGROUND,
-            x = 0f,
-            y = 0f,
-            scale = 1f,
-            rotation = 0f
-        ).apply {
-            isLocked = true
-            backgroundColor = Color.WHITE
-            fillGradient = null
-            bitmap = null
-        }
-
         // insert at bottom of draw order
-        canvasElements.add(0, bg)
+        canvasElements.add(0, backgroundElement)
+        onElementChanged?.invoke(canvasElements.first())
         invalidate()  // trigger a redraw so you’ll see it immediately
     }
 
@@ -235,14 +258,30 @@ class CanvasView @JvmOverloads constructor(
 
             selectedElements.size == 1 -> {
                 val elem = selectedElements.first()
+                if (elem.type == ElementType.BACKGROUND && elem.bitmap != null) {
+                    val (xRange, _) = computeBackgroundPanBounds(elem)
+                    val targetX = when (align) {
+                        HAlign.LEFT   -> xRange.start
+                        HAlign.CENTER -> canvasWidth / 2f
+                        HAlign.RIGHT  -> xRange.endInclusive
+                    }
+                    elem.x = targetX.coerceIn(xRange.start, xRange.endInclusive)
+                    onElementChanged?.invoke(elem)
+                    invalidate()
+                    return
+                }
+
+                // --- your existing logic for non-background elements ---
                 val halfW = elem.getLocalContentWidth() * elem.scale / 2f
                 val rawX = when (align) {
-                    HAlign.LEFT -> halfW
+                    HAlign.LEFT   -> halfW
                     HAlign.CENTER -> canvasWidth / 2f
-                    HAlign.RIGHT -> canvasWidth - halfW
+                    HAlign.RIGHT  -> canvasWidth - halfW
                 }
                 elem.x = rawX.coerceIn(halfW, canvasWidth - halfW)
                 onElementChanged?.invoke(elem)
+                invalidate()
+                return
             }
 
             mode == MultiAlignMode.CANVAS -> {
@@ -295,6 +334,22 @@ class CanvasView @JvmOverloads constructor(
 
             selectedElements.size == 1 -> {
                 val elem = selectedElements.first()
+
+                if (elem.type == ElementType.BACKGROUND && elem.bitmap != null) {
+                    // special case background
+                    val (_, yRange) = computeBackgroundPanBounds(elem)
+                    val targetY = when (align) {
+                        VAlign.TOP    -> yRange.start
+                        VAlign.MIDDLE -> canvasHeight / 2f
+                        VAlign.BOTTOM -> yRange.endInclusive
+                    }
+                    // make sure we stay within those pan bounds
+                    elem.y = targetY.coerceIn(yRange.start, yRange.endInclusive)
+                    onElementChanged?.invoke(elem)
+                    invalidate()
+                    return
+                }
+
                 val halfH = elem.getLocalContentHeight() * elem.scale / 2f
                 val rawY = when (align) {
                     VAlign.TOP -> halfH
@@ -303,6 +358,8 @@ class CanvasView @JvmOverloads constructor(
                 }
                 elem.y = rawY.coerceIn(halfH, canvasHeight - halfH)
                 onElementChanged?.invoke(elem)
+                invalidate()
+                return
             }
 
             mode == MultiAlignMode.CANVAS -> {
@@ -351,10 +408,23 @@ class CanvasView @JvmOverloads constructor(
      * Updates the internal `selectedElements` list based on the `isSelected` flag of incoming elements.
      */
     fun syncElements(newElements: List<CanvasElement>) {
+        val oldSize = canvasElements.size
         canvasElements.clear()
         canvasElements.addAll(newElements)
         selectedElements.clear()
-        selectedElements.addAll(canvasElements.filter { it.isSelected }) // Rebuild selectedElements based on isSelected flags
+        if (newElements.size > oldSize) {
+            val newcomer = canvasElements.last()
+
+            if (newcomer.type != ElementType.BACKGROUND) {
+                canvasElements.forEach { it.isSelected = false }
+                newcomer.isSelected = true
+                selectedElements.add(newcomer)
+            } else {
+                selectedElements.addAll(canvasElements.filter { it.isSelected })
+            }
+        } else {
+            selectedElements.addAll(canvasElements.filter { it.isSelected })
+        }
         invalidate()
     }
 
@@ -409,7 +479,7 @@ class CanvasView @JvmOverloads constructor(
     private fun removeSelectedElement() {
         // Remove all selected elements
         val elementsToRemove =
-            selectedElements.toList() // Create a copy to avoid concurrent modification
+            selectedElements.toList()
         elementsToRemove.forEach { element ->
             canvasElements.remove(element)
             onElementRemoved?.invoke(element) // Notify ViewModel to remove for each
@@ -467,6 +537,7 @@ class CanvasView @JvmOverloads constructor(
     }
 
     fun setCanvasBackgroundColor(color: Int) {
+        ensureBackgroundElement()
         canvasElements.forEach { element ->
             if (element.type == ElementType.BACKGROUND) {
                 element.backgroundColor = color
@@ -533,6 +604,7 @@ class CanvasView @JvmOverloads constructor(
     }
 
     fun setCanvasBackgroundGradient(gradientItem: GradientItem) {
+        ensureBackgroundElement()
         canvasElements.forEach { element ->
             if (element.type == ElementType.BACKGROUND) {
                 element.backgroundColor = Color.WHITE
@@ -544,6 +616,7 @@ class CanvasView @JvmOverloads constructor(
     }
 
     fun setCanvasBackgroundImage(src: Bitmap) {
+        ensureBackgroundElement()
         canvasElements
             .first { it.type == ElementType.BACKGROUND }
             .apply {
@@ -790,7 +863,7 @@ class CanvasView @JvmOverloads constructor(
         return luminance < 128
     }
 
-    fun computeBackgroundPanBounds(e: CanvasElement): Pair<ClosedFloatingPointRange<Float>, ClosedFloatingPointRange<Float>> {
+    private fun computeBackgroundPanBounds(e: CanvasElement): Pair<ClosedFloatingPointRange<Float>, ClosedFloatingPointRange<Float>> {
         val w = canvasWidth.toFloat()
         val h = canvasHeight.toFloat()
         val bmp = e.bitmap!!
@@ -856,6 +929,10 @@ class CanvasView @JvmOverloads constructor(
                     alignmentPaint
                 )
             }
+
+            val paint = Paint().apply { shader = checkerShader }
+            canvas.drawRect(0f, 0f, canvasWidth.toFloat(), canvasHeight.toFloat(), paint)
+            paint.shader = null
 
             canvasElements
                 .firstOrNull { it.type == ElementType.BACKGROUND }
@@ -1004,7 +1081,7 @@ class CanvasView @JvmOverloads constructor(
                 }
 
             // --- Draw combined bounding box and icons based on selection state ---
-            if (selectedElements.isNotEmpty() && selectedElements.any { it.type != ElementType.BACKGROUND }) {
+            if (selectedElements.isNotEmpty()) {
                 val combinedBounds = getCombinedSelectedBounds()
 
                 val desiredScreenPadding = 10f
@@ -1037,7 +1114,7 @@ class CanvasView @JvmOverloads constructor(
                 )
 
                 // Draw icons if elements are selected and not locked
-                if (selectedElements.any { !it.isLocked && it.type != ElementType.BACKGROUND }) { // Draw icons if at least one selected element is not locked
+                if (selectedElements.any { !it.isLocked}) { // Draw icons if at least one selected element is not locked
                     val localIconDrawWidth = desiredIconScreenSizePx / scale
                     val localIconDrawHeight = desiredIconScreenSizePx / scale
 
@@ -1063,20 +1140,23 @@ class CanvasView @JvmOverloads constructor(
                         // Edit icon should not be there for multi-selection
                     } else if (selectedElements.size == 1) { // Single element selection icons
                         val element = selectedElements.first()
-                        val elementIconPositions = element.getIconPositions()
+                        val isBg = element.type == ElementType.BACKGROUND
 
-                        // Transform element's local icon positions to canvas coordinates
-                        val matrix = Matrix()
-                        matrix.postRotate(element.rotation)
-                        matrix.postScale(element.scale, element.scale)
-                        matrix.postTranslate(element.x, element.y)
+                        element.getIconPositions()
+                            // drop the edit icon if it’s the background
+                            .filterKeys { name -> !(isBg && name == "edit") }
+                            .forEach { (iconName, position) ->
+                                // same matrix math you had
+                                val matrix = Matrix().apply {
+                                    postRotate(element.rotation)
+                                    postScale(element.scale, element.scale)
+                                    postTranslate(element.x, element.y)
+                                }
 
-                        elementIconPositions.forEach { (iconName, position) ->
-                            val iconCenterInCanvasCords = floatArrayOf(position.x, position.y)
-                            matrix.mapPoints(iconCenterInCanvasCords)
-                            iconMap[iconName] =
-                                Pair(iconCenterInCanvasCords[0], iconCenterInCanvasCords[1])
-                        }
+                                val cords = floatArrayOf(position.x, position.y)
+                                matrix.mapPoints(cords)
+                                iconMap[iconName] = cords[0] to cords[1]
+                            }
                     }
 
                     iconMap.forEach { (iconName, position) ->
@@ -1155,43 +1235,73 @@ class CanvasView @JvmOverloads constructor(
     private fun drawBackgroundElement(canvas: Canvas, e: CanvasElement) {
         val w = canvasWidth.toFloat()
         val h = canvasHeight.toFloat()
-        canvas.save()
+
+        val backgroundPaint = Paint().apply {
+            alpha = e.paintAlpha
+            style = Paint.Style.FILL
+            isAntiAlias = true
+            xfermode = drawWithBlend(e)
+        }
 
         e.bitmap?.let { bmp ->
+
             val baseScale = max(w / bmp.width, h / bmp.height)
             val totalScale = baseScale * e.scale
 
             val sw = bmp.width * totalScale
             val sh = bmp.height * totalScale
 
-            val xMin = w - sw / 2f
-            val xMax = sw / 2f
-            val yMin = h - sh / 2f
-            val yMax = sh / 2f
+            if (!allowFreeDrag) {
+                val theta    = Math.toRadians(e.rotation.toDouble())
+                val cosA = abs(cos(theta))
+                val sinA = abs(sin(theta))
 
-            e.x = e.x.coerceIn(xMin, xMax)
-            e.y = e.y.coerceIn(yMin, yMax)
+                // half-width/height of the axis-aligned box after rotation
+                val halfW = (sw/2) * cosA + (sh/2) * sinA
+                val halfH = (sw/2) * sinA + (sh/2) * cosA
+
+                // valid center range so that the rotated box stays fully on-canvas
+                val xMin = halfW
+                val xMax = w - halfW
+                val yMax = h - halfH
+
+                if (xMax >= xMin && yMax >= halfH) {
+                    e.x = e.x.coerceIn(xMin.toFloat(), xMax.toFloat())
+                    e.y = e.y.coerceIn(halfH.toFloat(), yMax.toFloat())
+                } else {
+                    // image too big to ever fully fit when rotated → switch to free-drag
+                    allowFreeDrag = true
+                }
+            }
+            // otherwise: leave e.x/e.y exactly as the user dragged them
 
             val left = e.x - sw / 2f
-            val top  = e.y - sh / 2f
+            val top = e.y - sh / 2f
+
 
             canvas.save()
             canvas.clipRect(0f, 0f, w, h)
             canvas.translate(left, top)
+            canvas.rotate(e.rotation, bmp.width / 2f, bmp.height / 2f)
             canvas.scale(totalScale, totalScale)
-            canvas.drawBitmap(bmp, 0f, 0f, null)
+            canvas.drawBitmap(bmp, 0f, 0f, backgroundPaint)
             canvas.restore()
             return
         }
 
-        val backgroundPaint = Paint().apply {
-            color = Color.WHITE
-            style = Paint.Style.FILL
-            isAntiAlias = true
-        }
+        val left = e.x - w / 2f
+        val top  = e.y - h / 2f
+        val pivotX = w / 2f
+        val pivotY = h / 2f
 
         // 2) else if there's a gradient -> stretch it across the full canvas
         e.fillGradient?.let { grad ->
+            canvas.save()
+            canvas.clipRect(0f, 0f, w, h)
+            canvas.translate(left, top)
+            canvas.rotate(e.rotation, pivotX, pivotY)
+            canvas.scale(e.scale, e.scale, pivotX, pivotY)
+
             backgroundPaint.shader = createBackgroundGradientShader(grad, w, h)
             canvas.drawRect(0f, 0f, w, h, backgroundPaint)
             backgroundPaint.shader = null
@@ -1200,6 +1310,12 @@ class CanvasView @JvmOverloads constructor(
         }
 
         // 3) else -> solid color
+        canvas.save()
+        canvas.clipRect(0f, 0f, w, h)
+        canvas.translate(left, top)
+        canvas.rotate(e.rotation, pivotX, pivotY)
+        canvas.scale(e.scale, e.scale, pivotX, pivotY)
+
         backgroundPaint.shader = null
         backgroundPaint.color = e.backgroundColor
         canvas.drawRect(0f, 0f, w, h, backgroundPaint)
@@ -1461,40 +1577,7 @@ class CanvasView @JvmOverloads constructor(
             fillPaint.alpha = element.paintAlpha
 
             // Apply layer blending (based on imageFilter)
-            when (element.blendType) {
-                BlendType.MULTIPLY -> fillPaint.xfermode =
-                    PorterDuffXfermode(PorterDuff.Mode.MULTIPLY)
-
-                BlendType.SRC_OVER -> fillPaint.xfermode =
-                    PorterDuffXfermode(PorterDuff.Mode.SRC_OVER)
-
-                BlendType.SCREEN -> fillPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SCREEN)
-                BlendType.ADD -> fillPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.ADD)
-                BlendType.LIGHTEN -> fillPaint.xfermode =
-                    PorterDuffXfermode(PorterDuff.Mode.LIGHTEN)
-
-                BlendType.DARKEN -> fillPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.DARKEN)
-                BlendType.SRC -> fillPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC)
-                BlendType.DST -> fillPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.DST)
-                BlendType.DST_OVER -> fillPaint.xfermode =
-                    PorterDuffXfermode(PorterDuff.Mode.DST_OVER)
-
-                BlendType.SRC_IN -> fillPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
-                BlendType.DST_IN -> fillPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN)
-                BlendType.SRC_OUT -> fillPaint.xfermode =
-                    PorterDuffXfermode(PorterDuff.Mode.SRC_OUT)
-
-                BlendType.DST_OUT -> fillPaint.xfermode =
-                    PorterDuffXfermode(PorterDuff.Mode.DST_OUT)
-
-                BlendType.SRC_ATOP -> fillPaint.xfermode =
-                    PorterDuffXfermode(PorterDuff.Mode.SRC_ATOP)
-
-                BlendType.DST_ATOP -> fillPaint.xfermode =
-                    PorterDuffXfermode(PorterDuff.Mode.DST_ATOP)
-
-                BlendType.XOR -> fillPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.XOR)
-            }
+            fillPaint.xfermode = drawWithBlend(element)
 
             if (element.hasShadow) {
                 val shadowColorWithOpacity =
@@ -1545,6 +1628,45 @@ class CanvasView @JvmOverloads constructor(
 
             yOffset += lineHeight
         }
+    }
+
+    private fun drawWithBlend(element: CanvasElement) : Xfermode{
+        val fillPaint = Paint()
+        when (element.blendType) {
+            BlendType.MULTIPLY -> fillPaint.xfermode =
+                PorterDuffXfermode(PorterDuff.Mode.MULTIPLY)
+
+            BlendType.SRC_OVER -> fillPaint.xfermode =
+                PorterDuffXfermode(PorterDuff.Mode.SRC_OVER)
+
+            BlendType.SCREEN -> fillPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SCREEN)
+            BlendType.ADD -> fillPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.ADD)
+            BlendType.LIGHTEN -> fillPaint.xfermode =
+                PorterDuffXfermode(PorterDuff.Mode.LIGHTEN)
+
+            BlendType.DARKEN -> fillPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.DARKEN)
+            BlendType.SRC -> fillPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC)
+            BlendType.DST -> fillPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.DST)
+            BlendType.DST_OVER -> fillPaint.xfermode =
+                PorterDuffXfermode(PorterDuff.Mode.DST_OVER)
+
+            BlendType.SRC_IN -> fillPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
+            BlendType.DST_IN -> fillPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN)
+            BlendType.SRC_OUT -> fillPaint.xfermode =
+                PorterDuffXfermode(PorterDuff.Mode.SRC_OUT)
+
+            BlendType.DST_OUT -> fillPaint.xfermode =
+                PorterDuffXfermode(PorterDuff.Mode.DST_OUT)
+
+            BlendType.SRC_ATOP -> fillPaint.xfermode =
+                PorterDuffXfermode(PorterDuff.Mode.SRC_ATOP)
+
+            BlendType.DST_ATOP -> fillPaint.xfermode =
+                PorterDuffXfermode(PorterDuff.Mode.DST_ATOP)
+
+            BlendType.XOR -> fillPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.XOR)
+        }
+        return fillPaint.xfermode
     }
 
     private fun justifyText(canvas: Canvas, text: String, yOffset: Float, element: CanvasElement) {
@@ -1611,23 +1733,24 @@ class CanvasView @JvmOverloads constructor(
             val y = (e.y - offsetY) / scale
 
             val touchedElement =
-                canvasElements.filter { !it.isLocked }.sortedByDescending { it.zIndex }.firstOrNull { element ->
-                    val matrix = Matrix()
-                    matrix.postTranslate(-element.x, -element.y)
-                    matrix.postRotate(-element.rotation)
-                    matrix.postScale(1f / element.scale, 1f / element.scale)
+                canvasElements.filter { !it.isLocked }.sortedByDescending { it.zIndex }
+                    .firstOrNull { element ->
+                        val matrix = Matrix()
+                        matrix.postTranslate(-element.x, -element.y)
+                        matrix.postRotate(-element.rotation)
+                        matrix.postScale(1f / element.scale, 1f / element.scale)
 
-                    val touchPoint = floatArrayOf(x, y)
-                    matrix.mapPoints(touchPoint)
+                        val touchPoint = floatArrayOf(x, y)
+                        matrix.mapPoints(touchPoint)
 
-                    val bounds = RectF(
-                        -element.getLocalContentWidth() / 2f,
-                        -element.getLocalContentHeight() / 2f,
-                        element.getLocalContentWidth() / 2f,
-                        element.getLocalContentHeight() / 2f
-                    )
-                    bounds.contains(touchPoint[0], touchPoint[1])
-                }
+                        val bounds = RectF(
+                            -element.getLocalContentWidth() / 2f,
+                            -element.getLocalContentHeight() / 2f,
+                            element.getLocalContentWidth() / 2f,
+                            element.getLocalContentHeight() / 2f
+                        )
+                        bounds.contains(touchPoint[0], touchPoint[1])
+                    }
 
             if (touchedElement != null && touchedElement.type != ElementType.BACKGROUND) {
                 // Deselect all existing elements before selecting the new one
@@ -1639,7 +1762,7 @@ class CanvasView @JvmOverloads constructor(
                 onEditTextRequested?.invoke(touchedElement)
                 invalidate()
                 return true
-            } else {
+            } else if (touchedElement != null && touchedElement.type == ElementType.BACKGROUND) {
                 val bg = canvasElements
                     .firstOrNull { it.type == ElementType.BACKGROUND && !it.isLocked }
                 if (bg?.bitmap != null) {
@@ -1670,8 +1793,8 @@ class CanvasView @JvmOverloads constructor(
 
     private fun stepZoom(elem: CanvasElement) {
         val next = when (elem.scale) {
-            1f   -> 2f
-            2f   -> 4f
+            1f -> 2f
+            2f -> 4f
             else -> 1f
         }
         animateZoom(elem, next)
@@ -1961,8 +2084,32 @@ class CanvasView @JvmOverloads constructor(
                         val dy = y - touchStartY
 
                         elementsToModify.forEach { element ->
-                            element.x += dx
-                            element.y += dy
+                            if (element.type == ElementType.BACKGROUND && element.bitmap != null) {
+                                val (xRange, yRange) = computeBackgroundPanBounds(element)
+                                val newX = element.x + dx
+                                val newY = element.y + dy
+
+                                if (!allowFreeDrag) {
+                                    // are we still within “no-blank” pan?
+                                    if (newX in xRange && newY in yRange) {
+                                        element.x = newX.coerceIn(xRange)
+                                        element.y = newY.coerceIn(yRange)
+                                    } else {
+                                        // user pushed past the edge: switch to free-drag from now on
+                                        allowFreeDrag = true
+                                        element.x = newX
+                                        element.y = newY
+                                    }
+                                } else {
+                                    // already in free-drag, just move like normal
+                                    element.x = newX
+                                    element.y = newY
+                                }
+                            } else {
+                                // non-background elements: regular drag
+                                element.x += dx
+                                element.y += dy
+                            }
                             onElementChanged?.invoke(element)
                         }
 

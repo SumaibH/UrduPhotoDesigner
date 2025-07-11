@@ -1322,11 +1322,13 @@ class CanvasViewModel @Inject constructor(
             type           = ElementType.BACKGROUND,
             x              = canvasWidth  / 2f,
             y              = canvasHeight / 2f,
-            paintColor     = Color.WHITE,     // your default solid
-            fillGradient   = null,            // or your default GradientItem
-            bitmap         = null             // or your default image
+            paintColor     = Color.WHITE,
+            fillGradient   = null,
+            bitmap         = null
         ).apply {
             isLocked = true
+            logicalContentWidth = canvasWidth
+            logicalContentHeight = canvasHeight
             updatePaintProperties()
         }
 

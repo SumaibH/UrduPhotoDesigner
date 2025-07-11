@@ -15,6 +15,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.EditText
 import android.widget.ImageView
@@ -24,6 +25,7 @@ import android.widget.SeekBar
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.AnimRes
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -31,14 +33,12 @@ import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import com.example.urduphotodesigner.R
-import com.example.urduphotodesigner.common.utils.Constants
-import com.example.urduphotodesigner.common.utils.Converter.cmToPx
-import com.example.urduphotodesigner.common.utils.Converter.inchesToPx
 import com.example.urduphotodesigner.common.canvas.CanvasManager
 import com.example.urduphotodesigner.common.canvas.CanvasViewModel
 import com.example.urduphotodesigner.common.canvas.enums.BlendType
@@ -46,10 +46,13 @@ import com.example.urduphotodesigner.common.canvas.enums.ElementType
 import com.example.urduphotodesigner.common.canvas.enums.HAlign
 import com.example.urduphotodesigner.common.canvas.enums.MultiAlignMode
 import com.example.urduphotodesigner.common.canvas.enums.PickerTarget
-import com.example.urduphotodesigner.common.canvas.model.CanvasElement
-import com.example.urduphotodesigner.common.canvas.model.CanvasSize
 import com.example.urduphotodesigner.common.canvas.enums.UnitType
 import com.example.urduphotodesigner.common.canvas.enums.VAlign
+import com.example.urduphotodesigner.common.canvas.model.CanvasElement
+import com.example.urduphotodesigner.common.canvas.model.CanvasSize
+import com.example.urduphotodesigner.common.utils.Constants
+import com.example.urduphotodesigner.common.utils.Converter.cmToPx
+import com.example.urduphotodesigner.common.utils.Converter.inchesToPx
 import com.example.urduphotodesigner.common.utils.displayName
 import com.example.urduphotodesigner.common.views.CanvasView
 import com.example.urduphotodesigner.databinding.BottomSheetExportSettingsBinding
@@ -80,21 +83,22 @@ class EditorFragment : Fragment() {
     private lateinit var sizedCanvasView: CanvasView
     private var currentMode: MultiAlignMode = MultiAlignMode.CANVAS
 
-    private var requestPermissionLauncher: ActivityResultLauncher<String> = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (isGranted) {
-            // Permission is granted, proceed with export
-            exportCanvasInternal()
-        } else {
-            // Permission denied, show a message to the user
-            Toast.makeText(
-                requireContext(),
-                "Permission denied to save image. Please grant storage permission in settings.",
-                Toast.LENGTH_LONG
-            ).show()
+    private var requestPermissionLauncher: ActivityResultLauncher<String> =
+        registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted: Boolean ->
+            if (isGranted) {
+                // Permission is granted, proceed with export
+                exportCanvasInternal()
+            } else {
+                // Permission denied, show a message to the user
+                Toast.makeText(
+                    requireContext(),
+                    "Permission denied to save image. Please grant storage permission in settings.",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
         }
-    }
 
     private val blendingOptions = listOf(
         BlendType.SRC,
@@ -220,7 +224,7 @@ class EditorFragment : Fragment() {
         }
 
         viewModel.currentImageFilter.observe(viewLifecycleOwner) { filter ->
-            if (filter != null && viewModel.isExplicitChange()){
+            if (filter != null && viewModel.isExplicitChange()) {
                 canvasManager.applyImageFilter(filter)
             }
         }
@@ -249,63 +253,101 @@ class EditorFragment : Fragment() {
                 PickerTarget.EYE_DROPPER_GRADIENT -> {
                     sizedCanvasView.enableColorPicker()
                 }
+
                 else -> {
                     sizedCanvasView.disableColorPicker()
                 }
             }
         }
 
-        viewModel.selectedElements.observe(viewLifecycleOwner) { selectedList ->
-            val shouldShow = selectedList.isNotEmpty() && selectedList.any { it.type != ElementType.BACKGROUND }
-            val isShowing = binding.copyIcon.isVisible
-
-            if (shouldShow != isShowing){
-                if (shouldShow) {
-                    // 1) make them visible
-                    binding.copyIcon.visibility   = View.VISIBLE
-                    binding.opacityIcon.visibility= View.VISIBLE
-                    binding.alignmentKit.visibility= View.VISIBLE
-                    binding.blendIcon.visibility= View.VISIBLE
-                    binding.seekBar.visibility    = View.GONE
-                    binding.blendSpinner.visibility    = View.GONE
-
-                    val inAnim = AnimationUtils.loadAnimation(requireActivity(), R.anim.slide_up_2)
-                    binding.copyIcon.startAnimation(inAnim)
-                    binding.opacityIcon.startAnimation(inAnim)
-                    binding.blendIcon.startAnimation(inAnim)
-                    for (element in selectedList){
-                        if (element.type == ElementType.TEXT){
-                            binding.fontSizeIcon.visibility = View.VISIBLE
-                            binding.fontSizeIcon.startAnimation(inAnim)
-                        }
-                    }
-                    binding.alignmentKit.startAnimation(
-                        AnimationUtils.loadAnimation(requireActivity(), R.anim.slide_in)
-                    )
-                } else {
-                    val outAnim = AnimationUtils.loadAnimation(requireActivity(), R.anim.slide_down_2)
-                    binding.copyIcon.startAnimation(outAnim)
-                    binding.opacityIcon.startAnimation(outAnim)
-                    binding.fontSizeIcon.startAnimation(outAnim)
-                    binding.blendIcon.startAnimation(outAnim)
-                    binding.alignmentKit.startAnimation(
-                        AnimationUtils.loadAnimation(requireActivity(), R.anim.slide_out)
-                    )
-
-                    binding.seekBarFontSize.visibility   = View.GONE
-                    binding.fontSize.visibility   = View.GONE
-                    binding.opacityValue.visibility   = View.GONE
-                    binding.fontSizeIcon.visibility   = View.GONE
-                    binding.copyIcon.visibility   = View.GONE
-                    binding.blendIcon.visibility= View.GONE
-                    binding.blendSpinner.visibility= View.GONE
-                    binding.opacityIcon.visibility= View.GONE
-                    binding.alignmentKit.visibility= View.GONE
-                    binding.seekBar.visibility    = View.GONE
-                }
-            }
+        viewModel.selectedElements.distinctUntilChanged().observe(viewLifecycleOwner) { selectedList ->
+            updateToolbarVisibility(selectedList)
         }
     }
+
+    private fun updateToolbarVisibility(selected: List<CanvasElement>) {
+        val hasText       = selected.any { it.type == ElementType.TEXT }
+        val hasImage      = selected.any { it.type == ElementType.IMAGE }
+        val hasBackground = selected.any { it.type == ElementType.BACKGROUND }
+        val isMulti       = selected.size > 1
+        val anySelected   = selected.isNotEmpty()
+
+        val showFont = if (!anySelected) {
+            false
+        } else if (!isMulti && hasText) {
+            true
+        } else if (!isMulti) {
+            false
+        } else {
+            hasText && !hasImage && !hasBackground
+        }
+        val showCopy = anySelected && !hasBackground
+
+        // Update each icon
+        updateIcon(binding.opacityIcon, anySelected)
+        updateIcon(binding.blendIcon, anySelected)
+        updateIcon(binding.fontSizeIcon,  showFont)
+        updateIcon(binding.copyIcon,      showCopy)
+        updateIcon(
+            binding.alignmentKit,
+            anySelected,
+            animShow = R.anim.slide_in,
+            animHide = R.anim.slide_out
+        )
+    }
+
+    private fun updateIcon(
+        view: View,
+        shouldBeVisible: Boolean,
+        @AnimRes animShow: Int = R.anim.slide_up_2,
+        @AnimRes animHide: Int = R.anim.slide_down_2
+    ) {
+        val isVisible = view.visibility == View.VISIBLE
+
+        if (shouldBeVisible && !isVisible) {
+            // animate in, then set VISIBLE
+            view.visibility = View.VISIBLE
+            view.startAnimation(AnimationUtils.loadAnimation(view.context, animShow))
+
+        } else if (!shouldBeVisible && isVisible) {
+            // animate out, then set GONE after the animation duration
+            val anim = AnimationUtils.loadAnimation(view.context, animHide)
+            view.startAnimation(anim)
+            val duration = anim.duration
+            view.postDelayed({ view.visibility = View.GONE }, duration)
+        }
+    }
+
+    private fun View.visibleWithSlideUp() {
+        if (visibility != View.VISIBLE) {
+            visibility = View.VISIBLE
+            startAnimation(AnimationUtils.loadAnimation(requireActivity(), R.anim.slide_up_2))
+        }
+    }
+
+    private fun View.slideDownAndHide() {
+        if (visibility != View.GONE) {
+            startAnimation(AnimationUtils.loadAnimation(requireActivity(), R.anim.slide_down_2))
+            // post the visibility change so the animation can run
+            postDelayed({ visibility = View.GONE },
+                resources.getInteger(android.R.integer.config_mediumAnimTime).toLong())
+        }
+    }
+
+    private fun View.visibleWith(@AnimRes animRes: Int, onEnd: ((View) -> Unit)? = null) {
+        if (visibility != View.VISIBLE) {
+            visibility = View.VISIBLE
+            val anim = AnimationUtils.loadAnimation(requireActivity(), animRes)
+            if (onEnd != null) anim.setAnimationListener(object : Animation.AnimationListener {
+                override fun onAnimationEnd(a: Animation) = onEnd(this@visibleWith)
+                override fun onAnimationRepeat(a: Animation) {}
+                override fun onAnimationStart(a: Animation) {}
+            })
+            startAnimation(anim)
+        }
+    }
+
+
 
     private fun setEvents() {
         binding.back.setOnClickListener { findNavController().navigateUp() }
@@ -354,15 +396,20 @@ class EditorFragment : Fragment() {
             canvasWidth = widthPx,
             canvasHeight = heightPx,
             onEditTextRequested = { element ->
-                if (element.type == ElementType.IMAGE){
+                if (element.type == ElementType.IMAGE) {
                     viewModel.canvasElements.value?.find { it.id == element.id }?.let {
                         navController.navigate(R.id.filtersFragment)
                     }
-                }else{
+                } else {
                     showTextEditDialog(element)
                 }
             },
             onElementChanged = { canvasElement ->
+                viewModel.ensureBackgroundElement(
+                    requireActivity(),
+                    canvasSize.width,
+                    canvasSize.height
+                )
                 viewModel.canvasElements.value?.find { it.id == canvasElement.id }?.let {
                     viewModel.updateElement(canvasElement)
                 }
@@ -432,30 +479,36 @@ class EditorFragment : Fragment() {
             popupMenu.show()
         }
 
-        binding.leftAlign.setOnClickListener  {
-            sizedCanvasView.alignHorizontal(HAlign.LEFT, currentMode) }
-        binding.centerHorizontal.setOnClickListener{
-            sizedCanvasView.alignHorizontal(HAlign.CENTER, currentMode) }
+        binding.leftAlign.setOnClickListener {
+            sizedCanvasView.alignHorizontal(HAlign.LEFT, currentMode)
+        }
+        binding.centerHorizontal.setOnClickListener {
+            sizedCanvasView.alignHorizontal(HAlign.CENTER, currentMode)
+        }
         binding.rightAlign.setOnClickListener {
-            sizedCanvasView.alignHorizontal(HAlign.RIGHT, currentMode) }
+            sizedCanvasView.alignHorizontal(HAlign.RIGHT, currentMode)
+        }
 
-        binding.topAlign.setOnClickListener   {
-            sizedCanvasView.alignVertical(VAlign.TOP, currentMode) }
-        binding.centerVertical.setOnClickListener{
-            sizedCanvasView.alignVertical(VAlign.MIDDLE, currentMode) }
-        binding.bottomAlign.setOnClickListener{
-            sizedCanvasView.alignVertical(VAlign.BOTTOM, currentMode) }
-
+        binding.topAlign.setOnClickListener {
+            sizedCanvasView.alignVertical(VAlign.TOP, currentMode)
+        }
+        binding.centerVertical.setOnClickListener {
+            sizedCanvasView.alignVertical(VAlign.MIDDLE, currentMode)
+        }
+        binding.bottomAlign.setOnClickListener {
+            sizedCanvasView.alignVertical(VAlign.BOTTOM, currentMode)
+        }
 
         binding.seekBar.apply {
             min = 1
             max = 255
-            setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
+            setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(sb: SeekBar, progress: Int, fromUser: Boolean) {
-                    if (fromUser){
+                    if (fromUser) {
                         viewModel.setOpacity(progress)
                     }
                 }
+
                 override fun onStartTrackingTouch(sb: SeekBar) {}
                 override fun onStopTrackingTouch(sb: SeekBar) {}
             })
@@ -464,13 +517,14 @@ class EditorFragment : Fragment() {
         binding.seekBarFontSize.apply {
             min = 0
             max = 100
-            setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
+            setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(sb: SeekBar, progress: Int, fromUser: Boolean) {
-                    if (fromUser){
+                    if (fromUser) {
                         binding.fontSize.text = "$progress"
                         viewModel.setTextSizeForAllSelected(progress.toFloat())
                     }
                 }
+
                 override fun onStartTrackingTouch(sb: SeekBar) {}
                 override fun onStopTrackingTouch(sb: SeekBar) {}
             })
@@ -537,6 +591,7 @@ class EditorFragment : Fragment() {
                 binding.artBoard.setImageResource(R.drawable.ic_align_art_board_filled)
                 binding.selection.setImageResource(R.drawable.ic_align_selection_stroke)
             }
+
             MultiAlignMode.SELECTION -> {
                 binding.artBoard.setImageResource(R.drawable.ic_align_art_board_stroke)
                 binding.selection.setImageResource(R.drawable.ic_align_selection_filled)
@@ -554,7 +609,8 @@ class EditorFragment : Fragment() {
         dialogBinding.previewImage.setImageBitmap(previewBitmap)
 
         val availableResolutions = viewModel.exportResolutions
-        val currentExportOptions = viewModel.exportOptions.value // Get current (default or selected) options
+        val currentExportOptions =
+            viewModel.exportOptions.value // Get current (default or selected) options
 
         // Populate Resolution RadioGroup
         dialogBinding.radioGroupResolution.removeAllViews()
@@ -562,7 +618,8 @@ class EditorFragment : Fragment() {
             val radioButton = RadioButton(requireContext()).apply {
                 text = resolution.name
                 id = index // Use index as ID for easy mapping
-                isChecked = resolution == currentExportOptions!!.resolution // Set checked based on current options
+                isChecked =
+                    resolution == currentExportOptions!!.resolution // Set checked based on current options
             }
             dialogBinding.radioGroupResolution.addView(radioButton)
         }
@@ -578,7 +635,8 @@ class EditorFragment : Fragment() {
             val radioButton = RadioButton(requireContext()).apply {
                 text = name
                 id = value // Use quality value as ID
-                isChecked = value == currentExportOptions!!.quality // Set checked based on current options
+                isChecked =
+                    value == currentExportOptions!!.quality // Set checked based on current options
             }
             dialogBinding.radioGroupQuality.addView(radioButton)
         }
@@ -595,7 +653,8 @@ class EditorFragment : Fragment() {
                 text = name
                 // Use a unique ID, or directly store the CompressFormat as a tag if using a custom listener
                 id = if (value == Bitmap.CompressFormat.PNG) 0 else 1 // Arbitrary IDs
-                isChecked = value == currentExportOptions!!.format // Set checked based on current options
+                isChecked =
+                    value == currentExportOptions!!.format // Set checked based on current options
             }
             dialogBinding.radioGroupFormat.addView(radioButton)
         }
@@ -617,7 +676,8 @@ class EditorFragment : Fragment() {
         }
 
         dialogBinding.radioGroupFormat.setOnCheckedChangeListener { _, checkedId ->
-            val selectedFormat = if (checkedId == 0) Bitmap.CompressFormat.PNG else Bitmap.CompressFormat.JPEG
+            val selectedFormat =
+                if (checkedId == 0) Bitmap.CompressFormat.PNG else Bitmap.CompressFormat.JPEG
             viewModel.updateExportOptions(
                 currentExportOptions!!.copy(format = selectedFormat)
             )
@@ -642,16 +702,19 @@ class EditorFragment : Fragment() {
         quality: Int
     ): Uri? = withContext(Dispatchers.IO) {
         val resolver = requireContext().contentResolver
-        val imageCollection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+        val imageCollection =
+            MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
 
         val imageDetails = ContentValues().apply {
             put(MediaStore.Images.Media.DISPLAY_NAME, "$fileName.jpg")
-            put(MediaStore.Images.Media.MIME_TYPE, when (format) {
-                Bitmap.CompressFormat.JPEG -> "image/jpeg"
-                Bitmap.CompressFormat.PNG -> "image/png"
-                Bitmap.CompressFormat.WEBP -> "image/webp"
-                else -> "image/png"
-            })
+            put(
+                MediaStore.Images.Media.MIME_TYPE, when (format) {
+                    Bitmap.CompressFormat.JPEG -> "image/jpeg"
+                    Bitmap.CompressFormat.PNG -> "image/png"
+                    Bitmap.CompressFormat.WEBP -> "image/webp"
+                    else -> "image/png"
+                }
+            )
             put(MediaStore.Images.Media.IS_PENDING, 1)
         }
 
@@ -693,11 +756,13 @@ class EditorFragment : Fragment() {
         val currentExportOptions = viewModel.exportOptions.value
 
         lifecycleScope.launch(Dispatchers.IO) { // Use IO dispatcher for file operations
-            val exportedBitmap = currentExportOptions.let { it?.let { it1 ->
-                sizedCanvasView.exportCanvasToBitmap(
-                    it1
-                )
-            } }
+            val exportedBitmap = currentExportOptions.let {
+                it?.let { it1 ->
+                    sizedCanvasView.exportCanvasToBitmap(
+                        it1
+                    )
+                }
+            }
 
             if (exportedBitmap != null) {
                 // Determine output file path and format
@@ -708,7 +773,10 @@ class EditorFragment : Fragment() {
                     Bitmap.CompressFormat.WEBP -> ".webp"
                     else -> ".png" // Default to PNG
                 }
-                val outputPath = File(requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES), "$fileName$fileExtension")
+                val outputPath = File(
+                    requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                    "$fileName$fileExtension"
+                )
 
                 saveBitmapToGallery(
                     exportedBitmap,
