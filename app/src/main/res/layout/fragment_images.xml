@@ -43,17 +43,15 @@
         android:id="@+id/endGuide"/>
 
     <TextView
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="@dimen/_24sdp"
-        android:text="@string/import_from_gallery"
         android:backgroundTint="@color/contrast"
         android:textColor="@color/appColor"
-        android:drawablePadding="@dimen/_5sdp"
         app:drawableStartCompat="@drawable/ic_import"
         app:layout_constraintStart_toStartOf="@id/startGuide"
         app:layout_constraintTop_toTopOf="@id/tabLayout"
         app:layout_constraintBottom_toBottomOf="@id/tabLayout"
-        app:layout_constraintEnd_toStartOf="@id/centerGuide"
+        app:layout_constraintEnd_toStartOf="@id/tabLayout"
         android:maxLines="1"
         android:ellipsize="end"
         android:gravity="center"

@@ -997,50 +997,45 @@ class CanvasViewModel @Inject constructor(
         notifyUndoRedoChanged()
     }
 
-    fun setSelectedElement(element: CanvasElement?) {
-        val currentList = _canvasElements.value?.toMutableList() ?: mutableListOf()
-        val context = currentList.firstOrNull()?.context
+    fun setSelectedElements(elementsToSelect: List<CanvasElement>) {
+        val currentElements = _canvasElements.value?.toMutableList() ?: mutableListOf()
+        val context = currentElements.firstOrNull()?.context
+        val idsToSelect = elementsToSelect.map { it.id }.toSet()
 
-        // Deselect any previously selected element
-        currentList.indexOfFirst { it.isSelected }.takeIf { it != -1 }?.let { index ->
-            val prev = currentList[index]
-            if (prev.id != element?.id) {
-                val deselected = prev.copy(isSelected = false, context = context)
-                deselected.paint.typeface = getTypefaceForElement(deselected, context)
-                currentList[index] = deselected
-            }
-        }
-
-        // Select the new element
-        val selectedCopy = element?.copy(isSelected = true, context = context)?.apply {
-            paint.typeface = getTypefaceForElement(this, context)
-        }
-
-        selectedCopy?.let { selected ->
-            currentList.indexOfFirst { it.id == selected.id }.takeIf { it != -1 }?.let { idx ->
-                currentList[idx] = selected
-            }
-        }
-
-        // Reflect into UI
-        if (selectedCopy != null) {
-            when (selectedCopy.type) {
-                ElementType.TEXT -> syncUiFormattingWithSelectedTextElement(selectedCopy)
-                ElementType.IMAGE -> {
-                    _currentImageFilter.value = selectedCopy.imageFilter
-                    resetTextFormattingToDefault() // reset text-related
+        // Create updated list with new selections
+        val updatedList = currentElements.map { element ->
+            val copiedElement = element.copy(
+                isSelected = idsToSelect.contains(element.id), context = context
+            ).apply {
+                // Set the appropriate font
+                paint.typeface = if (type == ElementType.TEXT && fontId != null) {
+                    applyTypefaceFromFontList()
+                } else {
+                    context?.let { ResourcesCompat.getFont(it, R.font.regular) } ?: Typeface.DEFAULT
                 }
-
-                else -> resetTextFormattingToDefault()
             }
+            copiedElement
+        }
+
+        // Update the canvas elements LiveData once
+        _canvasElements.value = updatedList
+
+        // Set the selected elements
+        _selectedElements.value = updatedList.filter { it.isSelected }
+
+        refreshSelectedElements()
+
+        // UI handling: Only sync formatting if one text element is selected, otherwise reset
+        val selectedTextElements = elementsToSelect.filter { it.type == ElementType.TEXT }
+        if (selectedTextElements.size == 1) {
+            syncUiFormattingWithSelectedTextElement(selectedTextElements.first())
         } else {
             resetTextFormattingToDefault()
-            _currentImageFilter.value = null
         }
 
-        this.selectedElement = selectedCopy
-        _canvasElements.value = currentList
-        refreshSelectedElements()
+        // Handle image filter for first selected image
+        val firstSelectedImageElement = elementsToSelect.firstOrNull { it.type == ElementType.IMAGE }
+        _currentImageFilter.value = firstSelectedImageElement?.imageFilter
     }
 
     private fun getTypefaceForElement(element: CanvasElement, context: Context?): Typeface {
@@ -1208,6 +1203,10 @@ class CanvasViewModel @Inject constructor(
         }
 
         _canvasElements.value = updatedList
+
+        // Update selected elements list for observer
+        _selectedElements.value = updatedList.filter { it.isSelected }
+
         refreshSelectedElements()
 
         // 🛑 Don't sync formatting if more than 1 item is selected

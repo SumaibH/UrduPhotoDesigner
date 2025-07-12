@@ -35,9 +35,6 @@ class LayersFragment : Fragment() {
     private lateinit var itemTouchHelper: ItemTouchHelper
     private var inSelectionMode = false
 
-    // Use framework ActionMode
-    private var actionMode: ActionMode? = null
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -288,7 +285,6 @@ class LayersFragment : Fragment() {
                 updateSelectionToolbar()
             }
         } else {
-            clearSelection()
             selectElement(element)
         }
     }
@@ -306,7 +302,7 @@ class LayersFragment : Fragment() {
     }
 
     private fun selectElement(element: CanvasElement) {
-        viewModel.setSelectedElement(element)
+        viewModel.setSelectedElements(listOf(element))
     }
 
     private fun toggleSelection(element: CanvasElement) {
@@ -314,11 +310,11 @@ class LayersFragment : Fragment() {
         val target = currentElements.find { it.id == element.id } ?: return
         target.isSelected = !target.isSelected
         val newSelected = currentElements.filter { it.isSelected }
-        viewModel.setSelectedElementsFromLayers(newSelected)
+        viewModel.setSelectedElements(newSelected)
     }
 
     private fun clearSelection() {
-        viewModel.setSelectedElementsFromLayers(emptyList())
+        viewModel.setSelectedElements(emptyList())
     }
 
     // Show per-item popup menu anchored at the overflow icon
@@ -328,7 +324,7 @@ class LayersFragment : Fragment() {
 
         val visibilityItem = popup.menu.findItem(R.id.action_visibility_toggle)
         visibilityItem.title =
-            if (isVisible) getString(R.string.hide) else getString(R.string.show)
+            if (element.isVisible) getString(R.string.hide) else getString(R.string.show)
 
         popup.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {

@@ -10,12 +10,12 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.EditText
 import android.widget.ImageView
@@ -260,43 +260,30 @@ class EditorFragment : Fragment() {
             }
         }
 
-        viewModel.selectedElements.distinctUntilChanged().observe(viewLifecycleOwner) { selectedList ->
-            updateToolbarVisibility(selectedList)
-        }
+        viewModel.selectedElements.distinctUntilChanged()
+            .observe(viewLifecycleOwner) { selectedList ->
+                    updateToolbarVisibility(selectedList)
+            }
     }
 
     private fun updateToolbarVisibility(selected: List<CanvasElement>) {
-        val hasText       = selected.any { it.type == ElementType.TEXT }
-        val hasImage      = selected.any { it.type == ElementType.IMAGE }
+        val hasText = selected.any { it.type == ElementType.TEXT }
+        val hasImage = selected.any { it.type == ElementType.IMAGE }
         val hasBackground = selected.any { it.type == ElementType.BACKGROUND }
-        val isMulti       = selected.size > 1
-        val anySelected   = selected.isNotEmpty()
+        val isMulti = selected.size > 1
+        val anySelected = selected.isNotEmpty()
 
-        val showFont = if (!anySelected) {
-            false
-        } else if (!isMulti && hasText) {
-            true
-        } else if (!isMulti) {
-            false
-        } else {
-            hasText && !hasImage && !hasBackground
-        }
-        val showCopy = anySelected && !hasBackground
+        val showFont = anySelected && hasText && !isMulti && !hasImage && !hasBackground
+        val showCopy = anySelected && !hasBackground && !isMulti
 
-        // Update each icon
-        updateIcon(binding.opacityIcon, anySelected)
-        updateIcon(binding.blendIcon, anySelected)
-        updateIcon(binding.fontSizeIcon,  showFont)
-        updateIcon(binding.copyIcon,      showCopy)
-        updateIcon(
-            binding.alignmentKit,
-            anySelected,
-            animShow = R.anim.slide_in,
-            animHide = R.anim.slide_out
-        )
+        updateIconVisibility(binding.opacityIcon, anySelected)
+        updateIconVisibility(binding.blendIcon, anySelected)
+        updateIconVisibility(binding.fontSizeIcon, showFont)
+        updateIconVisibility(binding.copyIcon, showCopy)
+        updateIconVisibility(binding.alignmentKit, anySelected && !isMulti, animShow = R.anim.slide_in, animHide = R.anim.slide_out)
     }
 
-    private fun updateIcon(
+    private fun updateIconVisibility(
         view: View,
         shouldBeVisible: Boolean,
         @AnimRes animShow: Int = R.anim.slide_up_2,
@@ -305,49 +292,19 @@ class EditorFragment : Fragment() {
         val isVisible = view.visibility == View.VISIBLE
 
         if (shouldBeVisible && !isVisible) {
-            // animate in, then set VISIBLE
             view.visibility = View.VISIBLE
             view.startAnimation(AnimationUtils.loadAnimation(view.context, animShow))
-
         } else if (!shouldBeVisible && isVisible) {
-            // animate out, then set GONE after the animation duration
+            if (view == binding.fontSizeIcon){
+                binding.seekBarFontSize.isVisible = false
+                binding.fontSize.isVisible = false
+            }
             val anim = AnimationUtils.loadAnimation(view.context, animHide)
             view.startAnimation(anim)
             val duration = anim.duration
             view.postDelayed({ view.visibility = View.GONE }, duration)
         }
     }
-
-    private fun View.visibleWithSlideUp() {
-        if (visibility != View.VISIBLE) {
-            visibility = View.VISIBLE
-            startAnimation(AnimationUtils.loadAnimation(requireActivity(), R.anim.slide_up_2))
-        }
-    }
-
-    private fun View.slideDownAndHide() {
-        if (visibility != View.GONE) {
-            startAnimation(AnimationUtils.loadAnimation(requireActivity(), R.anim.slide_down_2))
-            // post the visibility change so the animation can run
-            postDelayed({ visibility = View.GONE },
-                resources.getInteger(android.R.integer.config_mediumAnimTime).toLong())
-        }
-    }
-
-    private fun View.visibleWith(@AnimRes animRes: Int, onEnd: ((View) -> Unit)? = null) {
-        if (visibility != View.VISIBLE) {
-            visibility = View.VISIBLE
-            val anim = AnimationUtils.loadAnimation(requireActivity(), animRes)
-            if (onEnd != null) anim.setAnimationListener(object : Animation.AnimationListener {
-                override fun onAnimationEnd(a: Animation) = onEnd(this@visibleWith)
-                override fun onAnimationRepeat(a: Animation) {}
-                override fun onAnimationStart(a: Animation) {}
-            })
-            startAnimation(anim)
-        }
-    }
-
-
 
     private fun setEvents() {
         binding.back.setOnClickListener { findNavController().navigateUp() }

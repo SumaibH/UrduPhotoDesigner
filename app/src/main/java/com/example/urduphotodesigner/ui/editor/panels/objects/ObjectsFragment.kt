@@ -2,13 +2,17 @@ package com.example.urduphotodesigner.ui.editor.panels.objects
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.text.Editable
 import android.text.InputType
+import android.text.TextWatcher
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.urduphotodesigner.R
 import com.example.urduphotodesigner.databinding.FragmentObjectsBinding
@@ -22,7 +26,6 @@ class ObjectsFragment : Fragment() {
 
     private lateinit var adapter: ObjectsPagerAdapter
     private var tabs = mutableListOf<String>()
-    private var isSearching = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -87,6 +90,56 @@ class ObjectsFragment : Fragment() {
             } else {
                 false
             }
+        }
+
+        binding.searchBar.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(
+                charSequence: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int
+            ) {
+            }
+
+            override fun onTextChanged(
+                charSequence: CharSequence?,
+                start: Int,
+                before: Int,
+                count: Int
+            ) {
+                val hasText = charSequence?.isNotEmpty() == true
+                binding.searchBar.setCompoundDrawablesWithIntrinsicBounds(
+                    null,
+                    null,
+                    if (hasText) {
+                        ContextCompat.getDrawable(requireActivity(), R.drawable.ic_close)
+                    } else {
+                        null
+                    },
+                    null
+                )
+            }
+
+            override fun afterTextChanged(charSequence: Editable?) {}
+        })
+
+        binding.searchBar.setOnTouchListener { v, event ->
+            if (event.action == MotionEvent.ACTION_UP) {
+                val drawableRight = binding.searchBar.compoundDrawables[2]
+                if (drawableRight != null && event.x >= binding.searchBar.width - binding.searchBar.paddingRight - drawableRight.bounds.width()) {
+                    binding.searchBar.text.clear()
+                    adapter.filter("")
+                    binding.searchBar.setCompoundDrawablesWithIntrinsicBounds(
+                        ContextCompat.getDrawable(requireActivity(), R.drawable.ic_search),
+                        null,
+                        null,
+                        null
+                    )
+                    hideKeyboard()
+                    return@setOnTouchListener true
+                }
+            }
+            false
         }
     }
 

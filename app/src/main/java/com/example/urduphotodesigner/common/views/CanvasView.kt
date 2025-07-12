@@ -1413,7 +1413,6 @@ class CanvasView @JvmOverloads constructor(
             }
 
             element.labelGradient?.let { gradient ->
-//                val maxWidth = lines.maxOf { labelPaint.measureText(it) }
                 val rectW = labelRect.width()
                 val rectH = labelRect.height()
                 labelPaint.shader = createGradientShader(
