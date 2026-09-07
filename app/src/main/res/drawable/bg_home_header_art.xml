@@ -1,0 +1,390 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+    Expanded home header artwork.
+
+    Deep-green ground, a khatam (eight-point star) lattice fading out across the
+    left, and an emerald sweep in the lower right traced by a gold hairline —
+    the banner treatment, recomposed for the header's proportions rather than a
+    wide strip. The viewport is deliberately close to the expanded header's
+    aspect so centerCrop trims almost nothing at rest; as the header collapses
+    the art zooms slightly instead of squashing, and fades out anyway.
+
+    The collapsed header drops this and keeps only bg_home_header's flat
+    gradient underneath.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="390dp"
+    android:height="348dp"
+    android:viewportWidth="390"
+    android:viewportHeight="348">
+
+    <!-- Ground -->
+    <path android:pathData="M0,0h390v348h-390z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="0" android:startY="0"
+                android:endX="390" android:endY="348">
+                <item android:offset="0" android:color="@color/home_header_start" />
+                <item android:offset="0.55" android:color="@color/home_header_center" />
+                <item android:offset="1" android:color="@color/home_header_end" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Khatam lattice: a diamond over a square makes the eight-point star.
+         Alpha steps down column by column so the pattern dissolves rightward. -->
+    <group android:translateX="-12" android:translateY="-12">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.14" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.14" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="-12" android:translateY="26">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.14" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.14" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="-12" android:translateY="64">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.14" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.14" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="-12" android:translateY="102">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.14" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.14" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="-12" android:translateY="140">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.14" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.14" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="-12" android:translateY="178">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.14" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.14" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="-12" android:translateY="216">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.14" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.14" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="-12" android:translateY="254">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.14" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.14" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="-12" android:translateY="292">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.14" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.14" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="-12" android:translateY="330">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.14" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.14" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="26" android:translateY="-12">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.10" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.10" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="26" android:translateY="26">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.10" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.10" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="26" android:translateY="64">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.10" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.10" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="26" android:translateY="102">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.10" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.10" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="26" android:translateY="140">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.10" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.10" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="26" android:translateY="178">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.10" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.10" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="26" android:translateY="216">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.10" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.10" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="26" android:translateY="254">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.10" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.10" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="26" android:translateY="292">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.10" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.10" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="26" android:translateY="330">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.10" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.10" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="64" android:translateY="-12">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.065" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.065" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="64" android:translateY="26">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.065" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.065" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="64" android:translateY="64">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.065" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.065" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="64" android:translateY="102">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.065" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.065" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="64" android:translateY="140">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.065" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.065" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="64" android:translateY="178">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.065" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.065" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="64" android:translateY="216">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.065" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.065" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="64" android:translateY="254">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.065" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.065" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="64" android:translateY="292">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.065" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.065" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="64" android:translateY="330">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.065" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.065" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="102" android:translateY="-12">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.035" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.035" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="102" android:translateY="26">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.035" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.035" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="102" android:translateY="64">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.035" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.035" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="102" android:translateY="102">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.035" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.035" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="102" android:translateY="140">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.035" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.035" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="102" android:translateY="178">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.035" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.035" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="102" android:translateY="216">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.035" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.035" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="102" android:translateY="254">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.035" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.035" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="102" android:translateY="292">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.035" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.035" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="102" android:translateY="330">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.035" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.035" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="140" android:translateY="-12">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.016" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.016" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="140" android:translateY="26">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.016" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.016" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="140" android:translateY="64">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.016" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.016" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="140" android:translateY="102">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.016" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.016" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="140" android:translateY="140">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.016" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.016" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="140" android:translateY="178">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.016" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.016" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="140" android:translateY="216">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.016" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.016" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="140" android:translateY="254">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.016" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.016" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="140" android:translateY="292">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.016" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.016" android:strokeWidth="0.9" />
+    </group>
+    <group android:translateX="140" android:translateY="330">
+        <path android:pathData="M19,3 L35,19 L19,35 L3,19 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.016" android:strokeWidth="0.9" />
+        <path android:pathData="M7.5,7.5 H30.5 V30.5 H7.5 Z"
+            android:strokeColor="#FFFFFF" android:strokeAlpha="0.016" android:strokeWidth="0.9" />
+    </group>
+
+    <!-- Broad highlight sweeping to the top right -->
+    <path
+        android:pathData="M-20,286 C120,228 250,124 410,-34"
+        android:strokeWidth="86"
+        android:strokeLineCap="round">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:type="linear"
+                android:startX="0" android:startY="286"
+                android:endX="390" android:endY="0">
+                <item android:offset="0" android:color="#00FFFFFF" />
+                <item android:offset="0.6" android:color="#0BFFFFFF" />
+                <item android:offset="1" android:color="#18FFFFFF" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Emerald sweep filling the lower right -->
+    <path android:pathData="M150,348 C258,296 332,178 390,34 L390,348 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="150" android:startY="348"
+                android:endX="390" android:endY="40">
+                <item android:offset="0" android:color="#0DFFFFFF" />
+                <item android:offset="1" android:color="#2AFFFFFF" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Gold hairline riding the sweep -->
+    <path
+        android:pathData="M150,348 C258,296 332,178 390,34"
+        android:strokeWidth="1.8">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:type="linear"
+                android:startX="150" android:startY="348"
+                android:endX="390" android:endY="34">
+                <item android:offset="0" android:color="#00C8A44E" />
+                <item android:offset="0.35" android:color="#C8A44E" />
+                <item android:offset="0.72" android:color="#EBD9A6" />
+                <item android:offset="1" android:color="#8FC8A44E" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Second, quieter gold trace -->
+    <path
+        android:pathData="M116,348 C232,288 316,160 390,6"
+        android:strokeWidth="0.9"
+        android:strokeColor="#33C8A44E" />
+</vector>

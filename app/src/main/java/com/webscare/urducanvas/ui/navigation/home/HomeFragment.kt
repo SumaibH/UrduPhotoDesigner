@@ -4,6 +4,8 @@ import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.graphics.Outline
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.util.Log
 import android.util.TypedValue
@@ -12,11 +14,13 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewOutlineProvider
 import android.view.animation.LinearInterpolator
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
+import androidx.core.view.updatePadding
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -35,6 +39,7 @@ import com.webscare.urducanvas.common.canvas.model.CanvasSize
 import com.webscare.urducanvas.common.canvas.sealed.FontDownloadState
 import com.webscare.urducanvas.common.canvas.sealed.HomeRow
 import com.webscare.urducanvas.common.canvas.sealed.HomeUiState
+import com.webscare.urducanvas.common.views.NativeAdSpacingDecoration
 import com.webscare.urducanvas.common.canvas.sealed.TemplateDownloadState
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
 import com.webscare.urducanvas.common.utils.showGlobalSuccessSnack
@@ -75,8 +80,11 @@ class HomeFragment : androidx.fragment.app.Fragment() {
 
     // ── Header state ────────────────────────────────────────────────────────
     private var expandedHeaderHeight = 0
-    private var isHeaderCollapsed = false
-    private var headerAnimator: ValueAnimator? = null
+
+    /** 0 = fully expanded, 1 = fully collapsed. Driven straight from scrollY. */
+    private var headerProgress = 0f
+    private var headerCornerRadius = -1f
+    private var headerBackground: GradientDrawable? = null
 
     val navOptions = NavOptions.Builder().setLaunchSingleTop(true).build()
     private val pickImageLauncher =
@@ -120,7 +128,11 @@ class HomeFragment : androidx.fragment.app.Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.homeNativeAd.setAdUnitIdAndSize(BuildConfig.AD_NATIVE_HOME, NativeSize.SMALL)
+        if (BuildConfig.AD_NATIVE_HOME.isNotBlank()) {
+            binding.homeNativeAd.setAdUnitIdAndSize(BuildConfig.AD_NATIVE_HOME, NativeSize.SMALL)
+        } else {
+            binding.homeNativeAd.visibility = View.GONE
+        }
 
         setupHeader()
         setupSectionHeaders()
@@ -128,7 +140,7 @@ class HomeFragment : androidx.fragment.app.Fragment() {
         initObservers()
     }
 
-    // ─── Header: status-bar bleed + expanded/collapsed states ────────────────
+    // ─── Header: status-bar bleed + scroll-linked morph ──────────────────────
 
     private fun getStatusBarHeight(): Int {
         val rootInsets = ViewCompat.getRootWindowInsets(binding.root)
@@ -145,7 +157,7 @@ class HomeFragment : androidx.fragment.app.Fragment() {
             if (dimenPx > 0) return dimenPx
         }
 
-        return dp(32f)
+        return dp(32f).toInt()
     }
 
     private fun updateStatusBarHeight(explicitHeight: Int? = null) {
@@ -159,6 +171,11 @@ class HomeFragment : androidx.fragment.app.Fragment() {
     /**
      * The header paints behind the status bar, so it pads itself by the inset
      * instead of relying on the activity's root padding (which is zeroed on home).
+     *
+     * The feed is anchored to the parent rather than to the header, and its top
+     * padding — not a constraint — is what keeps it clear of the expanded header.
+     * That is deliberate: the header's height changes on every scroll frame, and
+     * a constraint would drag the whole feed through a measure pass each time.
      */
     private fun setupHeader() {
         updateStatusBarHeight()
@@ -169,86 +186,184 @@ class HomeFragment : androidx.fragment.app.Fragment() {
             insets
         }
 
-        // Collapsed row is a pure overlay — keep it out of the touch path until used.
-        binding.collapsedContent.visibility = View.INVISIBLE
+        // Own copy of the gradient: the corner radii animate, and the drawable's
+        // constant state is shared with anything else using bg_home_header.
+        headerBackground = (binding.header.background as? GradientDrawable)
+            ?.mutate() as? GradientDrawable
+        headerBackground?.let { binding.header.background = it }
+
+        // Seed the radius before the outline provider goes on: the header starts
+        // fully expanded, and an uninitialised radius clipped the bottom corners
+        // square until the first scroll set one.
+        headerCornerRadius = dp(28f)
+
+        // Square top, rounded bottom. Outline only does uniform radii, so the
+        // rect starts above the top edge and the upper corners fall out of view.
+        binding.header.outlineProvider = object : ViewOutlineProvider() {
+            override fun getOutline(view: View, outline: Outline) {
+                outline.setRoundRect(
+                    0, -headerCornerRadius.toInt(), view.width, view.height, headerCornerRadius
+                )
+            }
+        }
+        binding.header.clipToOutline = true
 
         binding.header.addOnLayoutChangeListener { _, _, top, _, bottom, _, _, _, _ ->
-            if (!isHeaderCollapsed && headerAnimator == null) {
-                val h = bottom - top
-                if (h > 0) expandedHeaderHeight = h
+            val naturalHeight = bottom - top
+            if (naturalHeight > 0 && (expandedHeaderHeight <= 0 || naturalHeight > expandedHeaderHeight)) {
+                expandedHeaderHeight = naturalHeight
+                binding.contentScroll.updatePadding(top = naturalHeight)
+                applyHeaderProgress(binding.contentScroll.scrollY, force = true)
+                return@addOnLayoutChangeListener
+            }
+            if (headerProgress > 0f) {
+                // A real layout pass restores the full height; put the collapsed
+                // edge back before the frame is drawn.
+                applyHeaderBottom()
+                return@addOnLayoutChangeListener
+            }
+            if (naturalHeight > 0 && naturalHeight != expandedHeaderHeight) {
+                expandedHeaderHeight = naturalHeight
+                binding.contentScroll.updatePadding(top = naturalHeight)
+                applyHeaderProgress(binding.contentScroll.scrollY, force = true)
             }
         }
 
-        val collapseAt = dp(28f)
-        val expandAt = dp(8f)
         binding.contentScroll.setOnScrollChangeListener(
             androidx.core.widget.NestedScrollView.OnScrollChangeListener { _, _, scrollY, _, _ ->
-                when {
-                    scrollY > collapseAt -> setHeaderCollapsed(true)
-                    scrollY < expandAt -> setHeaderCollapsed(false)
-                }
+                applyHeaderProgress(scrollY)
+                scheduleHeaderSnap()
             }
         )
+
+        // The snap must not fight the finger. SpringNestedScrollView reports the
+        // gesture from both paths — a direct drag and one that starts on a child
+        // list and reaches the scroll view through nested scrolling.
+        binding.contentScroll.onGestureEnd = { scheduleHeaderSnap() }
+
+        // Sync header once scroll view settles its restored scroll position
+        binding.contentScroll.post {
+            _binding?.let { b ->
+                applyHeaderProgress(b.contentScroll.scrollY, force = true)
+            }
+        }
+    }
+
+    /**
+     * Waits for the feed to go quiet — a lift is usually followed by a fling, and
+     * snapping on ACTION_UP alone would yank the header out from under it.
+     */
+    private fun scheduleHeaderSnap() {
+        val scroll = _binding?.contentScroll ?: return
+        scroll.removeCallbacks(headerSnapRunnable)
+        scroll.postDelayed(headerSnapRunnable, HEADER_SNAP_SETTLE_MS)
+    }
+
+    /**
+     * Settles a half-collapsed header onto whichever end it is nearest, by
+     * scrolling the feed — the header follows from that, so the two never
+     * disagree about where they are.
+     */
+    private val headerSnapRunnable = Runnable {
+        val b = _binding ?: return@Runnable
+        if (b.contentScroll.isGestureInProgress) return@Runnable
+        if (expandedHeaderHeight <= 0) return@Runnable
+        if (headerProgress <= 0f || headerProgress >= 1f) return@Runnable
+
+        val range = (expandedHeaderHeight - collapsedHeaderHeight()).coerceAtLeast(1)
+        val target = if (headerProgress >= 0.5f) range else 0
+        b.contentScroll.smoothScrollTo(0, target)
     }
 
     private fun collapsedHeaderHeight(): Int {
-        val spacerH = if (binding.statusSpacer.height > 0) binding.statusSpacer.height else getStatusBarHeight()
-        return spacerH + dp(56f) + dp(12f)
-    }
-
-    private fun setHeaderCollapsed(collapsed: Boolean) {
-        if (_binding == null || isHeaderCollapsed == collapsed) return
-        if (collapsed && expandedHeaderHeight <= 0) return
-        isHeaderCollapsed = collapsed
-
-        val header = binding.header
-        val from = header.height
-        val to = if (collapsed) collapsedHeaderHeight() else expandedHeaderHeight
-        if (to <= 0) return
-
-        headerAnimator?.cancel()
-
-        if (collapsed) {
-            binding.collapsedContent.visibility = View.VISIBLE
+        val spacerH = if (binding.statusSpacer.height > 0) {
+            binding.statusSpacer.height
         } else {
-            binding.expandedContent.visibility = View.VISIBLE
+            getStatusBarHeight()
         }
+        return spacerH + dp(60f).toInt()
+    }
 
-        headerAnimator = ValueAnimator.ofInt(from, to).apply {
-            duration = 260L
-            interpolator = android.view.animation.DecelerateInterpolator(1.6f)
-            addUpdateListener { anim ->
-                val b = _binding ?: return@addUpdateListener
-                val value = anim.animatedValue as Int
-                b.header.updateLayoutParams { height = value }
+    /**
+     * Maps the scroll offset straight onto the header, one pass per scroll event.
+     * Nothing here runs on a timeline, so the header tracks the finger exactly and
+     * can sit half-collapsed — which is what removes both the jump between two
+     * fixed states and the toolbar swap that used to come with it.
+     */
+    private fun applyHeaderProgress(scrollY: Int, force: Boolean = false) {
+        val b = _binding ?: return
+        if (expandedHeaderHeight <= 0) return
 
-                val fraction = anim.animatedFraction
-                val collapseProgress = if (collapsed) fraction else 1f - fraction
-                b.expandedContent.alpha = 1f - collapseProgress
-                b.expandedContent.translationY = -dp(10f) * collapseProgress
-                b.collapsedContent.alpha = collapseProgress
-            }
-            addListener(object : android.animation.AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: android.animation.Animator) {
-                    headerAnimator = null
-                    val b = _binding ?: return
-                    if (collapsed) {
-                        b.expandedContent.visibility = View.INVISIBLE
-                    } else {
-                        b.collapsedContent.visibility = View.INVISIBLE
-                        b.header.updateLayoutParams {
-                            height = ViewGroup.LayoutParams.WRAP_CONTENT
-                        }
-                    }
-                }
-            })
-            start()
+        val range = (expandedHeaderHeight - collapsedHeaderHeight()).coerceAtLeast(1)
+        val progress = (scrollY.toFloat() / range).coerceIn(0f, 1f)
+        if (!force && progress == headerProgress) return
+        headerProgress = progress
+
+        applyHeaderBottom()
+
+        // Title morph: one view, scaled about its left edge and vertical centre so
+        // the start margin holds while the size changes.
+        val scale = 1f - (1f - COLLAPSED_TITLE_SCALE) * progress
+        b.title.pivotX = 0f
+        b.title.pivotY = b.title.height / 2f
+        b.title.scaleX = scale
+        b.title.scaleY = scale
+
+        // Keep the shrinking title optically centred in the collapsed bar.
+        val titleCentre = b.title.top + b.title.height / 2f
+        val collapsedCentre = b.statusSpacer.height + dp(60f) / 2f
+        b.title.translationY = (collapsedCentre - titleCentre) * progress
+
+        // The block under the title leaves early and fast, so the header reads as
+        // emptying out rather than being squashed.
+        val fadeOut = (progress / CONTENT_FADE_END).coerceIn(0f, 1f)
+        b.expandedContent.alpha = 1f - fadeOut
+        b.expandedContent.translationY = -dp(14f) * fadeOut
+
+        // The artwork holds on longer than the content sitting on it.
+        b.headerArt.alpha = 1f - progress
+
+        // Action sets cross-fade over the back half; never both at full strength.
+        val swap = ((progress - ACTION_SWAP_START) / (1f - ACTION_SWAP_START))
+            .coerceIn(0f, 1f)
+        b.headerActions.alpha = 1f - swap
+        b.collapsedActions.alpha = swap
+        b.headerActions.visibility = if (swap >= 1f) View.INVISIBLE else View.VISIBLE
+        b.collapsedActions.visibility = if (swap <= 0f) View.INVISIBLE else View.VISIBLE
+
+        // Corners flatten as the surface turns into a toolbar.
+        val radius = dp(28f) * (1f - progress)
+        if (radius != headerCornerRadius) {
+            headerCornerRadius = radius
+            headerBackground?.cornerRadii =
+                floatArrayOf(0f, 0f, 0f, 0f, radius, radius, radius, radius)
+            b.header.invalidateOutline()
         }
     }
 
-    private fun dp(value: Float): Int = TypedValue.applyDimension(
+    /**
+     * Height tracks scroll 1:1, so the feed's first row stays pinned to the
+     * header's bottom edge for the whole gesture.
+     *
+     * setBottom, not a layout param: every child in the header is anchored to the
+     * top, so moving the bottom edge needs no measure pass. Going through
+     * layoutParams instead costs a full ConstraintLayout solve per frame, which
+     * measured as roughly 9ms of extra frame time on the emulator.
+     */
+    private fun applyHeaderBottom() {
+        val b = _binding ?: return
+        if (expandedHeaderHeight <= 0) return
+        val range = (expandedHeaderHeight - collapsedHeaderHeight()).coerceAtLeast(1)
+        val height = expandedHeaderHeight - (range * headerProgress).toInt()
+        if (b.header.height != height) {
+            b.header.bottom = b.header.top + height
+        }
+    }
+
+    private fun dp(value: Float): Float = TypedValue.applyDimension(
         TypedValue.COMPLEX_UNIT_DIP, value, resources.displayMetrics
-    ).toInt()
+    )
+
 
     // ─── Section headers ─────────────────────────────────────────────────────
 
@@ -256,7 +371,7 @@ class HomeFragment : androidx.fragment.app.Fragment() {
         recentProjects.sectionTitle.setText(R.string.recent_projects)
         popularTemplate.sectionTitle.setText(R.string.popular_templates)
         popularFonts.sectionTitle.setText(R.string.popular_fonts)
-        sizesSection.sectionTitle.setText(R.string.browse_by_size)
+        sizesSection.sectionTitle.setText(R.string.canvas_sizes)
     }
 
     private fun showLoadingDialog() {
@@ -444,6 +559,7 @@ class HomeFragment : androidx.fragment.app.Fragment() {
         )
         binding.categoriesRV.apply {
             adapter = wrappedCategoryAdapter
+            addItemDecoration(NativeAdSpacingDecoration(requireContext()))
             itemAnimator = null
             isNestedScrollingEnabled = false
         }
@@ -784,8 +900,10 @@ class HomeFragment : androidx.fragment.app.Fragment() {
     }
 
     override fun onDestroyView() {
-        headerAnimator?.cancel()
-        headerAnimator = null
+        _binding?.contentScroll?.removeCallbacks(headerSnapRunnable)
+        headerBackground = null
+        expandedHeaderHeight = 0
+        headerProgress = -1f
         _binding?.recentsRV?.adapter = null
         _binding?.fontsRV?.adapter = null
         _binding?.sizesRV?.adapter = null
@@ -799,5 +917,16 @@ class HomeFragment : androidx.fragment.app.Fragment() {
     }
 
     companion object {
+        /** 27sp display title down to a 20sp toolbar title. */
+        private const val COLLAPSED_TITLE_SCALE = 20f / 27f
+
+        /** Everything under the title is gone by this much of the collapse. */
+        private const val CONTENT_FADE_END = 0.55f
+
+        /** Where the expanded and collapsed action rows start trading places. */
+        private const val ACTION_SWAP_START = 0.45f
+
+        /** Quiet time after the last scroll event before the header snaps. */
+        private const val HEADER_SNAP_SETTLE_MS = 90L
     }
 }

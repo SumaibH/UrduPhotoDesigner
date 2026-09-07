@@ -55,7 +55,7 @@
             android:layout_height="wrap_content"
             android:text="Retry"
             android:fontFamily="@font/bold"
-            android:textColor="@color/white"
+            android:textColor="@color/whiteText"
             android:textSize="14sp" />
     </LinearLayout>
 </LinearLayout>

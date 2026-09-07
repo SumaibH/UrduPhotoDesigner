@@ -39,22 +39,102 @@ class SpringNestedScrollView @JvmOverloads constructor(
 
     private val maxTranslation get() = height * MAX_OVERSCROLL_FRACTION
 
+    // ── Gesture state ─────────────────────────────────────────────────────────
+
+    /**
+     * True while the user is dragging, whether the touch lands on this view or on
+     * one of the RecyclerViews inside it.
+     *
+     * A plain OnTouchListener is not enough: the child lists are nested-scrolling
+     * children, so a drag starting on one of them is handled by the child and
+     * passed up through the nested-scroll callbacks — this view's own touch
+     * methods never see that gesture at all.
+     */
+    var isGestureInProgress = false
+        private set
+
+    /** Fired when a drag ends, from either path. */
+    var onGestureEnd: (() -> Unit)? = null
+
+    override fun onStartNestedScroll(child: android.view.View, target: android.view.View, axes: Int, type: Int): Boolean {
+        if (type == androidx.core.view.ViewCompat.TYPE_TOUCH) isGestureInProgress = true
+        return super.onStartNestedScroll(child, target, axes, type)
+    }
+
+    override fun onStopNestedScroll(target: android.view.View, type: Int) {
+        super.onStopNestedScroll(target, type)
+        if (type == androidx.core.view.ViewCompat.TYPE_TOUCH) {
+            isGestureInProgress = false
+            onGestureEnd?.invoke()
+        }
+    }
+
+    private var initialX = 0f
+    private var initialY = 0f
+    private var isDraggingHorizontally = false
+    private val touchSlop by lazy { android.view.ViewConfiguration.get(context).scaledTouchSlop }
+
     // ── Touch ─────────────────────────────────────────────────────────────────
 
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
         trackVelocity(ev)
-        if (ev.actionMasked == MotionEvent.ACTION_DOWN) lastY = ev.rawY
+        when (ev.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                initialX = ev.x
+                initialY = ev.y
+                lastY = ev.rawY
+                isDraggingHorizontally = false
+                if (isBouncing || abs(scrollChild?.translationY ?: 0f) > 0.5f) {
+                    springAnim?.cancel()
+                }
+            }
+            MotionEvent.ACTION_MOVE -> {
+                if (isDraggingHorizontally) {
+                    return false
+                }
+                val dx = abs(ev.x - initialX)
+                val dy = abs(ev.y - initialY)
+                // If the gesture is predominantly horizontal, do not intercept!
+                // This lets horizontal RecyclerViews scroll smoothly without fighting.
+                if (dx > touchSlop && dx > dy) {
+                    isDraggingHorizontally = true
+                    return false
+                }
+            }
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                isDraggingHorizontally = false
+            }
+        }
         return super.onInterceptTouchEvent(ev)
+    }
+
+    override fun requestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {
+        super.requestDisallowInterceptTouchEvent(disallowIntercept)
+        if (disallowIntercept) {
+            recycleVelocity()
+        }
     }
 
     override fun onTouchEvent(ev: MotionEvent): Boolean {
         trackVelocity(ev)
 
         when (ev.actionMasked) {
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                isGestureInProgress = false
+                onGestureEnd?.invoke()
+            }
+
+            MotionEvent.ACTION_DOWN -> isGestureInProgress = true
+        }
+
+        when (ev.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 springAnim?.cancel()
                 lastFlingVelocity = 0f
                 lastY = ev.rawY
+                initialX = ev.x
+                initialY = ev.y
+                isDraggingHorizontally = false
             }
 
             MotionEvent.ACTION_MOVE -> {

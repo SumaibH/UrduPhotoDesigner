@@ -3,13 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:descendantFocusability="blocksDescendants"
     android:orientation="vertical">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingHorizontal="19dp"
-        android:paddingTop="10dp">
+        android:paddingTop="18dp">
 
         <TextView
             android:id="@+id/title"
@@ -19,7 +20,7 @@
             android:ellipsize="end"
             android:fontFamily="@font/bold"
             android:maxLines="1"
-            android:paddingVertical="6dp"
+            android:paddingVertical="4dp"
             android:textColor="@color/black"
             android:textSize="15sp"
             app:layout_constraintEnd_toStartOf="@id/seeAll"
@@ -31,7 +32,6 @@
             android:id="@+id/seeAll"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="?selectableItemBackground"
             app:layout_constraintBottom_toBottomOf="@id/title"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/title">
@@ -42,7 +42,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="6dp"
                 android:fontFamily="@font/bold"
-                android:paddingVertical="6dp"
+                android:paddingVertical="4dp"
                 android:text="@string/see_all"
                 android:textColor="@color/gray"
                 android:textSize="12sp"
@@ -68,6 +68,7 @@
         android:id="@+id/listRV"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:clipToPadding="false"
         android:orientation="horizontal"
         android:overScrollMode="never"
