@@ -12,6 +12,7 @@ import com.webscare.urducanvas.common.utils.ImageProcessor
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
 import com.webscare.urducanvas.databinding.FragmentPreviewExportBinding
 import dagger.hilt.android.AndroidEntryPoint
+import com.webscare.urducanvas.common.utils.InsetUtils.applyStatusBarTopPadding
 
 @AndroidEntryPoint
 class PreviewExportFragment : Fragment() {
@@ -27,6 +28,8 @@ class PreviewExportFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // Edge to edge: the window no longer reserves the status bar, so leave the margin here.
+        view.applyStatusBarTopPadding()
 
         val imagePath = arguments?.getString("imagePath")
         if (imagePath.isNullOrEmpty()) {

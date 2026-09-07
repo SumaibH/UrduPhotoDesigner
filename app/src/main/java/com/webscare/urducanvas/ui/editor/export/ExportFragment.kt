@@ -53,6 +53,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.webscare.urducanvas.common.utils.InsetUtils.applyStatusBarTopPadding
 
 @AndroidEntryPoint
 class ExportFragment : androidx.fragment.app.Fragment() {
@@ -80,6 +81,8 @@ class ExportFragment : androidx.fragment.app.Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // Edge to edge: the window no longer reserves the status bar, so leave the margin here.
+        view.applyStatusBarTopPadding()
         
         // Preload export interstitial ad
         WebsCareAds.preloadInterstitial(requireContext(), BuildConfig.AD_INTERSTITIAL_EXPORT)

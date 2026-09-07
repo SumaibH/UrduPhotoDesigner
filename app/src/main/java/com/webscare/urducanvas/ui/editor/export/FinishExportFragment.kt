@@ -27,6 +27,7 @@ import androidx.core.graphics.scale
 import com.google.android.material.snackbar.Snackbar
 import com.webscare.urducanvas.di.AppReviewManager
 import javax.inject.Inject
+import com.webscare.urducanvas.common.utils.InsetUtils.applyStatusBarTopPadding
 
 @AndroidEntryPoint
 class FinishExportFragment : androidx.fragment.app.Fragment() {
@@ -47,6 +48,8 @@ class FinishExportFragment : androidx.fragment.app.Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // Edge to edge: the window no longer reserves the status bar, so leave the margin here.
+        view.applyStatusBarTopPadding()
         
         binding.exportSuccessNativeAd.setAdUnitIdAndSize(BuildConfig.AD_NATIVE_EXPORT_SUCCESS, NativeSize.MEDIUM)
 

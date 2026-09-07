@@ -95,6 +95,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import kotlin.math.roundToInt
+import com.webscare.urducanvas.common.utils.InsetUtils.applyStatusBarTopPadding
 
 fun Int.dpToPx(context: Context): Int {
     return (this * context.resources.displayMetrics.density + 0.5f).toInt()
@@ -213,6 +214,8 @@ class EditorFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // Edge to edge: the window no longer reserves the status bar, so leave the margin here.
+        view.applyStatusBarTopPadding()
 
         if (BuildConfig.IS_PROD_LOGIC) {
             activity?.window?.setFlags(

@@ -40,6 +40,11 @@ class SplashFragment : Fragment(), TextureView.SurfaceTextureListener {
             _binding?.root?.setPadding(0, 0, 0, 0)
         }
 
+        (activity as? com.webscare.urducanvas.MainActivity)?.let { main ->
+            main.isSplashCompleted = false
+            main.updateChromeVisibility()
+        }
+
         // Hide system bars
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             requireActivity().window.insetsController?.hide(
@@ -129,6 +134,7 @@ class SplashFragment : Fragment(), TextureView.SurfaceTextureListener {
 
         val performNavigation = {
             view?.post {
+                (activity as? com.webscare.urducanvas.MainActivity)?.isSplashCompleted = true
                 findNavController().navigate(R.id.homeFragment, null, navOptions)
             }
         }

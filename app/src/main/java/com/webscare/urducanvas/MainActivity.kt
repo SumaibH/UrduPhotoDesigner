@@ -47,6 +47,9 @@ class MainActivity : AppCompatActivity() {
 
     private var updateCheckTriggered = false
 
+    /** The banner only starts loading once a screen that shows it is reached. */
+    private var bannerAdInitialised = false
+
     private var _navController: NavController? = null
     private val navController get() = _navController!!
 
@@ -140,8 +143,10 @@ class MainActivity : AppCompatActivity() {
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
             statusBarInsetPx = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
             val navBarHeight = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
-            // Home paints its own header behind the status bar; everyone else gets the inset.
-            view.setPadding(0, if (drawsUnderStatusBar) 0 else statusBarInsetPx, 0, navBarHeight)
+            // Edge to edge: the window never reserves the status bar. Every screen
+            // re-inserts it as its own top padding via InsetUtils, the same way
+            // home has always sized its header spacer.
+            view.setPadding(0, 0, 0, navBarHeight)
             ViewCompat.dispatchApplyWindowInsets(binding.navHostMain, insets)
             insets
         }
@@ -173,18 +178,44 @@ class MainActivity : AppCompatActivity() {
     )
 
     /**
-     * Home draws its header full-bleed behind the status bar, so the root must
-     * NOT reserve the top inset there. Every other screen does reserve it.
+     * Screens that paint their own artwork behind the status bar and therefore
+     * want light (white) status bar icons. Everything else is a white page and
+     * takes dark icons.
      */
-    private var drawsUnderStatusBar = false
+    private val darkChromeDestinations = setOf(
+        R.id.homeFragment
+    )
 
     /** Status bar height in px, published for fragments that pad themselves. */
     var statusBarInsetPx: Int = 0
         private set
 
+    var isSplashCompleted: Boolean = false
+        set(value) {
+            field = value
+            updateChromeVisibility()
+        }
+
+    fun updateChromeVisibility() {
+        if (_binding == null) return
+        val destId = _navController?.currentDestination?.id
+        val isTopLevel = isSplashCompleted && destId in topLevelDestinations
+        if (isTopLevel && !bannerAdInitialised) {
+            bannerAdInitialised = true
+            binding.mainBannerAd.setAdUnitId(BuildConfig.AD_BANNER_MAIN)
+        }
+        binding.mainBannerAd.visibility = if (isTopLevel) View.VISIBLE else View.GONE
+        binding.bannerAdDivider.visibility = if (isTopLevel) View.VISIBLE else View.GONE
+        binding.fabAddImage.visibility = if (isTopLevel) View.VISIBLE else View.GONE
+        if (isTopLevel) binding.fabAddImage.bringToFront()
+    }
+
     private fun setupChrome() {
+        // Nothing is loaded or shown until a top-level destination is reached, so
+        // splash never gets the FAB, the banner, or the divider above it.
         binding.fabAddImage.visibility = View.GONE
-        binding.mainBannerAd.setAdUnitId(BuildConfig.AD_BANNER_MAIN)
+        binding.mainBannerAd.visibility = View.GONE
+        binding.bannerAdDivider.visibility = View.GONE
 
         val density = resources.displayMetrics.density
         binding.fabAddImage.elevation = 16f * density
@@ -201,12 +232,11 @@ class MainActivity : AppCompatActivity() {
                 updateManager.checkForUpdate(this)
             }
 
-            val isTopLevel = destination.id in topLevelDestinations
-            binding.mainBannerAd.visibility = if (isTopLevel) View.VISIBLE else View.GONE
-            binding.bannerAdDivider.visibility = if (isTopLevel) View.VISIBLE else View.GONE
-            binding.fabAddImage.visibility = if (isTopLevel) View.VISIBLE else View.GONE
-            if (isTopLevel) binding.fabAddImage.bringToFront()
+            if (destination.id in topLevelDestinations) {
+                isSplashCompleted = true
+            }
 
+            updateChromeVisibility()
             applyStatusBarFor(destination.id)
         }
 
@@ -233,37 +263,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Home: transparent status bar so the green header runs edge to edge behind it.
-     * Every other screen: a flat white surface (dark surface at night) with the
-     * icon colour flipped to match.
+     * The status bar is transparent on every destination now — the app draws
+     * edge to edge and each screen leaves its own status bar margin. All that is
+     * left to decide here is the icon colour: light over the artwork-backed
+     * screens, dark over the white pages (and inverted again at night).
      */
     private fun applyStatusBarFor(destinationId: Int?) {
-        val isHome = destinationId == R.id.homeFragment
         val isNight = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
                 Configuration.UI_MODE_NIGHT_YES
 
-        if (drawsUnderStatusBar != isHome) {
-            drawsUnderStatusBar = isHome
-            binding.root.setPadding(
-                0,
-                if (isHome) 0 else statusBarInsetPx,
-                0,
-                binding.root.paddingBottom
-            )
-            ViewCompat.requestApplyInsets(binding.root)
-            ViewCompat.getRootWindowInsets(binding.root)?.let {
-                ViewCompat.dispatchApplyWindowInsets(binding.navHostMain, it)
-            }
-        }
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
+        window.navigationBarColor = android.graphics.Color.TRANSPARENT
 
-        if (isHome) {
-            window.statusBarColor = android.graphics.Color.TRANSPARENT
-            setStatusBarTextColor(darkIcons = false)
-        } else {
-            window.statusBarColor =
-                androidx.core.content.ContextCompat.getColor(this, R.color.status_bar_surface)
-            setStatusBarTextColor(darkIcons = !isNight)
-        }
+        val paintsOwnChrome = destinationId in darkChromeDestinations
+        setStatusBarTextColor(darkIcons = !paintsOwnChrome && !isNight)
     }
 
     private fun applyStatusBarColor() =

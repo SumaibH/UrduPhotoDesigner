@@ -36,6 +36,7 @@ import com.webscare.urducanvas.databinding.FragmentBgRemovalBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.webscare.urducanvas.common.utils.InsetUtils.applyStatusBarTopPadding
 
 class BgRemovalFragment : Fragment() {
 
@@ -91,6 +92,8 @@ class BgRemovalFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // Edge to edge: the window no longer reserves the status bar, so leave the margin here.
+        view.applyStatusBarTopPadding()
 
         // Preload background removal rewarded ad to make sure it's ready when requested
         WebsCareAds.preloadRewarded(requireContext(), BuildConfig.AD_REWARDED_BG_REMOVAL)
