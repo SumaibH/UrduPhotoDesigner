@@ -23,6 +23,7 @@ import com.google.android.material.card.MaterialCardView
 import com.google.android.material.tabs.TabLayoutMediator
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import com.webscare.urducanvas.common.utils.InsetUtils.applyStatusBarTopPadding
 
 @AndroidEntryPoint
 class FilesFragment : Fragment() {
@@ -46,6 +47,8 @@ class FilesFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // Edge to edge: the window no longer reserves the status bar, so leave the margin here.
+        view.applyStatusBarTopPadding()
         setEvents()
         initObservers()
     }
@@ -174,8 +177,8 @@ class FilesFragment : Fragment() {
                 root?.setCardBackgroundColor(ContextCompat.getColor(requireContext(), R.color.appColor))
                 text?.setTextColor(ContextCompat.getColor(requireContext(), R.color.whiteText))
             } else {
-                root?.setCardBackgroundColor(ContextCompat.getColor(requireContext(), R.color.contrast))
-                text?.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray))
+                root?.setCardBackgroundColor(ContextCompat.getColor(requireContext(), R.color.surface_1))
+                text?.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
             }
         }
     }

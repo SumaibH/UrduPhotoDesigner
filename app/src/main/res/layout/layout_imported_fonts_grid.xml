@@ -12,7 +12,7 @@
         app:layout_constraintTop_toTopOf="parent"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:cardBackgroundColor="@color/contrast"
+        app:cardBackgroundColor="@color/surface_1"
         app:cardCornerRadius="10dp"
         app:cardElevation="0dp"
         app:strokeColor="@android:color/transparent">
@@ -32,7 +32,7 @@
                 app:cardCornerRadius="10dp"
                 app:cardElevation="3dp"
                 android:outlineSpotShadowColor="@color/shadowColor"
-                app:strokeColor="@color/white"
+                app:strokeColor="@color/surface_2"
                 app:strokeWidth="1dp">
 
                 <ImageView
@@ -40,7 +40,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:src="@drawable/ic_font_thumbnail"
-                    android:background="@color/contrast"
+                    android:background="@color/surface_1"
                     android:padding="10dp"/>
 
             </com.google.android.material.card.MaterialCardView>

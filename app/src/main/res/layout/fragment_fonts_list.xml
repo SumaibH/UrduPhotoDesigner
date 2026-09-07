@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".ui.editor.panels.text.fonts.FontsListFragment"
-    android:background="@color/white">
+    android:background="@color/screen_bg">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/englishRV"

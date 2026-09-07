@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/contrast"
+    android:background="@color/screen_bg"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".ui.navigation.settings.SettingsFragment">
 
@@ -37,10 +37,10 @@
 
     <ImageView
         android:id="@+id/back"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:backgroundTint="@color/white"
-        android:padding="7dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:backgroundTint="@color/surface_1"
+        android:padding="10dp"
         android:background="@drawable/button_bg_round"
         android:src="@drawable/ic_back"
         app:tint="@color/black"
@@ -73,14 +73,14 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             app:cardCornerRadius="10dp"
-            app:cardElevation="3dp"
+            app:cardElevation="0dp"
             android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             android:outlineSpotShadowColor="@color/shadowColor"
-            app:cardBackgroundColor="@color/white"
+            app:cardBackgroundColor="@color/surface_1"
             android:id="@+id/subscriptionCard"
             android:layout_marginTop="24dp">
 
@@ -105,7 +105,7 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    android:backgroundTint="@color/white"/>
+                    android:backgroundTint="@color/whiteText"/>
 
                 <!-- stacked title + subtitle -->
                 <TextView
@@ -116,7 +116,7 @@
                     android:fontFamily="@font/bold"
                     app:layout_constraintStart_toEndOf="@id/titleImage"
                     app:layout_constraintEnd_toStartOf="@id/upgradeNow"
-                    android:textColor="@color/white"
+                    android:textColor="@color/whiteText"
                     android:layout_marginStart="10dp"
                     android:layout_marginEnd="8dp"
                     android:id="@+id/subscriptionCardTitle"
@@ -145,7 +145,7 @@
                     android:layout_height="wrap_content"
                     android:background="@drawable/button_gradient_contrast"
                     android:text="@string/upgrade_now"
-                    android:textColor="@color/white"
+                    android:textColor="@color/whiteText"
                     android:paddingVertical="6dp"
                     android:fontFamily="@font/bold"
                     android:paddingHorizontal="12dp"
@@ -169,9 +169,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             app:cardCornerRadius="14dp"
-            app:cardElevation="2dp"
+            app:cardElevation="0dp"
             android:outlineSpotShadowColor="@color/shadowColor"
-            app:cardBackgroundColor="@color/white"
+            app:cardBackgroundColor="@color/surface_1"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -327,7 +327,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
                 android:background="@drawable/button_bg"
-                android:backgroundTint="@color/white"
+                android:backgroundTint="@color/surface_1"
                 android:orientation="vertical">
 
                 <TextView
@@ -348,7 +348,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="0.5dp"
                     android:layout_marginHorizontal="15dp"
-                    android:background="@color/white" />
+                    android:background="@color/surface_stroke" />
 
                 <TextView
                     android:id="@+id/support"
@@ -368,7 +368,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="0.5dp"
                     android:layout_marginHorizontal="15dp"
-                    android:background="@color/white" />
+                    android:background="@color/surface_stroke" />
 
                 <TextView
                     android:id="@+id/privacy"
@@ -388,7 +388,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="0.5dp"
                     android:layout_marginHorizontal="15dp"
-                    android:background="@color/white" />
+                    android:background="@color/surface_stroke" />
 
                 <TextView
                     android:id="@+id/rate"
@@ -408,7 +408,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="0.5dp"
                     android:layout_marginHorizontal="15dp"
-                    android:background="@color/white" />
+                    android:background="@color/surface_stroke" />
 
                 <TextView
                     android:id="@+id/whatsappChannel"
@@ -440,7 +440,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
                 android:background="@drawable/button_bg"
-                android:backgroundTint="@color/white"
+                android:backgroundTint="@color/surface_1"
                 android:orientation="vertical">
 
                 <TextView
@@ -461,7 +461,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="0.5dp"
                     android:layout_marginHorizontal="15dp"
-                    android:background="@color/white" />
+                    android:background="@color/surface_stroke" />
 
                 <TextView
                     android:id="@+id/requestFeature"
@@ -481,7 +481,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="0.5dp"
                     android:layout_marginHorizontal="15dp"
-                    android:background="@color/white" />
+                    android:background="@color/surface_stroke" />
 
                 <TextView
                     android:id="@+id/reportBug"

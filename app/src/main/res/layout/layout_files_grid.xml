@@ -24,7 +24,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:strokeWidth="1dp"
-            app:strokeColor="@color/white">
+            app:strokeColor="@color/surface_2">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
@@ -46,7 +46,7 @@ app:shimmer_repeat_delay="0"
                         android:id="@+id/image"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:background="@color/white"
+                        android:background="@color/surface_2"
                         android:scaleType="centerCrop"
                         android:src="@drawable/ic_launcher_background" />
 

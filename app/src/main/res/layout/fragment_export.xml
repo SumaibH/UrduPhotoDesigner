@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/contrast"
+    android:background="@color/screen_bg"
     tools:context=".ui.editor.export.ExportFragment">
 
     <androidx.constraintlayout.widget.Guideline
@@ -50,11 +50,11 @@
 
     <ImageView
         android:id="@+id/back"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:background="@drawable/button_bg_round"
-        android:backgroundTint="@color/white"
-        android:padding="7dp"
+        android:backgroundTint="@color/surface_1"
+        android:padding="10dp"
         android:src="@drawable/ic_back"
         app:layout_constraintStart_toEndOf="@id/startGuide"
         app:layout_constraintTop_toBottomOf="@id/topGuide" />
@@ -78,12 +78,12 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="19dp"
-        app:cardBackgroundColor="@color/white"
+        app:cardBackgroundColor="@color/surface_1"
         app:cardCornerRadius="12dp"
         app:layout_constraintEnd_toStartOf="@id/endGuide"
         app:layout_constraintStart_toEndOf="@id/startGuide"
         app:layout_constraintTop_toBottomOf="@id/title"
-        app:strokeColor="@color/contrast"
+        app:strokeColor="@color/surface_stroke"
         app:strokeWidth="1dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -128,7 +128,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@color/contrast"
+                    android:background="@color/surface_1"
                     android:orientation="horizontal"
                     android:weightSum="3">
 
@@ -444,7 +444,7 @@
                 android:id="@+id/view5"
                 android:layout_width="35dp"
                 android:layout_height="35dp"
-                android:backgroundTint="@color/contrast"
+                android:backgroundTint="@color/surface_1"
                 android:padding="8dp"
                 android:src="@drawable/ic_premium_used"
                 android:background="@drawable/button_bg_round"
@@ -498,14 +498,14 @@
                 android:fontFamily="@font/medium"
                 android:gravity="center"
                 android:text="Watch Video Ad to Export"
-                android:textColor="@color/white"
+                android:textColor="@color/whiteText"
                 android:textSize="12sp"
                 app:backgroundTint="@color/appColor"
                 app:cornerRadius="8dp"
                 app:icon="@drawable/ic_video_ad"
                 app:iconGravity="textStart"
                 app:iconPadding="8dp"
-                app:iconTint="@color/white"
+                app:iconTint="@color/whiteText"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/seeMore" />
@@ -567,7 +567,7 @@
                     android:layout_height="6dp"
                     android:layout_marginHorizontal="10dp"
                     android:layout_marginTop="6dp"
-                    android:indeterminateTint="@color/contrast"
+                    android:indeterminateTint="@color/surface_1"
                     android:max="100"
                     android:progress="0"
                     android:progressDrawable="@drawable/progress_bar"
@@ -600,7 +600,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
         android:background="@drawable/button_bg"
-        android:backgroundTint="@color/white"
+        android:backgroundTint="@color/surface_1"
         android:padding="12dp"
         app:layout_constraintBottom_toTopOf="@id/btnShare"
         app:layout_constraintEnd_toStartOf="@id/endGuide"

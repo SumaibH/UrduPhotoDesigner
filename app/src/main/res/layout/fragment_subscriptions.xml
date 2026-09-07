@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/contrast"
+    android:background="@color/screen_bg"
     tools:context=".ui.navigation.settings.subscriptions.SubscriptionsFragment">
 
     <!-- ── Fixed top bar (does not scroll) ───────────────────────────────── -->
@@ -23,12 +23,12 @@
 
         <ImageView
             android:id="@+id/back"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:contentDescription="@string/cancel"
             android:padding="10dp"
             android:background="@drawable/button_bg_round"
-            android:backgroundTint="@color/white"
+            android:backgroundTint="@color/surface_1"
             android:src="@drawable/ic_close"
             app:tint="@color/black" />
     </LinearLayout>
@@ -146,7 +146,7 @@
                             android:layout_gravity="top|end"
                             android:layout_margin="14dp"
                             android:background="@drawable/sub_discount_pill"
-                            android:backgroundTint="@color/white"
+                            android:backgroundTint="@color/whiteText"
                             android:fontFamily="@font/bold"
                             android:paddingHorizontal="10dp"
                             android:paddingVertical="4dp"
@@ -177,7 +177,7 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="@font/bold"
                                 android:text="@string/sub_banner_title"
-                                android:textColor="@color/white"
+                                android:textColor="@color/whiteText"
                                 android:textSize="14sp" />
 
                             <TextView
@@ -304,7 +304,7 @@
         android:orientation="vertical"
         android:paddingHorizontal="20dp"
         android:paddingBottom="15dp"
-        android:background="@color/white"
+        android:background="@color/screen_bg"
         android:paddingTop="15dp"
         android:translationZ="10dp"
         app:layout_constraintBottom_toBottomOf="parent">
@@ -324,7 +324,7 @@
                 android:layout_gravity="center"
                 android:fontFamily="@font/bold"
                 android:text="@string/sub_cta_subscribe"
-                android:textColor="@color/white"
+                android:textColor="@color/whiteText"
                 android:textSize="16sp" />
 
             <ProgressBar
@@ -333,7 +333,7 @@
                 android:layout_width="22dp"
                 android:layout_height="22dp"
                 android:layout_gravity="center"
-                android:indeterminateTint="@color/white"
+                android:indeterminateTint="@color/whiteText"
                 android:visibility="gone" />
 
             <LinearLayout
@@ -358,7 +358,7 @@
                     android:layout_marginStart="8dp"
                     android:fontFamily="@font/bold"
                     android:text="@string/sub_cta_subscribed"
-                    android:textColor="@color/white"
+                    android:textColor="@color/whiteText"
                     android:textSize="16sp" />
             </LinearLayout>
         </FrameLayout>

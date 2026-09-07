@@ -23,7 +23,7 @@
         android:layout_width="35dp"
         android:layout_height="35dp"
         android:background="@drawable/button_bg"
-        android:backgroundTint="@color/contrast"
+        android:backgroundTint="@color/surface_1"
         android:padding="8dp"
         android:src="@drawable/ic_format"
         app:tint="@color/gray"
@@ -83,7 +83,7 @@
         android:background="@drawable/button_bg"
         android:paddingHorizontal="6dp"
         android:paddingVertical="3dp"
-        android:backgroundTint="@color/contrast"
+        android:backgroundTint="@color/surface_1"
         app:layout_constraintBottom_toBottomOf="@id/view1"
         app:layout_constraintStart_toStartOf="@id/resolutionTitle"
         app:layout_constraintTop_toBottomOf="@id/resolutionDesc"/>
@@ -100,7 +100,7 @@
         android:background="@drawable/button_bg"
         android:paddingHorizontal="6dp"
         android:paddingVertical="3dp"
-        android:backgroundTint="@color/contrast"
+        android:backgroundTint="@color/surface_1"
         app:layout_constraintStart_toEndOf="@id/resolutionValue"
         app:layout_constraintTop_toTopOf="@id/resolutionValue"
         app:layout_constraintBottom_toBottomOf="@id/resolutionValue"/>
@@ -117,7 +117,7 @@
     android:background="@drawable/button_bg"
     android:paddingHorizontal="6dp"
     android:paddingVertical="3dp"
-    android:backgroundTint="@color/contrast"
+    android:backgroundTint="@color/surface_1"
     app:layout_constraintStart_toEndOf="@id/resolutionValue2"
     app:layout_constraintTop_toTopOf="@id/resolutionValue"
     app:layout_constraintBottom_toBottomOf="@id/resolutionValue"/>

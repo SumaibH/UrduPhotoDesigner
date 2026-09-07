@@ -23,7 +23,7 @@
             app:cardElevation="3dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:strokeColor="@color/white"
+            app:strokeColor="@color/surface_2"
             app:strokeWidth="1dp">
 
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -46,7 +46,7 @@ app:shimmer_repeat_delay="0"
                         android:id="@+id/image"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:background="@color/contrast"
+                        android:background="@color/surface_1"
                         android:padding="6dp" />
 
                 </com.facebook.shimmer.ShimmerFrameLayout>
@@ -78,7 +78,7 @@ app:shimmer_repeat_delay="0"
                         android:layout_margin="6dp"
                         android:visibility="gone"
                         android:background="@drawable/button_bg_round"
-                        android:backgroundTint="@color/white"
+                        android:backgroundTint="@color/surface_2"
                         app:lottie_loop="true"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
@@ -92,7 +92,7 @@ app:shimmer_repeat_delay="0"
                         android:layout_gravity="end|bottom"
                         android:layout_margin="6dp"
                         android:background="@drawable/button_bg_round"
-                        android:backgroundTint="@color/white"
+                        android:backgroundTint="@color/surface_2"
                         android:padding="6dp"
                         android:src="@drawable/ic_download"
                         android:visibility="visible"

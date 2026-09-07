@@ -28,6 +28,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import com.webscare.urducanvas.common.utils.InsetUtils.applyStatusBarTopPadding
 
 @AndroidEntryPoint
 class SettingsFragment : androidx.fragment.app.Fragment() {
@@ -50,6 +51,8 @@ class SettingsFragment : androidx.fragment.app.Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // Edge to edge: the window no longer reserves the status bar, so leave the margin here.
+        view.applyStatusBarTopPadding()
 
         observeSubscription()
         setEvents()

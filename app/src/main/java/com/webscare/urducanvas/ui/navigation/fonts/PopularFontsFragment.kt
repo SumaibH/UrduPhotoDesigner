@@ -19,6 +19,7 @@ import com.webscare.urducanvas.common.utils.Utils.addPressEffect
 import com.webscare.urducanvas.databinding.FragmentPopularFontsBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import com.webscare.urducanvas.common.utils.InsetUtils.applyStatusBarTopPadding
 
 @AndroidEntryPoint
 class PopularFontsFragment : androidx.fragment.app.Fragment() {
@@ -39,6 +40,8 @@ class PopularFontsFragment : androidx.fragment.app.Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // Edge to edge: the window no longer reserves the status bar, so leave the margin here.
+        view.applyStatusBarTopPadding()
         setEvents()
         initObservers()
     }
@@ -128,9 +131,9 @@ class PopularFontsFragment : androidx.fragment.app.Fragment() {
                 text?.setTextColor(ContextCompat.getColor(requireContext(), R.color.whiteText))
             } else {
                 root?.setCardBackgroundColor(
-                    ContextCompat.getColor(requireContext(), R.color.contrast)
+                    ContextCompat.getColor(requireContext(), R.color.surface_1)
                 )
-                text?.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray))
+                text?.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
             }
         }
     }

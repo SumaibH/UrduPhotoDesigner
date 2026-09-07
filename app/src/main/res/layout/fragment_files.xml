@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/contrast"
+    android:background="@color/screen_bg"
     tools:context=".ui.navigation.files.FilesFragment">
 
     <!-- ── Guides ──────────────────────────────────────────────────────── -->
@@ -39,10 +39,10 @@
 
     <ImageView
         android:id="@+id/back"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:backgroundTint="@color/white"
-        android:padding="7dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:backgroundTint="@color/surface_1"
+        android:padding="10dp"
         android:background="@drawable/button_bg_round"
         android:src="@drawable/ic_back"
         app:tint="@color/black"
@@ -81,7 +81,6 @@
         android:text="Import"
         android:textColor="@color/black"
         android:textSize="12sp"
-        android:translationZ="1dp"
         android:visibility="gone"
         app:drawableStartCompat="@drawable/ic_download"
         app:drawableTint="@color/black"
@@ -106,7 +105,6 @@
         android:text="@string/delete_all"
         android:textColor="@android:color/holo_red_light"
         android:textSize="12sp"
-        android:translationZ="1dp"
         android:visibility="gone"
         app:drawableStartCompat="@drawable/ic_delete"
         app:drawableTint="@android:color/holo_red_light"
@@ -117,45 +115,29 @@
     <!-- ── Grid / List toggle ─────────────────────────────────────────── -->
     <ImageView
         android:id="@+id/listStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:background="@drawable/button_bg_stroke_fill"
-        android:paddingHorizontal="12dp"
-        android:paddingVertical="8dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:padding="14dp"
+        android:background="@drawable/button_bg_round_stroke_fill"
         android:src="@drawable/ic_list_view"
         app:tint="@color/black"
-        android:translationZ="1dp"
         app:layout_constraintBottom_toBottomOf="@id/searchBar"
         app:layout_constraintEnd_toStartOf="@id/endGuide"
         app:layout_constraintStart_toEndOf="@id/searchBar"
         app:layout_constraintTop_toTopOf="@id/searchBar"/>
 
     <!-- ── Search bar ─────────────────────────────────────────────────── -->
+    <!-- Same field as home; appearance comes from Widget.UrduCanvas.SearchBar. -->
     <EditText
         android:id="@+id/searchBar"
+        style="@style/Widget.UrduCanvas.SearchBar"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:maxLines="1"
-        android:singleLine="true"
-        android:inputType="text"
-        android:imeOptions="actionSearch"
-        android:layout_marginEnd="6dp"
         android:layout_marginTop="12dp"
-        android:background="@drawable/button_bg_stroke_fill"
-        android:drawablePadding="12dp"
-        android:drawableTint="@color/gray"
-        android:fontFamily="@font/regular"
+        android:layout_marginEnd="8dp"
         android:hint="@string/search_projects_files_and_assets"
-        android:paddingHorizontal="12dp"
-        android:paddingVertical="10dp"
-        android:textColor="@color/black"
-        android:textColorHint="@color/gray"
-        android:textSize="12sp"
-        android:translationZ="1dp"
-        app:drawableEndCompat="@drawable/ic_search"
         app:layout_constraintEnd_toStartOf="@id/listStyle"
         app:layout_constraintStart_toEndOf="@id/startGuide"
-        app:layout_constraintTop_toBottomOf="@id/title"/>
+        app:layout_constraintTop_toBottomOf="@id/title" />
 
     <!-- ── Tab strip ──────────────────────────────────────────────────── -->
     <com.google.android.material.tabs.TabLayout

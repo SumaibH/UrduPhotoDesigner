@@ -36,7 +36,6 @@
         android:text="@string/sub_best_value"
         android:textColor="@color/white"
         android:textSize="8.5sp"
-        android:translationZ="2dp"
         android:visibility="gone"
         tools:visibility="visible"
         app:layout_constraintTop_toTopOf="@id/mainCard"

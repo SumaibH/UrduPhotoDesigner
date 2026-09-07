@@ -31,7 +31,6 @@
         android:id="@+id/thumbClose"
         android:layout_width="16dp"
         android:layout_height="16dp"
-        android:translationZ="3dp"
         android:layout_margin="2dp"
         android:layout_alignParentEnd="true"
         android:src="@drawable/ic_close"

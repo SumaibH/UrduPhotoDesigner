@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/contrast"
+    android:background="@color/screen_bg"
     tools:context=".ui.editor.export.FinishExportFragment">
 
     <androidx.constraintlayout.widget.Guideline
@@ -44,10 +44,10 @@
 
     <ImageView
         android:id="@+id/back"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:backgroundTint="@color/white"
-        android:padding="7dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:backgroundTint="@color/surface_1"
+        android:padding="10dp"
         android:background="@drawable/button_bg_round"
         android:src="@drawable/ic_back"
         app:layout_constraintStart_toEndOf="@id/startGuide"
@@ -87,7 +87,7 @@
                 android:layout_width="75dp"
                 android:layout_height="75dp"
                 android:background="@drawable/button_bg_round"
-                android:backgroundTint="@color/white"
+                android:backgroundTint="@color/surface_1"
                 android:padding="19dp"
                 android:src="@drawable/ic_done"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -126,12 +126,12 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="19dp"
-                app:cardBackgroundColor="@color/white"
+                app:cardBackgroundColor="@color/surface_1"
                 app:cardCornerRadius="12dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/subTitle"
-                app:strokeColor="@color/contrast"
+                app:strokeColor="@color/surface_stroke"
                 app:strokeWidth="1dp">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
@@ -171,7 +171,7 @@
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent"
-                            app:tint="@color/white" />
+                            app:tint="@color/whiteText" />
 
                         <TextView
                             android:id="@+id/fileName"
@@ -180,7 +180,7 @@
                             android:layout_marginTop="6dp"
                             android:fontFamily="@font/bold"
                             android:text="@string/export_1753699627928_png"
-                            android:textColor="@color/white"
+                            android:textColor="@color/whiteText"
                             android:textSize="15sp"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
@@ -215,7 +215,7 @@
                         android:layout_height="30dp"
                         android:layout_margin="12dp"
                         android:background="@drawable/button_bg"
-                        android:backgroundTint="@color/contrast"
+                        android:backgroundTint="@color/surface_1"
                         android:padding="8dp"
                         android:src="@drawable/ic_show_pass"
                         app:layout_constraintEnd_toEndOf="parent"
@@ -353,7 +353,7 @@
                     android:layout_width="0dp"
                     android:layout_height="1dp"
                     android:layout_marginTop="6dp"
-                    android:background="@color/contrast"
+                    android:background="@color/surface_1"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/fileResolutionDetail" />
@@ -376,7 +376,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
                     android:background="@drawable/button_bg"
-                    android:backgroundTint="@color/contrast"
+                    android:backgroundTint="@color/surface_1"
                     android:drawableTint="@color/black"
                     android:ellipsize="end"
                     android:fontFamily="@font/medium"
