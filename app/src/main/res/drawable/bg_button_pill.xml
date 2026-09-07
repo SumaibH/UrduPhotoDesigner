@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Primary action button, fully rounded — matches Create on the size screen. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:angle="45"
+        android:endColor="#03843A"
+        android:startColor="#274F38"
+        android:type="linear" />
+    <corners android:radius="100dp" />
+</shape>

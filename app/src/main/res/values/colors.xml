@@ -89,16 +89,29 @@
     <color name="state_gray_tint">#EEF0F2</color>
     <color name="state_teal">#0E9F6E</color>
     <color name="state_teal_tint">#E5F6EF</color>
-    <color name="contrast_transparent">#00F7F7F7</color>
 
     <!-- Home header gradient + surfaces -->
-    <color name="home_header_start">#0A6B31</color>
-    <color name="home_header_center">#137A3B</color>
-    <color name="home_header_end">#2E9C57</color>
+    <color name="home_header_start">#06341C</color>
+    <color name="home_header_center">#0A5A31</color>
+    <color name="home_header_end">#0F8B49</color>
     <color name="home_header_icon_bg">#33FFFFFF</color>
     <color name="home_action_tile">#DCEFE2</color>
     <color name="home_action_icon">#005D28</color>
     <color name="home_header_subtitle">#B3FFFFFF</color>
     <color name="size_tile_stroke">#E3E6E4</color>
-    <color name="status_bar_surface">#FFFFFF</color>
+    <!-- Screen UI theme.
+         One hierarchy for every non-editor screen:
+           screen_bg   the page itself (white)
+           surface_1   anything sitting ON the page (cards, tiles, search
+                       fields, chips, icon buttons) — the contrast fill
+           surface_2   anything sitting INSIDE one of those surfaces (the
+                       artboard inside a size tile, a font preview)
+         The editor keeps its own palette and is deliberately exempt. -->
+    <color name="screen_bg">#FFFFFF</color>
+    <color name="surface_1">#F7F7F7</color>
+    <color name="surface_2">#FFFFFF</color>
+    <color name="surface_stroke">#ECECEC</color>
+    <!-- Frame + icon inside a size tile: soft enough to read as an outline. -->
+    <color name="tile_frame">#C3C9D2</color>
+    <color name="screen_bg_transparent">#00FFFFFF</color>
 </resources>

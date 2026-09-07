@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Shared search field: a fully rounded contrast pill. Home set the reference
+     and every other screen now inherits it through Widget.UrduCanvas.SearchBar. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid android:color="@color/white" />
+    <solid android:color="@color/surface_1" />
     <stroke
-        android:width="0.5dp"
-        android:color="@color/light_gray" />
+        android:width="1dp"
+        android:color="@color/surface_stroke" />
     <corners android:radius="100dp" />
 </shape>

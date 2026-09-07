@@ -1,4 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:state_checked="true" android:color="@color/appColor"/>  <!-- filled -->
-    <item android:color="@android:color/transparent"/>                     <!-- outline -->
+    <!-- Selected: brand fill. Unselected: the same contrast surface every other
+         item on a white screen uses — never a bare outline. -->
+    <item android:color="@color/appColor" android:state_checked="true" />
+    <item android:color="@color/surface_1" />
 </selector>

@@ -1,10 +1,14 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.UrduPhotoDesigner" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
-        <item name="android:statusBarColor">@color/white</item>
+        <!-- Edge to edge everywhere: the window paints under both system bars
+             and each screen re-inserts the status bar height as top padding. -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowBackground">@color/screen_bg</item>
+        <item name="android:enforceStatusBarContrast" tools:targetApi="q">false</item>
+        <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
     </style>
 
     <style name="Theme.UrduPhotoDesigner" parent="Base.Theme.UrduPhotoDesigner" />
@@ -82,22 +86,21 @@
         the appearance comes from here.
     -->
     <style name="Widget.UrduCanvas.SearchBar" parent="">
-        <item name="android:layout_height">40dp</item>
-        <item name="android:background">@drawable/button_bg_stroke_fill</item>
+        <item name="android:layout_height">50dp</item>
+        <item name="android:background">@drawable/bg_search_pill</item>
         <item name="android:fontFamily">@font/regular</item>
-        <item name="android:textSize">12sp</item>
+        <item name="android:textSize">13sp</item>
         <item name="android:textColor">@color/black</item>
         <item name="android:textColorHint">@color/gray</item>
         <item name="android:drawableEnd">@drawable/ic_search</item>
         <item name="android:drawableTint">@color/gray</item>
         <item name="android:drawablePadding">12dp</item>
-        <item name="android:paddingHorizontal">12dp</item>
+        <item name="android:paddingHorizontal">18dp</item>
         <item name="android:paddingVertical">10dp</item>
         <item name="android:maxLines">1</item>
         <item name="android:singleLine">true</item>
         <item name="android:inputType">text</item>
         <item name="android:imeOptions">actionSearch</item>
-        <item name="android:translationZ">1dp</item>
     </style>
 
     <!-- Unified Editor Properties Panel TabLayout Style -->
@@ -119,6 +122,20 @@
         <item name="tabPaddingTop">0dp</item>
         <item name="tabPaddingBottom">0dp</item>
         <item name="tabTextAppearance">@style/TextAppearance.UrduCanvas.Tab</item>
+    </style>
+
+    <!--
+        Filter chips. MDC applies the style's textAppearance after the view's own
+        attributes, so android:fontFamily on the Chip is silently overridden by
+        TextAppearance.MaterialComponents.Chip. Setting the family through a
+        textAppearance is the only way it sticks.
+    -->
+    <style name="TextAppearance.UrduCanvas.Chip" parent="TextAppearance.MaterialComponents.Chip">
+        <item name="android:fontFamily">@font/medium</item>
+        <item name="fontFamily">@font/medium</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/chip_text_selector</item>
+        <item name="textAllCaps">false</item>
     </style>
 
     <style name="TextAppearance.UrduCanvas.Tab" parent="TextAppearance.Design.Tab">
