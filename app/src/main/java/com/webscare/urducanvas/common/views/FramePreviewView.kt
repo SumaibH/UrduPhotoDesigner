@@ -18,13 +18,15 @@ class FramePreviewView @JvmOverloads constructor(
     private var canvasHeight = 1920f
     private var iconDrawable: Drawable? = null
 
+    // The tile around this view is white, so the artboard drawn inside it is the
+    // contrast step of the hierarchy (see values/colors.xml).
     private val fillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = ContextCompat.getColor(context, R.color.contrast)
+        color = ContextCompat.getColor(context, R.color.surface_1)
         style = Paint.Style.FILL
     }
 
     private val strokePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = ContextCompat.getColor(context, R.color.light_gray)
+        color = ContextCompat.getColor(context, R.color.tile_frame)
         style = Paint.Style.STROKE
         strokeWidth = dpToPx(0.8f)
     }

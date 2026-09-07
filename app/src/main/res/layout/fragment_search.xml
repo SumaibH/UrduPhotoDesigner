@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/screen_bg"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".ui.navigation.home.SearchFragment">
 
@@ -36,10 +37,10 @@
 
     <ImageView
         android:id="@+id/back"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:backgroundTint="@color/contrast"
-        android:padding="7dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:backgroundTint="@color/surface_1"
+        android:padding="10dp"
         android:background="@drawable/button_bg_round"
         android:src="@drawable/ic_back"
         app:tint="@color/black"

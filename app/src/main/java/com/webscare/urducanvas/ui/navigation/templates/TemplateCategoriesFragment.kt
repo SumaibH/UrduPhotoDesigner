@@ -41,6 +41,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
+import com.webscare.urducanvas.common.utils.InsetUtils.applyStatusBarTopPadding
+import com.webscare.urducanvas.common.views.NativeAdSpacingDecoration
 
 @AndroidEntryPoint
 class TemplateCategoriesFragment : androidx.fragment.app.Fragment() {
@@ -77,6 +79,8 @@ class TemplateCategoriesFragment : androidx.fragment.app.Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // Edge to edge: the window no longer reserves the status bar, so leave the margin here.
+        view.applyStatusBarTopPadding()
 //        setupPriceChips()
         setEvents()
         observeTemplateCategories()
@@ -216,6 +220,7 @@ class TemplateCategoriesFragment : androidx.fragment.app.Fragment() {
             nativeSize = com.webscare.ads.NativeSize.SMALL
         )
         binding.categoriesRV.adapter = wrappedCategoryAdapter
+        binding.categoriesRV.addItemDecoration(NativeAdSpacingDecoration(requireContext()))
 
         templatesAdapter = TemplatesAdapter { template, isDownloaded ->
             if (isDownloaded) {

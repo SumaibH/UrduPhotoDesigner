@@ -1,23 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+    Filter chip. The sheet runs on a Material3 theme, so every colour is pinned
+    here (useMaterialThemeColors=false) — otherwise the chip picks up M3's
+    default secondary container and renders as a washed-out lavender pill.
+
+    The typeface comes from TextAppearance.UrduCanvas.Chip rather than
+    android:fontFamily: MDC applies the chip's textAppearance last, so a family
+    set directly on the view is overridden.
+-->
 <com.google.android.material.chip.Chip xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/chip"
     style="@style/Widget.MaterialComponents.Chip.Choice"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:checkable="true"
     android:text="All"
-    android:textAllCaps="false"
+    android:textAppearance="@style/TextAppearance.UrduCanvas.Chip"
     android:textColor="@color/chip_text_selector"
-    android:fontFamily="@font/bold"
-    app:chipIconVisible="false"
     app:checkedIconVisible="false"
-    app:ensureMinTouchTargetSize="false"
-    app:chipCornerRadius="16dp"
-    app:chipStartPadding="24dp"
-    app:chipEndPadding="24dp"
-    app:textStartPadding="0dp"
-    app:textEndPadding="0dp"
-    app:chipStrokeWidth="1dp"
-    app:useMaterialThemeColors="false"
-    app:chipStrokeColor="@color/chip_stroke_selector"
     app:chipBackgroundColor="@color/chip_bg_selector"
-    app:rippleColor="@color/chip_ripple_selector" />
+    app:chipCornerRadius="100dp"
+    app:chipEndPadding="14dp"
+    app:chipIconVisible="false"
+    app:chipMinHeight="32dp"
+    app:chipStartPadding="14dp"
+    app:chipStrokeColor="@color/chip_stroke_selector"
+    app:chipStrokeWidth="1dp"
+    app:chipSurfaceColor="@android:color/transparent"
+    app:ensureMinTouchTargetSize="false"
+    app:rippleColor="@color/chip_ripple_selector"
+    app:textEndPadding="0dp"
+    app:textStartPadding="0dp"
+    app:useMaterialThemeColors="false" />

@@ -62,6 +62,9 @@ class TemplateCategoriesAdapter(
             onClick = onTemplateClick
         )
 
+        /** Which category this holder is currently showing, for the scroll rewind. */
+        private var boundTitle: String? = null
+
         init {
             b.listRV.adapter = miniAdapter
             b.listRV.setHasFixedSize(true)
@@ -72,11 +75,19 @@ class TemplateCategoriesAdapter(
         }
 
         fun bind(row: HomeRow.CategoryRow) {
+            val isNewRow = boundTitle != row.title
+            boundTitle = row.title
+
             b.title.text = row.title
             b.seeAll.addPressEffect { onSeeAll(row.title) }
             if (miniAdapter.currentList != row.templates) {
                 miniAdapter.submitList(row.templates)
             }
+
+            // A recycled holder keeps the horizontal offset the previous category
+            // was scrolled to, so a fresh row would open part-way along. Rewind it
+            // whenever this holder is showing a different category than before.
+            if (isNewRow) b.listRV.scrollToPosition(0)
         }
 
         fun updateChildProgress(

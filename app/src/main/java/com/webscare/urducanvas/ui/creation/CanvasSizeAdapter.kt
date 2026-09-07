@@ -52,7 +52,7 @@ class CanvasSizeAdapter(
                     )
                 )
                 icon?.let { image.setIcon(it) }
-                image.setAccentColor(ContextCompat.getColor(itemView.context, R.color.light_gray))
+                image.setAccentColor(ContextCompat.getColor(itemView.context, R.color.tile_frame))
                 image.setCanvasSize(item.width, item.height)
                 title.text = item.name
                 size.text = "${item.width.toInt()} x ${item.height.toInt()}"
@@ -68,10 +68,10 @@ class CanvasSizeAdapter(
 
                 // Keep the resting state soft — selection is the only strong accent.
                 val frameColor = ContextCompat.getColor(
-                    root.context, if (isSelected) R.color.appColor else R.color.light_gray
+                    root.context, if (isSelected) R.color.appColor else R.color.tile_frame
                 )
                 val labelColor = ContextCompat.getColor(
-                    root.context, if (isSelected) R.color.appColor else R.color.gray
+                    root.context, if (isSelected) R.color.appColor else R.color.black
                 )
 
                 image.background = ContextCompat.getDrawable(

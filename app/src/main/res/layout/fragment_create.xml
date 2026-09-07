@@ -40,7 +40,7 @@
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:background="@drawable/button_bg_round"
-        android:backgroundTint="@color/contrast"
+        android:backgroundTint="@color/surface_1"
         android:src="@drawable/ic_close"
         android:padding="8dp"
         app:tint="@color/black"
@@ -64,7 +64,7 @@
         android:id="@+id/canvasSize"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:cardBackgroundColor="@color/contrast"
+        app:cardBackgroundColor="@color/surface_1"
         app:layout_constraintStart_toEndOf="@id/startGuide"
         app:layout_constraintTop_toBottomOf="@id/back"
         app:layout_constraintEnd_toStartOf="@id/endGuide"
@@ -122,7 +122,7 @@
                 app:layout_constraintTop_toBottomOf="@id/customTitle"
                 app:layout_constraintBottom_toBottomOf="parent"
                 android:background="@drawable/button_bg"
-                android:backgroundTint="@color/white">
+                android:backgroundTint="@color/surface_2">
                 <EditText
                     android:layout_width="30dp"
                     android:layout_height="wrap_content"
@@ -147,7 +147,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@drawable/button_bg"
-                    android:backgroundTint="@color/contrast"
+                    android:backgroundTint="@color/surface_1"
                     app:tint="@color/black"
                     android:src="@drawable/ic_up"
                     android:paddingHorizontal="9dp"
@@ -164,7 +164,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@drawable/button_bg"
-                    android:backgroundTint="@color/contrast"
+                    android:backgroundTint="@color/surface_1"
                     app:tint="@color/black"
                     android:src="@drawable/ic_down"
                     android:paddingHorizontal="9dp"
@@ -202,7 +202,7 @@
                 app:layout_constraintTop_toTopOf="@id/widthTitle"
                 app:layout_constraintBottom_toBottomOf="@id/widthTitle"
                 android:background="@drawable/button_bg"
-                android:backgroundTint="@color/white">
+                android:backgroundTint="@color/surface_2">
                 <EditText
                     android:layout_width="30dp"
                     android:layout_height="wrap_content"
@@ -227,7 +227,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@drawable/button_bg"
-                    android:backgroundTint="@color/contrast"
+                    android:backgroundTint="@color/surface_1"
                     app:tint="@color/black"
                     android:src="@drawable/ic_up"
                     android:paddingHorizontal="9dp"
@@ -244,7 +244,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@drawable/button_bg"
-                    android:backgroundTint="@color/contrast"
+                    android:backgroundTint="@color/surface_1"
                     app:tint="@color/black"
                     android:src="@drawable/ic_down"
                     android:paddingHorizontal="9dp"
@@ -268,7 +268,7 @@
                 app:layout_constraintTop_toBottomOf="@id/customTitle"
                 app:layout_constraintBottom_toBottomOf="parent"
                 android:background="@drawable/button_bg"
-                android:backgroundTint="@color/white">
+                android:backgroundTint="@color/surface_2">
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -288,7 +288,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@drawable/button_bg"
-                    android:backgroundTint="@color/contrast"
+                    android:backgroundTint="@color/surface_1"
                     app:tint="@color/black"
                     android:src="@drawable/ic_down"
                     android:paddingHorizontal="9dp"
