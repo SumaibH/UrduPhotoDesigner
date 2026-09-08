@@ -331,6 +331,17 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/header"/>
 
+    <!-- Calligraphy Depth Mode bottom overlay strip -->
+    <com.webscare.urducanvas.ui.editor.views.CalligraphyDepthOverlay
+        android:id="@+id/calligraphyOverlay"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:translationZ="12dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/centerGuide"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
     <!--
         Eraser kit. Occupies the alignment kit's slot, because in eraser mode there is
         nothing to align and the two never need to be on screen together. Size and softness

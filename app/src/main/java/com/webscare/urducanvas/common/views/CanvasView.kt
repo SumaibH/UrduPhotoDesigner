@@ -68,6 +68,10 @@ import com.webscare.urducanvas.common.canvas.enums.VAlign
 import com.webscare.urducanvas.common.canvas.model.CanvasElement
 import com.webscare.urducanvas.common.canvas.model.ExportOptions
 import com.webscare.urducanvas.common.canvas.model.GradientItem
+import com.webscare.urducanvas.common.canvas.model.CalligraphyData
+import com.webscare.urducanvas.common.canvas.model.TextToken
+import com.webscare.urducanvas.common.canvas.model.FloatingAccent
+import com.webscare.urducanvas.common.utils.CalligraphyShapingHelper
 import com.webscare.urducanvas.common.canvas.model.StrokeData
 import com.webscare.urducanvas.common.canvas.model.Text3DData
 import com.webscare.urducanvas.common.canvas.model.Text3DSurface
@@ -872,6 +876,82 @@ class CanvasView @JvmOverloads constructor(
 
     /** Returns the groupId currently being edited, or null. */
     fun getActiveGroupId(): String? = activeGroupId
+
+    var activeCalligraphyElementId: String? = null
+        private set
+
+    var onCalligraphyTokenSelected: ((CanvasElement, TextToken) -> Unit)? = null
+    var onCalligraphyCompositionChanged: ((CanvasElement) -> Unit)? = null
+
+    fun enterCalligraphyEdit(elementId: String, focusTokenId: String? = null) {
+        activeCalligraphyElementId = elementId
+        currentMode = Mode.CALLIGRAPHY_EDIT
+        val element = canvasElements.firstOrNull { it.id == elementId }
+        element?.calligraphyData?.let { cData ->
+            cData.activeTokenId = focusTokenId ?: cData.tokens.firstOrNull()?.id
+        }
+        canvasElements.forEach { it.isSelected = (it.id == elementId) }
+        selectedElements.clear()
+        element?.let { selectedElements.add(it) }
+        onElementSelected?.invoke(selectedElements)
+        invalidate()
+    }
+
+    fun exitCalligraphyEdit() {
+        activeCalligraphyElementId = null
+        currentMode = Mode.NONE
+        invalidate()
+    }
+
+    private var isDraggingCalligraphyToken = false
+    private var calligraphyTouchStartOffsetX = 0f
+    private var calligraphyTouchStartOffsetY = 0f
+    private var calligraphyTouchStartLocalX = 0f
+    private var calligraphyTouchStartLocalY = 0f
+
+    private fun mapCanvasPointToElementLocal(canvasX: Float, canvasY: Float, element: CanvasElement): FloatArray {
+        val matrix = Matrix().apply {
+            postScale(
+                element.scale * if (element.isFlippedX) -1f else 1f,
+                element.scale * if (element.isFlippedY) -1f else 1f
+            )
+            postRotate(element.rotation)
+            postTranslate(element.x, element.y)
+        }
+        val inverse = Matrix()
+        matrix.invert(inverse)
+        val pts = floatArrayOf(canvasX, canvasY)
+        inverse.mapPoints(pts)
+        return pts
+    }
+
+    private fun findTokenAtLocalPoint(
+        localX: Float,
+        localY: Float,
+        element: CanvasElement,
+        cData: CalligraphyData
+    ): TextToken? {
+        val fm = element.paint.fontMetrics
+        val baseLineHeight = (fm.descent - fm.ascent) * element.lineSpacing
+        val touchPadding = 24f * resources.displayMetrics.density
+
+        // Sort descending by zIndex so top-most overlapping token is selected first
+        val sorted = cData.tokens.sortedByDescending { it.zIndex }
+        for (token in sorted) {
+            val textW = element.paint.measureText(token.getFullDisplayText()) * token.scale
+            val textH = baseLineHeight * token.scale
+
+            val left = token.offsetX - textW / 2f - touchPadding
+            val right = token.offsetX + textW / 2f + touchPadding
+            val top = token.offsetY - textH / 2f - touchPadding
+            val bottom = token.offsetY + textH / 2f + touchPadding
+
+            if (localX in left..right && localY in top..bottom) {
+                return token
+            }
+        }
+        return null
+    }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
@@ -3743,7 +3823,7 @@ class CanvasView @JvmOverloads constructor(
 
     private fun drawElementOverlays(canvas: Canvas, showOverlays: Boolean = true) {
 
-        if (showOverlays && selectedElements.isNotEmpty()) {
+        if (showOverlays && selectedElements.isNotEmpty() && currentMode != Mode.CALLIGRAPHY_EDIT) {
             val desiredScreenStrokeWidth = 2f
             val dashLengthOnScreen = 10f
             val gapLengthOnScreen = 10f
@@ -5009,10 +5089,161 @@ class CanvasView @JvmOverloads constructor(
         return rawShader!!
     }
 
+    private fun drawCalligraphyElement(
+        canvas: Canvas,
+        element: CanvasElement,
+        cData: CalligraphyData
+    ) {
+        val isCalligraphyMode = currentMode == Mode.CALLIGRAPHY_EDIT && activeCalligraphyElementId == element.id
+
+        // Sort tokens by zIndex for correct calligraphy layering
+        val sortedTokens = cData.tokens.sortedBy { it.zIndex }
+        val sortedAccents = cData.floatingAccents.sortedBy { it.zIndex }
+
+        for (token in sortedTokens) {
+            canvas.save()
+            canvas.translate(token.offsetX, token.offsetY)
+            if (token.rotation != 0f) {
+                canvas.rotate(token.rotation)
+            }
+            if (token.scale != 1.0f) {
+                canvas.scale(token.scale, token.scale)
+            }
+
+            val displayText = token.getFullDisplayText()
+            val tokenPaint = TextPaint(element.paint).apply {
+                color = token.overrideColor ?: element.paintColor
+                alpha = token.overrideAlpha ?: element.paintAlpha
+            }
+
+            val textW = tokenPaint.measureText(displayText)
+            val xPos = -textW / 2f
+            val fmToken = try { tokenPaint.fontMetrics } catch (e: Exception) { Paint.FontMetrics() }
+            val yOffset = -(fmToken.descent + fmToken.ascent) / 2f
+
+            // Shadow
+            if (element.hasShadow && element.shadowRadius > 0f) {
+                val sp = TextPaint(tokenPaint).apply {
+                    color = element.shadowColor
+                    maskFilter = BlurMaskFilter(element.shadowRadius.coerceAtLeast(0.5f), BlurMaskFilter.Blur.NORMAL)
+                }
+                canvas.drawText(displayText, xPos + element.shadowDx, yOffset + element.shadowDy, sp)
+            }
+
+            // Outer Under-Stroke
+            if (element.hasUnderStroke && element.underStrokeWidth > 0f) {
+                val usp = TextPaint(tokenPaint).apply {
+                    style = Paint.Style.STROKE
+                    strokeWidth = element.underStrokeWidth
+                    color = element.underStrokeColor
+                }
+                canvas.drawText(displayText, xPos, yOffset, usp)
+            }
+
+            // Primary Stroke
+            if (element.hasStroke && element.strokeWidth > 0f) {
+                val stp = TextPaint(tokenPaint).apply {
+                    style = Paint.Style.STROKE
+                    strokeWidth = element.strokeWidth
+                    color = element.strokeColor
+                }
+                canvas.drawText(displayText, xPos, yOffset, stp)
+            }
+
+            // Main Fill or Gradient
+            val grad = token.overrideGradient ?: element.fillGradient
+            if (grad != null) {
+                tokenPaint.shader = createGradientShader(grad, textW, tokenPaint.textSize)
+            }
+            canvas.drawText(displayText, xPos, yOffset, tokenPaint)
+
+            // Selection box and handles when active in Calligraphy mode
+            if (isCalligraphyMode && token.id == cData.activeTokenId) {
+                drawTokenSelectionBox(canvas, textW, fmToken)
+            }
+
+            canvas.restore()
+        }
+
+        // Render free-floating calligraphic accents
+        for (accent in sortedAccents) {
+            canvas.save()
+            canvas.translate(accent.offsetX, accent.offsetY)
+            if (accent.rotation != 0f) {
+                canvas.rotate(accent.rotation)
+            }
+            if (accent.scale != 1.0f) {
+                canvas.scale(accent.scale, accent.scale)
+            }
+
+            val ap = TextPaint(element.paint).apply {
+                color = accent.color ?: element.paintColor
+                textSize = element.paintTextSize * 0.85f
+            }
+            val w = ap.measureText(accent.symbol)
+            val afm = try { ap.fontMetrics } catch (e: Exception) { Paint.FontMetrics() }
+            val y = -(afm.descent + afm.ascent) / 2f
+
+            canvas.drawText(accent.symbol, -w / 2f, y, ap)
+            canvas.restore()
+        }
+    }
+
+    private fun drawTokenSelectionBox(canvas: Canvas, textW: Float, fm: Paint.FontMetrics) {
+        val pad = 12f
+        val top = fm.ascent - pad
+        val bottom = fm.descent + pad
+        val left = -textW / 2f - pad
+        val right = textW / 2f + pad
+
+        val boxPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.parseColor("#0E9F6E") // Brand emerald green
+            style = Paint.Style.STROKE
+            strokeWidth = 3f
+            pathEffect = DashPathEffect(floatArrayOf(12f, 8f), 0f)
+        }
+        canvas.drawRect(left, top, right, bottom, boxPaint)
+
+        // Corner handles
+        val handlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.WHITE
+            style = Paint.Style.FILL
+        }
+        val handleStroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.parseColor("#0E9F6E")
+            style = Paint.Style.STROKE
+            strokeWidth = 3f
+        }
+        val r = 8f
+        val corners = floatArrayOf(
+            left, top,
+            right, top,
+            right, bottom,
+            left, bottom
+        )
+        for (i in corners.indices step 2) {
+            canvas.drawCircle(corners[i], corners[i + 1], r, handlePaint)
+            canvas.drawCircle(corners[i], corners[i + 1], r, handleStroke)
+        }
+
+        // Top rotation pin
+        val pinX = 0f
+        val pinY = top - 24f
+        canvas.drawLine(0f, top, pinX, pinY, handleStroke)
+        canvas.drawCircle(pinX, pinY, r + 2f, handlePaint)
+        canvas.drawCircle(pinX, pinY, r + 2f, handleStroke)
+    }
+
     private fun drawTextElement(
         canvas: Canvas, element: CanvasElement
     ) {
         if (element.paintAlpha == 0) return
+
+        val cData = element.calligraphyData
+        if (cData != null && cData.tokens.isNotEmpty()) {
+            drawCalligraphyElement(canvas, element, cData)
+            return
+        }
 
         val maxCanvasW = if (canvasWidth > 0) canvasWidth * 0.85f else 0f
         val lines = element.getVisualLines(maxCanvasWidth = maxCanvasW)
@@ -6693,6 +6924,26 @@ class CanvasView @JvmOverloads constructor(
                 showRotationVerticalGuide = false
                 showRotationHorizontalGuide = false
 
+                if (currentMode == Mode.CALLIGRAPHY_EDIT && activeCalligraphyElementId != null) {
+                    val calElement = canvasElements.firstOrNull { it.id == activeCalligraphyElementId }
+                    val cData = calElement?.calligraphyData
+                    if (calElement != null && cData != null) {
+                        val localPt = mapCanvasPointToElementLocal(x, y, calElement)
+                        val hitToken = findTokenAtLocalPoint(localPt[0], localPt[1], calElement, cData)
+                        if (hitToken != null) {
+                            cData.activeTokenId = hitToken.id
+                            calligraphyTouchStartOffsetX = hitToken.offsetX
+                            calligraphyTouchStartOffsetY = hitToken.offsetY
+                            calligraphyTouchStartLocalX = localPt[0]
+                            calligraphyTouchStartLocalY = localPt[1]
+                            isDraggingCalligraphyToken = true
+                            invalidate()
+                            onCalligraphyTokenSelected?.invoke(calElement, hitToken)
+                            return true
+                        }
+                    }
+                }
+
                 if (currentMode == Mode.GROUP_EDIT && activeGroupId != null) {
                     // Check if the tap is within the combined bounds of the group
                     val groupChildren = canvasElements.filter { it.groupId == activeGroupId }
@@ -7277,6 +7528,21 @@ class CanvasView @JvmOverloads constructor(
             }
 
             MotionEvent.ACTION_MOVE -> {
+                if (currentMode == Mode.CALLIGRAPHY_EDIT && isDraggingCalligraphyToken && activeCalligraphyElementId != null) {
+                    val calElement = canvasElements.firstOrNull { it.id == activeCalligraphyElementId }
+                    val cData = calElement?.calligraphyData
+                    val activeToken = cData?.getActiveToken()
+                    if (calElement != null && activeToken != null) {
+                        val localPt = mapCanvasPointToElementLocal(x, y, calElement)
+                        val dx = localPt[0] - calligraphyTouchStartLocalX
+                        val dy = localPt[1] - calligraphyTouchStartLocalY
+                        activeToken.offsetX = calligraphyTouchStartOffsetX + dx
+                        activeToken.offsetY = calligraphyTouchStartOffsetY + dy
+                        invalidate()
+                        return true
+                    }
+                }
+
                 // Determine which elements to modify based on current mode and touch context
                 val elementsToModify = selectedElements.filter {
                     !it.isLocked
@@ -7820,6 +8086,10 @@ class CanvasView @JvmOverloads constructor(
                         return true
                     }
 
+                    Mode.CALLIGRAPHY_EDIT -> {
+                        // Calligraphy token dragging is handled at the beginning of ACTION_MOVE
+                    }
+
                 }
                 return true
             }
@@ -7851,6 +8121,15 @@ class CanvasView @JvmOverloads constructor(
             }
 
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                if (currentMode == Mode.CALLIGRAPHY_EDIT && isDraggingCalligraphyToken) {
+                    isDraggingCalligraphyToken = false
+                    val calElement = canvasElements.firstOrNull { it.id == activeCalligraphyElementId }
+                    if (calElement != null) {
+                        onCalligraphyCompositionChanged?.invoke(calElement)
+                    }
+                    return true
+                }
+
                 if (gestureStartZoom != null && gestureStartPanX != null && gestureStartPanY != null) {
                     val startZoom = gestureStartZoom!!
                     val startPanX = gestureStartPanX!!

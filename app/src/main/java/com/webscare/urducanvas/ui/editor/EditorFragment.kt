@@ -1684,6 +1684,17 @@ class EditorFragment : Fragment() {
             updateTableSelectionBar()
             updateToolbarVisibility(viewModel.selectedElements.value ?: emptyList(), animate = false)
         }
+        viewModel.isCalligraphyEditMode.observe(viewLifecycleOwner) { isCalligraphyEdit ->
+            val canvasView = if (::sizedCanvasView.isInitialized) sizedCanvasView else viewModel.getCanvasView()
+            val activeId = canvasView?.activeCalligraphyElementId
+            val element = viewModel.canvasElements.value?.firstOrNull { it.id == activeId }
+            if (isCalligraphyEdit == true && element != null) {
+                binding.calligraphyOverlay.bind(element)
+            } else {
+                binding.calligraphyOverlay.visibility = View.GONE
+            }
+            updateToolbarMode(animate = true)
+        }
         viewModel.isTableMultiSelectMode.observe(viewLifecycleOwner) { isMulti ->
             val canvasView = if (::sizedCanvasView.isInitialized) sizedCanvasView else viewModel.getCanvasView()
             canvasView?.isTableMultiSelectMode = (isMulti == true)
@@ -1716,7 +1727,47 @@ class EditorFragment : Fragment() {
                     android.view.HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING
                 )
             }
-            updateTableSelectionBar()
+                        updateTableSelectionBar()
+        }
+    }
+
+    private fun setupCalligraphyOverlay() {
+        binding.calligraphyOverlay.onTokenSelected = { token ->
+            val canvasView = if (::sizedCanvasView.isInitialized) sizedCanvasView else viewModel.getCanvasView()
+            val activeId = canvasView?.activeCalligraphyElementId
+            val element = viewModel.canvasElements.value?.firstOrNull { it.id == activeId }
+            element?.calligraphyData?.let { cData ->
+                cData.activeTokenId = token.id
+                canvasView?.invalidate()
+                binding.calligraphyOverlay.bind(element)
+            }
+        }
+        binding.calligraphyOverlay.onKashidaClicked = {
+            viewModel.updateSelectedCalligraphyToken { it.kashidaCount++ }
+            val canvasView = if (::sizedCanvasView.isInitialized) sizedCanvasView else viewModel.getCanvasView()
+            val activeId = canvasView?.activeCalligraphyElementId
+            val element = viewModel.canvasElements.value?.firstOrNull { it.id == activeId }
+            element?.let {
+                canvasView?.invalidate()
+                binding.calligraphyOverlay.bind(it)
+            }
+        }
+        binding.calligraphyOverlay.onDotlessClicked = {
+            viewModel.toggleDotlessOnSelectedChar(0)
+            val canvasView = if (::sizedCanvasView.isInitialized) sizedCanvasView else viewModel.getCanvasView()
+            val activeId = canvasView?.activeCalligraphyElementId
+            val element = viewModel.canvasElements.value?.firstOrNull { it.id == activeId }
+            element?.let {
+                canvasView?.invalidate()
+                binding.calligraphyOverlay.bind(it)
+            }
+        }
+        binding.calligraphyOverlay.onCollapseClicked = {
+            viewModel.collapseSelectedCalligraphyToText()
+            viewModel.exitCalligraphyMode(saveAsComposition = false)
+        }
+        binding.calligraphyOverlay.onDoneClicked = {
+            viewModel.exitCalligraphyMode(saveAsComposition = true)
         }
     }
 
@@ -1874,6 +1925,16 @@ class EditorFragment : Fragment() {
                 viewModel.recordCanvasTransform(oldZoom, oldPanX, oldPanY, newZoom, newPanX, newPanY)
             }
             viewModel.setCanvasView(sizedCanvasView)
+
+            sizedCanvasView.onCalligraphyTokenSelected = { element, _ ->
+                binding.calligraphyOverlay.bind(element)
+            }
+            sizedCanvasView.onCalligraphyCompositionChanged = { element ->
+                viewModel.updateElement(element)
+                viewModel.markChanged()
+                binding.calligraphyOverlay.bind(element)
+            }
+            setupCalligraphyOverlay()
         }
 
         canvasManager = CanvasManager(sizedCanvasView)
@@ -2286,6 +2347,8 @@ class EditorFragment : Fragment() {
                 viewModel.toggleTableMultiSelect(false)
             } else if (viewModel.isTableEditMode.value == true) {
                 viewModel.exitTableEditMode()
+            } else if (viewModel.isCalligraphyEditMode.value == true) {
+                viewModel.exitCalligraphyMode(saveAsComposition = true)
             } else if (isAdjustment || currentToolbarMode == EditorToolbarMode.ADJUSTMENT) {
                 _navController?.popBackStack()
             } else {
@@ -2353,6 +2416,8 @@ class EditorFragment : Fragment() {
                 viewModel.exitDrawingMode(commit = true)
             } else if (viewModel.isTableEditMode.value == true) {
                 viewModel.exitTableEditMode()
+            } else if (viewModel.isCalligraphyEditMode.value == true) {
+                viewModel.exitCalligraphyMode(saveAsComposition = true)
             } else if (isAdjustment || currentToolbarMode == EditorToolbarMode.ADJUSTMENT) {
                 _navController?.popBackStack()
             } else {
@@ -2378,6 +2443,7 @@ class EditorFragment : Fragment() {
         NORMAL,
         DRAW,
         TABLE_EDIT,
+        CALLIGRAPHY_EDIT,
         ERASER,
         ADJUSTMENT
     }
@@ -2400,6 +2466,7 @@ class EditorFragment : Fragment() {
         EditorToolbarMode.ERASER,
         EditorToolbarMode.ADJUSTMENT,
         EditorToolbarMode.TABLE_EDIT,
+        EditorToolbarMode.CALLIGRAPHY_EDIT,
         EditorToolbarMode.DRAW -> true
     }
 
@@ -2414,18 +2481,20 @@ class EditorFragment : Fragment() {
                 destId == R.id.tableAdjustmentsFragment
         val isDrawing = viewModel.isDrawingMode.value == true && !isEraser
         val isTableEdit = viewModel.isTableEditMode.value == true
+        val isCalligraphyEdit = viewModel.isCalligraphyEditMode.value == true
 
         val targetMode = when {
             isEraser -> EditorToolbarMode.ERASER
             isDrawing -> EditorToolbarMode.DRAW
             isTableEdit -> EditorToolbarMode.TABLE_EDIT
+            isCalligraphyEdit -> EditorToolbarMode.CALLIGRAPHY_EDIT
             isAdjustment -> EditorToolbarMode.ADJUSTMENT
             else -> EditorToolbarMode.NORMAL
         }
 
         // Table multi-select flips the back glyph without changing the toolbar mode, so it
         // has to be part of the "nothing to do" test or the cross never appears.
-        val wantsCross = isTableEdit || viewModel.isTableMultiSelectMode.value == true
+        val wantsCross = isTableEdit || viewModel.isTableMultiSelectMode.value == true || isCalligraphyEdit
         if (currentToolbarMode == targetMode && currentBackIsCross == wantsCross) return
         val previousMode = currentToolbarMode
         currentToolbarMode = targetMode

@@ -38,6 +38,11 @@ import com.webscare.urducanvas.common.canvas.enums.TextDecoration
 import com.webscare.urducanvas.common.canvas.enums.UnitType
 import com.webscare.urducanvas.common.canvas.model.AdjustmentValues
 import com.webscare.urducanvas.common.canvas.model.CanvasElement
+import com.webscare.urducanvas.common.canvas.model.CalligraphyData
+import com.webscare.urducanvas.common.canvas.model.TextToken
+import com.webscare.urducanvas.common.canvas.model.FloatingAccent
+import com.webscare.urducanvas.common.canvas.model.ExpansionDepth
+import com.webscare.urducanvas.common.utils.CalligraphyShapingHelper
 import com.webscare.urducanvas.common.canvas.model.CanvasSize
 import com.webscare.urducanvas.common.canvas.model.ExportFormat
 import com.webscare.urducanvas.common.canvas.model.ExportOptions
@@ -6543,5 +6548,240 @@ class CanvasViewModel @Inject constructor(
         val current = canvasElements.value?.toMutableList() ?: return
         current.removeAll { it.isPremium }
 //        setCanvasElements(current)
+    }
+
+    // ── Calligraphy / Text Depth Mode & Symbols Operations ───────────────────────
+
+    private val _isCalligraphyEditMode = MutableLiveData<Boolean>(false)
+    val isCalligraphyEditMode: LiveData<Boolean> get() = _isCalligraphyEditMode
+
+    fun enterCalligraphyMode(elementId: String, depth: ExpansionDepth) {
+        expandSelectedTextToCalligraphy(depth)
+        _isCalligraphyEditMode.value = true
+        getCanvasView()?.enterCalligraphyEdit(elementId)
+    }
+
+    fun exitCalligraphyMode(saveAsComposition: Boolean = true) {
+        _isCalligraphyEditMode.value = false
+        val currentList = _canvasElements.value?.toMutableList() ?: return
+        val selected = currentList.firstOrNull { it.isSelected && it.type == ElementType.TEXT }
+        if (selected != null && selected.calligraphyData != null) {
+            selected.calligraphyData?.isCompositionLocked = saveAsComposition
+            _canvasElements.value = currentList
+        }
+        getCanvasView()?.exitCalligraphyEdit()
+        notifyCanvasUpdated()
+    }
+
+    fun expandSelectedTextToCalligraphy(depth: ExpansionDepth) {
+        val currentList = _canvasElements.value?.toMutableList() ?: return
+        val selected = currentList.firstOrNull { it.isSelected && it.type == ElementType.TEXT } ?: return
+        val before = selected.copy(context = null)
+
+        val cData = CalligraphyShapingHelper.decomposeText(selected.text, depth, selected.paint)
+        selected.calligraphyData = cData
+        val after = selected.copy(context = null)
+
+        _canvasActions.push(CanvasAction.UpdateElement(selected.id, after, before))
+        _redoStack.clear()
+        _canvasElements.value = currentList
+        _isCalligraphyEditMode.value = true
+        getCanvasView()?.enterCalligraphyEdit(selected.id)
+        notifyUndoRedoChanged()
+        markChanged()
+        notifyCanvasUpdated()
+    }
+
+    fun collapseSelectedCalligraphyToText() {
+        val currentList = _canvasElements.value?.toMutableList() ?: return
+        val selected = currentList.firstOrNull { it.isSelected && it.type == ElementType.TEXT } ?: return
+        val cData = selected.calligraphyData ?: return
+        val before = selected.copy(context = null)
+
+        val collapsedText = CalligraphyShapingHelper.collapseToString(cData)
+        selected.text = collapsedText
+        selected.calligraphyData = null
+        val after = selected.copy(context = null)
+
+        _canvasActions.push(CanvasAction.UpdateElement(selected.id, after, before))
+        _redoStack.clear()
+        _canvasElements.value = currentList
+        notifyUndoRedoChanged()
+        markChanged()
+        notifyCanvasUpdated()
+    }
+
+    fun updateSelectedCalligraphyToken(transform: (TextToken) -> Unit) {
+        val currentList = _canvasElements.value?.toMutableList() ?: return
+        val selected = currentList.firstOrNull { it.isSelected && it.type == ElementType.TEXT } ?: return
+        val cData = selected.calligraphyData ?: return
+        val activeToken = cData.getActiveToken() ?: return
+        val before = selected.copy(context = null)
+
+        transform(activeToken)
+        val after = selected.copy(context = null)
+
+        _canvasActions.push(CanvasAction.UpdateElement(selected.id, after, before))
+        _redoStack.clear()
+        _canvasElements.value = currentList
+        notifyUndoRedoChanged()
+        markChanged()
+        notifyCanvasUpdated()
+    }
+
+    fun appendDiacriticToSelectedChar(charIndex: Int, diacritic: String) {
+        val currentList = _canvasElements.value?.toMutableList() ?: return
+        val selected = currentList.firstOrNull { it.isSelected && it.type == ElementType.TEXT } ?: return
+        val before = selected.copy(context = null)
+
+        val cData = selected.calligraphyData
+        if (cData != null && cData.tokens.isNotEmpty()) {
+            val activeToken = cData.getActiveToken() ?: cData.tokens.getOrNull(charIndex)
+            if (activeToken != null) {
+                activeToken.diacritics += diacritic
+            }
+        } else {
+            // Normal text mode: insert diacritic right after charIndex
+            val str = selected.text
+            if (charIndex in 0 until str.length) {
+                var insertPos = charIndex + 1
+                while (insertPos < str.length && CalligraphyShapingHelper.isDiacritic(str[insertPos])) {
+                    insertPos++
+                }
+                selected.text = str.substring(0, insertPos) + diacritic + str.substring(insertPos)
+            } else {
+                selected.text += diacritic
+            }
+        }
+
+        val after = selected.copy(context = null)
+        _canvasActions.push(CanvasAction.UpdateElement(selected.id, after, before))
+        _redoStack.clear()
+        _canvasElements.value = currentList
+        notifyUndoRedoChanged()
+        markChanged()
+        notifyCanvasUpdated()
+    }
+
+    fun removeLastDiacriticFromSelectedChar(charIndex: Int) {
+        val currentList = _canvasElements.value?.toMutableList() ?: return
+        val selected = currentList.firstOrNull { it.isSelected && it.type == ElementType.TEXT } ?: return
+        val before = selected.copy(context = null)
+
+        val cData = selected.calligraphyData
+        if (cData != null && cData.tokens.isNotEmpty()) {
+            val activeToken = cData.getActiveToken() ?: cData.tokens.getOrNull(charIndex)
+            if (activeToken != null && activeToken.diacritics.isNotEmpty()) {
+                activeToken.diacritics = activeToken.diacritics.dropLast(1)
+            }
+        } else {
+            val str = selected.text
+            if (charIndex in 0 until str.length) {
+                var lastDiacriticPos = -1
+                var scan = charIndex + 1
+                while (scan < str.length && CalligraphyShapingHelper.isDiacritic(str[scan])) {
+                    lastDiacriticPos = scan
+                    scan++
+                }
+                if (lastDiacriticPos != -1) {
+                    selected.text = str.substring(0, lastDiacriticPos) + str.substring(lastDiacriticPos + 1)
+                }
+            }
+        }
+
+        val after = selected.copy(context = null)
+        _canvasActions.push(CanvasAction.UpdateElement(selected.id, after, before))
+        _redoStack.clear()
+        _canvasElements.value = currentList
+        notifyUndoRedoChanged()
+        markChanged()
+        notifyCanvasUpdated()
+    }
+
+    fun clearAllDiacriticsFromSelectedChar(charIndex: Int) {
+        val currentList = _canvasElements.value?.toMutableList() ?: return
+        val selected = currentList.firstOrNull { it.isSelected && it.type == ElementType.TEXT } ?: return
+        val before = selected.copy(context = null)
+
+        val cData = selected.calligraphyData
+        if (cData != null && cData.tokens.isNotEmpty()) {
+            val activeToken = cData.getActiveToken() ?: cData.tokens.getOrNull(charIndex)
+            if (activeToken != null) {
+                activeToken.diacritics = ""
+            }
+        } else {
+            val str = selected.text
+            if (charIndex in 0 until str.length) {
+                val startDiacritic = charIndex + 1
+                var endDiacritic = startDiacritic
+                while (endDiacritic < str.length && CalligraphyShapingHelper.isDiacritic(str[endDiacritic])) {
+                    endDiacritic++
+                }
+                if (endDiacritic > startDiacritic) {
+                    selected.text = str.substring(0, startDiacritic) + str.substring(endDiacritic)
+                }
+            }
+        }
+
+        val after = selected.copy(context = null)
+        _canvasActions.push(CanvasAction.UpdateElement(selected.id, after, before))
+        _redoStack.clear()
+        _canvasElements.value = currentList
+        notifyUndoRedoChanged()
+        markChanged()
+        notifyCanvasUpdated()
+    }
+
+    fun toggleDotlessOnSelectedChar(charIndex: Int) {
+        val currentList = _canvasElements.value?.toMutableList() ?: return
+        val selected = currentList.firstOrNull { it.isSelected && it.type == ElementType.TEXT } ?: return
+        val before = selected.copy(context = null)
+
+        val cData = selected.calligraphyData
+        if (cData != null && cData.tokens.isNotEmpty()) {
+            val activeToken = cData.getActiveToken() ?: cData.tokens.getOrNull(charIndex)
+            if (activeToken != null) {
+                CalligraphyShapingHelper.toggleDotless(activeToken)
+            }
+        } else {
+            val str = selected.text
+            if (charIndex in 0 until str.length) {
+                val ch = str[charIndex]
+                val dotless = CalligraphyShapingHelper.toDotlessSkeleton(ch)
+                val newChar = if (dotless != ch) dotless else ch
+                selected.text = str.substring(0, charIndex) + newChar + str.substring(charIndex + 1)
+            }
+        }
+
+        val after = selected.copy(context = null)
+        _canvasActions.push(CanvasAction.UpdateElement(selected.id, after, before))
+        _redoStack.clear()
+        _canvasElements.value = currentList
+        notifyUndoRedoChanged()
+        markChanged()
+        notifyCanvasUpdated()
+    }
+
+    fun addFloatingCalligraphyAccent(symbol: String) {
+        val currentList = _canvasElements.value?.toMutableList() ?: return
+        val selected = currentList.firstOrNull { it.isSelected && it.type == ElementType.TEXT } ?: return
+        val cData = selected.calligraphyData ?: return
+        val before = selected.copy(context = null)
+
+        val accent = FloatingAccent(
+            symbol = symbol,
+            offsetX = 0f,
+            offsetY = 0f,
+            zIndex = (cData.tokens.maxOfOrNull { it.zIndex } ?: 0) + 1
+        )
+        cData.floatingAccents.add(accent)
+
+        val after = selected.copy(context = null)
+        _canvasActions.push(CanvasAction.UpdateElement(selected.id, after, before))
+        _redoStack.clear()
+        _canvasElements.value = currentList
+        notifyUndoRedoChanged()
+        markChanged()
+        notifyCanvasUpdated()
     }
 }
