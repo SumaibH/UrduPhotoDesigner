@@ -8,6 +8,7 @@ import com.webscare.urducanvas.ui.editor.panels.text.appearance.AppearanceFragme
 import com.webscare.urducanvas.ui.editor.panels.text.fonts.FontsFragment
 import com.webscare.urducanvas.ui.editor.panels.text.format.FormatFragment
 import com.webscare.urducanvas.ui.editor.panels.text.styles.TextStylesFragment
+import com.webscare.urducanvas.ui.editor.panels.text.symbols.TextSymbolsFragment
 import com.webscare.urducanvas.ui.editor.panels.text.threed.Text3DFragment
 
 class TextAdjustmentsPagerAdapter(
@@ -34,6 +35,7 @@ class TextAdjustmentsPagerAdapter(
             "Appearance" -> AppearanceFragment.newInstance()
             "3D"         -> Text3DFragment.newInstance()
             "Format"     -> FormatFragment.newInstance()
+            "Symbols"    -> TextSymbolsFragment.newInstance()
             else         -> TextStylesFragment.newInstance()
         }
     }
