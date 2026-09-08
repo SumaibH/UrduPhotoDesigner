@@ -1,51 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!--
+    One symbol tile, built like layout_filter_item.xml: a square MaterialCardView
+    whose stroke carries the state. No caption — the glyph is sized up instead,
+    and the name is available on long press (same as the rail categories).
+    No foreground ripple: presses come from Utils.addPressEffect.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/symbolCardRoot"
-    android:layout_width="match_parent"
-    android:layout_height="68dp"
-    android:layout_margin="3dp"
-    android:background="@drawable/button_bg_small"
-    android:backgroundTint="@color/contrast"
-    android:clickable="true"
-    android:focusable="true"
-    android:foreground="?selectableItemBackground"
-    android:paddingHorizontal="4dp"
-    android:paddingVertical="4dp">
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="3dp"
+    android:layout_marginVertical="3dp">
 
-    <TextView
-        android:id="@+id/tvSymbolGlyph"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/bold"
-        android:gravity="center"
-        android:includeFontPadding="false"
-        android:textColor="@color/black"
-        android:textSize="22sp"
-        app:layout_constraintBottom_toTopOf="@id/tvSymbolName"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_chainStyle="packed"
-        tools:text="ـَ" />
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/symbolCard"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        app:cardBackgroundColor="@color/contrast"
+        app:cardCornerRadius="6dp"
+        app:cardElevation="0dp"
+        app:strokeColor="@color/appColor"
+        app:strokeWidth="0dp">
 
-    <TextView
-        android:id="@+id/tvSymbolName"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:ellipsize="end"
-        android:fontFamily="@font/regular"
-        android:gravity="center"
-        android:includeFontPadding="false"
-        android:maxLines="1"
-        android:textColor="@color/gray"
-        android:textSize="9.5sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvSymbolGlyph"
-        tools:text="زبر (Fatha)" />
+        <TextView
+            android:id="@+id/tvSymbolGlyph"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fontFamily="@font/bold"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:textColor="@color/black"
+            android:textSize="28sp"
+            tools:text="ـَ" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</FrameLayout>

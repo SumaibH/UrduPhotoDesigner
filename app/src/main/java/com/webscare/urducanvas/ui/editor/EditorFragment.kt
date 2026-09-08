@@ -95,7 +95,10 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import kotlin.math.roundToInt
+import com.webscare.urducanvas.common.utils.CalligraphyShapingHelper
 import com.webscare.urducanvas.common.utils.InsetUtils.applyStatusBarTopPadding
+import com.webscare.urducanvas.ui.editor.panels.text.symbols.CharChipModel
+import com.webscare.urducanvas.ui.editor.panels.text.symbols.SymbolCharAdapter
 
 fun Int.dpToPx(context: Context): Int {
     return (this * context.resources.displayMetrics.density + 0.5f).toInt()
@@ -1684,17 +1687,17 @@ class EditorFragment : Fragment() {
             updateTableSelectionBar()
             updateToolbarVisibility(viewModel.selectedElements.value ?: emptyList(), animate = false)
         }
-        viewModel.isCalligraphyEditMode.observe(viewLifecycleOwner) { isCalligraphyEdit ->
-            val canvasView = if (::sizedCanvasView.isInitialized) sizedCanvasView else viewModel.getCanvasView()
-            val activeId = canvasView?.activeCalligraphyElementId
-            val element = viewModel.canvasElements.value?.firstOrNull { it.id == activeId }
-            if (isCalligraphyEdit == true && element != null) {
-                binding.calligraphyOverlay.bind(element)
-            } else {
-                binding.calligraphyOverlay.visibility = View.GONE
-            }
+        viewModel.isCalligraphyEditMode.observe(viewLifecycleOwner) { _ ->
+            // Calligraphy has no overlay of its own any more: the toolbar swaps
+            // into CALLIGRAPHY_EDIT and the Text Properties panel does the work.
             updateToolbarMode(animate = true)
+            refreshCharacterBar()
         }
+        viewModel.characterBarVisible.observe(viewLifecycleOwner) { refreshCharacterBar() }
+        // Tokens appear/disappear through the element list, so watch it too.
+        viewModel.canvasElements.observe(viewLifecycleOwner) { refreshCharacterBar() }
+        viewModel.activeCharIndex.observe(viewLifecycleOwner) { refreshCharacterBar() }
+        viewModel.activeCalligraphyTokenId.observe(viewLifecycleOwner) { refreshCharacterBar() }
         viewModel.isTableMultiSelectMode.observe(viewLifecycleOwner) { isMulti ->
             val canvasView = if (::sizedCanvasView.isInitialized) sizedCanvasView else viewModel.getCanvasView()
             canvasView?.isTableMultiSelectMode = (isMulti == true)
@@ -1727,48 +1730,84 @@ class EditorFragment : Fragment() {
                     android.view.HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING
                 )
             }
-                        updateTableSelectionBar()
+            updateTableSelectionBar()
         }
     }
 
-    private fun setupCalligraphyOverlay() {
-        binding.calligraphyOverlay.onTokenSelected = { token ->
-            val canvasView = if (::sizedCanvasView.isInitialized) sizedCanvasView else viewModel.getCanvasView()
-            val activeId = canvasView?.activeCalligraphyElementId
-            val element = viewModel.canvasElements.value?.firstOrNull { it.id == activeId }
-            element?.calligraphyData?.let { cData ->
+
+    private var characterBarAdapter: SymbolCharAdapter? = null
+
+    /**
+     * Fills the header's character strip from whatever text element is selected:
+     * calligraphy tokens once the text has been broken apart, otherwise its
+     * letters. Hidden unless the Symbols panel asked for it or calligraphy mode
+     * is running.
+     */
+    private fun refreshCharacterBar() {
+        val b = _binding ?: return
+        val element = viewModel.selectedTextElement()
+        // Shown whenever the Symbols panel is up, broken apart or not: it is the
+        // only way to choose WHICH letter a symbol lands on. Gating it on the
+        // composition left plain text stuck on character 0, so every mark went
+        // onto the first letter.
+        val wanted = viewModel.characterBarVisible.value == true ||
+                viewModel.isCalligraphyEditMode.value == true
+
+        if (!wanted || element == null) {
+            animateCharacterBar(visible = false)
+            return
+        }
+
+        val adapter = characterBarAdapter ?: SymbolCharAdapter { index ->
+            viewModel.setActiveCharIndex(index)
+            val cData = viewModel.selectedTextElement()?.calligraphyData
+            if (cData != null && index in cData.tokens.indices) {
+                val token = cData.tokens[index]
                 cData.activeTokenId = token.id
-                canvasView?.invalidate()
-                binding.calligraphyOverlay.bind(element)
+                viewModel.setActiveCalligraphyTokenId(token.id)
+                viewModel.getCanvasView()?.invalidate()
             }
+        }.also {
+            characterBarAdapter = it
+            b.rvCalligraphyChars.adapter = it
         }
-        binding.calligraphyOverlay.onKashidaClicked = {
-            viewModel.updateSelectedCalligraphyToken { it.kashidaCount++ }
-            val canvasView = if (::sizedCanvasView.isInitialized) sizedCanvasView else viewModel.getCanvasView()
-            val activeId = canvasView?.activeCalligraphyElementId
-            val element = viewModel.canvasElements.value?.firstOrNull { it.id == activeId }
-            element?.let {
-                canvasView?.invalidate()
-                binding.calligraphyOverlay.bind(it)
+
+        adapter.setPreviewTypeface(element.typefaceOrNull)
+
+        val selected = viewModel.activeCharIndex.value ?: 0
+        val cData = element.calligraphyData
+        val chips = if (cData != null && cData.tokens.isNotEmpty()) {
+            cData.tokens.mapIndexed { idx, token ->
+                CharChipModel(idx, token.getFullDisplayText(), token.rawText, idx == selected)
             }
+        } else {
+            CalligraphyShapingHelper.buildLetterClusters(element.text)
+                .mapIndexed { idx, cluster ->
+                    CharChipModel(idx, cluster.displayText, cluster.rawChar, idx == selected)
+                }
         }
-        binding.calligraphyOverlay.onDotlessClicked = {
-            viewModel.toggleDotlessOnSelectedChar(0)
-            val canvasView = if (::sizedCanvasView.isInitialized) sizedCanvasView else viewModel.getCanvasView()
-            val activeId = canvasView?.activeCalligraphyElementId
-            val element = viewModel.canvasElements.value?.firstOrNull { it.id == activeId }
-            element?.let {
-                canvasView?.invalidate()
-                binding.calligraphyOverlay.bind(it)
+
+        adapter.submitList(chips)
+        animateCharacterBar(visible = chips.isNotEmpty())
+    }
+
+    /**
+     * Grows/shrinks the header as the character strip comes and goes, instead of
+     * snapping the toolbar to a new height.
+     */
+    private fun animateCharacterBar(visible: Boolean) {
+        val b = _binding ?: return
+        val target = if (visible) View.VISIBLE else View.GONE
+        if (b.rvCalligraphyChars.visibility == target) return
+
+        android.transition.TransitionManager.beginDelayedTransition(
+            b.header,
+            android.transition.AutoTransition().apply {
+                duration = CHAR_BAR_ANIM_MS
+                interpolator = android.view.animation.DecelerateInterpolator()
             }
-        }
-        binding.calligraphyOverlay.onCollapseClicked = {
-            viewModel.collapseSelectedCalligraphyToText()
-            viewModel.exitCalligraphyMode(saveAsComposition = false)
-        }
-        binding.calligraphyOverlay.onDoneClicked = {
-            viewModel.exitCalligraphyMode(saveAsComposition = true)
-        }
+        )
+        b.rvCalligraphyChars.visibility = target
     }
 
     private fun updateTableSelectionBar() {
@@ -1926,15 +1965,14 @@ class EditorFragment : Fragment() {
             }
             viewModel.setCanvasView(sizedCanvasView)
 
-            sizedCanvasView.onCalligraphyTokenSelected = { element, _ ->
-                binding.calligraphyOverlay.bind(element)
+            sizedCanvasView.onCalligraphyTokenSelected = { _, token ->
+                // Keep the Symbols strip in step with what was tapped on canvas.
+                viewModel.setActiveCalligraphyTokenId(token.id)
             }
             sizedCanvasView.onCalligraphyCompositionChanged = { element ->
                 viewModel.updateElement(element)
                 viewModel.markChanged()
-                binding.calligraphyOverlay.bind(element)
             }
-            setupCalligraphyOverlay()
         }
 
         canvasManager = CanvasManager(sizedCanvasView)
@@ -3193,8 +3231,10 @@ class EditorFragment : Fragment() {
         val guideline = root.findViewById<Guideline>(R.id.centerExpandableGuide) ?: return
 
         root.doOnLayout {
-            val rootHeight   = root.height
-            if (rootHeight == 0) return@doOnLayout
+            // The guideline moves inside the root's content box, so the resting
+            // stop has to be a fraction of THAT, not of the padded outer height.
+            val rootHeight   = root.height - root.paddingTop - root.paddingBottom
+            if (rootHeight <= 0) return@doOnLayout
             val b = _binding ?: return@doOnLayout
 
             val collapsedPx = (rootHeight * 0.65f).toInt()   // resting position
@@ -3250,7 +3290,8 @@ class EditorFragment : Fragment() {
             val b = _binding ?: return@post
             val root = b.root as? ConstraintLayout ?: return@post
             val guideline = root.findViewById<Guideline>(R.id.centerExpandableGuide) ?: return@post
-            val rootHeight = root.height.takeIf { it > 0 } ?: return@post
+            val rootHeight = (root.height - root.paddingTop - root.paddingBottom)
+                .takeIf { it > 0 } ?: return@post
 
             val collapsedPx = (rootHeight * 0.65f).toInt()
             val expandedPx = 0
@@ -3605,5 +3646,7 @@ class EditorFragment : Fragment() {
     }
 
     companion object {
+        /** Header grow/shrink when the character strip appears. */
+        private const val CHAR_BAR_ANIM_MS = 200L
     }
 }

@@ -1,9 +1,7 @@
 package com.webscare.urducanvas.ui.editor.panels.text.symbols
 
-import android.content.res.ColorStateList
-import android.graphics.Color
+import android.graphics.Typeface
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
@@ -24,9 +22,18 @@ class SymbolCharAdapter(
 
     private val items = mutableListOf<CharChipModel>()
 
+    /** Font of the element being edited, so chips read like the canvas does. */
+    private var previewTypeface: Typeface? = null
+
     fun submitList(newItems: List<CharChipModel>) {
         items.clear()
         items.addAll(newItems)
+        notifyDataSetChanged()
+    }
+
+    fun setPreviewTypeface(typeface: Typeface?) {
+        if (previewTypeface == typeface) return
+        previewTypeface = typeface
         notifyDataSetChanged()
     }
 
@@ -49,22 +56,19 @@ class SymbolCharAdapter(
         fun bind(item: CharChipModel) {
             val ctx = binding.root.context
             binding.tvChar.text = item.displayText
+            previewTypeface?.let { binding.tvChar.typeface = it }
 
-            if (item.isSelected) {
-                binding.charChipRoot.backgroundTintList = ColorStateList.valueOf(
-                    ContextCompat.getColor(ctx, R.color.appColor)
+            // Stroke-based state, like the filter tiles: the glyph keeps its own
+            // colour so the letter stays readable when selected.
+            val density = ctx.resources.displayMetrics.density
+            binding.charCard.strokeWidth =
+                if (item.isSelected) (2f * density).toInt() else 0
+            binding.charCard.setCardBackgroundColor(
+                ContextCompat.getColor(
+                    ctx, if (item.isSelected) R.color.white else R.color.contrast
                 )
-                binding.tvChar.setTextColor(Color.WHITE)
-                binding.selectedIndicator.visibility = View.VISIBLE
-            } else {
-                binding.charChipRoot.backgroundTintList = ColorStateList.valueOf(
-                    ContextCompat.getColor(ctx, R.color.contrast)
-                )
-                binding.tvChar.setTextColor(
-                    ContextCompat.getColor(ctx, R.color.black)
-                )
-                binding.selectedIndicator.visibility = View.GONE
-            }
+            )
+            binding.tvChar.setTextColor(ContextCompat.getColor(ctx, R.color.black))
 
             binding.charChipRoot.addPressEffect {
                 onCharSelected(item.index)

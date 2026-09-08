@@ -129,6 +129,17 @@ class TextAdjustmentsFragment : androidx.fragment.app.Fragment() {
             if (position != 1) {
                 mainViewModel.setQuery("")
             }
+            viewModel.lastTextAdjustmentsTab = position
+        }
+
+        // Reopen on the tab the user left from — coming back to Symbols after
+        // closing the panel is the common case while composing calligraphy.
+        val restore = viewModel.lastTextAdjustmentsTab
+        if (restore in tabs.indices && restore != 0) {
+            binding.viewPager.post {
+                if (_binding == null) return@post
+                binding.viewPager.setCurrentItem(restore, false)
+            }
         }
     }
 

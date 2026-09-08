@@ -19,6 +19,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
@@ -147,6 +148,9 @@ class MainActivity : AppCompatActivity() {
             // re-inserts it as its own top padding via InsetUtils, the same way
             // home has always sized its header spacer.
             view.setPadding(0, 0, 0, navBarHeight)
+            // The plate that keeps the status bar white on every screen but home.
+            // Re-sized on every inset pass so rotation and multi-window stay right.
+            binding.statusBarScrim.updateLayoutParams { height = statusBarInsetPx }
             ViewCompat.dispatchApplyWindowInsets(binding.navHostMain, insets)
             insets
         }
@@ -183,7 +187,10 @@ class MainActivity : AppCompatActivity() {
      * takes dark icons.
      */
     private val darkChromeDestinations = setOf(
-        R.id.homeFragment
+        R.id.homeFragment,
+        // Splash runs its green video full-bleed behind the bars, so it gets no
+        // white plate either — otherwise a white band sits over the artwork.
+        R.id.splashFragment
     )
 
     /** Status bar height in px, published for fragments that pad themselves. */
@@ -263,19 +270,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * The status bar is transparent on every destination now — the app draws
-     * edge to edge and each screen leaves its own status bar margin. All that is
-     * left to decide here is the icon colour: light over the artwork-backed
-     * screens, dark over the white pages (and inverted again at night).
+     * The window itself stays transparent — from targetSdk 35 the platform
+     * ignores `statusBarColor` under edge to edge, so the status bar has to be
+     * painted in the layout instead. [ActivityMainBinding.statusBarScrim] does
+     * that: white (dark at night) on every destination, hidden only on the
+     * screens that paint their own artwork up there. Icon colour follows.
      */
     private fun applyStatusBarFor(destinationId: Int?) {
         val isNight = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
                 Configuration.UI_MODE_NIGHT_YES
 
-        window.statusBarColor = android.graphics.Color.TRANSPARENT
         window.navigationBarColor = android.graphics.Color.TRANSPARENT
 
         val paintsOwnChrome = destinationId in darkChromeDestinations
+        binding.statusBarScrim.visibility = if (paintsOwnChrome) View.GONE else View.VISIBLE
         setStatusBarTextColor(darkIcons = !paintsOwnChrome && !isNight)
     }
 

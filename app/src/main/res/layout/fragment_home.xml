@@ -43,6 +43,41 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <!--
+            Calligraphy watermark occupying the right of the header, where the
+            gold sweep used to be. The asset is white on transparency, so the
+            green ground reads through it; alpha keeps it a whisper rather than
+            a graphic competing with the title. Fades out with the rest of the
+            artwork on collapse.
+        -->
+        <!--
+            Watermark bleeding out of the top-right corner.
+
+            It is sized to the header (0dp, pinned top and bottom) and enlarged
+            with scaleX/scaleY rather than a big layout_height. The header is
+            wrap_content, so a tall child would stretch it — a 470dp image added
+            170dp of empty green below the content. Scale is a draw-time
+            transform, so it makes the glyph big without touching measurement,
+            and the header clips whatever spills past its edges.
+        -->
+        <ImageView
+            android:id="@+id/headerCalligraphy"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:alpha="0.10"
+            android:contentDescription="@null"
+            android:importantForAccessibility="no"
+            android:scaleType="fitCenter"
+            android:scaleX="1.75"
+            android:scaleY="1.75"
+            android:src="@drawable/header_calligraphy"
+            android:translationX="52dp"
+            android:translationY="-40dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent="0.44" />
+
         <!-- Status bar inset spacer (height set in HomeFragment) -->
         <View
             android:id="@+id/statusSpacer"
@@ -193,26 +228,25 @@
                 android:id="@+id/create"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
+                android:layout_marginStart="6dp"
                 android:layout_marginTop="14dp"
-                android:layout_marginEnd="6dp"
+                android:layout_marginEnd="20dp"
                 android:background="@drawable/bg_home_action_card"
                 android:foreground="?selectableItemBackground"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:paddingHorizontal="13dp"
                 android:paddingVertical="14dp"
-                app:layout_constraintEnd_toStartOf="@id/blankCanvas"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/searchBar"
-                app:layout_constraintWidth_percent="0.44">
+                app:layout_constraintBottom_toBottomOf="@id/blankCanvas"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/blankCanvas"
+                app:layout_constraintTop_toTopOf="@id/blankCanvas">
 
                 <ImageView
                     android:layout_width="38dp"
                     android:layout_height="38dp"
-                    android:background="@drawable/bg_home_action_tile"
                     android:contentDescription="@null"
-                    android:padding="9dp"
+                    android:padding="5dp"
                     android:src="@drawable/ic_create"
                     app:tint="@color/home_action_icon" />
 
@@ -250,25 +284,25 @@
                 android:id="@+id/blankCanvas"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:layout_marginEnd="20dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="14dp"
+                android:layout_marginEnd="6dp"
                 android:background="@drawable/bg_home_action_card"
                 android:foreground="?selectableItemBackground"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:paddingHorizontal="13dp"
                 android:paddingVertical="14dp"
-                app:layout_constraintBottom_toBottomOf="@id/create"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/create"
-                app:layout_constraintTop_toTopOf="@id/create">
+                app:layout_constraintEnd_toStartOf="@id/create"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/searchBar"
+                app:layout_constraintWidth_percent="0.44">
 
                 <ImageView
                     android:layout_width="38dp"
                     android:layout_height="38dp"
-                    android:background="@drawable/bg_home_action_tile"
                     android:contentDescription="@null"
-                    android:padding="9dp"
+                    android:padding="5dp"
                     android:src="@drawable/ic_blank_canvas"
                     app:tint="@color/home_action_icon" />
 
@@ -300,6 +334,38 @@
                         android:textSize="10sp" />
                 </LinearLayout>
             </LinearLayout>
+
+            <!-- Points at the Files tab for imports; sits under the two CTAs. -->
+            <LinearLayout
+                android:id="@+id/filesHint"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="center"
+                android:orientation="horizontal"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/blankCanvas">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/regular"
+                    android:text="@string/manage_custom_fonts_assets_and_imports_in_files_tab"
+                    android:textColor="@color/whiteText"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/fileTab"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:fontFamily="@font/bold"
+                    android:text="@string/filesTab"
+                    android:textColor="@color/whiteText"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 

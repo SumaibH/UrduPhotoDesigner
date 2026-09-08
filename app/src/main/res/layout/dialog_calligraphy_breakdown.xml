@@ -21,7 +21,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:fontFamily="@font/bold"
-        android:text="خطاطی موڈ (Calligraphy Composition)"
+        android:text="@string/calligraphy_mode"
         android:textColor="@color/black"
         android:textSize="16sp" />
 
@@ -33,7 +33,7 @@
         android:layout_marginTop="4dp"
         android:layout_marginBottom="16dp"
         android:fontFamily="@font/regular"
-        android:text="متن کے الفاظ یا حروف الگ کر کے کینوس پر آزادانہ ترتیب دیں"
+        android:text="@string/calligraphy_sheet_subtitle"
         android:textColor="@color/gray"
         android:textSize="12sp" />
 
@@ -52,16 +52,15 @@
         android:orientation="horizontal"
         android:paddingHorizontal="16dp">
 
-        <TextView
+        <ImageView
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:background="@drawable/button_bg_round"
             android:backgroundTint="#DCFCE7"
-            android:fontFamily="@font/bold"
-            android:gravity="center"
-            android:text="لفظ"
-            android:textColor="#15803D"
-            android:textSize="14sp" />
+            android:contentDescription="@null"
+            android:padding="9dp"
+            android:src="@drawable/ic_un_group"
+            app:tint="#15803D" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -74,7 +73,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/bold"
-                android:text="الفاظ الگ کریں (Words Breakdown)"
+                android:text="@string/calligraphy_break_words_title"
                 android:textColor="@color/black"
                 android:textSize="14sp" />
 
@@ -82,7 +81,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/regular"
-                android:text="ہر لفظ کو الگ گھمائیں، بڑا کریں اور اوپر نیچے رکھیں"
+                android:text="@string/calligraphy_break_words_desc"
                 android:textColor="@color/gray"
                 android:textSize="11sp" />
         </LinearLayout>
@@ -103,16 +102,15 @@
         android:orientation="horizontal"
         android:paddingHorizontal="16dp">
 
-        <TextView
+        <ImageView
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:background="@drawable/button_bg_round"
             android:backgroundTint="#FEF3C7"
-            android:fontFamily="@font/bold"
-            android:gravity="center"
-            android:text="حرف"
-            android:textColor="#B45309"
-            android:textSize="14sp" />
+            android:contentDescription="@null"
+            android:padding="9dp"
+            android:src="@drawable/ic_lower_case"
+            app:tint="#B45309" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -125,7 +123,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/bold"
-                android:text="حروف الگ کریں (Characters Breakdown)"
+                android:text="@string/calligraphy_break_letters_title"
                 android:textColor="@color/black"
                 android:textSize="14sp" />
 
@@ -133,7 +131,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/regular"
-                android:text="حروف کو روایتی خطاطی کی طرح جوڑیں اور کشیدہ بنائیں"
+                android:text="@string/calligraphy_break_letters_desc"
                 android:textColor="@color/gray"
                 android:textSize="11sp" />
         </LinearLayout>
@@ -154,16 +152,15 @@
         android:paddingHorizontal="16dp"
         android:visibility="gone">
 
-        <TextView
+        <ImageView
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:background="@drawable/button_bg_round"
             android:backgroundTint="#FEE2E2"
-            android:fontFamily="@font/bold"
-            android:gravity="center"
-            android:text="جوڑیں"
-            android:textColor="#B91C1C"
-            android:textSize="12sp" />
+            android:contentDescription="@null"
+            android:padding="9dp"
+            android:src="@drawable/ic_group"
+            app:tint="#B91C1C" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -176,7 +173,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/bold"
-                android:text="دوبارہ جوڑیں (Rejoin to Single Text)"
+                android:text="@string/calligraphy_rejoin_title"
                 android:textColor="@color/black"
                 android:textSize="14sp" />
 
@@ -184,7 +181,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/regular"
-                android:text="تمام حصوں کو دوبارہ عام متن میں تبدیل کریں"
+                android:text="@string/calligraphy_rejoin_desc"
                 android:textColor="@color/gray"
                 android:textSize="11sp" />
         </LinearLayout>

@@ -75,4 +75,22 @@
 
     </com.google.android.material.card.MaterialCardView>
 
+    <!--
+        Status bar plate. The window draws edge to edge, so nothing paints behind
+        the status bar except whatever background the current screen happens to
+        carry (the editor, for one, is @color/contrast grey). This sits last in
+        the layout so it paints over all of them, giving every screen the same
+        white status bar. Home hides it and paints its own green header through.
+        Height is the live status bar inset, set in MainActivity.
+    -->
+    <View
+        android:id="@+id/statusBarScrim"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/white"
+        android:importantForAccessibility="no"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

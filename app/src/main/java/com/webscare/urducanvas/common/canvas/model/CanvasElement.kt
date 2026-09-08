@@ -322,6 +322,15 @@ data class CanvasElement(
     @field:Transient
     lateinit var paint: TextPaint
 
+    /**
+     * Typeface of this element, or null when [paint] has not been built yet.
+     * Gson allocates instances without running the init block, so a freshly
+     * deserialized template element can reach UI code before [paint] exists —
+     * callers outside this class cannot use `::paint.isInitialized` themselves.
+     */
+    val typefaceOrNull: android.graphics.Typeface?
+        get() = if (::paint.isInitialized) paint.typeface else null
+
     init {
         paint = TextPaint(Paint.ANTI_ALIAS_FLAG)
         updatePaintProperties()

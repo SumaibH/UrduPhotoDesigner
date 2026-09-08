@@ -6,21 +6,16 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.viewpager2.widget.ViewPager2
 import com.webscare.urducanvas.R
 import com.webscare.urducanvas.common.canvas.CanvasViewModel
 import com.webscare.urducanvas.common.canvas.enums.ElementType
 import com.webscare.urducanvas.common.canvas.model.CanvasElement
 import com.webscare.urducanvas.common.canvas.model.ExpansionDepth
-import com.webscare.urducanvas.common.utils.CalligraphyShapingHelper
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
 import com.webscare.urducanvas.databinding.FragmentTextSymbolsBinding
 import com.webscare.urducanvas.ui.editor.views.RailCategoryItem
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class TextSymbolsFragment : Fragment() {
@@ -30,17 +25,20 @@ class TextSymbolsFragment : Fragment() {
 
     private val viewModel: CanvasViewModel by activityViewModels()
 
-    private lateinit var charAdapter: SymbolCharAdapter
     private lateinit var pagerAdapter: TextSymbolsPagerAdapter
 
-    private var selectedCharIndex = 0
-
-    private val categories = listOf(
-        RailCategoryItem("upper", "اوپری اعراب", R.drawable.ic_up),
-        RailCategoryItem("lower", "نچلے اعراب", R.drawable.ic_down),
-        RailCategoryItem("side", "رموز و علامات", R.drawable.ic_kasheeda),
-        RailCategoryItem("dots", "نقطے و پھول", R.drawable.ic_shapes)
-    )
+    // No iconRes on purpose: the rail then renders the label's first letter as a
+    // monogram tile when collapsed, exactly like the Text Styles rail. There is
+    // no icon in the set that reads as "diacritic above/below", and the nearest
+    // ones (alignment bars, chevrons) looked like alignment or expand controls.
+    private val categories by lazy {
+        listOf(
+            RailCategoryItem("upper", getString(R.string.symbols_above)),
+            RailCategoryItem("lower", getString(R.string.symbols_below)),
+            RailCategoryItem("side", getString(R.string.symbols_marks)),
+            RailCategoryItem("dots", getString(R.string.symbols_ornaments))
+        )
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -52,9 +50,19 @@ class TextSymbolsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupRailAndPager()
-        setupCharStrip()
         setupActions()
         observeCanvasElements()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // The character strip is rendered by the editor header, not by us.
+        viewModel.setCharacterBarVisible(true)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        viewModel.setCharacterBarVisible(false)
     }
 
     private fun setupRailAndPager() {
@@ -83,37 +91,27 @@ class TextSymbolsFragment : Fragment() {
         })
     }
 
-    private fun setupCharStrip() {
-        charAdapter = SymbolCharAdapter { index ->
-            selectedCharIndex = index
-            val element = getSelectedTextElement()
-            element?.calligraphyData?.let { cData ->
-                if (index in cData.tokens.indices) {
-                    cData.activeTokenId = cData.tokens[index].id
-                }
-            }
-            refreshCharacterStrip(element)
-        }
-        binding.rvCharacters.adapter = charAdapter
-    }
-
     private fun setupActions() {
-        binding.btnToggleDotless.addPressEffect {
-            viewModel.toggleDotlessOnSelectedChar(selectedCharIndex)
-        }
-
         binding.btnDeleteLastDiacritic.addPressEffect {
-            viewModel.removeLastDiacriticFromSelectedChar(selectedCharIndex)
+            viewModel.removeLastDiacriticFromSelectedChar(viewModel.resolvedCharIndex())
         }
 
         binding.btnClearAllDiacritics.addPressEffect {
-            viewModel.clearAllDiacriticsFromSelectedChar(selectedCharIndex)
+            viewModel.clearAllDiacriticsFromSelectedChar(viewModel.resolvedCharIndex())
         }
 
         binding.btnCalligraphyBreakdown.addPressEffect {
             val element = getSelectedTextElement() ?: return@addPressEffect
-            val isAlready = element.calligraphyData != null
-            val sheet = CalligraphyBreakdownBottomSheet.newInstance(isAlreadyExpanded = isAlready)
+
+            // Once the text is broken apart the button IS the way back — no need
+            // to reopen the sheet just to reach Rejoin.
+            if (element.calligraphyData?.tokens?.isNotEmpty() == true) {
+                viewModel.collapseSelectedCalligraphyToText()
+                viewModel.exitCalligraphyMode(saveAsComposition = false)
+                return@addPressEffect
+            }
+
+            val sheet = CalligraphyBreakdownBottomSheet.newInstance(isAlreadyExpanded = false)
             sheet.onBreakWords = {
                 viewModel.expandSelectedTextToCalligraphy(ExpansionDepth.WORDS)
             }
@@ -128,10 +126,31 @@ class TextSymbolsFragment : Fragment() {
     }
 
     private fun observeCanvasElements() {
-        viewModel.canvasElements.observe(viewLifecycleOwner) { _ ->
-            val element = getSelectedTextElement()
-            refreshCharacterStrip(element)
-        }
+        viewModel.canvasElements.observe(viewLifecycleOwner) { refreshActionRow() }
+        viewModel.isCalligraphyEditMode.observe(viewLifecycleOwner) { refreshActionRow() }
+    }
+
+    /**
+     * The per-letter actions only mean something once the text has been broken
+     * apart, so they stay hidden until then. Calligraphy itself always shows —
+     * it is what performs the break.
+     */
+    private fun refreshActionRow() {
+        val b = _binding ?: return
+        val element = getSelectedTextElement()
+        val expanded = element?.calligraphyData?.tokens?.isNotEmpty() == true
+
+        b.tvEmptyState.visibility = if (element == null) View.VISIBLE else View.GONE
+        b.btnDeleteLastDiacritic.visibility = if (expanded) View.VISIBLE else View.GONE
+        b.btnClearAllDiacritics.visibility = if (expanded) View.VISIBLE else View.GONE
+
+        // The same button flips role: it breaks the text apart, then puts it back.
+        b.tvCalligraphyLabel.setText(
+            if (expanded) R.string.calligraphy_rejoin else R.string.symbols_calligraphy
+        )
+        b.ivCalligraphyIcon.setImageResource(
+            if (expanded) R.drawable.ic_group else R.drawable.ic_magic_wand
+        )
     }
 
     private fun getSelectedTextElement(): CanvasElement? {
@@ -140,111 +159,24 @@ class TextSymbolsFragment : Fragment() {
         }
     }
 
-    private fun refreshCharacterStrip(element: CanvasElement?) {
-        if (_binding == null) return
-        if (element == null) {
-            charAdapter.submitList(emptyList())
-            binding.tvPreviewChar.text = "-"
-            return
-        }
-
-        val cData = element.calligraphyData
-        if (cData != null && cData.tokens.isNotEmpty()) {
-            // Expanded Calligraphy Mode: Tokens are items
-            binding.btnCalligraphyBreakdown.text = "✨ خطاطی (فعال)"
-            val activeToken = cData.getActiveToken() ?: cData.tokens.firstOrNull()
-            val activeIdx = if (activeToken != null) cData.tokens.indexOf(activeToken) else 0
-            selectedCharIndex = if (activeIdx >= 0) activeIdx else 0
-
-            val chips = cData.tokens.mapIndexed { idx, token ->
-                CharChipModel(
-                    index = idx,
-                    displayText = token.getFullDisplayText(),
-                    rawChar = token.rawText,
-                    isSelected = (idx == selectedCharIndex)
-                )
-            }
-            charAdapter.submitList(chips)
-            binding.tvPreviewChar.text = activeToken?.getFullDisplayText() ?: "-"
-        } else {
-            // Standard Text Mode: Split into letters with attached diacritics
-            binding.btnCalligraphyBreakdown.text = "✨ خطاطی"
-            val text = element.text
-            val letterClusters = buildLetterClusters(text)
-
-            if (selectedCharIndex >= letterClusters.size) {
-                selectedCharIndex = (letterClusters.size - 1).coerceAtLeast(0)
-            }
-
-            val chips = letterClusters.mapIndexed { idx, cluster ->
-                CharChipModel(
-                    index = idx,
-                    displayText = cluster.displayText,
-                    rawChar = cluster.rawChar,
-                    isSelected = (idx == selectedCharIndex)
-                )
-            }
-            charAdapter.submitList(chips)
-
-            val activeCluster = letterClusters.getOrNull(selectedCharIndex)
-            binding.tvPreviewChar.text = activeCluster?.displayText ?: "-"
-        }
-    }
-
-    data class LetterCluster(
-        val rawChar: String,
-        val displayText: String,
-        val charIndexInString: Int
-    )
-
-    private fun buildLetterClusters(text: String): List<LetterCluster> {
-        val result = mutableListOf<LetterCluster>()
-        var i = 0
-        while (i < text.length) {
-            val ch = text[i]
-            if (ch.isWhitespace()) {
-                i++
-                continue
-            }
-            val startIdx = i
-            val sb = StringBuilder().append(ch)
-            i++
-            while (i < text.length && CalligraphyShapingHelper.isDiacritic(text[i])) {
-                sb.append(text[i])
-                i++
-            }
-            result.add(
-                LetterCluster(
-                    rawChar = ch.toString(),
-                    displayText = sb.toString(),
-                    charIndexInString = startIdx
-                )
-            )
-        }
-        return result
-    }
-
-    /**
-     * Called by [SymbolPageFragment] when any symbol card is tapped.
-     */
+    /** Called by [SymbolPageFragment] when a symbol tile is tapped. */
     fun handleSymbolTapped(symbol: SymbolItem) {
         val element = getSelectedTextElement() ?: return
+        val index = viewModel.resolvedCharIndex()
 
         if (symbol.isDiacritic) {
-            viewModel.appendDiacriticToSelectedChar(selectedCharIndex, symbol.glyph)
+            viewModel.appendDiacriticToSelectedChar(index, symbol.glyph)
         } else {
-            val cData = element.calligraphyData
-            if (cData != null) {
+            if (element.calligraphyData != null) {
                 viewModel.addFloatingCalligraphyAccent(symbol.glyph)
             } else {
-                viewModel.appendDiacriticToSelectedChar(selectedCharIndex, symbol.glyph)
+                viewModel.appendDiacriticToSelectedChar(index, symbol.glyph)
             }
         }
     }
 
     override fun onDestroyView() {
         binding.viewPager.adapter = null
-        binding.rvCharacters.adapter = null
         super.onDestroyView()
         _binding = null
     }

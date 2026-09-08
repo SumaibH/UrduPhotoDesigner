@@ -308,6 +308,28 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!--
+            Character strip. Lives in the header rather than the Symbols panel so
+            the panel keeps its full height for the symbol grid. Expands the
+            header the same way tableSelectionBar does, and is mutually
+            exclusive with it.
+        -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvCalligraphyChars"
+            android:layout_width="match_parent"
+            android:layout_height="42dp"
+            android:layout_marginTop="8dp"
+            android:clipToPadding="false"
+            android:orientation="horizontal"
+            android:overScrollMode="never"
+            android:visibility="gone"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/topToolbarRow" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- Bottom-only lift for the header. See header_bottom_shadow.xml. -->
@@ -331,16 +353,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/header"/>
 
-    <!-- Calligraphy Depth Mode bottom overlay strip -->
-    <com.webscare.urducanvas.ui.editor.views.CalligraphyDepthOverlay
-        android:id="@+id/calligraphyOverlay"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:translationZ="12dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@id/centerGuide"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
 
     <!--
         Eraser kit. Occupies the alignment kit's slot, because in eraser mode there is

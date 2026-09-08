@@ -2654,6 +2654,7 @@ class CanvasViewModel @Inject constructor(
 
     fun setTextFillGradient(gradientItem: GradientItem) {
         _fillGradient.value = gradientItem
+        if (routeToCalligraphyTokens { it.overrideGradient = gradientItem; it.overrideColor = null }) return
         updateSelectedTextElements { it.copy(fillGradient = gradientItem) }
     }
 
@@ -2665,6 +2666,7 @@ class CanvasViewModel @Inject constructor(
 
     fun setOpacityValue(value: Int) {
         _opacity.value = value
+        if (routeToCalligraphyTokens { it.overrideAlpha = value }) return
         updateSelectedTextElements { element ->
             element.copy(paintAlpha = value).apply { paint.alpha = value }
         }
@@ -2784,6 +2786,12 @@ class CanvasViewModel @Inject constructor(
     }
 
     fun setTextSizeForAllSelected(size: Float) {
+        // A token has no absolute size of its own — it scales against the layer.
+        val baseSize = _canvasElements.value
+            ?.firstOrNull { it.isSelected && it.type == ElementType.TEXT }
+            ?.paintTextSize ?: 0f
+        if (baseSize > 0f && routeToCalligraphyTokens { it.scale = size / baseSize }) return
+
         val currentList = _canvasElements.value ?: return
         val selectedElements = currentList.filter { it.isSelected }
 
@@ -2909,6 +2917,81 @@ class CanvasViewModel @Inject constructor(
 
     fun getFontPanelState(): FontPanelState = _fontPanelState.value ?: FontPanelState()
 
+    /**
+     * Diverts a whole-element text edit onto calligraphy tokens.
+     *
+     * Stroke and shadow are never set through a dedicated function — the panels
+     * push LiveData and `applyChangesToSelectedTextElements` writes the entire
+     * bundle at once — so there is no per-setter hook to add. Instead the
+     * would-be element is compared against the current one and only the fields
+     * that actually changed become token overrides. Anything left equal stays
+     * inherited, which is what keeps "no override" meaningful.
+     *
+     * Returns true when the edit was consumed and must not reach the element.
+     */
+    private fun divertTextEditToTokens(
+        before: CanvasElement,
+        after: CanvasElement
+    ): Boolean {
+        if (_isCalligraphyEditMode.value != true) return false
+        val cData = before.calligraphyData ?: return false
+        if (cData.tokens.isEmpty()) return false
+
+        val snapshot = cData.deepCopy()
+        val active = cData.getActiveToken()
+        val targets = if (active != null) listOf(active) else cData.tokens
+
+        var touched = false
+        targets.forEach { token ->
+            if (after.paintColor != before.paintColor) {
+                token.overrideColor = after.paintColor
+                token.overrideGradient = null
+                touched = true
+            }
+            if (after.fillGradient != before.fillGradient) {
+                token.overrideGradient = after.fillGradient
+                touched = true
+            }
+            if (after.paintAlpha != before.paintAlpha) {
+                token.overrideAlpha = after.paintAlpha
+                touched = true
+            }
+            if (after.hasStroke != before.hasStroke) {
+                token.overrideHasStroke = after.hasStroke; touched = true
+            }
+            if (after.strokeColor != before.strokeColor) {
+                token.overrideStrokeColor = after.strokeColor; touched = true
+            }
+            if (after.strokeWidth != before.strokeWidth) {
+                token.overrideStrokeWidth = after.strokeWidth; touched = true
+            }
+            if (after.hasShadow != before.hasShadow) {
+                token.overrideHasShadow = after.hasShadow; touched = true
+            }
+            if (after.shadowColor != before.shadowColor) {
+                token.overrideShadowColor = after.shadowColor; touched = true
+            }
+            if (after.shadowRadius != before.shadowRadius) {
+                token.overrideShadowRadius = after.shadowRadius; touched = true
+            }
+            if (after.shadowDx != before.shadowDx) {
+                token.overrideShadowDx = after.shadowDx; touched = true
+            }
+            if (after.shadowDy != before.shadowDy) {
+                token.overrideShadowDy = after.shadowDy; touched = true
+            }
+        }
+
+        if (touched) {
+            val undoBefore = before.copy(context = null).also { it.calligraphyData = snapshot }
+            val undoAfter = before.copy(context = null).also { it.calligraphyData = cData.deepCopy() }
+            _canvasActions.push(CanvasAction.UpdateElement(before.id, undoAfter, undoBefore))
+            _redoStack.clear()
+            notifyUndoRedoChanged()
+        }
+        return touched
+    }
+
     private fun updateSelectedTextElements(transform: (CanvasElement) -> CanvasElement) {
         val currentList = _canvasElements.value?.toMutableList() ?: return
         val context = currentList.firstOrNull()?.context
@@ -2920,9 +3003,15 @@ class CanvasViewModel @Inject constructor(
         val updatedList = currentList.map { element ->
             val isTargeted = element.isSelected || (element.groupId != null && element.groupId in selectedGroupIds)
             if (isTargeted && element.type == ElementType.TEXT) {
+                val candidate = transform(element)
+                if (divertTextEditToTokens(element, candidate)) {
+                    // Consumed by the tokens — the element itself stays as-is.
+                    modifiedAny = true
+                    return@map element
+                }
                 modifiedAny = true
                 val tf = element.originalTypeface ?: element.paint.typeface ?: element.applyTypefaceFromFontList(context)
-                val updated = transform(element)
+                val updated = candidate
                 if (updated.blendType == BlendType.SRC) {
                     updated.blendType = BlendType.NORMAL
                 }
@@ -2955,8 +3044,12 @@ class CanvasViewModel @Inject constructor(
         val updatedList = currentList.map { element ->
             val isTargeted = element.isSelected || (element.groupId != null && element.groupId in selectedGroupIds)
             if (isTargeted && element.type == ElementType.TEXT) {
+                val candidate = transform(element)
+                if (divertTextEditToTokens(element, candidate)) {
+                    return@map element
+                }
                 val tf = element.originalTypeface ?: element.paint.typeface ?: element.applyTypefaceFromFontList(context)
-                val updated = transform(element)
+                val updated = candidate
                 if (updated.blendType == BlendType.SRC) {
                     updated.blendType = BlendType.NORMAL
                 }
@@ -3976,6 +4069,20 @@ class CanvasViewModel @Inject constructor(
         pushToUndo: Boolean = true,
         skipAngleDistSync: Boolean = false
     ) {
+        // The shadow sliders come through here rather than
+        // updateSelectedTextElements, so calligraphy has to be caught here too —
+        // otherwise a per-letter shadow lands on the whole line.
+        if (routeToCalligraphyTokens {
+                it.overrideHasShadow = enabled
+                it.overrideShadowColor = color
+                it.overrideShadowDx = dx
+                it.overrideShadowDy = dy
+                it.overrideShadowRadius = radius
+            }
+        ) {
+            return
+        }
+
         val currentList = _canvasElements.value?.toMutableList() ?: return
         val context = currentList.firstOrNull()?.context
         val selectedGroupIds = currentList.filter { it.isSelected && it.type == ElementType.GROUP }.map { it.id }.toSet()
@@ -4443,6 +4550,17 @@ class CanvasViewModel @Inject constructor(
         val newZIndex = currentList.maxOfOrNull { it.zIndex }?.plus(1) ?: 1
         val canvasW = _canvasSize.value?.width ?: 0f
         val canvasH = _canvasSize.value?.height ?: 0f
+
+        // Scale with the artboard rather than a flat 50px: on the 2000px default
+        // canvas that was 2.5% of the width, so a font preview opened in the
+        // editor as a barely legible line. autoFitTextSize below still shrinks
+        // it if the string is long.
+        val startingTextSize = if (canvasW > 0f) {
+            (canvasW * DEFAULT_TEXT_SIZE_RATIO).coerceAtLeast(50f)
+        } else {
+            50f
+        }
+
         // Create base element
         val element = CanvasElement(
             context = context,
@@ -4451,7 +4569,7 @@ class CanvasViewModel @Inject constructor(
             x = canvasW / 2f,
             y = canvasH / 2f,
             paintColor = Color.BLACK,
-            paintTextSize = 50f,
+            paintTextSize = startingTextSize,
             alignment = TextAlignment.CENTER,
             paintAlpha = 255,
             fontId = fontEntity?.id.toString(),
@@ -4616,6 +4734,16 @@ class CanvasViewModel @Inject constructor(
                     context = it
                 )
             }
+            return
+        }
+
+        // In calligraphy mode the font belongs to the letter, not the layer. The
+        // file path rides along because the renderer has no font catalogue.
+        if (routeToCalligraphyTokens {
+                it.overrideFontId = fontEntity.id.toString()
+                it.overrideFontPath = fontEntity.file_path
+            }
+        ) {
             return
         }
 
@@ -5258,6 +5386,13 @@ class CanvasViewModel @Inject constructor(
 
     fun setTextColor(color: Int) {
         clearFillGradients()
+
+        // In calligraphy mode a colour belongs to the letter, not the layer.
+        if (routeToCalligraphyTokens { it.overrideColor = color; it.overrideGradient = null }) {
+            _currentTextColor.value = color
+            return
+        }
+
         val currentList = _canvasElements.value?.toMutableList() ?: mutableListOf()
         val context = currentList.firstOrNull()?.context
         val selectedGroupIds = currentList.filter { it.isSelected && it.type == ElementType.GROUP }.map { it.id }.toSet()
@@ -6555,18 +6690,144 @@ class CanvasViewModel @Inject constructor(
     private val _isCalligraphyEditMode = MutableLiveData<Boolean>(false)
     val isCalligraphyEditMode: LiveData<Boolean> get() = _isCalligraphyEditMode
 
+    /**
+     * Id of the token/character currently in focus. Both the canvas and the
+     * Symbols strip write here so the two stay in step — selecting a letter on
+     * the canvas highlights its chip, and vice versa. Token selection mutates
+     * the element in place, which never re-posts [canvasElements], so this is
+     * what listeners actually observe.
+     */
+    private val _activeCalligraphyTokenId = MutableLiveData<String?>(null)
+    val activeCalligraphyTokenId: LiveData<String?> get() = _activeCalligraphyTokenId
+
+    fun setActiveCalligraphyTokenId(tokenId: String?) {
+        if (_activeCalligraphyTokenId.value == tokenId) return
+        _activeCalligraphyTokenId.value = tokenId
+    }
+
+    /**
+     * Whether the editor toolbar should carry the character strip. The Symbols
+     * panel raises this while it is on screen; the strip itself lives in the
+     * toolbar so the panel keeps its height for the symbol grid.
+     */
+    private val _characterBarVisible = MutableLiveData(false)
+    val characterBarVisible: LiveData<Boolean> get() = _characterBarVisible
+
+    fun setCharacterBarVisible(visible: Boolean) {
+        if (_characterBarVisible.value == visible) return
+        _characterBarVisible.value = visible
+    }
+
+    /**
+     * Last Text Properties tab the user was on, so reopening the panel lands
+     * back where they left it instead of resetting to Styles.
+     */
+    var lastTextAdjustmentsTab: Int = 0
+
+    /** Starting text height as a fraction of canvas width — see addTextWithFont. */
+    private val DEFAULT_TEXT_SIZE_RATIO = 0.05f
+
+    /** Position of the focused letter within the character strip. */
+    private val _activeCharIndex = MutableLiveData(0)
+    val activeCharIndex: LiveData<Int> get() = _activeCharIndex
+
+    fun setActiveCharIndex(index: Int) {
+        if (_activeCharIndex.value == index) return
+        _activeCharIndex.value = index
+    }
+
+    /** The text element the symbol tools currently act on. */
+    fun selectedTextElement(): CanvasElement? =
+        _canvasElements.value?.firstOrNull { it.isSelected && it.type == ElementType.TEXT }
+
+    /**
+     * Index the per-character operations expect: an offset into the raw string
+     * for normal text, or a token index once the element has been broken into a
+     * calligraphy composition.
+     */
+    fun resolvedCharIndex(): Int {
+        val stripIndex = _activeCharIndex.value ?: 0
+        val element = selectedTextElement() ?: return stripIndex
+        val cData = element.calligraphyData
+        if (cData != null && cData.tokens.isNotEmpty()) return stripIndex
+        return CalligraphyShapingHelper.buildLetterClusters(element.text)
+            .getOrNull(stripIndex)?.charIndexInString ?: stripIndex
+    }
+
+    /**
+     * Routes a text-property change onto calligraphy tokens instead of the
+     * element as a whole.
+     *
+     * Target is the focused token, or **every** token when nothing is focused,
+     * so "no selection" behaves like edit-all rather than doing nothing.
+     *
+     * Returns true when it consumed the change — callers must return early on
+     * true, otherwise the same edit would also be written element-wide and the
+     * per-token override would be invisible underneath it.
+     */
+    private fun routeToCalligraphyTokens(edit: (TextToken) -> Unit): Boolean {
+        if (_isCalligraphyEditMode.value != true) return false
+
+        val list = _canvasElements.value?.toMutableList() ?: return false
+        val element = list.firstOrNull { it.isSelected && it.type == ElementType.TEXT }
+            ?: return false
+        val cData = element.calligraphyData ?: return false
+        if (cData.tokens.isEmpty()) return false
+
+        // Snapshot with the composition deep-copied, otherwise before and after
+        // would point at the same tokens and undo would be a no-op.
+        val before = element.copy(context = null).also {
+            it.calligraphyData = cData.deepCopy()
+        }
+
+        val active = cData.getActiveToken()
+        val targets = if (active != null) listOf(active) else cData.tokens
+        targets.forEach(edit)
+
+        val after = element.copy(context = null).also {
+            it.calligraphyData = cData.deepCopy()
+        }
+        _canvasActions.push(CanvasAction.UpdateElement(element.id, after, before))
+        _redoStack.clear()
+        notifyUndoRedoChanged()
+
+        _canvasElements.value = list
+        getCanvasView()?.invalidate()
+        markChanged()
+        return true
+    }
+
     fun enterCalligraphyMode(elementId: String, depth: ExpansionDepth) {
         expandSelectedTextToCalligraphy(depth)
         _isCalligraphyEditMode.value = true
         getCanvasView()?.enterCalligraphyEdit(elementId)
     }
 
+    /**
+     * Leaves calligraphy mode.
+     *
+     * Done merges the composition back into ordinary text, carrying the
+     * per-letter edits (diacritics, dotless skeletons, kashida) with it.
+     * [collapseSelectedCalligraphyToText] strips the ZWJ joiners so Android's
+     * shaper — HarfBuzz — re-forms the cursive joins itself.
+     *
+     * A composition whose letters have actually been moved, rotated or scaled
+     * is kept as a locked composition instead: merging it would silently throw
+     * that arrangement away, which is the whole point of the feature.
+     */
     fun exitCalligraphyMode(saveAsComposition: Boolean = true) {
         _isCalligraphyEditMode.value = false
         val currentList = _canvasElements.value?.toMutableList() ?: return
         val selected = currentList.firstOrNull { it.isSelected && it.type == ElementType.TEXT }
-        if (selected != null && selected.calligraphyData != null) {
-            selected.calligraphyData?.isCompositionLocked = saveAsComposition
+        val cData = selected?.calligraphyData
+
+        if (selected != null && cData != null) {
+            if (saveAsComposition && !cData.hasTokenEdits()) {
+                getCanvasView()?.exitCalligraphyEdit()
+                collapseSelectedCalligraphyToText()
+                return
+            }
+            cData.isCompositionLocked = saveAsComposition
             _canvasElements.value = currentList
         }
         getCanvasView()?.exitCalligraphyEdit()

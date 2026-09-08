@@ -352,39 +352,11 @@
         </aapt:attr>
     </path>
 
-    <!-- Emerald sweep filling the lower right -->
-    <path android:pathData="M150,348 C258,296 332,178 390,34 L390,348 Z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:type="linear"
-                android:startX="150" android:startY="348"
-                android:endX="390" android:endY="40">
-                <item android:offset="0" android:color="#0DFFFFFF" />
-                <item android:offset="1" android:color="#2AFFFFFF" />
-            </gradient>
-        </aapt:attr>
-    </path>
 
-    <!-- Gold hairline riding the sweep -->
-    <path
-        android:pathData="M150,348 C258,296 332,178 390,34"
-        android:strokeWidth="1.8">
-        <aapt:attr name="android:strokeColor">
-            <gradient
-                android:type="linear"
-                android:startX="150" android:startY="348"
-                android:endX="390" android:endY="34">
-                <item android:offset="0" android:color="#00C8A44E" />
-                <item android:offset="0.35" android:color="#C8A44E" />
-                <item android:offset="0.72" android:color="#EBD9A6" />
-                <item android:offset="1" android:color="#8FC8A44E" />
-            </gradient>
-        </aapt:attr>
-    </path>
+    <!--
+        The lower-right emerald sweep and its two gold hairlines used to sit
+        here. They were removed so the calligraphy artwork can occupy that
+        corner on its own; the khatam lattice on the left is untouched.
+    -->
 
-    <!-- Second, quieter gold trace -->
-    <path
-        android:pathData="M116,348 C232,288 316,160 390,6"
-        android:strokeWidth="0.9"
-        android:strokeColor="#33C8A44E" />
 </vector>

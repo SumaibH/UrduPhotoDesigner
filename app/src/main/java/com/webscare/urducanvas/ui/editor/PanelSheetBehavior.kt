@@ -36,13 +36,22 @@ class PanelSheetBehavior(
 
     // ── Height cap ────────────────────────────────────────────────────────────
 
-    private val screenHeight: Int = root.context.resources.displayMetrics.heightPixels
+    // guideBegin is measured from the root's CONTENT edge — i.e. after its top
+    // padding — so every panel measurement has to live in that same space.
+    // Since edge-to-edge, the editor root carries the status bar as its own top
+    // padding, so root.height (and the raw display height) both overshoot the
+    // box the guideline actually moves in. Using them here made the panel sit
+    // one status bar taller than its 65 % / 90 % stops.
+    private val panelSpaceHeight: Int =
+        (root.height - root.paddingTop - root.paddingBottom)
+            .takeIf { it > 0 }
+            ?: root.context.resources.displayMetrics.heightPixels
 
     // guideBegin is distance-from-top, so "taller panel" = smaller guideBegin.
-    // Cap: panel top must be at least 10 % from top → guideBegin >= screenHeight * 0.10
+    // Cap: panel top must be at least 10 % from top → guideBegin >= panelSpaceHeight * 0.10
     private val expandedPx: Int = maxOf(
         expandedPx,
-        (screenHeight * (1f - MAX_EXPANDED_FRACTION)).toInt()
+        (panelSpaceHeight * (1f - MAX_EXPANDED_FRACTION)).toInt()
     )
 
     // ── State ─────────────────────────────────────────────────────────────────
@@ -132,8 +141,8 @@ class PanelSheetBehavior(
                 dampingRatio = SpringForce.DAMPING_RATIO_MEDIUM_BOUNCY
             }
             addUpdateListener { _, value, _ ->
-                val clampMin = expandedPx - (screenHeight * OVERSHOOT_CLAMP_MARGIN).toInt()
-                val clampMax = collapsedPx + (screenHeight * OVERSHOOT_CLAMP_MARGIN).toInt()
+                val clampMin = expandedPx - (panelSpaceHeight * OVERSHOOT_CLAMP_MARGIN).toInt()
+                val clampMax = collapsedPx + (panelSpaceHeight * OVERSHOOT_CLAMP_MARGIN).toInt()
                 currentGuideBegin = value.toInt().coerceIn(clampMin, clampMax)
             }
             addEndListener { _, _, _, _ ->
@@ -192,7 +201,8 @@ class PanelSheetBehavior(
     private fun getPanelTopY(): Float {
         val loc = IntArray(2)
         root.getLocationInWindow(loc)
-        return (loc[1] + currentGuideBegin).toFloat()
+        // currentGuideBegin is content-relative; the root's top padding sits above it.
+        return (loc[1] + root.paddingTop + currentGuideBegin).toFloat()
     }
 
     // ── Touch ─────────────────────────────────────────────────────────────────

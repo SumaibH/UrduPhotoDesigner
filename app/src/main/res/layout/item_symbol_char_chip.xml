@@ -1,45 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!--
+    One character/word tile in the selection strip. Square like the filter items,
+    with the stroke carrying the selected state instead of a solid fill, so the
+    glyph stays readable in its own colour. No foreground ripple — presses come
+    from Utils.addPressEffect.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/charChipRoot"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="3dp"
-    android:layout_marginVertical="2dp"
-    android:background="@drawable/button_bg_small"
-    android:backgroundTint="@color/contrast"
-    android:clickable="true"
-    android:focusable="true"
-    android:foreground="?selectableItemBackground"
-    android:minWidth="40dp"
-    android:minHeight="40dp"
-    android:paddingHorizontal="10dp"
-    android:paddingVertical="4dp">
+    android:layout_marginHorizontal="3dp">
 
-    <TextView
-        android:id="@+id/tvChar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/bold"
-        android:gravity="center"
-        android:includeFontPadding="false"
-        android:textColor="@color/black"
-        android:textSize="18sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="ک" />
+    <!-- Circular: corner radius is half the 36dp box. -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/charCard"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        app:cardBackgroundColor="@color/contrast"
+        app:cardCornerRadius="18dp"
+        app:cardElevation="0dp"
+        app:strokeColor="@color/appColor"
+        app:strokeWidth="0dp">
 
-    <View
-        android:id="@+id/selectedIndicator"
-        android:layout_width="0dp"
-        android:layout_height="2.5dp"
-        android:background="@color/appColor"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        <TextView
+            android:id="@+id/tvChar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fontFamily="@font/bold"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:textColor="@color/black"
+            android:textSize="17sp"
+            tools:text="ک" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</FrameLayout>

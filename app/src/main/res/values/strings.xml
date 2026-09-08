@@ -537,8 +537,40 @@
     <string name="presets">Presets</string>
 
     <!-- Home -->
-    <string name="home_tagline">Create. Design. In Urdu.</string>
+    <string name="home_tagline">Choose Template or Start with Blank Canvas</string>
     <string name="start_with_an_image">Start with an image</string>
     <string name="create_blank_artboard">Create blank artboard</string>
     <string name="all_templates">All Templates</string>
+
+    <!-- Text › Symbols -->
+    <string name="symbols">Symbols</string>
+    <string name="symbols_above">Above</string>
+    <string name="symbols_below">Below</string>
+    <string name="symbols_marks">Marks</string>
+    <string name="symbols_ornaments">Ornaments</string>
+    <string name="symbols_dotless">Dotless</string>
+    <string name="symbols_remove_last">Remove last mark</string>
+    <string name="symbols_clear_all">Clear marks</string>
+    <string name="symbols_calligraphy">Calligraphy</string>
+    <string name="symbols_expand_panel">Expand panel</string>
+    <string name="symbols_no_text_selected">Select a text layer</string>
+
+    <!-- Calligraphy depth mode -->
+    <string name="calligraphy_break_words">Words</string>
+    <string name="calligraphy_break_letters">Letters</string>
+    <string name="calligraphy_rejoin">Rejoin</string>
+    <string name="calligraphy_kashida">Kashida</string>
+    <string name="calligraphy_done">Done</string>
+    <string name="calligraphy_mode">Calligraphy</string>
+    <string name="calligraphy_dotless">Dotless</string>
+    <string name="calligraphy_join">Join</string>
+    <string name="calligraphy_sheet_subtitle">Split the text into words or letters and arrange them freely on the canvas</string>
+    <string name="calligraphy_word">Word</string>
+    <string name="calligraphy_letter">Letter</string>
+    <string name="calligraphy_break_words_title">Break into words</string>
+    <string name="calligraphy_break_words_desc">Move, rotate and resize each word on its own</string>
+    <string name="calligraphy_break_letters_title">Break into letters</string>
+    <string name="calligraphy_break_letters_desc">Join and stretch letters the traditional calligraphic way</string>
+    <string name="calligraphy_rejoin_title">Rejoin into one text</string>
+    <string name="calligraphy_rejoin_desc">Turn every piece back into normal text</string>
 </resources>

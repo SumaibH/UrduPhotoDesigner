@@ -932,25 +932,58 @@ class CanvasView @JvmOverloads constructor(
         cData: CalligraphyData
     ): TextToken? {
         val fm = element.paint.fontMetrics
-        val baseLineHeight = (fm.descent - fm.ascent) * element.lineSpacing
+        // A token is one glyph run, not a line, so line spacing has no part in
+        // its box — the renderer centres it on (descent - ascent) alone.
+        val baseLineHeight = fm.descent - fm.ascent
         val touchPadding = 24f * resources.displayMetrics.density
 
-        // Sort descending by zIndex so top-most overlapping token is selected first
-        val sorted = cData.tokens.sortedByDescending { it.zIndex }
-        for (token in sorted) {
-            val textW = element.paint.measureText(token.getFullDisplayText()) * token.scale
-            val textH = baseLineHeight * token.scale
+        // Two passes. An exact hit on a glyph always wins, and only when nothing
+        // is struck directly does the forgiving 24dp margin come into play, then
+        // resolved by nearest centre.
+        //
+        // Testing padded boxes in one pass made every tap land on whichever token
+        // came first: Urdu letters are far narrower than the 48dp the padding
+        // adds, so neighbouring boxes overlap almost completely and an earlier
+        // letter swallowed taps meant for its neighbour.
+        var exact: TextToken? = null
+        var exactZ = Int.MIN_VALUE
+        var nearest: TextToken? = null
+        var nearestDistSq = Float.MAX_VALUE
 
-            val left = token.offsetX - textW / 2f - touchPadding
-            val right = token.offsetX + textW / 2f + touchPadding
-            val top = token.offsetY - textH / 2f - touchPadding
-            val bottom = token.offsetY + textH / 2f + touchPadding
+        for (token in cData.tokens) {
+            // Bring the point into the token's own frame: undo its offset, then
+            // its rotation, which the old test ignored entirely.
+            var px = localX - token.offsetX
+            var py = localY - token.offsetY
+            if (token.rotation != 0f) {
+                val r = Math.toRadians(-token.rotation.toDouble())
+                val cos = kotlin.math.cos(r).toFloat()
+                val sin = kotlin.math.sin(r).toFloat()
+                val rx = px * cos - py * sin
+                val ry = px * sin + py * cos
+                px = rx
+                py = ry
+            }
 
-            if (localX in left..right && localY in top..bottom) {
-                return token
+            val halfW = element.paint.measureText(token.getFullDisplayText()) * token.scale / 2f
+            val halfH = baseLineHeight * token.scale / 2f
+            val ax = kotlin.math.abs(px)
+            val ay = kotlin.math.abs(py)
+
+            if (ax <= halfW && ay <= halfH) {
+                if (token.zIndex >= exactZ) {
+                    exact = token
+                    exactZ = token.zIndex
+                }
+            } else if (ax <= halfW + touchPadding && ay <= halfH + touchPadding) {
+                val distSq = px * px + py * py
+                if (distSq < nearestDistSq) {
+                    nearestDistSq = distSq
+                    nearest = token
+                }
             }
         }
-        return null
+        return exact ?: nearest
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -5114,6 +5147,7 @@ class CanvasView @JvmOverloads constructor(
             val tokenPaint = TextPaint(element.paint).apply {
                 color = token.overrideColor ?: element.paintColor
                 alpha = token.overrideAlpha ?: element.paintAlpha
+                token.resolveTypeface()?.let { typeface = it }
             }
 
             val textW = tokenPaint.measureText(displayText)
@@ -5121,13 +5155,20 @@ class CanvasView @JvmOverloads constructor(
             val fmToken = try { tokenPaint.fontMetrics } catch (e: Exception) { Paint.FontMetrics() }
             val yOffset = -(fmToken.descent + fmToken.ascent) / 2f
 
-            // Shadow
-            if (element.hasShadow && element.shadowRadius > 0f) {
+            // Shadow — per-token override, falling back to the element's.
+            val tokenHasShadow = token.overrideHasShadow ?: element.hasShadow
+            val tokenShadowRadius = token.overrideShadowRadius ?: element.shadowRadius
+            if (tokenHasShadow && tokenShadowRadius > 0f) {
                 val sp = TextPaint(tokenPaint).apply {
-                    color = element.shadowColor
-                    maskFilter = BlurMaskFilter(element.shadowRadius.coerceAtLeast(0.5f), BlurMaskFilter.Blur.NORMAL)
+                    color = token.overrideShadowColor ?: element.shadowColor
+                    maskFilter = BlurMaskFilter(tokenShadowRadius.coerceAtLeast(0.5f), BlurMaskFilter.Blur.NORMAL)
                 }
-                canvas.drawText(displayText, xPos + element.shadowDx, yOffset + element.shadowDy, sp)
+                canvas.drawText(
+                    displayText,
+                    xPos + (token.overrideShadowDx ?: element.shadowDx),
+                    yOffset + (token.overrideShadowDy ?: element.shadowDy),
+                    sp
+                )
             }
 
             // Outer Under-Stroke
@@ -5140,12 +5181,14 @@ class CanvasView @JvmOverloads constructor(
                 canvas.drawText(displayText, xPos, yOffset, usp)
             }
 
-            // Primary Stroke
-            if (element.hasStroke && element.strokeWidth > 0f) {
+            // Primary Stroke — per-token override, falling back to the element's.
+            val tokenHasStroke = token.overrideHasStroke ?: element.hasStroke
+            val tokenStrokeWidth = token.overrideStrokeWidth ?: element.strokeWidth
+            if (tokenHasStroke && tokenStrokeWidth > 0f) {
                 val stp = TextPaint(tokenPaint).apply {
                     style = Paint.Style.STROKE
-                    strokeWidth = element.strokeWidth
-                    color = element.strokeColor
+                    strokeWidth = tokenStrokeWidth
+                    color = token.overrideStrokeColor ?: element.strokeColor
                 }
                 canvas.drawText(displayText, xPos, yOffset, stp)
             }

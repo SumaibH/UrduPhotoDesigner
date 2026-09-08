@@ -53,6 +53,9 @@ import com.webscare.urducanvas.ui.creation.CanvasSizeAdapter
 import com.webscare.urducanvas.ui.creation.CreateFragment
 import com.webscare.urducanvas.ui.navigation.templates.TemplateCategoriesAdapter
 import com.webscare.urducanvas.viewmodels.FiltersViewModel
+import androidx.dynamicanimation.animation.FloatValueHolder
+import androidx.dynamicanimation.animation.SpringAnimation
+import androidx.dynamicanimation.animation.SpringForce
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -83,6 +86,9 @@ class HomeFragment : androidx.fragment.app.Fragment() {
 
     /** 0 = fully expanded, 1 = fully collapsed. Driven straight from scrollY. */
     private var headerProgress = 0f
+
+    /** In-flight settle animation for the header; cancelled on a new gesture. */
+    private var headerSnapSpring: SpringAnimation? = null
     private var headerCornerRadius = -1f
     private var headerBackground: GradientDrawable? = null
 
@@ -255,6 +261,9 @@ class HomeFragment : androidx.fragment.app.Fragment() {
      */
     private fun scheduleHeaderSnap() {
         val scroll = _binding?.contentScroll ?: return
+        // A fresh gesture outranks any settle still in flight.
+        headerSnapSpring?.cancel()
+        headerSnapSpring = null
         scroll.removeCallbacks(headerSnapRunnable)
         scroll.postDelayed(headerSnapRunnable, HEADER_SNAP_SETTLE_MS)
     }
@@ -272,7 +281,42 @@ class HomeFragment : androidx.fragment.app.Fragment() {
 
         val range = (expandedHeaderHeight - collapsedHeaderHeight()).coerceAtLeast(1)
         val target = if (headerProgress >= 0.5f) range else 0
-        b.contentScroll.smoothScrollTo(0, target)
+        springHeaderTo(target)
+    }
+
+    /**
+     * Settles the feed onto [targetY] on a spring rather than a fixed-duration
+     * scroll, so the header eases in with a little overshoot instead of arriving
+     * at a constant speed and stopping dead.
+     *
+     * The spring drives the scroll position; the header follows from that, so
+     * the two cannot disagree about where they are.
+     */
+    private fun springHeaderTo(targetY: Int) {
+        val scroll = _binding?.contentScroll ?: return
+        headerSnapSpring?.cancel()
+
+        val start = scroll.scrollY.toFloat()
+        if (start == targetY.toFloat()) return
+
+        headerSnapSpring = SpringAnimation(FloatValueHolder(start)).apply {
+            setStartValue(start)
+            spring = SpringForce(targetY.toFloat()).apply {
+                stiffness = SpringForce.STIFFNESS_LOW
+                dampingRatio = SpringForce.DAMPING_RATIO_LOW_BOUNCY
+            }
+            addUpdateListener { _, value, _ ->
+                val b = _binding ?: return@addUpdateListener
+                // The user grabbing the feed again wins over the settle.
+                if (b.contentScroll.isGestureInProgress) {
+                    cancel()
+                    return@addUpdateListener
+                }
+                b.contentScroll.scrollTo(0, value.toInt().coerceAtLeast(0))
+            }
+            addEndListener { _, _, _, _ -> headerSnapSpring = null }
+            start()
+        }
     }
 
     private fun collapsedHeaderHeight(): Int {
@@ -322,6 +366,8 @@ class HomeFragment : androidx.fragment.app.Fragment() {
 
         // The artwork holds on longer than the content sitting on it.
         b.headerArt.alpha = 1f - progress
+        // Watermark rides the same fade, scaled by its own resting opacity.
+        b.headerCalligraphy.alpha = CALLIGRAPHY_WATERMARK_ALPHA * (1f - progress)
 
         // Action sets cross-fade over the back half; never both at full strength.
         val swap = ((progress - ACTION_SWAP_START) / (1f - ACTION_SWAP_START))
@@ -331,8 +377,9 @@ class HomeFragment : androidx.fragment.app.Fragment() {
         b.headerActions.visibility = if (swap >= 1f) View.INVISIBLE else View.VISIBLE
         b.collapsedActions.visibility = if (swap <= 0f) View.INVISIBLE else View.VISIBLE
 
-        // Corners flatten as the surface turns into a toolbar.
-        val radius = dp(28f) * (1f - progress)
+        // Corners ease off as the surface turns into a toolbar, but never square
+        // off completely — the collapsed bar keeps a soft edge.
+        val radius = dp(28f) - (dp(28f) - dp(COLLAPSED_CORNER_DP)) * progress
         if (radius != headerCornerRadius) {
             headerCornerRadius = radius
             headerBackground?.cornerRadii =
@@ -522,13 +569,16 @@ class HomeFragment : androidx.fragment.app.Fragment() {
         })
         binding.fontsRV.adapter = fontsAdapter
 
-        // ── Browse by size — seeds the shared template filter, then opens it ──
+        // ── Pick a size — opens a blank artboard at that size ─────────────────
+        // Same sequence CreateFragment uses for its size sheet, so both entry
+        // points land in the editor identically. "See all" still browses
+        // templates; tapping a size is a request for a canvas, not a filter.
         canvasSizeAdapter = CanvasSizeAdapter(emptyList(), onClick = { selected ->
-            filtersVM.setCategory("All")
-            filtersVM.setSize(selected)
             canvasSizeAdapter.selectedSizeName = selected.name
+            viewModel.clearCanvas()
+            viewModel.setCanvasSize(selected)
             view?.post {
-                findNavController().navigate(R.id.templateCategoriesFragment, null, navOptions)
+                findNavController().navigate(R.id.editorFragment, null, navOptions)
             }
         }, false)
         binding.sizesRV.adapter = canvasSizeAdapter
@@ -901,6 +951,8 @@ class HomeFragment : androidx.fragment.app.Fragment() {
 
     override fun onDestroyView() {
         _binding?.contentScroll?.removeCallbacks(headerSnapRunnable)
+        headerSnapSpring?.cancel()
+        headerSnapSpring = null
         headerBackground = null
         expandedHeaderHeight = 0
         headerProgress = -1f
@@ -925,6 +977,12 @@ class HomeFragment : androidx.fragment.app.Fragment() {
 
         /** Where the expanded and collapsed action rows start trading places. */
         private const val ACTION_SWAP_START = 0.45f
+
+        /** Bottom-corner radius the header keeps once fully collapsed. */
+        private const val COLLAPSED_CORNER_DP = 14f
+
+        /** Resting opacity of the header calligraphy watermark. */
+        private const val CALLIGRAPHY_WATERMARK_ALPHA = 0.10f
 
         /** Quiet time after the last scroll event before the header snaps. */
         private const val HEADER_SNAP_SETTLE_MS = 90L
