@@ -310,6 +310,9 @@ data class CanvasElement(
     // ── 3D Text Data ──────────────────────────────────────────────────────────
     @SerializedName("text3d") var text3d: Text3DData? = null,
 
+    // ── Calligraphy / Text Depth Data ──────────────────────────────────────────
+    @SerializedName("calligraphyData") var calligraphyData: CalligraphyData? = null,
+
     ) : Serializable {
 
     @field:Transient var cachedAdjustedBitmap: Bitmap? = null
@@ -356,7 +359,26 @@ data class CanvasElement(
         return if (type == ElementType.BACKGROUND || type == ElementType.SHAPE || type == ElementType.TABLE) {
             logicalContentWidth
         } else if (type == ElementType.TEXT) {
-            val baseW = if (boxWidth != null && boxWidth!! > 0f) {
+            val cData = calligraphyData
+            val baseW = if (cData != null && cData.tokens.isNotEmpty()) {
+                var minX = Float.MAX_VALUE
+                var maxX = -Float.MAX_VALUE
+                for (token in cData.tokens) {
+                    val w = if (::paint.isInitialized) paint.measureText(token.getFullDisplayText()) * token.scale else 100f
+                    val left = token.offsetX - w / 2f
+                    val right = token.offsetX + w / 2f
+                    if (left < minX) minX = left
+                    if (right > maxX) maxX = right
+                }
+                for (accent in cData.floatingAccents) {
+                    val w = if (::paint.isInitialized) paint.measureText(accent.symbol) * accent.scale else 50f
+                    val left = accent.offsetX - w / 2f
+                    val right = accent.offsetX + w / 2f
+                    if (left < minX) minX = left
+                    if (right > maxX) maxX = right
+                }
+                if (minX < maxX) (maxX - minX) else 0f
+            } else if (boxWidth != null && boxWidth!! > 0f) {
                 boxWidth!!
             } else {
                 val lines = getVisualLines()
@@ -384,7 +406,28 @@ data class CanvasElement(
         return if (type == ElementType.BACKGROUND || type == ElementType.SHAPE || type == ElementType.TABLE) {
             logicalContentHeight
         } else if (type == ElementType.TEXT) {
-            val baseH = if (boxHeight != null && boxHeight!! > 0f) {
+            val cData = calligraphyData
+            val baseH = if (cData != null && cData.tokens.isNotEmpty()) {
+                val fm = if (::paint.isInitialized) paint.fontMetrics else Paint.FontMetrics()
+                val baseLineHeight = (fm.bottom - fm.top) * lineSpacing
+                var minY = Float.MAX_VALUE
+                var maxY = -Float.MAX_VALUE
+                for (token in cData.tokens) {
+                    val h = baseLineHeight * token.scale
+                    val top = token.offsetY - h / 2f
+                    val bottom = token.offsetY + h / 2f
+                    if (top < minY) minY = top
+                    if (bottom > maxY) maxY = bottom
+                }
+                for (accent in cData.floatingAccents) {
+                    val h = baseLineHeight * accent.scale * 0.7f
+                    val top = accent.offsetY - h / 2f
+                    val bottom = accent.offsetY + h / 2f
+                    if (top < minY) minY = top
+                    if (bottom > maxY) maxY = bottom
+                }
+                if (minY < maxY) (maxY - minY) else baseLineHeight
+            } else if (boxHeight != null && boxHeight!! > 0f) {
                 boxHeight!!
             } else if (::paint.isInitialized) {
                 val fm = paint.fontMetrics

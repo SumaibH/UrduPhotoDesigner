@@ -27,5 +27,8 @@ enum class Mode {
     CANVAS_PAN,
 
     @SerializedName("TableResize")
-    TABLE_RESIZE
+    TABLE_RESIZE,
+
+    @SerializedName("CalligraphyEdit")
+    CALLIGRAPHY_EDIT
 }
