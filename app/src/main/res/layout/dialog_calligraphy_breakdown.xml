@@ -13,7 +13,7 @@
         android:layout_height="4dp"
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="16dp"
-        android:background="@drawable/bottom_sheet_handle" />
+        android:background="@drawable/drag_handle_bg" />
 
     <TextView
         android:id="@+id/tvDialogTitle"
