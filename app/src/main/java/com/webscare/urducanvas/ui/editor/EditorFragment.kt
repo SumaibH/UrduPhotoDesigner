@@ -83,6 +83,8 @@ import com.webscare.urducanvas.databinding.LayoutZoomPopupBinding
 import com.webscare.urducanvas.ui.creation.CreateFragment
 import com.webscare.urducanvas.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -774,6 +776,19 @@ class EditorFragment : Fragment() {
         }
     }
 
+    /**
+     * Serialises save-on-exit.
+     *
+     * The body is a read-modify-write of [exportModel]: it creates the row when the field
+     * is still null, inserts it, and only then assigns the id the insert returned. This
+     * function can run more than once for the same project and the calls overlap, so two
+     * of them would both find null, both build a row with id 0, and both insert — and
+     * because the DAO's REPLACE only matches on the primary key, that produced *two*
+     * database rows for one project. It showed up as the same project listed twice in
+     * Assets with two different sizes, one captured mid-edit.
+     */
+    private val saveOnExitMutex = Mutex()
+
     private suspend fun saveOnExitSafe(
         options: ExportOptions,
         exportBitmap: Bitmap,
@@ -781,6 +796,7 @@ class EditorFragment : Fragment() {
         exportImage: Boolean,
         canvasSize: CanvasSize
     ) = withContext(Dispatchers.IO) {
+        saveOnExitMutex.withLock {
         try {
             // ---- Save thumbnail image ------------------------------------------------
             if (exportImage) {
@@ -865,6 +881,7 @@ class EditorFragment : Fragment() {
 
         } catch (e: Exception) {
             Log.e(TAG, "saveOnExitSafe failed: ${e.message}", e)
+        }
         }
     }
 
