@@ -95,8 +95,15 @@
         <item name="android:drawableEnd">@drawable/ic_search</item>
         <item name="android:drawableTint">@color/gray</item>
         <item name="android:drawablePadding">12dp</item>
-        <item name="android:paddingHorizontal">18dp</item>
-        <item name="android:paddingVertical">10dp</item>
+        <!--
+            Spelled out rather than paddingHorizontal/paddingVertical, which are API 26 and
+            this app ships to 24: on Android 7 those two are ignored outright, so the search
+            field lost all of its padding and the hint sat flush against the edge.
+        -->
+        <item name="android:paddingStart">18dp</item>
+        <item name="android:paddingEnd">18dp</item>
+        <item name="android:paddingTop">10dp</item>
+        <item name="android:paddingBottom">10dp</item>
         <item name="android:maxLines">1</item>
         <item name="android:singleLine">true</item>
         <item name="android:inputType">text</item>

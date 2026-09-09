@@ -161,7 +161,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@id/strokeWidthTitle" />
 
-            <SeekBar
+            <com.webscare.urducanvas.common.views.RangeSeekBar
                 android:progressBackgroundTint="@color/light_gray"
                 android:id="@+id/strokeWidthBar"
                 android:layout_width="0dp"
@@ -227,7 +227,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@id/cornerRadiusTitle" />
 
-            <SeekBar
+            <com.webscare.urducanvas.common.views.RangeSeekBar
                 android:progressBackgroundTint="@color/light_gray"
                 android:id="@+id/cornerRadiusBar"
                 android:layout_width="0dp"

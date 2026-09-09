@@ -42,7 +42,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/brightnessTitle" />
 
-        <SeekBar
+        <com.webscare.urducanvas.common.views.RangeSeekBar
             android:id="@+id/brightness"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -94,7 +94,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/contrastTitle" />
 
-        <SeekBar
+        <com.webscare.urducanvas.common.views.RangeSeekBar
             android:id="@+id/contrast"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -148,7 +148,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/shadowsTitle" />
 
-        <SeekBar
+        <com.webscare.urducanvas.common.views.RangeSeekBar
             android:id="@+id/shadows"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -201,7 +201,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/highlightsTitle" />
 
-        <SeekBar
+        <com.webscare.urducanvas.common.views.RangeSeekBar
             android:id="@+id/highlights"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
