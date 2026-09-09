@@ -16,11 +16,17 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
+import com.webscare.urducanvas.analytics.AnalyticsTracker
+import com.webscare.urducanvas.analytics.AnalyticsConstants.UserProperties
+import com.webscare.urducanvas.analytics.AnalyticsConstants.Values
+import com.webscare.urducanvas.analytics.session.SessionStateManager
 
 @Singleton
 class BillingManager @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val dataStore: PreferenceDataStoreAPI
+    private val dataStore: PreferenceDataStoreAPI,
+    private val analyticsTracker: AnalyticsTracker,
+    private val sessionStateManager: SessionStateManager
 ) : PurchasesUpdatedListener {
 
     companion object {
@@ -117,6 +123,9 @@ class BillingManager @Inject constructor(
                     .build()
 
                 activity.runOnUiThread {
+                    // See launchPurchase: the flow has to leave Idle, or the Idle that
+                    // USER_CANCELED posts is a no-op on the StateFlow and no one hears it.
+                    _billingState.value = BillingState.Loading
                     billingClient.launchBillingFlow(activity, flowParams)
                 }
             }
@@ -428,6 +437,15 @@ class BillingManager @Inject constructor(
             .setProductDetailsParamsList(listOf(productDetailsParams))
             .build()
 
+        // Move off Idle before the Play sheet opens.
+        //
+        // billingState is a StateFlow, and a cancelled purchase reports back by setting it
+        // to Idle. On the second attempt the state was *already* Idle (the first cancel
+        // left it there), so the assignment conflated to nothing, no collector ran, and
+        // the CTA stayed spinning forever. Entering Loading here makes that Idle a real
+        // transition every time.
+        analyticsTracker.logSubscriptionAction(productId, Values.STATUS_STARTED)
+        _billingState.value = BillingState.Loading
         billingClient.launchBillingFlow(activity, flowParams)
     }
 
@@ -437,9 +455,14 @@ class BillingManager @Inject constructor(
         when (result.responseCode) {
             BillingClient.BillingResponseCode.OK -> {
                 purchases?.forEach { purchase ->
+                    val prodId = purchase.products.firstOrNull() ?: "unknown"
                     when (purchase.purchaseState) {
-                        Purchase.PurchaseState.PURCHASED -> acknowledgePurchase(purchase)
+                        Purchase.PurchaseState.PURCHASED -> {
+                            analyticsTracker.logSubscriptionAction(prodId, Values.STATUS_SUCCESS)
+                            acknowledgePurchase(purchase)
+                        }
                         Purchase.PurchaseState.PENDING -> {
+                            analyticsTracker.logSubscriptionAction(prodId, "pending")
                             _snapshot.value = PlayBillingSnapshot(
                                 status = SubscriptionStatus.PENDING,
                                 productId = purchase.products.firstOrNull(),
@@ -453,10 +476,12 @@ class BillingManager @Inject constructor(
             }
             BillingClient.BillingResponseCode.USER_CANCELED -> {
                 _billingState.value = BillingState.Idle
+                analyticsTracker.logSubscriptionAction("unknown", Values.STATUS_CANCELLED)
             }
             else -> {
                 _billingState.value =
                     BillingState.Error("Purchase failed: ${result.debugMessage}")
+                analyticsTracker.logSubscriptionAction("unknown", Values.STATUS_FAILED, result.debugMessage)
             }
         }
     }
@@ -531,6 +556,12 @@ class BillingManager @Inject constructor(
         _isSubscribed.value = value
         _activePlan.value = productId
 
+        sessionStateManager.isSubscribed = value
+        analyticsTracker.setUserProperty(
+            UserProperties.SUBSCRIPTION_STATUS,
+            if (value) Values.TIER_SUBSCRIBED else Values.TIER_FREE
+        )
+
         CoroutineScope(Dispatchers.IO).launch {
             dataStore.putPreference(PREF_IS_SUBSCRIBED, value)
             dataStore.putPreference(PREF_ACTIVE_PLAN, productId ?: "")
@@ -585,6 +616,11 @@ class BillingManager @Inject constructor(
                 isTrial = false,
                 expiryTimeMillis = System.currentTimeMillis() + 365L * 24 * 60 * 60 * 1000
             )
+            sessionStateManager.isSubscribed = debugSubscribed
+            analyticsTracker.setUserProperty(
+                UserProperties.SUBSCRIPTION_STATUS,
+                Values.TIER_SUBSCRIBED
+            )
             return
         }
         if (!BuildConfig.IS_PROD_LOGIC) {
@@ -594,6 +630,11 @@ class BillingManager @Inject constructor(
             isSubscribedValue = debugSubscribed
             _isSubscribed.value = debugSubscribed
             _activePlan.value = debugPlan.ifEmpty { null }
+            sessionStateManager.isSubscribed = debugSubscribed
+            analyticsTracker.setUserProperty(
+                UserProperties.SUBSCRIPTION_STATUS,
+                Values.TIER_FREE
+            )
             return
         }
         val savedStatus = dataStore.getFirstPreference(PREF_IS_SUBSCRIBED, false)
@@ -602,5 +643,10 @@ class BillingManager @Inject constructor(
         isSubscribedValue = savedStatus
         _isSubscribed.value = savedStatus
         _activePlan.value = savedPlan.ifEmpty { null }
+        sessionStateManager.isSubscribed = savedStatus
+        analyticsTracker.setUserProperty(
+            UserProperties.SUBSCRIPTION_STATUS,
+            if (savedStatus) Values.TIER_SUBSCRIBED else Values.TIER_FREE
+        )
     }
 }

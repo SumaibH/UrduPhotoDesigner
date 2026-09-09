@@ -28,6 +28,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.webscare.urducanvas.di.AppReviewManager
 import javax.inject.Inject
 import com.webscare.urducanvas.common.utils.InsetUtils.applyStatusBarTopPadding
+import com.webscare.urducanvas.analytics.AnalyticsTracker
 
 @AndroidEntryPoint
 class FinishExportFragment : androidx.fragment.app.Fragment() {
@@ -36,6 +37,9 @@ class FinishExportFragment : androidx.fragment.app.Fragment() {
 
     @Inject
     lateinit var appReviewManager: AppReviewManager
+
+    @Inject
+    lateinit var analyticsTracker: AnalyticsTracker
 
     val viewModel: CanvasViewModel by activityViewModels()
 
@@ -137,6 +141,11 @@ class FinishExportFragment : androidx.fragment.app.Fragment() {
         // 🔹 Share logic
         binding.share.addPressEffect {
             val export = viewModel.exportResult.value ?: return@addPressEffect
+            analyticsTracker.logShareInitiated(
+                channel = "system_share",
+                format = export.format ?: "image",
+                templateId = export.sourceTemplateId
+            )
 
             if (!BuildConfig.IS_PROD_LOGIC) {
                 // Debug: zip json + thumbnail image and share
@@ -199,6 +208,11 @@ class FinishExportFragment : androidx.fragment.app.Fragment() {
         // 🔹 Open logic (PDF or Image)
         binding.open.addPressEffect {
             val export = viewModel.exportResult.value ?: return@addPressEffect
+            analyticsTracker.logShareInitiated(
+                channel = "open_with",
+                format = export.format ?: "image",
+                templateId = export.sourceTemplateId
+            )
             val filePath = export.pdfPath ?: export.imagePath
             val file = File(filePath)
             if (!file.exists()) return@addPressEffect
@@ -226,6 +240,11 @@ class FinishExportFragment : androidx.fragment.app.Fragment() {
         // 🔹 Print logic
         binding.print.addPressEffect {
             val export = viewModel.exportResult.value ?: return@addPressEffect
+            analyticsTracker.logShareInitiated(
+                channel = "print",
+                format = export.format ?: "image",
+                templateId = export.sourceTemplateId
+            )
 
             export.pdfPath?.let { pdfPath ->
                 val pdfFile = File(pdfPath)

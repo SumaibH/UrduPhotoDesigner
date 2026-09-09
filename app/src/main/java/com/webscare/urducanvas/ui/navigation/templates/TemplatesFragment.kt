@@ -42,6 +42,8 @@ import com.webscare.urducanvas.common.views.NativeAdSpacingDecoration
 
 @AndroidEntryPoint
 class TemplatesFragment : androidx.fragment.app.Fragment() {
+    @javax.inject.Inject
+    lateinit var analyticsTracker: com.webscare.urducanvas.analytics.AnalyticsTracker
 
     private var _binding: FragmentTemplatesBinding? = null
     private val binding get() = _binding!!
@@ -185,6 +187,13 @@ class TemplatesFragment : androidx.fragment.app.Fragment() {
                 view?.post { findNavController().navigate(R.id.templatesListFragment, args) }
             },
             onTemplateClick = { template, isDownloaded ->
+                analyticsTracker.logTemplateClick(
+                    templateId = template.id,
+                    name = template.template_name,
+                    category = template.category,
+                    isDownloaded = isDownloaded,
+                    isPremium = template.is_premium
+                )
                 if (template.is_downloading) return@TemplateCategoriesAdapter
                 if (!isDownloaded) {
                     if (template.file_path.isNullOrEmpty()) {
@@ -216,6 +225,13 @@ class TemplatesFragment : androidx.fragment.app.Fragment() {
 
     private fun setupTemplatesAdapter() {
         templatesAdapter = TemplatesAdapter { template, isDownloaded ->
+            analyticsTracker.logTemplateClick(
+                templateId = template.id,
+                name = template.template_name,
+                category = template.category,
+                isDownloaded = isDownloaded,
+                isPremium = template.is_premium
+            )
             if (isDownloaded) {
                 val exportResult = template.toExportResultFinal()
                 viewModel.loadTemplateFromJsonFile(exportResult, requireContext(), titleHint = "Loading Template") { success ->

@@ -110,7 +110,8 @@ class CanvasViewModel @Inject constructor(
     private val gson: Gson,
     private val dataStore: PreferencesDataStoreHelper,
     private val fontGate: FontGate,
-    private val billingManager: BillingManager
+    private val billingManager: BillingManager,
+    private val analyticsTracker: com.webscare.urducanvas.analytics.AnalyticsTracker
 ) : ViewModel() {
 
     private val _fontPanelState = MutableLiveData(FontPanelState())
@@ -5901,6 +5902,43 @@ class CanvasViewModel @Inject constructor(
         _canUndo.value = _canvasActions.isNotEmpty()
         _canRedo.value = _redoStack.isNotEmpty()
         refreshSelectedElements()
+        val latestAction = _canvasActions.lastOrNull()
+        if (latestAction != null) {
+            val (tool, subFeature) = getToolAndSubFeatureForAction(latestAction)
+            analyticsTracker.logToolActionPerformed(tool, subFeature)
+        }
+    }
+
+    private fun getToolAndSubFeatureForAction(action: CanvasAction): Pair<String, String> {
+        return when (action) {
+            is CanvasAction.AddText -> "text" to "add_text"
+            is CanvasAction.UpdateText -> "text" to "edit_text"
+            is CanvasAction.SetFont -> "text" to "font"
+            is CanvasAction.SetTextColor -> "text" to "color"
+            is CanvasAction.SetTextSize -> "text" to "size"
+            is CanvasAction.SetTextAlignment -> "text" to "alignment"
+            is CanvasAction.AddShape -> "shapes" to "add_shape"
+            is CanvasAction.AddTable -> "tables" to "add_table"
+            is CanvasAction.AddSticker -> "stickers" to "add_sticker"
+            is CanvasAction.AddDrawStroke, is CanvasAction.DrawSessionStroke -> "draw" to "brush_stroke"
+            is CanvasAction.ApplyImageFilter -> "filters" to "apply_filter"
+            is CanvasAction.SetBackgroundImage -> "background" to "image"
+            is CanvasAction.SetBackgroundColor -> "background" to "color"
+            is CanvasAction.SetBackgroundGradient -> "background" to "gradient"
+            is CanvasAction.RemoveElement -> "canvas" to "remove_element"
+            is CanvasAction.UpdateCanvasElementsOrder -> "layers" to "reorder"
+            is CanvasAction.SetCanvasSize -> "canvas" to "resize"
+            is CanvasAction.SetOpacity -> "adjustments" to "opacity"
+            is CanvasAction.SetOverlay -> "adjustments" to "overlay"
+            is CanvasAction.SetOverlayGradient -> "adjustments" to "overlay_gradient"
+            is CanvasAction.SetImageShadow -> "adjustments" to "shadow"
+            is CanvasAction.UpdateElement -> "canvas" to "transform"
+            else -> "canvas" to "edit"
+        }
+    }
+
+    fun logFeatureError(featureName: String, errorType: String, errorMessage: String) {
+        analyticsTracker.logFeatureError(featureName, errorType, errorMessage)
     }
 
     private fun CanvasElement.restoreWithContext(context: Context?): CanvasElement {
@@ -6519,6 +6557,15 @@ class CanvasViewModel @Inject constructor(
                 }
                 // Clean up the temp file if we created one (jsonFile == sourceFile for plain JSON).
                 if (jsonFile.absolutePath == tempJson.absolutePath) tempJson.delete()
+
+                val templateId = exportResult.sourceTemplateId ?: exportResult.id.toInt()
+                analyticsTracker.logTemplateOpened(
+                    templateId = templateId,
+                    name = exportResult.fileName,
+                    category = projectSourceName,
+                    isPremium = exportResult.isFromPremiumTemplate,
+                    elementCount = elements.size
+                )
 
                 val requiredFontIds =
                     elements.filter { it.type == ElementType.TEXT }.mapNotNull { it.fontId }

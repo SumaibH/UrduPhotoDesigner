@@ -188,6 +188,7 @@ dependencies {
     // LiveData
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.process)
     ksp(libs.androidx.lifecycle.compiler)
 
     //DataStore
@@ -218,8 +219,9 @@ dependencies {
     //ML Kit
     implementation(libs.play.services.mlkit.subject.segmentation)
 
-    //Firebase Crashlytics
+    //Firebase Crashlytics & Analytics
     implementation(libs.firebase.crashlytics)
+    implementation(libs.firebase.analytics)
 
     //Subscription
     implementation(libs.billing.ktx)

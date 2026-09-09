@@ -7,12 +7,24 @@ import com.webscare.urducanvas.di.BillingManager
 import com.webscare.ads.WebsCareAds
 import javax.inject.Inject
 import dagger.hilt.android.HiltAndroidApp
+import com.webscare.urducanvas.analytics.AnalyticsTracker
+import com.webscare.urducanvas.analytics.ads.AdAnalyticsCoordinator
+import com.webscare.urducanvas.analytics.session.SessionStateManager
 
 @HiltAndroidApp
 class MyApplication : Application() {
 
     @Inject
     lateinit var billingManager: BillingManager
+
+    @Inject
+    lateinit var analyticsTracker: AnalyticsTracker
+
+    @Inject
+    lateinit var sessionStateManager: SessionStateManager
+
+    @Inject
+    lateinit var adAnalyticsCoordinator: AdAnalyticsCoordinator
 
     companion object {
         var defaultDensityDpi: Int = 0
@@ -50,6 +62,40 @@ class MyApplication : Application() {
         FirebaseCrashlytics.getInstance().isCrashlyticsCollectionEnabled = true
         defaultDensityDpi = resources.displayMetrics.densityDpi
         suppressOemTouchBugs()
+        setupLifecycleAnalytics()
+    }
+
+    private fun setupLifecycleAnalytics() {
+        androidx.lifecycle.ProcessLifecycleOwner.get().lifecycle.addObserver(object : androidx.lifecycle.DefaultLifecycleObserver {
+            override fun onStart(owner: androidx.lifecycle.LifecycleOwner) {
+                analyticsTracker.logAppForegrounded(sessionStateManager.currentScreen)
+            }
+
+            override fun onStop(owner: androidx.lifecycle.LifecycleOwner) {
+                val currentScreen = sessionStateManager.currentScreen
+                val duration = sessionStateManager.getCurrentScreenDwellTimeSeconds()
+                val lastAction = sessionStateManager.lastAction
+                val workflow = sessionStateManager.activeWorkflowName
+
+                if (duration > 0) {
+                    analyticsTracker.logScreenLeave(
+                        screenName = currentScreen,
+                        durationSeconds = duration,
+                        exitDirection = com.webscare.urducanvas.analytics.AnalyticsConstants.Values.EXIT_BACKGROUND,
+                        lastAction = lastAction
+                    )
+                }
+
+                analyticsTracker.logAppBackgrounded(
+                    lastScreen = currentScreen,
+                    durationSeconds = duration,
+                    lastAction = lastAction,
+                    workflow = workflow
+                )
+
+                adAnalyticsCoordinator.onAppBackgrounded()
+            }
+        })
     }
 
     private fun suppressOemTouchBugs() {

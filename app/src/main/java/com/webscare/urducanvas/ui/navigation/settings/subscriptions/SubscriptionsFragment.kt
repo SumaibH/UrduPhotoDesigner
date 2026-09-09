@@ -36,6 +36,7 @@ import kotlinx.coroutines.launch
 import java.util.Locale
 import javax.inject.Inject
 import com.webscare.urducanvas.common.utils.InsetUtils.applyStatusBarTopPadding
+import com.webscare.urducanvas.analytics.AnalyticsTracker
 
 @AndroidEntryPoint
 class SubscriptionsFragment : Fragment() {
@@ -51,6 +52,9 @@ class SubscriptionsFragment : Fragment() {
 
     @Inject
     lateinit var billingManager: BillingManager
+
+    @Inject
+    lateinit var analyticsTracker: AnalyticsTracker
 
     private var plans: List<SubscriptionPlan> = emptyList()
     private var selectedIndex = 0
@@ -84,6 +88,8 @@ class SubscriptionsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         // Edge to edge: the window no longer reserves the status bar, so leave the margin here.
         view.applyStatusBarTopPadding()
+        val source = arguments?.getString("source") ?: "settings"
+        analyticsTracker.logPaywallViewed(source)
         setupPlanList()
         bindFeatureGrid()
         setEvents()
@@ -100,6 +106,7 @@ class SubscriptionsFragment : Fragment() {
             if (index == -1 || index == selectedIndex) return@SubscriptionsAdapter
             selectedIndex = index
             updatePlanTexts(animate = true)
+            analyticsTracker.logSubscriptionAction(plan.productId, "plan_selected")
         }
         binding.planList.layoutManager =
             LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false)
@@ -108,7 +115,6 @@ class SubscriptionsFragment : Fragment() {
     }
 
     /**
-     * Keeps the plan cards centered instead of hugging the start edge when
      * there are fewer than a full row's worth — e.g. the plan the person is
      * already subscribed to gets filtered out of the list, leaving 1-2
      * cards that would otherwise sit flush left with dead space on the

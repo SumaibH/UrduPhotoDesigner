@@ -15,9 +15,14 @@ import com.webscare.urducanvas.databinding.FragmentSplashBinding
 import com.webscare.urducanvas.BuildConfig
 import com.webscare.ads.WebsCareAds
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
+import com.webscare.urducanvas.analytics.ads.AdAnalyticsCoordinator
 
 @AndroidEntryPoint
 class SplashFragment : Fragment(), TextureView.SurfaceTextureListener {
+
+    @Inject
+    lateinit var adAnalyticsCoordinator: AdAnalyticsCoordinator
 
     private var _binding: FragmentSplashBinding? = null
     private val binding get() = _binding!!
@@ -141,7 +146,10 @@ class SplashFragment : Fragment(), TextureView.SurfaceTextureListener {
 
         val activity = activity
         if (activity != null) {
+            adAnalyticsCoordinator.onAdOpportunity("app_open_splash", "app_open", "splash_open")
+            adAnalyticsCoordinator.onAdImpression("app_open_splash", "app_open", "splash", "splash_open")
             WebsCareAds.showAppOpen(activity, BuildConfig.AD_APP_OPEN_SPLASH) {
+                adAnalyticsCoordinator.onAdDismissed("app_open_splash", "app_open", rewardEarned = false)
                 performNavigation()
             }
         } else {

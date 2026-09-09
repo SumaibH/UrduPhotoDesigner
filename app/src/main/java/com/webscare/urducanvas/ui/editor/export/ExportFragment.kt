@@ -54,6 +54,9 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import com.webscare.urducanvas.common.utils.InsetUtils.applyStatusBarTopPadding
+import javax.inject.Inject
+import com.webscare.urducanvas.analytics.AnalyticsTracker
+import com.webscare.urducanvas.analytics.ads.AdAnalyticsCoordinator
 
 @AndroidEntryPoint
 class ExportFragment : androidx.fragment.app.Fragment() {
@@ -62,9 +65,18 @@ class ExportFragment : androidx.fragment.app.Fragment() {
     private val subscriptionViewModel: SubscriptionsViewModel by viewModels()
     private val viewModel: CanvasViewModel by activityViewModels()
     private val mainViewModel: MainViewModel by activityViewModels()
+
+    @Inject
+    lateinit var analyticsTracker: AnalyticsTracker
+
+    @Inject
+    lateinit var adAnalyticsCoordinator: AdAnalyticsCoordinator
+
     private var exportResult: ExportResult? = null
     private lateinit var canvasView: CanvasView
     private var rotateDrawable: AnimatedVectorDrawable? = null
+    private var exportStartTime: Long = 0L
+    private var isExportCompleted: Boolean = false
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
@@ -144,6 +156,7 @@ class ExportFragment : androidx.fragment.app.Fragment() {
                 putExtra(android.content.Intent.EXTRA_STREAM, uri)
                 addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
+            analyticsTracker.logShareInitiated("project_file", "urdc", viewModel.exportResult.value?.sourceTemplateId)
             startActivity(android.content.Intent.createChooser(intent, "Share project"))
         }
 
@@ -314,14 +327,21 @@ class ExportFragment : androidx.fragment.app.Fragment() {
             return
         }
 
+        adAnalyticsCoordinator.onAdOpportunity("rewarded_export", "rewarded", "export_unlock", "export_reward")
+        adAnalyticsCoordinator.onAdImpression("rewarded_export", "rewarded", "export", "export_unlock", "export_reward")
         WebsCareAds.showRewarded(
             activity = requireActivity(),
             adUnitId = BuildConfig.AD_REWARDED_EXPORT,
             onRewarded = { _, _ ->
                 isSessionExportUnlocked = true
                 isPendingRewardAnimation = true
+                adAnalyticsCoordinator.onAdRewardEarned("rewarded_export", "export_reward")
+            },
+            onDismissed = {
+                adAnalyticsCoordinator.onAdDismissed("rewarded_export", "rewarded", isSessionExportUnlocked)
             },
             onNotReady = {
+                adAnalyticsCoordinator.onAdFailedToShow("rewarded_export", "rewarded", "not_ready")
                 Snackbar.make(binding.root, "Ad not available. Please try again.", Snackbar.LENGTH_INDEFINITE)
                     .setAction("Retry") { attemptExportRewardedAd() }
                     .show()
@@ -442,17 +462,36 @@ class ExportFragment : androidx.fragment.app.Fragment() {
             return@with
         }
 
+        viewModel.exportOptions.value?.let { opts ->
+            analyticsTracker.logExportOptionsSelected(
+                format = opts.format.name,
+                resolution = opts.resolution.label,
+                quality = opts.quality.label
+            )
+        }
+        val isTemplate = viewModel.exportResult.value?.sourceTemplateId != null
+        analyticsTracker.logExportInitiated(
+            sourceType = if (isTemplate) "template" else "custom",
+            templateId = viewModel.exportResult.value?.sourceTemplateId,
+            hasPremiumAssets = viewModel.hasPremiumAsset.value == true,
+            elementCount = viewModel.canvasElements.value?.size ?: 0
+        )
+
         if (isSessionExportUnlocked) {
             // User already completed Rewarded Video Ad -> skip Interstitial ad to prevent double ads!
             performExportRendering()
         } else {
+            adAnalyticsCoordinator.onAdOpportunity("interstitial_export_start", "interstitial", "export_start")
+            adAnalyticsCoordinator.onAdImpression("interstitial_export_start", "interstitial", "export", "export_start")
             WebsCareAds.showInterstitial(requireActivity(), BuildConfig.AD_INTERSTITIAL_EXPORT) {
+                adAnalyticsCoordinator.onAdDismissed("interstitial_export_start", "interstitial", true)
                 performExportRendering()
             }
         }
     }
 
     private fun performExportRendering() = with(binding) {
+        exportStartTime = System.currentTimeMillis()
         binding.btnExport.isEnabled = false
         binding.btnExport.alpha = 0.7f
         btnExport.isEnabled = false
@@ -612,6 +651,16 @@ class ExportFragment : androidx.fragment.app.Fragment() {
                     mainViewModel.insertExportResult(result)
                 }
 
+                val durationSec = ((System.currentTimeMillis() - exportStartTime) / 1000).coerceAtLeast(1)
+                analyticsTracker.logExportCompleted(
+                    format = options.format.name,
+                    fileSizeMb = fileSizeMB,
+                    durationSeconds = durationSec,
+                    templateId = viewModel.exportResult.value?.sourceTemplateId
+                )
+                isExportCompleted = true
+                adAnalyticsCoordinator.onFeatureActionCompleted("export")
+
                 // 7. Update UI on complete
                 withContext(Dispatchers.Main) {
                     val b = _binding ?: return@withContext
@@ -634,7 +683,10 @@ class ExportFragment : androidx.fragment.app.Fragment() {
 
                     val activity = activity
                     if (activity != null) {
+                        adAnalyticsCoordinator.onAdOpportunity("interstitial_export_finish", "interstitial", "export_finish")
+                        adAnalyticsCoordinator.onAdImpression("interstitial_export_finish", "interstitial", "export", "export_finish")
                         WebsCareAds.showInterstitial(activity, BuildConfig.AD_INTERSTITIAL_EXPORT) {
+                            adAnalyticsCoordinator.onAdDismissed("interstitial_export_finish", "interstitial", true)
                             performFinishNavigation()
                         }
                     } else {
@@ -643,6 +695,8 @@ class ExportFragment : androidx.fragment.app.Fragment() {
                 }
             } catch (e: Exception) {
                 Log.e("ExportFragment", "Export failed", e)
+                analyticsTracker.logFeatureError("export", e.message ?: "unknown", "export_failed")
+                adAnalyticsCoordinator.onFeatureAbandoned("export")
                 withContext(Dispatchers.Main) {
                     val b = _binding ?: return@withContext
                     stopRotationAnimation(b.view4)
@@ -916,6 +970,9 @@ class ExportFragment : androidx.fragment.app.Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        if (!isExportCompleted) {
+            adAnalyticsCoordinator.onFeatureAbandoned("export")
+        }
         _binding = null
     }
 }

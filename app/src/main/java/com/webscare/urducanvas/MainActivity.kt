@@ -39,9 +39,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import javax.inject.Inject
+import com.webscare.urducanvas.analytics.navigation.NavigationAnalyticsListener
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+
+    @Inject
+    lateinit var navigationAnalyticsListener: NavigationAnalyticsListener
 
     private var _binding: ActivityMainBinding? = null
     private val binding get() = _binding!!
@@ -246,6 +250,7 @@ class MainActivity : AppCompatActivity() {
             updateChromeVisibility()
             applyStatusBarFor(destination.id)
         }
+        navController.addOnDestinationChangedListener(navigationAnalyticsListener)
 
         onBackPressedDispatcher.addCallback(this) {
             when (navController.currentDestination?.id) {

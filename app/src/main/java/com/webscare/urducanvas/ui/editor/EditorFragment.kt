@@ -99,6 +99,9 @@ import com.webscare.urducanvas.common.utils.CalligraphyShapingHelper
 import com.webscare.urducanvas.common.utils.InsetUtils.applyStatusBarTopPadding
 import com.webscare.urducanvas.ui.editor.panels.text.symbols.CharChipModel
 import com.webscare.urducanvas.ui.editor.panels.text.symbols.SymbolCharAdapter
+import javax.inject.Inject
+import com.webscare.urducanvas.analytics.AnalyticsTracker
+import com.webscare.urducanvas.analytics.navigation.NavigationAnalyticsListener
 
 fun Int.dpToPx(context: Context): Int {
     return (this * context.resources.displayMetrics.density + 0.5f).toInt()
@@ -106,6 +109,12 @@ fun Int.dpToPx(context: Context): Int {
 
 @AndroidEntryPoint
 class EditorFragment : Fragment() {
+    @Inject
+    lateinit var navigationAnalyticsListener: NavigationAnalyticsListener
+
+    @Inject
+    lateinit var analyticsTracker: AnalyticsTracker
+
     private var _binding: FragmentEditorBinding? = null
     private val binding get() = _binding!!
     private lateinit var canvasManager: CanvasManager
@@ -254,6 +263,7 @@ class EditorFragment : Fragment() {
         val navHostFragment =
             childFragmentManager.findFragmentById(R.id.panelNavHost) as NavHostFragment
         _navController = navHostFragment.navController
+        _navController?.addOnDestinationChangedListener(navigationAnalyticsListener)
 
         binding.panelNavContainer.dragListener = object : com.webscare.urducanvas.common.views.GestureFrameLayout.DragListener {
             override fun onDragBegin(downRawY: Float, currentRawY: Float) {
@@ -3686,11 +3696,17 @@ class EditorFragment : Fragment() {
             b.drawTools.animate().cancel()
             b.done.animate().cancel()
             b.tableSelectionBar.animate().cancel()
+            b.calligraphyBarLayout.animate().cancel()
         }
+        // The new view inflates hidden, so the tracked state has to start over
+        // with it or the strip would never animate back in.
+        characterBarShown = false
+        characterBarAdapter = null
         currentToolbarMode = null
         panelSheet?.snapTo(expanded = false, immediate = true)
         panelSheet = null
         _binding?.canvasContainer?.removeAllViews()
+        _navController?.removeOnDestinationChangedListener(navigationAnalyticsListener)
         _navController = null
         cbOnEditTextRequested = {}
         cbOnElementSelected   = {}

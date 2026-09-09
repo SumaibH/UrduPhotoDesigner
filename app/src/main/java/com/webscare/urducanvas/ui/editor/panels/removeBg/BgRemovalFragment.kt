@@ -37,8 +37,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.webscare.urducanvas.common.utils.InsetUtils.applyStatusBarTopPadding
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
+import com.webscare.urducanvas.analytics.ads.AdAnalyticsCoordinator
 
+@AndroidEntryPoint
 class BgRemovalFragment : Fragment() {
+
+    @Inject
+    lateinit var adAnalyticsCoordinator: AdAnalyticsCoordinator
 
     private var _binding: FragmentBgRemovalBinding? = null
     private val binding get() = _binding!!
@@ -280,13 +287,17 @@ class BgRemovalFragment : Fragment() {
 
         // 3. Try to show rewarded ad if one hasn't been watched this cycle
         if (!adShownThisCycle) {
+            adAnalyticsCoordinator.onAdOpportunity("rewarded_bg_removal", "rewarded", "bg_removal")
+            adAnalyticsCoordinator.onAdImpression("rewarded_bg_removal", "rewarded", "bg_removal", "bg_removal")
             WebsCareAds.showRewarded(
                 activity = requireActivity(),
                 adUnitId = BuildConfig.AD_REWARDED_BG_REMOVAL,
                 onRewarded = { _, _ ->
                     adShownThisCycle = true
+                    adAnalyticsCoordinator.onAdRewardEarned("rewarded_bg_removal", "bg_removal")
                 },
                 onDismissed = {
+                    adAnalyticsCoordinator.onAdDismissed("rewarded_bg_removal", "rewarded", adShownThisCycle)
                     // Ad was shown (rewarded or not) — canvas might be unstable, delay masking
                     binding.imageCanvas.postDelayed({
                         if (isAdded && _binding != null) {
@@ -295,6 +306,7 @@ class BgRemovalFragment : Fragment() {
                     }, 400)
                 },
                 onNotReady = {
+                    adAnalyticsCoordinator.onAdFailedToShow("rewarded_bg_removal", "rewarded", "not_ready")
                     // Ad failed to load — proceed directly to segmentation
                     runSubjectSegmentation(bmp)
                 }
@@ -316,13 +328,17 @@ class BgRemovalFragment : Fragment() {
                 return
             }
 
+            adAnalyticsCoordinator.onAdOpportunity("rewarded_bg_removal_done", "rewarded", "bg_removal_done")
+            adAnalyticsCoordinator.onAdImpression("rewarded_bg_removal_done", "rewarded", "bg_removal", "bg_removal_done")
             WebsCareAds.showRewarded(
                 activity = requireActivity(),
                 adUnitId = BuildConfig.AD_REWARDED_BG_REMOVAL,
                 onRewarded = { _, _ ->
                     adShownThisCycle = true
+                    adAnalyticsCoordinator.onAdRewardEarned("rewarded_bg_removal_done", "bg_removal_done")
                 },
                 onDismissed = {
+                    adAnalyticsCoordinator.onAdDismissed("rewarded_bg_removal_done", "rewarded", adShownThisCycle)
                     adPendingForDone = false
                     binding.imageCanvas.postDelayed({
                         if (isAdded && _binding != null) {
@@ -331,6 +347,7 @@ class BgRemovalFragment : Fragment() {
                     }, 400)
                 },
                 onNotReady = {
+                    adAnalyticsCoordinator.onAdFailedToShow("rewarded_bg_removal_done", "rewarded", "not_ready")
                     // All ad attempts exhausted — let user proceed
                     adPendingForDone = false
                     binding.imageCanvas.confirmMask()
@@ -382,6 +399,7 @@ class BgRemovalFragment : Fragment() {
         }
 
         binding.imageCanvas.onMaskConfirmed = { maskedBitmap ->
+            adAnalyticsCoordinator.onFeatureActionCompleted("bg_removal")
             viewModel.applyMaskToSelected(maskedBitmap)
         }
 
@@ -507,6 +525,7 @@ class BgRemovalFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        adAnalyticsCoordinator.onFeatureAbandoned("bg_removal")
         dismissLoadingDialog()
         _binding = null
     }

@@ -39,6 +39,9 @@ import com.webscare.urducanvas.common.utils.InsetUtils.applyStatusBarTopPadding
 
 @AndroidEntryPoint
 class TemplatesListFragment : androidx.fragment.app.Fragment() {
+    @javax.inject.Inject
+    lateinit var analyticsTracker: com.webscare.urducanvas.analytics.AnalyticsTracker
+
     private var _binding: FragmentTemplatesListBinding? = null
     private val binding get() = _binding!!
     private var filterType: String? = null
@@ -226,6 +229,13 @@ class TemplatesListFragment : androidx.fragment.app.Fragment() {
         }
 
         adapter = TemplatesAdapter { template, isDownloaded ->
+            analyticsTracker.logTemplateClick(
+                templateId = template.id,
+                name = template.template_name,
+                category = template.category,
+                isDownloaded = isDownloaded,
+                isPremium = template.is_premium
+            )
             if (isDownloaded) {
                 val exportResult = template.toExportResultFinal()
                 viewModel.loadTemplateFromJsonFile(exportResult, requireContext(), titleHint = "Loading Template") { success ->

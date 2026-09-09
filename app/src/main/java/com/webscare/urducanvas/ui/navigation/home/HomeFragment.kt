@@ -65,6 +65,9 @@ import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
 class HomeFragment : androidx.fragment.app.Fragment() {
+    @javax.inject.Inject
+    lateinit var analyticsTracker: com.webscare.urducanvas.analytics.AnalyticsTracker
+
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
     private val viewModel: com.webscare.urducanvas.common.canvas.CanvasViewModel by activityViewModels()
@@ -540,6 +543,13 @@ class HomeFragment : androidx.fragment.app.Fragment() {
 
         // ── Popular templates ────────────────────────────────────────────────
         popularTemplatesAdapter = PopularTemplatesAdapter { template, isDownloaded ->
+            analyticsTracker.logTemplateClick(
+                templateId = template.id,
+                name = template.template_name,
+                category = template.category,
+                isDownloaded = isDownloaded,
+                isPremium = template.is_premium
+            )
             if (template.is_downloading) return@PopularTemplatesAdapter
 
             if (isDownloaded) {
@@ -597,6 +607,13 @@ class HomeFragment : androidx.fragment.app.Fragment() {
                 view?.post { findNavController().navigate(R.id.templatesFragment, args) }
             },
             onTemplateClick = { template, isDownloaded ->
+                analyticsTracker.logTemplateClick(
+                    templateId = template.id,
+                    name = template.template_name,
+                    category = template.category,
+                    isDownloaded = isDownloaded,
+                    isPremium = template.is_premium
+                )
                 if (template.is_downloading) return@TemplateCategoriesAdapter
                 if (!isDownloaded) {
                     downloadingTemplate = template

@@ -111,6 +111,7 @@ class MainViewModel @Inject constructor(
     private val imagesRepo: ImagesRepo,
     private val dataStore: com.webscare.urducanvas.common.datastore.PreferencesDataStoreHelper,
     @dagger.hilt.android.qualifiers.ApplicationContext private val context: android.content.Context,
+    private val analyticsTracker: com.webscare.urducanvas.analytics.AnalyticsTracker,
 ) : ViewModel() {
 
     private val _selectedImageIds = MutableStateFlow<Set<Int>>(emptySet())
@@ -810,6 +811,8 @@ class MainViewModel @Inject constructor(
 
         val id = template.id.toString()
         templateJobs[id]?.cancel()
+        val downloadStartTime = System.currentTimeMillis()
+        analyticsTracker.logTemplateDownload(template.id, com.webscare.urducanvas.analytics.AnalyticsConstants.Values.STATUS_STARTED)
 
         val job = viewModelScope.launch {
 
@@ -857,6 +860,12 @@ class MainViewModel @Inject constructor(
                     )
                 )
 
+                analyticsTracker.logTemplateDownload(
+                    template.id,
+                    com.webscare.urducanvas.analytics.AnalyticsConstants.Values.STATUS_SUCCESS,
+                    durationMs = System.currentTimeMillis() - downloadStartTime
+                )
+
             } catch (e: Exception) {
 
                 updateTemplatesUseCase.invoke(
@@ -865,6 +874,13 @@ class MainViewModel @Inject constructor(
 
                 updateTemplateState(
                     id, TemplateDownloadState.Error(e.message ?: "Failed")
+                )
+
+                analyticsTracker.logTemplateDownload(
+                    template.id,
+                    com.webscare.urducanvas.analytics.AnalyticsConstants.Values.STATUS_FAILED,
+                    durationMs = System.currentTimeMillis() - downloadStartTime,
+                    error = e.message
                 )
             }
         }
@@ -1000,9 +1016,21 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun clearFontDownloadState() {
-        _fontDownloadStates.value = _fontDownloadStates.value.filterValues { state ->
-            state is FontDownloadState.Progress
+    /**
+     * Drops finished (success / error) download states so they are not replayed.
+     *
+     * [fontDownloadStates] is a StateFlow, so a terminal state left in the map is handed
+     * to every new collector — that is what made "Font downloaded" pop up again each time
+     * Home came back to the foreground. Collectors must clear the entry as soon as they
+     * act on it; pass [fontId] to drop just that font and leave other downloads alone.
+     */
+    fun clearFontDownloadState(fontId: String? = null) {
+        _fontDownloadStates.value = if (fontId == null) {
+            _fontDownloadStates.value.filterValues { state ->
+                state is FontDownloadState.Progress
+            }
+        } else {
+            _fontDownloadStates.value - fontId
         }
     }
 
