@@ -5281,6 +5281,31 @@ class CanvasView @JvmOverloads constructor(
      * keeping the icons and the frame at a fixed size on screen however small
      * the letter itself is.
      */
+    // Reused across frames. This chrome is drawn for every selected token on every frame,
+    // and calligraphy now supports selecting several at once, so allocating a Paint, a
+    // DashPathEffect and its FloatArray here meant N tokens x 4 objects per frame while the
+    // user drags — exactly when the canvas can least afford the garbage.
+    private val tokenBoxPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = TOKEN_FRAME_COLOR
+        style = Paint.Style.STROKE
+    }
+    private val tokenTetherPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = TOKEN_FRAME_COLOR
+        style = Paint.Style.STROKE
+    }
+
+    /** Cached dash, rebuilt only when the on-screen scale actually changes. */
+    private var tokenDashDp = Float.NaN
+    private var tokenDashEffect: DashPathEffect? = null
+
+    private fun tokenDashFor(dp: Float): DashPathEffect {
+        if (tokenDashDp != dp || tokenDashEffect == null) {
+            tokenDashDp = dp
+            tokenDashEffect = DashPathEffect(floatArrayOf(6f * dp, 4f * dp), 0f)
+        }
+        return tokenDashEffect!!
+    }
+
     private fun drawTokenSelectionBox(
         canvas: Canvas,
         textW: Float,
@@ -5292,11 +5317,9 @@ class CanvasView @JvmOverloads constructor(
         val box = tokenSelectionBounds(textW, fm)
         val pinY = tokenPinY(box.top, dp)
 
-        val boxPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = TOKEN_FRAME_COLOR
-            style = Paint.Style.STROKE
+        val boxPaint = tokenBoxPaint.apply {
             strokeWidth = 1.5f * dp
-            pathEffect = DashPathEffect(floatArrayOf(6f * dp, 4f * dp), 0f)
+            pathEffect = tokenDashFor(dp)
         }
         canvas.drawRect(box, boxPaint)
 
@@ -5314,11 +5337,7 @@ class CanvasView @JvmOverloads constructor(
         resizeIcon.draw(canvas)
 
         // Top rotation pin, on the same tether the element frame uses.
-        val tetherPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = TOKEN_FRAME_COLOR
-            style = Paint.Style.STROKE
-            strokeWidth = 1.5f * dp
-        }
+        val tetherPaint = tokenTetherPaint.apply { strokeWidth = 1.5f * dp }
         canvas.drawLine(0f, box.top, 0f, pinY + half, tetherPaint)
         rotateIcon.setBounds(
             (-half).toInt(), (pinY - half).toInt(),
@@ -5347,15 +5366,21 @@ class CanvasView @JvmOverloads constructor(
      * tightly that the stroke ran through its glyphs, while swamping a small
      * one. Sizing it from the content keeps the same optical gap at any size.
      */
+    private val reusableTokenBounds = RectF()
+
     private fun tokenSelectionBounds(textW: Float, fm: Paint.FontMetrics): RectF {
         val lineHeight = fm.descent - fm.ascent
         val pad = (lineHeight * TOKEN_BOX_PAD_RATIO).coerceAtLeast(TOKEN_BOX_PAD_MIN)
-        return RectF(
-            -textW / 2f - pad,
-            fm.ascent - pad,
-            textW / 2f + pad,
-            fm.descent + pad
-        )
+        // Filled in place: the two callers — this frame's draw and the hit test — each use
+        // the result immediately and never hold two at once.
+        return reusableTokenBounds.apply {
+            set(
+                -textW / 2f - pad,
+                fm.ascent - pad,
+                textW / 2f + pad,
+                fm.descent + pad
+            )
+        }
     }
 
     /** Where the rotation pin sits above [boxTop]. Shared so the hit test agrees with the drawing. */
