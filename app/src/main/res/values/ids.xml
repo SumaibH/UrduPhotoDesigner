@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        Carries the TemplateEntity a card is currently showing, set on the item view at bind
+        time and read by TemplateImpressionTracker.
+
+        The tracker cannot go from adapter position to template on its own: the template
+        lists are wrapped by the native-ad adapter, which inserts ad slots and shifts every
+        position after them, and on Home the cards live in nested per-category lists. Reading
+        it off the view sidesteps both.
+    -->
+    <item name="tag_template" type="id" />
+</resources>

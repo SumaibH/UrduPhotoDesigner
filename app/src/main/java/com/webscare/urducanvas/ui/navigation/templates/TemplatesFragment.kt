@@ -45,6 +45,11 @@ class TemplatesFragment : androidx.fragment.app.Fragment() {
     @javax.inject.Inject
     lateinit var analyticsTracker: com.webscare.urducanvas.analytics.AnalyticsTracker
 
+    /** Reports template_impression for cards that actually come into view on this screen. */
+    private val impressionTracker by lazy {
+        com.webscare.urducanvas.analytics.impressions.TemplateImpressionTracker(analyticsTracker, "templates_category")
+    }
+
     private var _binding: FragmentTemplatesBinding? = null
     private val binding get() = _binding!!
 
@@ -87,6 +92,7 @@ class TemplatesFragment : androidx.fragment.app.Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        impressionTracker.start(view)
         // Edge to edge: the window no longer reserves the status bar, so leave the margin here.
         view.applyStatusBarTopPadding()
 //        setupPriceChips()
@@ -534,6 +540,7 @@ class TemplatesFragment : androidx.fragment.app.Fragment() {
     }
 
     override fun onDestroyView() {
+        impressionTracker.stop()
         _binding?.categoriesRV?.adapter = null
         loadingDialog?.dismiss()
         loadingDialog = null

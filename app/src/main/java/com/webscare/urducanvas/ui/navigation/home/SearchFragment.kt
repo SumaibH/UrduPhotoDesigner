@@ -58,6 +58,14 @@ import com.webscare.urducanvas.common.utils.InsetUtils.applyStatusBarTopPadding
 
 @AndroidEntryPoint
 class SearchFragment : Fragment() {
+
+    @javax.inject.Inject
+    lateinit var analyticsTracker: com.webscare.urducanvas.analytics.AnalyticsTracker
+
+    /** Reports template_impression for cards that actually come into view on this screen. */
+    private val impressionTracker by lazy {
+        com.webscare.urducanvas.analytics.impressions.TemplateImpressionTracker(analyticsTracker, "search")
+    }
     private var _binding: FragmentSearchBinding? = null
     private val binding get() = _binding!!
     private val mainViewModel: MainViewModel by activityViewModels()
@@ -81,6 +89,7 @@ class SearchFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        impressionTracker.start(view)
         // Edge to edge: the window no longer reserves the status bar, so leave the margin here.
         view.applyStatusBarTopPadding()
 
@@ -576,6 +585,7 @@ class SearchFragment : Fragment() {
     )
 
     override fun onDestroyView() {
+        impressionTracker.stop()
         _binding?.popularTemplateRV?.adapter = null
         _binding?.fontsRV?.adapter = null
         _binding?.filesRV?.adapter = null

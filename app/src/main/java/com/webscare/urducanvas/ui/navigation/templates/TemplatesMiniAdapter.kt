@@ -37,6 +37,10 @@ class TemplatesMiniAdapter(
     inner class VH(val binding: LayoutTemplateCategoryBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(item: com.webscare.urducanvas.data.model.TemplateEntity) {
+            // Lets TemplateImpressionTracker tell which card this is once it scrolls
+            // into view, without depending on adapter positions the native-ad wrapper shifts.
+            itemView.setTag(com.webscare.urducanvas.R.id.tag_template, item)
+
 
 
             binding.isPremium.isVisible = item.is_premium && !item.is_subscribed

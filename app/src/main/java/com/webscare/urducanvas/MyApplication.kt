@@ -72,6 +72,10 @@ class MyApplication : Application() {
             com.webscare.urducanvas.analytics.AnalyticsConstants.UserProperties.APP_VERSION,
             BuildConfig.VERSION_NAME
         )
+        // The lifetime properties are counted in SharedPreferences, so they already have
+        // values on launch. Pushing them here means a returning user who does nothing this
+        // session still lands in the right audience.
+        analyticsTracker.syncUserProfile()
 
         androidx.lifecycle.ProcessLifecycleOwner.get().lifecycle.addObserver(object : androidx.lifecycle.DefaultLifecycleObserver {
             override fun onStart(owner: androidx.lifecycle.LifecycleOwner) {

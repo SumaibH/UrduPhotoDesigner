@@ -68,6 +68,11 @@ class HomeFragment : androidx.fragment.app.Fragment() {
     @javax.inject.Inject
     lateinit var analyticsTracker: com.webscare.urducanvas.analytics.AnalyticsTracker
 
+    /** Reports template_impression for cards that actually come into view on this screen. */
+    private val impressionTracker by lazy {
+        com.webscare.urducanvas.analytics.impressions.TemplateImpressionTracker(analyticsTracker, "home")
+    }
+
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
     private val viewModel: com.webscare.urducanvas.common.canvas.CanvasViewModel by activityViewModels()
@@ -137,6 +142,7 @@ class HomeFragment : androidx.fragment.app.Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        impressionTracker.start(view)
 
         if (BuildConfig.AD_NATIVE_HOME.isNotBlank()) {
             binding.homeNativeAd.setAdUnitIdAndSize(BuildConfig.AD_NATIVE_HOME, NativeSize.SMALL)
@@ -978,6 +984,7 @@ class HomeFragment : androidx.fragment.app.Fragment() {
     }
 
     override fun onDestroyView() {
+        impressionTracker.stop()
         _binding?.contentScroll?.removeCallbacks(headerSnapRunnable)
         headerSnapSpring?.cancel()
         headerSnapSpring = null

@@ -9,6 +9,7 @@ import com.webscare.urducanvas.analytics.AnalyticsConstants.Events
 import com.webscare.urducanvas.analytics.AnalyticsConstants.MAX_PARAM_KEY_LENGTH
 import com.webscare.urducanvas.analytics.AnalyticsConstants.MAX_STRING_LENGTH
 import com.webscare.urducanvas.analytics.AnalyticsConstants.Params
+import com.webscare.urducanvas.analytics.AnalyticsConstants.UserProperties
 import com.webscare.urducanvas.analytics.AnalyticsConstants.Values
 import com.webscare.urducanvas.analytics.session.SessionStateManager
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -126,6 +127,7 @@ class AnalyticsTracker @Inject constructor(
 
     fun logTemplateOpened(templateId: Int, name: String, category: String?, isPremium: Boolean, elementCount: Int) {
         sessionStateManager.setActiveTemplate(templateId, name)
+        syncUserProfile(sessionStateManager.recordTemplateCategory(category))
         sessionStateManager.recordAction("open_template_$templateId")
         logRawEvent(Events.TEMPLATE_OPENED, mapOf(
             Params.TEMPLATE_ID to templateId,
@@ -206,6 +208,7 @@ class AnalyticsTracker @Inject constructor(
 
     fun logAdImpression(adUnitName: String, adFormat: String, screenName: String, triggerFeature: String, rewardTarget: String? = null) {
         sessionStateManager.recordAdShown(adUnitName, triggerFeature)
+        syncUserProfile(sessionStateManager.recordAdWatched())
         logRawEvent(Events.AD_IMPRESSION_CUSTOM, mapOf(
             Params.AD_UNIT_NAME to adUnitName,
             Params.AD_FORMAT to adFormat,
@@ -271,6 +274,7 @@ class AnalyticsTracker @Inject constructor(
     fun logExportCompleted(format: String, fileSizeMb: Double, durationSeconds: Long, templateId: Int?) {
         sessionStateManager.recordAction("export_completed")
         sessionStateManager.recordTemplateExport()
+        syncUserProfile(sessionStateManager.recordExport(format))
         logRawEvent(Events.EXPORT_COMPLETED, mapOf(
             Params.EXPORT_FORMAT to format,
             Params.FILE_SIZE_MB to fileSizeMb,
@@ -307,6 +311,19 @@ class AnalyticsTracker @Inject constructor(
     }
 
     // ─── User Properties ───
+
+    /**
+     * Pushes the lifetime profile to GA4.
+     *
+     * Called after anything that changes it, and once at startup so a returning user who
+     * does nothing this session still carries the properties the audiences filter on.
+     */
+    fun syncUserProfile(profile: SessionStateManager.UserProfile = sessionStateManager.currentProfile()) {
+        setUserProperty(UserProperties.DESIGNS_EXPORTED_BUCKET, profile.exportedBucket)
+        setUserProperty(UserProperties.ADS_WATCHED_BUCKET, profile.adsWatchedBucket)
+        profile.preferredFormat?.let { setUserProperty(UserProperties.PREFERRED_EXPORT_FORMAT, it) }
+        profile.favouriteCategory?.let { setUserProperty(UserProperties.FAVORITE_CATEGORY, it) }
+    }
 
     fun setUserProperty(name: String, value: String?) {
         try {

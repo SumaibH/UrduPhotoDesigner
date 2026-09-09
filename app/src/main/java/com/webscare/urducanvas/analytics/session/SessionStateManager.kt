@@ -210,6 +210,73 @@ class SessionStateManager @Inject constructor(
         this.lastAdDismissedTimeElapsedMs = null
     }
 
+    // ─── Lifetime profile, for GA4 user properties ───
+    //
+    // These describe the person rather than the session, so they are counted in
+    // SharedPreferences and survive process death — an in-memory tally would reset on every
+    // cold start and the audiences built on it would only ever see today's behaviour.
+    // Counts go out bucketed: GA4 user properties are strings, and the exact number of
+    // exports is both high cardinality and less useful than the band it falls in.
+
+    /** The four lifetime values, recomputed after each update. */
+    data class UserProfile(
+        val exportedBucket: String,
+        val adsWatchedBucket: String,
+        val preferredFormat: String?,
+        val favouriteCategory: String?
+    )
+
+    fun recordExport(format: String): UserProfile {
+        increment(KEY_EXPORT_COUNT)
+        if (format.isNotBlank()) increment(PREFIX_FORMAT + format.lowercase())
+        return currentProfile()
+    }
+
+    fun recordAdWatched(): UserProfile {
+        increment(KEY_ADS_WATCHED)
+        return currentProfile()
+    }
+
+    fun recordTemplateCategory(category: String?): UserProfile {
+        if (!category.isNullOrBlank()) increment(PREFIX_CATEGORY + category)
+        return currentProfile()
+    }
+
+    fun currentProfile(): UserProfile = UserProfile(
+        exportedBucket = bucket(prefs.getInt(KEY_EXPORT_COUNT, 0)),
+        adsWatchedBucket = bucket(prefs.getInt(KEY_ADS_WATCHED, 0)),
+        preferredFormat = mostCounted(PREFIX_FORMAT),
+        favouriteCategory = mostCounted(PREFIX_CATEGORY)
+    )
+
+    private fun increment(key: String) {
+        prefs.edit().putInt(key, prefs.getInt(key, 0) + 1).apply()
+    }
+
+    /** The key with the highest tally under [prefix], or null before anything is counted. */
+    private fun mostCounted(prefix: String): String? =
+        prefs.all
+            .asSequence()
+            .filter { it.key.startsWith(prefix) && it.value is Int }
+            .maxByOrNull { it.value as Int }
+            ?.key
+            ?.removePrefix(prefix)
+
+    private fun bucket(count: Int): String = when {
+        count <= 0 -> "0"
+        count < 5 -> "1-4"
+        count < 20 -> "5-19"
+        count < 100 -> "20-99"
+        else -> "100+"
+    }
+
+    private companion object {
+        const val KEY_EXPORT_COUNT = "profile_export_count"
+        const val KEY_ADS_WATCHED = "profile_ads_watched"
+        const val PREFIX_FORMAT = "profile_format_"
+        const val PREFIX_CATEGORY = "profile_category_"
+    }
+
     fun startNewSession() {
         sessionId = UUID.randomUUID().toString()
         screenStartTimeElapsedMs = SystemClock.elapsedRealtime()

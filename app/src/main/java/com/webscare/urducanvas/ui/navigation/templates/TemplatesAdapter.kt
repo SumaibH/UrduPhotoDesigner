@@ -74,6 +74,10 @@ class TemplatesAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: TemplateEntity) {
+            // Lets TemplateImpressionTracker tell which card this is once it scrolls
+            // into view, without depending on adapter positions the native-ad wrapper shifts.
+            itemView.setTag(com.webscare.urducanvas.R.id.tag_template, item)
+
 
             val width = item.canvas_width
             val height = item.canvas_height

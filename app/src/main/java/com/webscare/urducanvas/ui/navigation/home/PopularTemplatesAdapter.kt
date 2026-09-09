@@ -40,6 +40,10 @@ class PopularTemplatesAdapter(
     inner class VH(val binding: LayoutTemplatePopularBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(item: TemplateEntity) {
+            // Lets TemplateImpressionTracker tell which card this is once it scrolls
+            // into view, without depending on adapter positions the native-ad wrapper shifts.
+            itemView.setTag(com.webscare.urducanvas.R.id.tag_template, item)
+
             val isDark = binding.root.context.isDarkModeEnabled()
             binding.shimmerLayout.startShimmerSoft(isDark)
 
