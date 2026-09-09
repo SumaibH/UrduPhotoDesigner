@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The intended home header gradient. API 26 lifted GradientDrawable's restriction that
+    the angle be a multiple of 45, so the original 115° only renders from here up; the
+    baseline drawable/ copy uses 135° so Android 7 can still inflate the screen at all.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:angle="115"
+        android:startColor="@color/home_header_start"
+        android:centerColor="@color/home_header_center"
+        android:endColor="@color/home_header_end"
+        android:type="linear" />
+    <corners
+        android:bottomLeftRadius="28dp"
+        android:bottomRightRadius="28dp" />
+</shape>

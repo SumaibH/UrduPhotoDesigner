@@ -1,7 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Baseline copy of the home header, kept to an angle Android 7 accepts.
+
+    Before API 26 GradientDrawable rejects any <gradient> angle that is not a multiple of
+    45 — it throws while inflating, which took out the whole Home screen and made the app
+    unlaunchable on Android 7. drawable-v26/ carries the original 115° for everything that
+    can render it; 135 is the nearest legal angle and is visually very close.
+-->
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
     <gradient
-        android:angle="115"
+        android:angle="135"
         android:startColor="@color/home_header_start"
         android:centerColor="@color/home_header_center"
         android:endColor="@color/home_header_end"
