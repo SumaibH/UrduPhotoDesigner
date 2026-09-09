@@ -48,6 +48,25 @@ object InsetUtils {
         ViewCompat.requestApplyInsets(this)
     }
 
+    /**
+     * Keeps [this] clear of the on-screen keyboard.
+     *
+     * The window draws edge to edge, so the IME slides over the content instead of
+     * resizing it — which is how an empty-state message ("No stickers available") ended up
+     * hidden behind the keyboard while the user was still typing in the search box.
+     * Padding by the IME height shrinks the content area instead, so anything centred in
+     * it re-centres in the space that is left.
+     */
+    fun View.applyImeBottomPadding() {
+        val basePaddingBottom = paddingBottom
+        ViewCompat.setOnApplyWindowInsetsListener(this) { view, insets ->
+            val ime = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+            view.updatePadding(bottom = basePaddingBottom + ime)
+            insets
+        }
+        ViewCompat.requestApplyInsets(this)
+    }
+
     private fun View.updatePadding(
         top: Int = paddingTop,
         bottom: Int = paddingBottom

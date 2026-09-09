@@ -156,8 +156,26 @@ class PopularFontsListFragment : androidx.fragment.app.Fragment() {
                     b.fontsRV.scrollToPosition(0)
                 }
                 b.swipeRefresh.isRefreshing = false
+                renderEmptyState(isEmpty = fresh.isEmpty(), query = query)
             }
         }
+    }
+
+    /**
+     * A no-match search and an empty category look identical to the user — a blank page —
+     * so both get a message, and the search case names the term that found nothing.
+     */
+    private fun renderEmptyState(isEmpty: Boolean, query: String) {
+        val b = _binding ?: return
+        // The message sits over the (empty) list rather than replacing it, so pull to
+        // refresh still works from the empty state.
+        b.noFonts.visibility = if (isEmpty) View.VISIBLE else View.GONE
+        if (!isEmpty) return
+
+        val trimmed = query.trim()
+        b.noFontsText.text =
+            if (trimmed.isNotEmpty()) "No fonts match \"$trimmed\".\nTry another keyword."
+            else getString(R.string.no_fonts_available)
     }
 
     private fun observeData() {
@@ -231,6 +249,11 @@ class PopularFontsListFragment : androidx.fragment.app.Fragment() {
                                     )
                                 )
 
+                                // Consume the terminal state now, not inside the snackbar
+                                // action — otherwise it stays in the StateFlow and the
+                                // snackbar is replayed on every return to this screen.
+                                mainViewModel.clearFontDownloadState(font.id.toString())
+
                                 showGlobalSuccessSnack("Font downloaded") {
                                     viewLifecycleOwner.lifecycleScope.launch {
                                         viewModel.setCanvasSize(
@@ -252,7 +275,6 @@ class PopularFontsListFragment : androidx.fragment.app.Fragment() {
                                             }
                                         }
                                     }
-                                    mainViewModel.clearFontDownloadState()
                                 }
                             }
 
@@ -265,7 +287,7 @@ class PopularFontsListFragment : androidx.fragment.app.Fragment() {
                                     )
                                 )
 
-                                mainViewModel.clearFontDownloadState()
+                                mainViewModel.clearFontDownloadState(font.id.toString())
                                 Snackbar.make(requireView(), "Download failed!", Snackbar.LENGTH_SHORT)
                                     .show()
                             }

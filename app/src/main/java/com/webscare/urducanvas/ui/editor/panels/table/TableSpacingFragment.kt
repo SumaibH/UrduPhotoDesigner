@@ -8,6 +8,7 @@ import android.widget.SeekBar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.webscare.urducanvas.common.canvas.CanvasViewModel
+import com.webscare.urducanvas.common.utils.Constants
 import com.webscare.urducanvas.databinding.LayoutTableSpacingOptionsBinding
 
 class TableSpacingFragment : Fragment() {
@@ -31,7 +32,12 @@ class TableSpacingFragment : Fragment() {
         val initLetter = currentStyle?.letterSpacing ?: 0f
         val initLine = currentStyle?.lineSpacing ?: 1.0f
 
-        val initLetterProgress = (((initLetter - (-0.5f)) / 2.5f) * 100f).toInt().coerceIn(0, 100)
+        // Same floors as the text panel — see Constants for why -0.5 is not a usable one.
+        val letterRange = Constants.LETTER_SPACING_MAX - Constants.LETTER_SPACING_MIN
+        val lineRange = Constants.LINE_SPACING_MAX - Constants.LINE_SPACING_MIN
+
+        val initLetterProgress =
+            (((initLetter - Constants.LETTER_SPACING_MIN) / letterRange) * 100f).toInt().coerceIn(0, 100)
         binding.seekLetterSpacing.max = 100
         binding.seekLetterSpacing.progress = initLetterProgress
         binding.tvLetterSpacingValue.text = "%.2f".format(initLetter)
@@ -39,7 +45,8 @@ class TableSpacingFragment : Fragment() {
         binding.seekLetterSpacing.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
-                    val mappedLetterSpacing = -0.5f + (progress / 100.0f) * 2.5f
+                    val mappedLetterSpacing =
+                        Constants.LETTER_SPACING_MIN + (progress / 100.0f) * letterRange
                     binding.tvLetterSpacingValue.text = "%.2f".format(mappedLetterSpacing)
                     viewModel.setTableLetterSpacing(mappedLetterSpacing)
                 }
@@ -49,7 +56,8 @@ class TableSpacingFragment : Fragment() {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
 
-        val initLineProgress = (((initLine - 0.5f) / 2.5f) * 100f).toInt().coerceIn(0, 100)
+        val initLineProgress =
+            (((initLine - Constants.LINE_SPACING_MIN) / lineRange) * 100f).toInt().coerceIn(0, 100)
         binding.seekLineSpacing.max = 100
         binding.seekLineSpacing.progress = initLineProgress
         binding.tvLineSpacingValue.text = "%.2f".format(initLine)
@@ -57,7 +65,8 @@ class TableSpacingFragment : Fragment() {
         binding.seekLineSpacing.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
-                    val mappedLineSpacing = 0.5f + (progress / 100.0f) * 2.5f
+                    val mappedLineSpacing =
+                        Constants.LINE_SPACING_MIN + (progress / 100.0f) * lineRange
                     binding.tvLineSpacingValue.text = "%.2f".format(mappedLineSpacing)
                     viewModel.setTableLineSpacing(mappedLineSpacing)
                 }

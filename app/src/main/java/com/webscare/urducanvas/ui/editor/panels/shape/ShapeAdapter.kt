@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.createBitmap
+import androidx.core.view.doOnNextLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.webscare.urducanvas.R
 import com.webscare.urducanvas.common.canvas.enums.ShapeType
@@ -212,11 +213,18 @@ class ShapeAdapter(
             val rvPaddingY = (recyclerView?.paddingTop ?: 0) + (recyclerView?.paddingBottom ?: 0)
             val availHeight = rvHeight - rvPaddingY
 
-            val computedCollapsedHeight = if (availHeight > 0) {
-                ((availHeight - (spanCount * marginBottomPx)) / spanCount).coerceAtLeast((24 * density).toInt())
-            } else {
-                (44 * density).toInt()
+            if (availHeight <= 0) {
+                // Guessing a height here wrote a size into lp.height that had
+                // nothing to do with the row the layout manager would hand the
+                // item, and GridLayoutManager honours an explicit child height
+                // verbatim in its cross axis, so an oversized tile ran straight
+                // into the row below. Wait for a real measurement instead.
+                recyclerView?.doOnNextLayout { updateSize(slideOffset, rvWidth, rvPadding) }
+                return
             }
+
+            val computedCollapsedHeight =
+                ((availHeight - (spanCount * marginBottomPx)) / spanCount).coerceAtLeast((24 * density).toInt())
 
             val collapsedSize = computedCollapsedHeight
 

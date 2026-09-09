@@ -213,17 +213,16 @@ class TextStylesFragment : Fragment() {
             isCustomUserSaved = true
         )
 
-        val existingSaved = TextStylesRepository.getCustomUserSavedStyles(requireContext())
-        val duplicateMatch = existingSaved.firstOrNull { TextStylesRepository.hasSameStyleProperties(it, customPreset) }
+        // saveCustomUserStyle is the single gate: it stores the style, or returns the id of
+        // the matching one already in My Styles and stores nothing. Either way the grid
+        // ends up selecting the style the user is looking at.
+        val storedId = TextStylesRepository.saveCustomUserStyle(requireContext(), customPreset)
+        viewModel.selectedStylePresetId.value = storedId
 
-        if (duplicateMatch != null) {
-            viewModel.selectedStylePresetId.value = duplicateMatch.id
-            Toast.makeText(requireContext(), "Style with these properties already added!", Toast.LENGTH_SHORT).show()
-        } else {
-            TextStylesRepository.saveCustomUserStyle(requireContext(), customPreset)
-            viewModel.selectedStylePresetId.value = customPreset.id
-            Toast.makeText(requireContext(), "Style saved to My Styles!", Toast.LENGTH_SHORT).show()
-        }
+        val message =
+            if (storedId == customPreset.id) "Style saved to My Styles!"
+            else "Style with these properties already added!"
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
 
         rebuildTabs()
 

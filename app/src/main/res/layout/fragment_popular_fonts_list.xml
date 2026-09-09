@@ -57,4 +57,37 @@
             app:layoutManager="androidx.recyclerview.widget.StaggeredGridLayoutManager"
             tools:listitem="@layout/layout_template_item"/>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <!-- Empty state — a search with no matches used to leave a blank screen with no
+         explanation, which reads as a screen that failed to load. -->
+    <LinearLayout
+        android:id="@+id/noFonts"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingHorizontal="24dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_nothing_found"/>
+
+        <TextView
+            android:id="@+id/noFontsText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:fontFamily="@font/regular"
+            android:gravity="center_horizontal"
+            android:text="@string/no_search_available_here"
+            android:textColor="@color/black"
+            android:textSize="15sp"/>
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

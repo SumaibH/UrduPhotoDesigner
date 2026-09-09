@@ -24,6 +24,7 @@ import com.webscare.urducanvas.common.canvas.model.CanvasSize
 import com.webscare.urducanvas.common.canvas.sealed.HomeRow
 import com.webscare.urducanvas.common.canvas.sealed.TemplateDownloadState
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
+import com.webscare.urducanvas.common.utils.Utils.setupClearButton
 import com.webscare.urducanvas.common.utils.showGlobalSuccessSnack
 import com.webscare.urducanvas.data.model.TemplateEntity
 import com.webscare.urducanvas.data.model.toExportResultFinal
@@ -156,11 +157,20 @@ class TemplatesFragment : androidx.fragment.app.Fragment() {
             } else false
         }
 
+        // Filter as the user types. Waiting for the IME's Search key meant a typed keyword
+        // did nothing until it was submitted, so the grid kept showing everything the
+        // category filter allowed and the two never combined. applyFilters() already ANDs
+        // the query with the subcategory, size and price filters.
         binding.searchBar.doAfterTextChanged { text ->
-            if (text.isNullOrEmpty()) {
-                activeQuery = ""
+            val query = text?.toString().orEmpty()
+            if (query != activeQuery) {
+                activeQuery = query
                 applyFilters()
             }
+        }
+        binding.searchBar.setupClearButton {
+            activeQuery = ""
+            applyFilters()
         }
     }
 
@@ -376,6 +386,15 @@ class TemplatesFragment : androidx.fragment.app.Fragment() {
                             if (!isGridMode()) {
                                 subcategoryAdapter.updateTemplateProgress(t.id, 100, false, true)
                                 subcategoryAdapter.notifyTemplateStateChanged(finalTemplate)
+                            } else {
+                                // The grid adapter was never told, so the download icon
+                                // stayed on a template that was already downloaded.
+                                templatesAdapter.updateProgress(
+                                    t.id,
+                                    com.webscare.urducanvas.data.model.ProgressUi(
+                                        100, isDownloading = false, isDownloaded = true
+                                    )
+                                )
                             }
                             showGlobalSuccessSnack("Template ready") {
                                 val exportResult = t.toExportResultFinal()

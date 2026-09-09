@@ -63,6 +63,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.webscare.urducanvas.common.utils.InsetUtils.applyImeBottomPadding
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -122,6 +123,9 @@ class FilesListFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // The parent's search box is above this list, so typing raises the keyboard over
+        // it. Padding by the IME keeps the empty-state message inside the visible area.
+        view.applyImeBottomPadding()
         setEvents()
         initObservers()
         _binding!!.filesRV.edgeEffectFactory = SpringEdgeEffectFactory()
@@ -137,8 +141,34 @@ class FilesListFragment : Fragment() {
         if (tabName.equals("Projects", true)) {
             importProjectLauncher.launch(arrayOf("application/octet-stream", "*/*"))
         } else {
-            pickFiles.launch(arrayOf("*/*"))
+            pickFiles.launch(pickerMimeTypes())
         }
+    }
+
+    /**
+     * The picker filter for the active tab.
+     *
+     * Stickers need transparency, so only PNG belongs there; Backgrounds take the opaque
+     * formats and deliberately exclude PNG rather than asking for any image type, which would
+     * put every sticker in the same picker. Fonts stay wide because Android reports
+     * .ttf/.otf under half a dozen MIME types (and often none at all) — those are checked
+     * by extension in [handlePickedFile] instead.
+     */
+    private fun pickerMimeTypes(): Array<String> = when {
+        tabName.equals("Stickers", true)    -> arrayOf("image/png")
+        tabName.equals("Backgrounds", true) -> arrayOf("image/jpeg", "image/webp")
+        else                                -> arrayOf("*/*")
+    }
+
+    /**
+     * Extensions the active tab will store. A picker filter is a hint the user can
+     * override ("All files" in the system picker), so the tab checks again on the way in.
+     */
+    private fun acceptedExtensions(): Set<String> = when {
+        tabName.equals("Fonts", true)       -> setOf("ttf", "otf")
+        tabName.equals("Stickers", true)    -> setOf("png")
+        tabName.equals("Backgrounds", true) -> setOf("jpg", "jpeg", "webp")
+        else                                -> emptySet()   // "All" — anything supported
     }
 
     /**
@@ -165,6 +195,14 @@ class FilesListFragment : Fragment() {
                 adapter.clearSelection()
                 // Notify parent so it swaps the toolbar button back to Import
                 (parentFragment as? FilesFragment)?.onSelectionModeChanged(false)
+                val count = selectedItems.size
+                _binding?.root?.let {
+                    Snackbar.make(
+                        it,
+                        if (count == 1) "1 item deleted" else "$count items deleted",
+                        Snackbar.LENGTH_SHORT
+                    ).show()
+                }
             }
         }
     }
@@ -216,13 +254,19 @@ class FilesListFragment : Fragment() {
             }
             withContext(Dispatchers.Main) {
                 val root = _binding?.root ?: return@withContext
+                val expected = when {
+                    tabName.equals("Fonts", true)       -> ".ttf or .otf fonts"
+                    tabName.equals("Stickers", true)    -> "PNG images"
+                    tabName.equals("Backgrounds", true) -> "JPG or WEBP images"
+                    else                                -> "supported files"
+                }
                 val msg = when {
                     imported > 0 && skipped == 0 ->
                         if (imported == 1) "File imported successfully"
                         else "$imported files imported successfully"
                     imported > 0 ->
-                        "$imported imported, $skipped skipped (unsupported type)"
-                    else -> "No supported files found"
+                        "$imported imported, $skipped skipped — this tab takes $expected"
+                    else -> "Nothing imported — this tab takes $expected"
                 }
                 Snackbar.make(root, msg, Snackbar.LENGTH_SHORT).show()
             }
@@ -241,6 +285,12 @@ class FilesListFragment : Fragment() {
     private suspend fun handlePickedFile(uri: Uri): Boolean {
         val name = getFileName(uri)
         val ext  = name.substringAfterLast('.', "").lowercase()
+
+        val accepted = acceptedExtensions()
+        if (accepted.isNotEmpty() && ext !in accepted) {
+            Log.w("FilesListFragment", "Rejected $name for the $tabName tab (.$ext)")
+            return false
+        }
 
         return when (ext) {
 
@@ -527,38 +577,64 @@ class FilesListFragment : Fragment() {
         popupBinding.actionDuplicate.addPressEffect {
             popupWindow.dismiss()
             lifecycleScope.launch(Dispatchers.IO) {
-                when (item) {
-                    is ExportResult -> {
-                        val newImage = ImageProcessor.newExportImageFile(requireActivity(), File(item.imagePath).name)
-                        val newJson  = ImageProcessor.newExportJsonFile(requireActivity(), File(item.jsonPath).name)
-                        ImageProcessor.copyFile(File(item.imagePath), newImage)
-                        ImageProcessor.copyFile(File(item.jsonPath),  newJson)
-                        viewModel.insertExportResult(item.copy(
-                            id = 0, imagePath = newImage.absolutePath, jsonPath = newJson.absolutePath,
-                            fileName = "${item.fileName}_copy", updatedDate = System.currentTimeMillis().toString()
-                        ))
+                // Copying touches the filesystem, so anything here can throw. Without the
+                // catch a single bad path took the app down instead of failing the action.
+                val message = try {
+                    when (item) {
+                        is ExportResult -> {
+                            val newImage = ImageProcessor.newExportImageFile(requireActivity(), File(item.imagePath).name)
+                            val newJson  = ImageProcessor.newExportJsonFile(requireActivity(), File(item.jsonPath).name)
+                            ImageProcessor.copyFile(File(item.imagePath), newImage)
+                            ImageProcessor.copyFile(File(item.jsonPath),  newJson)
+                            viewModel.insertExportResult(item.copy(
+                                id = 0, imagePath = newImage.absolutePath, jsonPath = newJson.absolutePath,
+                                fileName = "${item.fileName}_copy", updatedDate = System.currentTimeMillis().toString()
+                            ))
+                            "Project duplicated successfully"
+                        }
+                        is ImageEntity -> {
+                            val src  = File(item.bitmapData ?: item.file_url)
+                            val dest = ImageProcessor.newImageFile(requireContext(), src.name)
+                            if (src.exists()) ImageProcessor.copyFile(src, dest)
+                            viewModel.insertImage(item.copy(
+                                id = 0, file_name = "${item.file_name}_copy",
+                                bitmapData = dest.absolutePath, created_at = System.currentTimeMillis().toString()
+                            ))
+                            "Image duplicated successfully"
+                        }
+                        is FontEntity -> {
+                            val srcFont    = File(item.file_path ?: item.file_url)
+                            val destFont   = ImageProcessor.newFontFile(requireContext(), srcFont.name)
+                            if (srcFont.exists()) ImageProcessor.copyFile(srcFont, destFont)
+                            // Imported fonts carry no preview image, and File(null) threw —
+                            // that is what crashed duplicating a .ttf.
+                            val destPrevPath = item.font_image
+                                ?.takeIf { it.isNotBlank() }
+                                ?.let { previewPath ->
+                                    val srcPrev  = File(previewPath)
+                                    val destPrev = ImageProcessor.newFontPreviewFile(requireContext(), srcPrev.name)
+                                    if (srcPrev.exists()) {
+                                        ImageProcessor.copyFile(srcPrev, destPrev)
+                                        destPrev.absolutePath
+                                    } else null
+                                }
+                            viewModel.insertFont(item.copy(
+                                id = 0, font_name = "${item.font_name}_copy",
+                                font_image = destPrevPath, file_path = destFont.absolutePath,
+                                created_at = System.currentTimeMillis().toString()
+                            ))
+                            "Font duplicated successfully"
+                        }
+                        else -> null
                     }
-                    is ImageEntity -> {
-                        val src  = File(item.bitmapData ?: item.file_url)
-                        val dest = ImageProcessor.newImageFile(requireContext(), src.name)
-                        if (src.exists()) ImageProcessor.copyFile(src, dest)
-                        viewModel.insertImage(item.copy(
-                            id = 0, file_name = "${item.file_name}_copy",
-                            bitmapData = dest.absolutePath, created_at = System.currentTimeMillis().toString()
-                        ))
-                    }
-                    is FontEntity -> {
-                        val srcFont    = File(item.file_path ?: item.file_url)
-                        val destFont   = ImageProcessor.newFontFile(requireContext(), srcFont.name)
-                        if (srcFont.exists()) ImageProcessor.copyFile(srcFont, destFont)
-                        val srcPrev    = File(item.font_image)
-                        val destPrev   = ImageProcessor.newFontPreviewFile(requireContext(), srcPrev.name)
-                        if (srcPrev.exists()) ImageProcessor.copyFile(srcPrev, destPrev)
-                        viewModel.insertFont(item.copy(
-                            id = 0, font_name = "${item.font_name}_copy",
-                            font_image = destPrev.absolutePath, file_path = destFont.absolutePath,
-                            created_at = System.currentTimeMillis().toString()
-                        ))
+                } catch (e: Exception) {
+                    Log.e("FilesListFragment", "Duplicate failed", e)
+                    "Could not duplicate this item"
+                }
+
+                if (message != null) {
+                    withContext(Dispatchers.Main) {
+                        _binding?.root?.let { Snackbar.make(it, message, Snackbar.LENGTH_SHORT).show() }
                     }
                 }
             }
@@ -583,10 +659,20 @@ class FilesListFragment : Fragment() {
                 else            -> getString(R.string.delete)         to getString(R.string.your_asset_will_be_permanently_deleted)
             }
             DialogUtils.showDeleteDialog(requireActivity(), title, subtitle) {
+                val deletedLabel = when (item) {
+                    is ExportResult -> "Project deleted"
+                    is ImageEntity  -> "Image deleted"
+                    is FontEntity   -> "Font deleted"
+                    else            -> null
+                }
                 when (item) {
                     is ExportResult -> viewModel.deleteExportResult(item)
                     is ImageEntity  -> viewModel.deleteImage(item)
                     is FontEntity   -> viewModel.deleteFont(item)
+                }
+                // The row just vanishes otherwise, which reads the same as a mis-tap.
+                deletedLabel?.let { msg ->
+                    _binding?.root?.let { Snackbar.make(it, msg, Snackbar.LENGTH_SHORT).show() }
                 }
             }
         }

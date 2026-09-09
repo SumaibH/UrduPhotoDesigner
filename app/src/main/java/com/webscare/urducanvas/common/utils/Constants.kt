@@ -17,6 +17,19 @@ object Constants {
     const val PEXELS_API_KEY = "YUm6Jh5M8TEmXCi8UTIIZ0UbrByP5xWj8IFVoqkVy93mpihh4fQOYJxg"
     const val PEXELS_ID_OFFSET = 10_000_000
     const val GPU_SAFE_MAX_PX = 4899
+
+    // ── Text spacing slider bounds ────────────────────────────────────────────
+    //
+    // Both spacings used to bottom out at -0.5, which is not a tight setting but a
+    // broken one: line spacing multiplies the full line height, so 0.5 already stacks
+    // descenders onto the next line's ascenders and anything below that inverts the
+    // layout; letterSpacing is in ems, so -0.5 slides every glyph half its own width
+    // into its neighbour. The floors below are the tightest values that still leave the
+    // text readable in the Urdu faces the app ships.
+    const val LINE_SPACING_MIN = 0.8f
+    const val LINE_SPACING_MAX = 3.0f
+    const val LETTER_SPACING_MIN = -0.05f
+    const val LETTER_SPACING_MAX = 1.5f
     private val EMOTICONS = 0x1F600..0x1F64F
     private val SUPP_EMOTICONS = 0x1F910..0x1F91F
     private val ANIMAL_FACES = 0x1F400..0x1F43F

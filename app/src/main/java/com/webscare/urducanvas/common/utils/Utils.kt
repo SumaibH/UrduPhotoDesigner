@@ -258,6 +258,53 @@ object Utils {
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
+    fun android.widget.EditText.setupClearButton(
+        clearDrawableRes: Int = R.drawable.ic_search_clear,
+        defaultDrawableRes: Int = R.drawable.ic_search,
+        onCleared: (() -> Unit)? = null
+    ) {
+        val clearDrawable = androidx.core.content.ContextCompat.getDrawable(context, clearDrawableRes)?.mutate()
+        clearDrawable?.setTint(androidx.core.content.ContextCompat.getColor(context, R.color.gray))
+        val defaultDrawable = androidx.core.content.ContextCompat.getDrawable(context, defaultDrawableRes)?.mutate()
+        defaultDrawable?.setTint(androidx.core.content.ContextCompat.getColor(context, R.color.gray))
+
+        fun updateIcon(hasText: Boolean) {
+            val endIcon = if (hasText) clearDrawable else defaultDrawable
+            setCompoundDrawablesRelativeWithIntrinsicBounds(null, null, endIcon, null)
+        }
+
+        updateIcon(!text.isNullOrEmpty())
+
+        addTextChangedListener(object : android.text.TextWatcher {
+            override fun afterTextChanged(s: android.text.Editable?) {
+                updateIcon(!s.isNullOrEmpty())
+            }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        })
+
+        setOnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_UP) {
+                val endIcon = compoundDrawablesRelative[2] ?: compoundDrawables[2]
+                if (endIcon != null && !text.isNullOrEmpty()) {
+                    val isRtl = layoutDirection == View.LAYOUT_DIRECTION_RTL
+                    val hitTarget = endIcon.intrinsicWidth + paddingEnd + 30
+                    val clickedOnEnd = if (isRtl) {
+                        event.x <= hitTarget
+                    } else {
+                        event.x >= (width - hitTarget)
+                    }
+                    if (clickedOnEnd) {
+                        text?.clear()
+                        onCleared?.invoke()
+                        return@setOnTouchListener true
+                    }
+                }
+            }
+            false
+        }
+    }
 }
 
 fun Context.isDarkModeEnabled(): Boolean {

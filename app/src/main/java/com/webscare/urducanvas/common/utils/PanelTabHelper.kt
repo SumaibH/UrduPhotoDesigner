@@ -1,8 +1,10 @@
 package com.webscare.urducanvas.common.utils
 
+import android.content.res.ColorStateList
 import android.graphics.Typeface
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
@@ -96,19 +98,20 @@ object PanelTabHelper {
         val customView = tab?.customView ?: return
         val titleView = customView.findViewById<TextView>(R.id.tabTitle) ?: return
         val indicatorView = customView.findViewById<View>(R.id.tabIndicator)
+        val chevronView = customView.findViewById<ImageView>(R.id.tabChevron)
         val context = customView.context
         val bold = boldFont ?: (ResourcesCompat.getFont(context, R.font.bold) ?: Typeface.DEFAULT_BOLD)
         val regular = regularFont ?: (ResourcesCompat.getFont(context, R.font.regular) ?: Typeface.DEFAULT)
 
-        if (isSelected) {
-            titleView.setTextColor(ContextCompat.getColor(context, R.color.tab_selected_text))
-            titleView.typeface = bold
-            indicatorView?.visibility = View.VISIBLE
-        } else {
-            titleView.setTextColor(ContextCompat.getColor(context, R.color.tab_unselected_text))
-            titleView.typeface = regular
-            indicatorView?.visibility = View.GONE
-        }
+        val textColor = ContextCompat.getColor(
+            context,
+            if (isSelected) R.color.tab_selected_text else R.color.tab_unselected_text
+        )
+        titleView.setTextColor(textColor)
+        titleView.typeface = if (isSelected) bold else regular
+        indicatorView?.visibility = if (isSelected) View.VISIBLE else View.GONE
+        // The chevron belongs to the label, so it follows the label's colour.
+        chevronView?.imageTintList = ColorStateList.valueOf(textColor)
     }
 
     fun scrollToTabIfOverflows(tabLayout: TabLayout, position: Int) {

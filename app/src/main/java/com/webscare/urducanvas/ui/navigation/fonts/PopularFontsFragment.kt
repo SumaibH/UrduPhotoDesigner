@@ -16,6 +16,7 @@ import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayoutMediator
 import com.webscare.urducanvas.R
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
+import com.webscare.urducanvas.common.utils.Utils.setupClearButton
 import com.webscare.urducanvas.databinding.FragmentPopularFontsBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -113,6 +114,9 @@ class PopularFontsFragment : androidx.fragment.app.Fragment() {
         binding.listStyle.addPressEffect { viewModel.toggleGrid() }
         binding.searchBar.addTextChangedListener { text ->
             viewModel.setSearchQuery(text.toString())
+        }
+        binding.searchBar.setupClearButton {
+            viewModel.setSearchQuery("")
         }
         binding.back.addPressEffect { findNavController().navigateUp() }
     }

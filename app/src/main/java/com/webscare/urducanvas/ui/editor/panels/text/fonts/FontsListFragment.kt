@@ -364,15 +364,29 @@ class FontsListFragment : androidx.fragment.app.Fragment() {
                                 Log.d("FONT_DEBUG", "SUCCESS id=${completedFont.id} lastRequested=$lastRequestedFontId")
                                 isDownloadingFont = false
                                 fontsAdapter.clearDownloadingId(completedFont.id)
-                                if (completedFont.id == lastRequestedFontId) {
+                                val wasRequestedHere = completedFont.id == lastRequestedFontId
+                                if (wasRequestedHere) {
                                     fontEntity                  = completedFont
                                     mainViewModel.recordRecentFont(completedFont.id)
                                     fontsAdapter.selectedFontId = completedFont.id.toString()
                                     viewModel.setFont(completedFont)
                                     if (!standaloneMode) mainViewModel.collapsePanel()
                                     lastRequestedFontId         = null
-                                    mainViewModel.clearFontDownloadState()
+                                    // Downloading is silent otherwise — the font just
+                                    // appears — so say so.
+                                    view?.let {
+                                        if (it.isAttachedToWindow) {
+                                            Snackbar.make(
+                                                it,
+                                                "${completedFont.font_name} downloaded",
+                                                Snackbar.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    }
                                 }
+                                // Always drop the finished entry: a terminal state left in
+                                // the StateFlow is replayed to every later collector.
+                                mainViewModel.clearFontDownloadState(completedFont.id.toString())
                             }
                             is FontDownloadState.Error -> {
                                 val failedFont = state.fontEntity
@@ -387,7 +401,7 @@ class FontsListFragment : androidx.fragment.app.Fragment() {
                                 fontEntity            = null
                                 pendingScrollToFontId = null
                                 lastRequestedFontId   = null
-                                mainViewModel.clearFontDownloadState()
+                                mainViewModel.clearFontDownloadState(failedFont.id.toString())
                             }
                             else -> {
                                 fontEntity?.let { font ->

@@ -5,6 +5,7 @@ import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.graphics.Outline
+import android.graphics.Paint
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.util.Log
@@ -517,6 +518,12 @@ class HomeFragment : androidx.fragment.app.Fragment() {
         binding.create.addPressEffect { pickImageLauncher.launch("image/*") }
         binding.blankCanvas.addPressEffect { openNewCanvasSheet() }
 
+        // The "Assets tab" words in the hint read as a link and behave like one.
+        binding.fileTab.paintFlags = binding.fileTab.paintFlags or Paint.UNDERLINE_TEXT_FLAG
+        binding.fileTab.addPressEffect {
+            view?.post { findNavController().navigate(R.id.filesFragment, null, navOptions) }
+        }
+
         binding.collapsedSearch.addPressEffect { openSearch() }
         binding.collapsedAddPhoto.addPressEffect { pickImageLauncher.launch("image/*") }
         binding.collapsedNewCanvas.addPressEffect { openNewCanvasSheet() }
@@ -849,6 +856,11 @@ class HomeFragment : androidx.fragment.app.Fragment() {
                                     )
                                 )
 
+                                // Consume the terminal state now, not inside the snackbar
+                                // action — otherwise it stays in the StateFlow and the
+                                // snackbar is replayed every time Home is resumed.
+                                mainViewModel.clearFontDownloadState(font.id.toString())
+
                                 showGlobalSuccessSnack("Font downloaded") {
                                     lifecycleScope.launch {
                                         viewModel.clearCanvas()
@@ -874,7 +886,6 @@ class HomeFragment : androidx.fragment.app.Fragment() {
                                             }
                                         }
                                     }
-                                    mainViewModel.clearFontDownloadState()
                                 }
                             }
 
@@ -887,7 +898,7 @@ class HomeFragment : androidx.fragment.app.Fragment() {
                                     )
                                 )
 
-                                mainViewModel.clearFontDownloadState()
+                                mainViewModel.clearFontDownloadState(font.id.toString())
                                 if (isAdded) {
                                     Snackbar.make(
                                         requireView(), "Download failed!", Snackbar.LENGTH_SHORT

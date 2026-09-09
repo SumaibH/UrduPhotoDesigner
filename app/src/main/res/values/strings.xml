@@ -72,6 +72,9 @@
     <string name="plus">+</string>
     <string name="text_alignment">Text Alignment</string>
     <string name="search_here">Search here</string>
+    <string name="search_clear">Clear search</string>
+    <string name="popular_searches">Popular Searches</string>
+    <string name="no_search_results_for">No results found for \"%1$s\"</string>
     <string name="type_here">Type here</string>
     <string name="continue_with_google">Continue with Google</string>
     <string name="email">Email</string>
@@ -212,7 +215,7 @@
     <string name="explore_ready_made">Explore ready made</string>
     <string name="create_beautiful_in_urdu">Create beautiful in Urdu</string>
     <string name="manage_custom_fonts_assets_and_imports_in_files_tab">Manage custom fonts, assets and imports in</string>
-    <string name="filesTab">Files tab</string>
+    <string name="filesTab">Assets tab</string>
     <string name="see_all">See all</string>
     <string name="duplicate">Duplicate</string>
     <string name="rename">Rename</string>
@@ -544,9 +547,15 @@
 
     <!-- Text › Symbols -->
     <string name="symbols">Symbols</string>
+    <!--
+        Rail labels. "Marks" said nothing about what was in it and sat next to
+        "Ornaments", which held a different kind of mark again; the four groups
+        are now named for what they actually contain.
+    -->
     <string name="symbols_above">Above</string>
     <string name="symbols_below">Below</string>
-    <string name="symbols_marks">Marks</string>
+    <string name="symbols_quranic">Quranic</string>
+    <string name="symbols_honorifics">Honorifics</string>
     <string name="symbols_ornaments">Ornaments</string>
     <string name="symbols_dotless">Dotless</string>
     <string name="symbols_remove_last">Remove last mark</string>

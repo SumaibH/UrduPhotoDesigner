@@ -20,7 +20,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.chip.Chip
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
+import com.webscare.urducanvas.common.utils.Utils.setupClearButton
 import com.webscare.urducanvas.data.model.FontEntity
 import com.webscare.urducanvas.data.model.orderWithUrduFirst
 import com.webscare.urducanvas.data.model.TemplateEntity
@@ -35,12 +37,15 @@ import com.webscare.urducanvas.R
 import com.webscare.urducanvas.common.canvas.CanvasViewModel
 import com.webscare.urducanvas.common.canvas.model.CanvasSize
 import com.webscare.urducanvas.data.model.ProgressUi
-import com.webscare.urducanvas.data.model.toExportResultFinal
-import com.webscare.urducanvas.common.utils.Utils.addPressEffect
 import com.webscare.urducanvas.data.model.ExportResult
 import com.webscare.urducanvas.data.model.ImageEntity
 import com.webscare.urducanvas.data.model.toExportResultFinal
 import com.webscare.urducanvas.databinding.DialogLoadingProgressBinding
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
+import com.webscare.urducanvas.common.canvas.sealed.FontDownloadState
+import com.webscare.urducanvas.common.canvas.sealed.TemplateDownloadState
+import com.webscare.urducanvas.common.utils.showGlobalSuccessSnack
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
@@ -89,6 +94,7 @@ class SearchFragment : Fragment() {
         }, 150)
 
         setupAdapters()
+        setupPopularKeywords()
         setupSearchBar()
         observeSearchResults()
     }
@@ -228,6 +234,53 @@ class SearchFragment : Fragment() {
         }
     }
 
+    private val popularKeywords = listOf(
+        "شاعری",
+        "اقوال زریں",
+        "اسلامک",
+        "پوسٹر",
+        "بزنس کارڈ",
+        "یوٹیوب تھمب نیل",
+        "عید مبارک",
+        "جمعتہ المبارک",
+        "شادی کارڈ",
+        "Poetry",
+        "Islamic",
+        "Thumbnail",
+        "Poster"
+    )
+
+    private fun setupPopularKeywords() {
+        binding.keywordsChipGroup.removeAllViews()
+        popularKeywords.forEach { keyword ->
+            val chip = (layoutInflater.inflate(R.layout.chip_filter_item, binding.keywordsChipGroup, false) as? Chip)
+                ?: Chip(requireContext())
+            chip.text = keyword
+            chip.isCheckable = true
+            chip.isChecked = binding.searchBar.text?.toString()?.trim().equals(keyword, ignoreCase = true)
+            chip.setOnClickListener {
+                val current = binding.searchBar.text?.toString()?.trim().orEmpty()
+                if (current.equals(keyword, ignoreCase = true)) {
+                    binding.searchBar.text?.clear()
+                    chip.isChecked = false
+                } else {
+                    binding.searchBar.setText(keyword)
+                    binding.searchBar.setSelection(keyword.length)
+                    chip.isChecked = true
+                }
+            }
+            binding.keywordsChipGroup.addView(chip)
+        }
+    }
+
+    private fun updateKeywordChipsSelection(currentQuery: String) {
+        val trimmed = currentQuery.trim()
+        for (i in 0 until binding.keywordsChipGroup.childCount) {
+            val chip = binding.keywordsChipGroup.getChildAt(i) as? Chip ?: continue
+            chip.isChecked = chip.text.toString().equals(trimmed, ignoreCase = true)
+        }
+    }
+
     private fun setupSearchBar() {
         binding.back.addPressEffect {
             val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -249,11 +302,17 @@ class SearchFragment : Fragment() {
                     true
                 } else false
             }
+            setupClearButton {
+                mainViewModel.setQuery("")
+                updateKeywordChipsSelection("")
+            }
         }
 
         binding.searchBar.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
-                mainViewModel.setQuery(s.toString())
+                val q = s?.toString().orEmpty()
+                mainViewModel.setQuery(q)
+                updateKeywordChipsSelection(q)
             }
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -261,40 +320,160 @@ class SearchFragment : Fragment() {
         })
     }
 
+    private fun TemplateEntity.matchesSearch(q: String): Boolean {
+        if (template_name.lowercase().contains(q)) return true
+        if (category?.lowercase()?.contains(q) == true) return true
+        if (subcategory?.lowercase()?.contains(q) == true) return true
+        if (tags.any { it.lowercase().contains(q) }) return true
+        return false
+    }
+
+    private fun FontEntity.matchesSearch(q: String): Boolean {
+        if (font_name.lowercase().contains(q)) return true
+        if (font_category.lowercase().contains(q)) return true
+        if (font_language.lowercase().contains(q)) return true
+        return false
+    }
+
     private fun observeSearchResults() {
         viewLifecycleOwner.lifecycleScope.launch {
-            combine(
-                mainViewModel.localTemplates,
-                mainViewModel.localFonts,
-                mainViewModel.localImages,
-                mainViewModel.exportResults.asFlow(),
-                mainViewModel.queryDebounced.debounce(250).distinctUntilChanged()
-            ) { templates, fonts, images, exports, query ->
-                val q = query.trim().lowercase()
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                combine(
+                    mainViewModel.localTemplates,
+                    mainViewModel.localFonts,
+                    mainViewModel.localImages,
+                    mainViewModel.exportResults.asFlow(),
+                    mainViewModel.queryDebounced.debounce(250).distinctUntilChanged()
+                ) { templates, fonts, images, exports, query ->
+                    val q = query.trim().lowercase()
 
-                val filteredTemplates = templates.filter { t ->
-                    q.isNotEmpty() && t.template_name.lowercase().contains(q)
+                    if (q.isEmpty()) {
+                        val suggestedTemplates = templates.filter { it.is_popular }.ifEmpty { templates }.take(10)
+                        val suggestedFonts = fonts.filter { !it.font_category.equals("Imported", true) }
+                            .orderWithUrduFirst()
+                            .take(10)
+
+                        SearchResults(
+                            query = query,
+                            templates = suggestedTemplates,
+                            fonts = suggestedFonts,
+                            files = emptyList()
+                        )
+                    } else {
+                        val filteredTemplates = templates.filter { it.matchesSearch(q) }
+
+                        val filteredFonts = fonts.filter { f ->
+                            !f.font_category.equals("Imported", true) && f.matchesSearch(q)
+                        }.orderWithUrduFirst()
+
+                        val filteredFiles = exports.filter { e ->
+                            e.fileName.lowercase().contains(q)
+                        }
+
+                        val filteredImages = images.filter { i ->
+                            i.file_name.lowercase().contains(q)
+                        }
+
+                        SearchResults(
+                            query = query,
+                            templates = filteredTemplates,
+                            fonts = filteredFonts,
+                            files = filteredFiles + filteredImages
+                        )
+                    }
+                }.collectLatest { result ->
+                    updateUI(result)
                 }
+            }
+        }
 
-                val filteredFonts = fonts.filter { f ->
-                    q.isNotEmpty() && f.font_name.lowercase().contains(q)
-                }.orderWithUrduFirst()
-
-                val filteredFiles = exports.filter { e ->
-                    q.isNotEmpty() && e.fileName.lowercase().contains(q)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                mainViewModel.fontDownloadStates.collect { downloadState ->
+                    downloadState.values.forEach { state ->
+                        when (state) {
+                            is FontDownloadState.Progress -> {
+                                fontsAdapter.updateProgress(
+                                    state.fontEntity.id,
+                                    ProgressUi(
+                                        progress = state.progress,
+                                        isDownloading = true,
+                                        isDownloaded = false
+                                    )
+                                )
+                            }
+                            is FontDownloadState.SuccessWithTypeface -> {
+                                val font = state.fontEntity
+                                fontsAdapter.updateProgress(
+                                    font.id,
+                                    ProgressUi(100, isDownloading = false, isDownloaded = true)
+                                )
+                                mainViewModel.clearFontDownloadState(font.id.toString())
+                                showGlobalSuccessSnack("Font downloaded") {
+                                    canvasViewModel.setCanvasSize(
+                                        CanvasSize(id = 0, "", 2000f, 2000f)
+                                    )
+                                    canvasViewModel.addTextWithFont(
+                                        requireActivity().getString(R.string.dummyText),
+                                        font,
+                                        requireActivity()
+                                    )
+                                    if (isAdded && findNavController().currentDestination?.id != R.id.editorFragment) {
+                                        view?.post {
+                                            findNavController().navigate(R.id.editorFragment, null, navOptions)
+                                        }
+                                    }
+                                }
+                            }
+                            is FontDownloadState.Error -> {
+                                fontsAdapter.updateProgress(
+                                    state.fontEntity.id,
+                                    ProgressUi(0, isDownloading = false, isDownloaded = false)
+                                )
+                                mainViewModel.clearFontDownloadState(state.fontEntity.id.toString())
+                            }
+                            else -> {}
+                        }
+                    }
                 }
+            }
+        }
 
-                val filteredImages = images.filter { i ->
-                    q.isNotEmpty() && i.file_name.lowercase().contains(q)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                mainViewModel.templateDownloadStates.collect { downloadState ->
+                    downloadState.values.forEach { state ->
+                        when (state) {
+                            is TemplateDownloadState.Progress -> {
+                                templatesAdapter.updateProgress(
+                                    state.template.id,
+                                    ProgressUi(state.progress, isDownloading = true, isDownloaded = false)
+                                )
+                            }
+                            is TemplateDownloadState.SuccessWithTemplate -> {
+                                val t = state.template
+                                templatesAdapter.updateProgress(
+                                    t.id,
+                                    ProgressUi(100, isDownloading = false, isDownloaded = true)
+                                )
+                                mainViewModel.clearTemplateDownloadState()
+                                showGlobalSuccessSnack("Template ready") {
+                                    canvasViewModel.setProjectSourceName(t.category ?: t.subcategory)
+                                    val exportResult = t.toExportResultFinal().copy(fileName = canvasViewModel.buildProjectFileName())
+                                    canvasViewModel.loadTemplateFromJsonFile(exportResult, requireContext()) { success ->
+                                        if (success && isAdded && findNavController().currentDestination?.id != R.id.editorFragment) {
+                                            findNavController().navigate(R.id.editorFragment, bundle, navOptions)
+                                        }
+                                    }
+                                }
+                            }
+                            is TemplateDownloadState.Error -> {
+                                mainViewModel.clearTemplateDownloadState()
+                            }
+                            else -> {}
+                        }
+                    }
                 }
-
-                SearchResults(
-                    templates = filteredTemplates,
-                    fonts = filteredFonts,
-                    files = filteredFiles + filteredImages
-                )
-            }.collectLatest { result ->
-                updateUI(result)
             }
         }
 
@@ -363,6 +542,8 @@ class SearchFragment : Fragment() {
     }
 
     private fun updateUI(result: SearchResults) {
+        val isBlankQuery = result.query.isBlank()
+
         // Templates
         templatesAdapter.submitList(result.templates)
         binding.popularTemplate.isVisible = result.templates.isNotEmpty()
@@ -378,14 +559,20 @@ class SearchFragment : Fragment() {
         binding.assets.isVisible = result.files.isNotEmpty()
         binding.filesRV.isVisible = result.files.isNotEmpty()
 
-        // If all empty → show “No Results”
-        val noResults =
+        // Empty state
+        val noResults = !isBlankQuery &&
             result.templates.isEmpty() && result.fonts.isEmpty() && result.files.isEmpty()
         binding.noEmojis.isVisible = noResults
+        if (noResults) {
+            binding.noImagesText.text = getString(R.string.no_search_results_for, result.query.trim())
+        }
     }
 
     data class SearchResults(
-        val templates: List<TemplateEntity>, val fonts: List<FontEntity>, val files: List<Any>
+        val query: String = "",
+        val templates: List<TemplateEntity>,
+        val fonts: List<FontEntity>,
+        val files: List<Any>
     )
 
     override fun onDestroyView() {

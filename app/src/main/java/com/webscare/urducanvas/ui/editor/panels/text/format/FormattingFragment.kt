@@ -11,6 +11,7 @@ import com.webscare.urducanvas.common.canvas.enums.ListStyle
 import com.webscare.urducanvas.common.canvas.enums.ParagraphIndentation
 import com.webscare.urducanvas.common.canvas.enums.TextAlignment
 import com.webscare.urducanvas.common.canvas.enums.TextDecoration
+import com.webscare.urducanvas.common.utils.Constants
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
 import com.webscare.urducanvas.databinding.FragmentFormattingBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -194,7 +195,8 @@ class FormattingFragment : androidx.fragment.app.Fragment() {
             setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(sb: SeekBar, progress: Int, fromUser: Boolean) {
                     if (fromUser) {
-                        val mappedLineSpacing = -0.5f + (progress / 100.0f) * (3.0f + 0.5f)
+                        val mappedLineSpacing = Constants.LINE_SPACING_MIN +
+                                (progress / 100.0f) * (Constants.LINE_SPACING_MAX - Constants.LINE_SPACING_MIN)
                         binding.lineSpacing.text = "%.2f".format(mappedLineSpacing)
                         // Live preview — no undo entry yet
                         viewModel.setLineSpacing(mappedLineSpacing)
@@ -218,8 +220,8 @@ class FormattingFragment : androidx.fragment.app.Fragment() {
             setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(sb: SeekBar, progress: Int, fromUser: Boolean) {
                     if (fromUser) {
-                        val mappedLetterSpacing =
-                            -0.5f + (progress / 100.0f) * 2.0f
+                        val mappedLetterSpacing = Constants.LETTER_SPACING_MIN +
+                                (progress / 100.0f) * (Constants.LETTER_SPACING_MAX - Constants.LETTER_SPACING_MIN)
                         binding.letterSpacing.text = "%.2f".format(mappedLetterSpacing)
                         // Live preview — no undo entry yet
                         viewModel.setLetterSpacing(mappedLetterSpacing)
@@ -241,14 +243,17 @@ class FormattingFragment : androidx.fragment.app.Fragment() {
 
     private fun initObservers() {
         viewModel.lineSpacing.observe(viewLifecycleOwner) { lineSpace ->
-            val mappedLineProgress = (((lineSpace + 0.5f) / 3.5f) * 100).toInt().coerceIn(0, 100)
+            val lineRange = Constants.LINE_SPACING_MAX - Constants.LINE_SPACING_MIN
+            val mappedLineProgress =
+                (((lineSpace - Constants.LINE_SPACING_MIN) / lineRange) * 100).toInt().coerceIn(0, 100)
             binding.lineSpace.progress = mappedLineProgress
             binding.lineSpacing.text = "$mappedLineProgress"
         }
 
         viewModel.letterSpacing.observe(viewLifecycleOwner) { letterSpace ->
+            val letterRange = Constants.LETTER_SPACING_MAX - Constants.LETTER_SPACING_MIN
             val mappedLetterProgress =
-                (((letterSpace + 0.5f) / 2.0f) * 100).toInt().coerceIn(0, 100)
+                (((letterSpace - Constants.LETTER_SPACING_MIN) / letterRange) * 100).toInt().coerceIn(0, 100)
             binding.letterSpace.progress = mappedLetterProgress
             binding.letterSpacing.text = "$mappedLetterProgress"
         }

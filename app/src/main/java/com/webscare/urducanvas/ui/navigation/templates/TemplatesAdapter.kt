@@ -99,6 +99,17 @@ class TemplatesAdapter(
                 onClick(item)
             }
 
+            // Download / progress state belongs to the item, not to the thumbnail request.
+            // Setting it inside Glide's callback left a recycled holder showing the previous
+            // row's badge whenever the image failed or the request never fired.
+            applyProgress(
+                ProgressUi(
+                    progress = item.download_progress,
+                    isDownloading = item.is_downloading,
+                    isDownloaded = item.is_downloaded
+                )
+            )
+
             val url = Constants.BASE_URL_GLIDE + item.thumbnail_url
             if (url.isNotEmpty()) {
                 val isDark = binding.root.context.isDarkModeEnabled()
@@ -119,8 +130,6 @@ class TemplatesAdapter(
                             res: Bitmap, m: Any, t: Target<Bitmap>?, d: DataSource, isFirst: Boolean
                         ): Boolean {
                             binding.shimmerLayout.hideShimmer()
-                            binding.download.isVisible = !item.is_downloaded && !item.is_downloading
-                            binding.loading.isVisible = item.is_downloading && !item.is_downloaded
                             return false
                         }
                     }).into(binding.template)

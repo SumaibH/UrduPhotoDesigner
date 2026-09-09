@@ -99,6 +99,26 @@
         android:layout_marginEnd="6dp"
         android:layout_marginTop="12dp"/>
 
+    <HorizontalScrollView
+        android:id="@+id/popularKeywordsScroll"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:clipToPadding="false"
+        android:paddingHorizontal="16dp"
+        android:scrollbars="none"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/searchBar">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/keywordsChipGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:singleLine="true"
+            app:chipSpacingHorizontal="8dp" />
+    </HorizontalScrollView>
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:paddingHorizontal="19dp"
         android:layout_marginTop="10dp"
@@ -106,7 +126,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/searchBar"
+        app:layout_constraintTop_toBottomOf="@id/popularKeywordsScroll"
         android:id="@+id/popularTemplate">
         <TextView
             android:layout_width="wrap_content"

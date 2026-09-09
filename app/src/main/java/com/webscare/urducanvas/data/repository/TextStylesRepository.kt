@@ -263,14 +263,26 @@ object TextStylesRepository {
         }
     }
 
-    fun saveCustomUserStyle(context: Context, preset: TextStylePreset) {
+    /**
+     * Adds [preset] to My Styles, newest first.
+     *
+     * @return the id of the stored style — the existing one when My Styles already holds a
+     *         style with the same properties, so callers can select it instead. The guard
+     *         lives here rather than only at the call site so no future entry point can add
+     *         a second copy of a style the user already has.
+     */
+    fun saveCustomUserStyle(context: Context, preset: TextStylePreset): String {
         val currentList = getCustomUserSavedStyles(context).toMutableList()
+
+        currentList.firstOrNull { hasSameStyleProperties(it, preset) }?.let { return it.id }
+
         currentList.add(0, preset.copy(isCustomUserSaved = true)) // newest first
         val json = gson.toJson(currentList)
         context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
             .edit()
             .putString(KEY_CUSTOM_STYLES, json)
             .apply()
+        return preset.id
     }
 
     fun hasSameStyleProperties(p1: TextStylePreset, p2: TextStylePreset): Boolean {
@@ -283,16 +295,26 @@ object TextStylesRepository {
         if (p1.has3dExtrude != p2.has3dExtrude) return false
         if (p1.extrudeColor != p2.extrudeColor) return false
         if (p1.extrudeDepth != p2.extrudeDepth) return false
+        if (p1.extrudeDx != p2.extrudeDx) return false
+        if (p1.extrudeDy != p2.extrudeDy) return false
         if (p1.hasDoubleExtrude != p2.hasDoubleExtrude) return false
         if (p1.extrudeStep2Color != p2.extrudeStep2Color) return false
         if (p1.extrudeStep2Depth != p2.extrudeStep2Depth) return false
+        if (p1.extrudeStep2Dx != p2.extrudeStep2Dx) return false
+        if (p1.extrudeStep2Dy != p2.extrudeStep2Dy) return false
         if (p1.hasAnaglyph != p2.hasAnaglyph) return false
         if (p1.anaglyphOffset != p2.anaglyphOffset) return false
+        if (p1.anaglyphColor1 != p2.anaglyphColor1) return false
+        if (p1.anaglyphColor2 != p2.anaglyphColor2) return false
         if (p1.hasBevel != p2.hasBevel) return false
         if (p1.bevelDepth != p2.bevelDepth) return false
+        if (p1.bevelHighlightColor != p2.bevelHighlightColor) return false
+        if (p1.bevelShadowColor != p2.bevelShadowColor) return false
         if (p1.hasEmboss != p2.hasEmboss) return false
         if (p1.isDebossed != p2.isDebossed) return false
         if (p1.embossDepth != p2.embossDepth) return false
+        if (p1.embossHighlightColor != p2.embossHighlightColor) return false
+        if (p1.embossShadowColor != p2.embossShadowColor) return false
         if (p1.hasOuterGlow != p2.hasOuterGlow) return false
         if (p1.outerGlowColor != p2.outerGlowColor) return false
         if (p1.outerGlowRadius != p2.outerGlowRadius) return false
@@ -305,6 +327,7 @@ object TextStylesRepository {
         if (p1.shadowRadius != p2.shadowRadius) return false
         if (p1.shadowDx != p2.shadowDx) return false
         if (p1.shadowDy != p2.shadowDy) return false
+        if (p1.shadowOpacity != p2.shadowOpacity) return false
         if (p1.hasLabel != p2.hasLabel) return false
         if (p1.hasGlossHighlight != p2.hasGlossHighlight) return false
         if (p1.hasFoldedRibbonFlaps != p2.hasFoldedRibbonFlaps) return false

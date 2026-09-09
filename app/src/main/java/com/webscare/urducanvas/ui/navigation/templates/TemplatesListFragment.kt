@@ -23,6 +23,7 @@ import com.webscare.urducanvas.common.canvas.model.CanvasSize
 import com.webscare.urducanvas.common.canvas.sealed.HomeRow
 import com.webscare.urducanvas.common.canvas.sealed.TemplateDownloadState
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
+import com.webscare.urducanvas.common.utils.Utils.setupClearButton
 import com.webscare.urducanvas.common.utils.showGlobalSuccessSnack
 import com.webscare.urducanvas.data.model.TemplateEntity
 import com.webscare.urducanvas.data.model.toExportResultFinal
@@ -177,6 +178,10 @@ class TemplatesListFragment : androidx.fragment.app.Fragment() {
     private fun setEvents() {
         binding.searchBar.doAfterTextChanged {
             activeQuery = it?.toString().orEmpty()
+            applyFiltersList()
+        }
+        binding.searchBar.setupClearButton {
+            activeQuery = ""
             applyFiltersList()
         }
         binding.filters.addPressEffect {
@@ -396,6 +401,15 @@ class TemplatesListFragment : androidx.fragment.app.Fragment() {
                             binding.swipeRefresh.isRefreshing = false
                             val t = state.template; mainViewModel.clearTemplateDownloadState()
                             downloadingTemplate = t
+                            // Clear the badge here rather than waiting for the DB round
+                            // trip — otherwise the download icon sat on a template that
+                            // was already downloaded until the screen was rebuilt.
+                            adapter.updateProgress(
+                                t.id,
+                                com.webscare.urducanvas.data.model.ProgressUi(
+                                    100, isDownloading = false, isDownloaded = true
+                                )
+                            )
                             showGlobalSuccessSnack("Template ready") {
                                 val exportResult = t.toExportResultFinal()
                                 viewModel.loadTemplateFromJsonFile(exportResult, requireContext()) { success ->

@@ -28,6 +28,7 @@ import com.webscare.urducanvas.common.canvas.sealed.HomeRow
 import com.webscare.urducanvas.common.canvas.sealed.TemplateDownloadState
 import com.webscare.urducanvas.common.utils.SpringEdgeEffectFactory
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
+import com.webscare.urducanvas.common.utils.Utils.setupClearButton
 import com.webscare.urducanvas.common.utils.showGlobalSuccessSnack
 import com.webscare.urducanvas.data.model.TemplateEntity
 import com.webscare.urducanvas.data.model.toExportResultFinal
@@ -305,6 +306,9 @@ class TemplateCategoriesFragment : androidx.fragment.app.Fragment() {
 
         binding.searchBar.doAfterTextChanged { text ->
             if (text.isNullOrEmpty()) filtersVM.setQuery("")
+        }
+        binding.searchBar.setupClearButton {
+            filtersVM.setQuery("")
         }
 
         binding.filters.addPressEffect {

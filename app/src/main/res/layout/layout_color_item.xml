@@ -1,10 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    One colour swatch. Its 26dp box plus 6dp margins must stay identical to
+    layout_color_picker_item.xml and layout_eye_dropper_item.xml: the palette
+    RecyclerViews are wrap_content over a horizontal grid, so their height is
+    measured from whichever items happen to be laid out. When the swatches were
+    26dp with no bottom margin and the three leading tool tiles were 24dp + 6dp,
+    scrolling the tools off screen re-measured the list 6dp shorter per row and
+    the whole palette visibly collapsed.
+-->
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/cardOuter"
     android:layout_width="26dp"
     android:layout_height="26dp"
     android:layout_marginEnd="6dp"
+    android:layout_marginBottom="6dp"
     app:cardCornerRadius="13dp"
     app:cardBackgroundColor="@color/white"
     app:cardElevation="0dp"

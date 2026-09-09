@@ -354,12 +354,17 @@
                     android:textColor="@color/whiteText"
                     android:textSize="12sp" />
 
+                <!-- Underlined + clickable: jumps straight to the Files tab. -->
                 <TextView
                     android:id="@+id/fileTab"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="5dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:clickable="true"
+                    android:focusable="true"
                     android:fontFamily="@font/bold"
+                    android:paddingHorizontal="4dp"
+                    android:paddingVertical="4dp"
                     android:text="@string/filesTab"
                     android:textColor="@color/whiteText"
                     android:textSize="12sp" />

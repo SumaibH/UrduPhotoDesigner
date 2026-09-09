@@ -6,21 +6,31 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.webscare.urducanvas.common.canvas.CanvasViewModel
 import com.webscare.urducanvas.data.model.PresetCategory
+import com.webscare.urducanvas.data.model.TextStylePreset
 import com.webscare.urducanvas.data.repository.TextStylesRepository
 import com.webscare.urducanvas.databinding.FragmentTextStyleGridBinding
+import com.webscare.urducanvas.viewmodels.MainViewModel
+import kotlinx.coroutines.launch
 
 class TextStyleGridFragment : Fragment() {
 
     private var _binding: FragmentTextStyleGridBinding? = null
     private val binding get() = _binding!!
     private val viewModel: CanvasViewModel by activityViewModels()
+    private val mainViewModel: MainViewModel by activityViewModels()
 
     private var categoryName: String = ""
     private var isAddMode: Boolean = false
+
+    /** Unfiltered page contents, so clearing the search restores them. */
+    private var allPresets: List<TextStylePreset> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,6 +53,7 @@ class TextStyleGridFragment : Fragment() {
     private fun setupGrid() {
         val category = PresetCategory.values().firstOrNull { it.name == categoryName } ?: PresetCategory.THREE_D
         val presets = TextStylesRepository.getPresetsByCategory(category, requireContext())
+        allPresets = presets
         val adapter = TextStylesGridAdapter(presets) { preset ->
             if (isAddMode) {
                 viewModel.addTextWithStyle("Your Text", preset, requireContext())
@@ -66,10 +77,35 @@ class TextStyleGridFragment : Fragment() {
         binding.presetsGrid.layoutManager = GridLayoutManager(requireContext(), 3, RecyclerView.HORIZONTAL, false)
         binding.presetsGrid.adapter = adapter
 
+        // The header's search box applies to whichever tab is open, so the
+        // Styles pages filter themselves the same way the Font list does.
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                mainViewModel.queryDebounced.collect { query ->
+                    if (_binding == null) return@collect
+                    adapter.submitPresets(filterPresets(query))
+                }
+            }
+        }
+
         binding.presetsGrid.post {
             if (_binding != null) {
                 adapter.notifyDataSetChanged()
             }
+        }
+    }
+
+    /**
+     * "None" always stays: it is the way to clear the style, not a preset, and
+     * dropping it would leave a filtered page with no way back.
+     */
+    private fun filterPresets(queryRaw: String): List<TextStylePreset> {
+        val query = queryRaw.trim().lowercase()
+        if (query.isEmpty()) return allPresets
+        return allPresets.filter { preset ->
+            preset.id == TextStylePreset.NONE_ID ||
+                    preset.name.lowercase().contains(query) ||
+                    preset.category.displayName.lowercase().contains(query)
         }
     }
 

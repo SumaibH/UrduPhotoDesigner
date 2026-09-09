@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.core.view.doOnNextLayout
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -185,13 +186,21 @@ class FontsAdapter(
             val rvPaddingY = (recyclerView?.paddingTop ?: 0) + (recyclerView?.paddingBottom ?: 0)
             val availHeight = rvHeight - rvPaddingY
 
-            val computedCollapsedHeight = if (availHeight > 0) {
-                ((availHeight - (spanCount * marginBottomPx)) / spanCount).coerceAtLeast((24 * density).toInt())
-            } else {
-                (70 * density).toInt()
+            if (availHeight <= 0) {
+                // No usable height yet — this is a fresh view, e.g. the panel
+                // coming back from Text Properties. A guessed 70dp used to be
+                // written straight into lp.height, and GridLayoutManager honours
+                // an explicit child height verbatim in the cross axis, so tiles
+                // taller than their row spilled into the row below and the grid
+                // looked like it was drawn on top of itself. Re-run once the
+                // list has a real height instead.
+                recyclerView?.doOnNextLayout { updateSize(slideOffset, rvWidth, rvPadding) }
+                return
             }
 
-            val collapsedSize = computedCollapsedHeight
+            val collapsedSize =
+                ((availHeight - (spanCount * marginBottomPx)) / spanCount)
+                    .coerceAtLeast((24 * density).toInt())
 
             val effectiveWidth = if (rvWidth > 0) rvWidth else (recyclerView?.width ?: 0)
             val columnWidth = if (effectiveWidth > 0) {
