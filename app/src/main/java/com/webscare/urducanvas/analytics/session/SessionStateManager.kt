@@ -20,8 +20,16 @@ class SessionStateManager @Inject constructor(
     var sessionId: String = UUID.randomUUID().toString()
         private set
 
-    private val _currentScreen = AtomicReference("splash")
-    val currentScreen: String get() = _currentScreen.get()
+    /**
+     * Null until the first destination is reported.
+     *
+     * Seeding this with "splash" meant the first real navigation — which *is* to splash —
+     * looked like a splash-to-splash transition, so every cold start opened with a phantom
+     * `screen_leave` for a screen the user had not been on yet and a `screen_view` whose
+     * previous screen was itself.
+     */
+    private val _currentScreen = AtomicReference<String?>(null)
+    val currentScreen: String get() = _currentScreen.get() ?: "app_start"
 
     private val _previousScreen = AtomicReference<String?>(null)
     val previousScreen: String? get() = _previousScreen.get()
@@ -75,7 +83,10 @@ class SessionStateManager @Inject constructor(
         screenStartTimeElapsedMs = now
 
         val transition = ScreenTransition(
-            previousScreen = prev,
+            // Null on the very first destination, and when a listener re-reports the screen
+            // it is already on — a re-attach after a configuration change, say. Callers skip
+            // the leave event when this is null, so neither invents a visit.
+            previousScreen = prev?.takeIf { it != newScreenName },
             newScreen = newScreenName,
             durationSeconds = durationSec,
             lastAction = _lastAction.get()

@@ -5886,21 +5886,37 @@ class CanvasViewModel @Inject constructor(
         if (_canvasActions.isEmpty()) return
         val action = _canvasActions.pop()
         _redoStack.push(action)
-        applyAction(action, isRedo = false)
-        // The action now on top was performed — and already reported — a while ago.
-        // Adopting it here stops notifyUndoRedoChanged reporting it a second time.
-        lastReportedAction = _canvasActions.lastOrNull()
-        notifyUndoRedoChanged()
+        replayingHistory { applyAction(action, isRedo = false) }
     }
 
     fun redo() {
         if (_redoStack.isEmpty()) return
         val action = _redoStack.pop()
         _canvasActions.push(action)
-        applyAction(action, isRedo = true)
-        lastReportedAction = action
+        replayingHistory { applyAction(action, isRedo = true) }
+    }
+
+    /**
+     * Runs an undo or redo without any of it counting as new tool usage.
+     *
+     * Both stacks are already mutated by the time [body] runs, and `applyAction` calls
+     * [notifyUndoRedoChanged] itself part way through — so without the flag that inner
+     * call sees a stack top it has not reported yet and logs it. On a device that showed
+     * up as a redo emitting the full `tool_action_performed` for an edit the user made
+     * minutes earlier. Adopting the new top afterwards covers the outer notify too.
+     */
+    private inline fun replayingHistory(body: () -> Unit) {
+        isReplayingHistory = true
+        try {
+            body()
+        } finally {
+            isReplayingHistory = false
+            lastReportedAction = _canvasActions.lastOrNull()
+        }
         notifyUndoRedoChanged()
     }
+
+    private var isReplayingHistory = false
 
     /**
      * The last action handed to analytics, held by identity.
@@ -5919,6 +5935,7 @@ class CanvasViewModel @Inject constructor(
         _canUndo.value = _canvasActions.isNotEmpty()
         _canRedo.value = _redoStack.isNotEmpty()
         refreshSelectedElements()
+        if (isReplayingHistory) return
         val latestAction = _canvasActions.lastOrNull()
         if (latestAction != null && latestAction !== lastReportedAction) {
             lastReportedAction = latestAction
