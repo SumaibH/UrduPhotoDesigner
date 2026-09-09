@@ -63,6 +63,37 @@ class NavigationAnalyticsListener @Inject constructor(
             previousScreen = transition.previousScreen,
             entryPoint = arguments?.getString("ENTRY_POINT")
         )
+
+        if (screenName !in EDITING_FLOW) endTemplateSession()
+    }
+
+    /**
+     * Closes the open template session once the user leaves the editing flow entirely.
+     *
+     * This cannot hang off EditorFragment's lifecycle: navigating from the editor to export
+     * removes that fragment, so ending the session there closed it *before* the export it
+     * was on its way to. Every template session therefore reported "abandoned", the
+     * completed outcome was unreachable, and the export events lost the template id they
+     * were meant to carry. Leaving for home, files or templates is the real end.
+     */
+    private fun endTemplateSession() {
+        sessionStateManager.endTemplateSession()?.let { session ->
+            analyticsTracker.logTemplateSessionEnd(
+                templateId = session.templateId,
+                isModified = session.isModified,
+                editCount = session.editCount,
+                durationSeconds = session.durationSeconds,
+                outcome = session.outcome
+            )
+        }
+    }
+
+    private companion object {
+        /** Screens on which a template is still being worked on. */
+        val EDITING_FLOW = setOf(
+            "editor", "export", "finish_export", "preview_export",
+            "bg_removal", "subscriptions", "manage_subscription"
+        )
     }
 
     private fun trackAndClassify(destinationId: Int): String {

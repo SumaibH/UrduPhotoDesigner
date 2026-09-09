@@ -3712,18 +3712,10 @@ class EditorFragment : Fragment() {
         _binding?.canvasContainer?.removeAllViews()
         _navController?.removeOnDestinationChangedListener(panelAnalyticsListener)
         panelAnalyticsListener.onEditorClosed()
-        // Leaving the editor is the only point at which a template's session is definitely
-        // over, so this is where "how long did they spend on it, and did anything come of
-        // it" gets reported. Returns null when the canvas was not opened from a template.
-        sessionStateManager.endTemplateSession()?.let { session ->
-            analyticsTracker.logTemplateSessionEnd(
-                templateId = session.templateId,
-                isModified = session.isModified,
-                editCount = session.editCount,
-                durationSeconds = session.durationSeconds,
-                outcome = session.outcome
-            )
-        }
+        // The template session deliberately does NOT end here. Navigating to export removes
+        // this fragment, so ending it here closed the session before the export it was on
+        // its way to — every session read "abandoned" and the export lost its template id.
+        // NavigationAnalyticsListener ends it when the user leaves the editing flow instead.
         _navController = null
         cbOnEditTextRequested = {}
         cbOnElementSelected   = {}

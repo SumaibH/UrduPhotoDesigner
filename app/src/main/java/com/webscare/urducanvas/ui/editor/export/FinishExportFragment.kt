@@ -29,6 +29,7 @@ import com.webscare.urducanvas.di.AppReviewManager
 import javax.inject.Inject
 import com.webscare.urducanvas.common.utils.InsetUtils.applyStatusBarTopPadding
 import com.webscare.urducanvas.analytics.AnalyticsTracker
+import com.webscare.urducanvas.analytics.session.SessionStateManager
 
 @AndroidEntryPoint
 class FinishExportFragment : androidx.fragment.app.Fragment() {
@@ -40,6 +41,9 @@ class FinishExportFragment : androidx.fragment.app.Fragment() {
 
     @Inject
     lateinit var analyticsTracker: AnalyticsTracker
+
+    @Inject
+    lateinit var sessionStateManager: SessionStateManager
 
     val viewModel: CanvasViewModel by activityViewModels()
 
@@ -144,7 +148,7 @@ class FinishExportFragment : androidx.fragment.app.Fragment() {
             analyticsTracker.logShareInitiated(
                 channel = "system_share",
                 format = export.format ?: "image",
-                templateId = export.sourceTemplateId
+                templateId = export.sourceTemplateId ?: sessionStateManager.activeTemplateId
             )
 
             if (!BuildConfig.IS_PROD_LOGIC) {
@@ -211,7 +215,7 @@ class FinishExportFragment : androidx.fragment.app.Fragment() {
             analyticsTracker.logShareInitiated(
                 channel = "open_with",
                 format = export.format ?: "image",
-                templateId = export.sourceTemplateId
+                templateId = export.sourceTemplateId ?: sessionStateManager.activeTemplateId
             )
             val filePath = export.pdfPath ?: export.imagePath
             val file = File(filePath)
@@ -243,7 +247,7 @@ class FinishExportFragment : androidx.fragment.app.Fragment() {
             analyticsTracker.logShareInitiated(
                 channel = "print",
                 format = export.format ?: "image",
-                templateId = export.sourceTemplateId
+                templateId = export.sourceTemplateId ?: sessionStateManager.activeTemplateId
             )
 
             export.pdfPath?.let { pdfPath ->

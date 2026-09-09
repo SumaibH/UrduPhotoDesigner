@@ -57,6 +57,7 @@ import com.webscare.urducanvas.common.utils.InsetUtils.applyStatusBarTopPadding
 import javax.inject.Inject
 import com.webscare.urducanvas.analytics.AnalyticsTracker
 import com.webscare.urducanvas.analytics.ads.AdAnalyticsCoordinator
+import com.webscare.urducanvas.analytics.session.SessionStateManager
 
 @AndroidEntryPoint
 class ExportFragment : androidx.fragment.app.Fragment() {
@@ -68,6 +69,9 @@ class ExportFragment : androidx.fragment.app.Fragment() {
 
     @Inject
     lateinit var analyticsTracker: AnalyticsTracker
+
+    @Inject
+    lateinit var sessionStateManager: SessionStateManager
 
     @Inject
     lateinit var adAnalyticsCoordinator: AdAnalyticsCoordinator
@@ -156,7 +160,11 @@ class ExportFragment : androidx.fragment.app.Fragment() {
                 putExtra(android.content.Intent.EXTRA_STREAM, uri)
                 addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
-            analyticsTracker.logShareInitiated("project_file", "urdc", viewModel.exportResult.value?.sourceTemplateId)
+            analyticsTracker.logShareInitiated(
+                "project_file",
+                "urdc",
+                viewModel.exportResult.value?.sourceTemplateId ?: sessionStateManager.activeTemplateId
+            )
             startActivity(android.content.Intent.createChooser(intent, "Share project"))
         }
 
@@ -469,10 +477,15 @@ class ExportFragment : androidx.fragment.app.Fragment() {
                 quality = opts.quality.label
             )
         }
-        val isTemplate = viewModel.exportResult.value?.sourceTemplateId != null
+        // exportResult only carries a template id on some paths, so on a device this
+        // reported template_id=null for an export of a template that had just been opened —
+        // which loses "which template gets exported the most" entirely. The session's active
+        // template is the reliable answer; the export result still wins when it has one.
+        val exportTemplateId = viewModel.exportResult.value?.sourceTemplateId
+            ?: sessionStateManager.activeTemplateId
         analyticsTracker.logExportInitiated(
-            sourceType = if (isTemplate) "template" else "custom",
-            templateId = viewModel.exportResult.value?.sourceTemplateId,
+            sourceType = if (exportTemplateId != null) "template" else "custom",
+            templateId = exportTemplateId,
             hasPremiumAssets = viewModel.hasPremiumAsset.value == true,
             elementCount = viewModel.canvasElements.value?.size ?: 0
         )
@@ -657,6 +670,7 @@ class ExportFragment : androidx.fragment.app.Fragment() {
                     fileSizeMb = fileSizeMB,
                     durationSeconds = durationSec,
                     templateId = viewModel.exportResult.value?.sourceTemplateId
+                        ?: sessionStateManager.activeTemplateId
                 )
                 isExportCompleted = true
                 adAnalyticsCoordinator.onFeatureActionCompleted("export")
