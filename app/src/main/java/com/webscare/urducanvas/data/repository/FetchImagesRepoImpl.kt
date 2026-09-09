@@ -1,6 +1,5 @@
 package com.webscare.urducanvas.data.repository
 
-import android.content.ContentValues.TAG
 import android.util.Log
 import com.webscare.urducanvas.common.sealed.Response
 import com.webscare.urducanvas.data.model.ImageResponse
@@ -9,6 +8,7 @@ import com.webscare.urducanvas.domain.repo.FetchImagesRepo
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import javax.inject.Inject
+/** Log tag for this file. Was android.content.ContentValues.TAG, an accidental import *  that filed every one of these messages under "ContentValues". */private const val TAG = "FetchImagesRepoImpl"
 
 class FetchImagesRepoImpl @Inject constructor(
     private val api: com.webscare.urducanvas.data.remote.EndPointsInterface

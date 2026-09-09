@@ -5,7 +5,6 @@ import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
@@ -103,6 +102,7 @@ import javax.inject.Inject
 import com.webscare.urducanvas.analytics.AnalyticsTracker
 import com.webscare.urducanvas.analytics.navigation.PanelAnalyticsListener
 import com.webscare.urducanvas.analytics.session.SessionStateManager
+/** Log tag for this file. Was android.content.ContentValues.TAG, an accidental import *  that filed every one of these messages under "ContentValues". */private const val TAG = "EditorFragment"
 
 fun Int.dpToPx(context: Context): Int {
     return (this * context.resources.displayMetrics.density + 0.5f).toInt()
@@ -795,7 +795,11 @@ class EditorFragment : Fragment() {
             // Using try/finally guarantees the temp file is always cleaned up, even if
             // the copy fails. The rename is atomic on Android (same FS partition) so the
             // reader never sees a partial write.
-            val tmpDest = File("$jsonPath.tmp")
+            // Unique per call. This was a fixed "$jsonPath.tmp", and saveOnExitSafe can run
+            // more than once for the same project — on the device two overlapping calls
+            // clobbered each other's temp, one of them saw a near-empty file and took the
+            // "tmp too small" branch below, and that save was silently dropped.
+            val tmpDest = File("$jsonPath.${java.util.UUID.randomUUID()}.tmp")
             try {
                 if (!exportJsonFile.exists()) {
                     Log.e(TAG, "saveOnExitSafe: temp JSON missing: ${exportJsonFile.path}")

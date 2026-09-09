@@ -2,7 +2,6 @@ package com.webscare.urducanvas.ui.editor.export
 
 import android.Manifest
 import android.content.ContentValues
-import android.content.ContentValues.TAG
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Paint
@@ -58,6 +57,7 @@ import javax.inject.Inject
 import com.webscare.urducanvas.analytics.AnalyticsTracker
 import com.webscare.urducanvas.analytics.ads.AdAnalyticsCoordinator
 import com.webscare.urducanvas.analytics.session.SessionStateManager
+/** Log tag for this file. Was android.content.ContentValues.TAG, an accidental import *  that filed every one of these messages under "ContentValues". */private const val TAG = "ExportFragment"
 
 @AndroidEntryPoint
 class ExportFragment : androidx.fragment.app.Fragment() {

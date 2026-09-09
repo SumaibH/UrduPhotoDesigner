@@ -93,6 +93,7 @@ import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.UUID
 import java.io.File
 import java.io.IOException
 import java.util.Objects
@@ -2174,9 +2175,30 @@ class CanvasView @JvmOverloads constructor(
             element.drawStrokes?.forEach { stroke -> stroke.serializePath() }
         }
 
-        // ✅ Stream to file — no String in RAM
-        File(jsonOutputPath).bufferedWriter().use { writer ->
-            gson.toJson(safeElements, writer)
+        // Stream to a private temp first, then rename over the target.
+        //
+        // This used to open the project file itself and stream straight into it, which
+        // truncates it the moment the writer is created. Autosave runs on a debounce while
+        // the user is still editing, so any kill, crash or low-memory reap during that
+        // window left the project a half-written file that would not parse — the user's
+        // work, gone. The editor's save-on-exit writes the same path from another
+        // coroutine, so the two could also interleave mid-stream.
+        //
+        // A uniquely named temp plus an atomic rename means the destination only ever goes
+        // from one complete document to another, whoever writes last.
+        val target = File(jsonOutputPath)
+        val tmp = File(target.parentFile, "${target.name}.${UUID.randomUUID()}.part")
+        try {
+            tmp.bufferedWriter().use { writer ->
+                gson.toJson(safeElements, writer)
+            }
+            if (tmp.length() > 0L && !tmp.renameTo(target)) {
+                // Rename can fail if the target is momentarily held open; copying still
+                // beats leaving the previous save in place.
+                tmp.inputStream().use { src -> target.outputStream().use { dst -> src.copyTo(dst) } }
+            }
+        } finally {
+            if (tmp.exists()) tmp.delete()
         }
     }
 

@@ -1,6 +1,5 @@
 package com.webscare.urducanvas.domain.repo
 
-import android.content.ContentValues.TAG
 import android.content.Context
 import android.os.Environment
 import android.util.Log
@@ -12,6 +11,7 @@ import okhttp3.Request
 import java.io.File
 import java.io.FileOutputStream
 import javax.inject.Inject
+/** Log tag for this file. Was android.content.ContentValues.TAG, an accidental import *  that filed every one of these messages under "ContentValues". */private const val TAG = "DownloadRepo"
 
 class DownloadRepo @Inject constructor(
     private val context: Context,

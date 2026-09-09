@@ -1,6 +1,5 @@
 package com.webscare.urducanvas.data.repository
 
-import android.content.ContentValues.TAG
 import android.util.Log
 import com.webscare.urducanvas.data.local.AppDatabase
 import com.webscare.urducanvas.data.model.FontEntity

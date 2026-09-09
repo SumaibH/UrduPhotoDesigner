@@ -1,6 +1,5 @@
 package com.webscare.urducanvas.ui.editor.panels.text.appearance.childs.gradient
 
-import android.content.ContentValues.TAG
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
