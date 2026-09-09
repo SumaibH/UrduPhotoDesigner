@@ -24,6 +24,11 @@
         app:strokeColor="@color/appColor"
         app:strokeWidth="0dp">
 
+        <!--
+            Auto-sized rather than a flat 28sp: the honorific ligatures (ﷺ, ﷻ,
+            and Bismillah above all) are many times wider than a diacritic and
+            were being clipped by the square tile.
+        -->
         <TextView
             android:id="@+id/tvSymbolGlyph"
             android:layout_width="match_parent"
@@ -31,8 +36,13 @@
             android:fontFamily="@font/bold"
             android:gravity="center"
             android:includeFontPadding="false"
+            android:maxLines="1"
+            android:paddingHorizontal="3dp"
             android:textColor="@color/black"
-            android:textSize="28sp"
+            app:autoSizeMaxTextSize="28sp"
+            app:autoSizeMinTextSize="9sp"
+            app:autoSizeStepGranularity="1sp"
+            app:autoSizeTextType="uniform"
             tools:text="ـَ" />
 
     </com.google.android.material.card.MaterialCardView>

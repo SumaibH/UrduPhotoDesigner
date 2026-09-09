@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- com.webscare.urducanvas.common.views.EdgeShadowView -->
+    <declare-styleable name="EdgeShadowView">
+        <!-- Which side of the neighbouring surface this strip shadows. -->
+        <attr name="shadowEdge" format="enum">
+            <enum name="top" value="0" />
+            <enum name="bottom" value="1" />
+        </attr>
+        <!-- Corner radius of the surface being shadowed, so the shadow curves with it. -->
+        <attr name="shadowCornerRadius" format="dimension" />
+        <!-- Blur spread. The strip should be at least this tall to show the whole falloff. -->
+        <attr name="shadowBlurRadius" format="dimension" />
+        <attr name="shadowTint" format="color" />
+    </declare-styleable>
+
+</resources>

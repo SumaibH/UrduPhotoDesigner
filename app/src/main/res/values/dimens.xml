@@ -4,5 +4,13 @@
     <dimen name="_120sdp">120dp</dimen>
     <dimen name="_260sdp">260dp</dimen>
     <dimen name="nav_corner_radius">32dp</dimen>
+    <!--
+        Height of the editor header with nothing but its toolbar row in it:
+        10dp padding + 32dp row + 10dp padding. fragment_editor.xml pins the
+        canvas to an anchor of this height instead of to the header itself, so
+        the header can grow for the character strip or the table selection bar
+        without resizing the artboard. Keep the three values in step.
+    -->
+    <dimen name="editor_header_base_height">52dp</dimen>
     <item name="shimmer_highlight_alpha" format="float" type="dimen">1.0</item>
 </resources>

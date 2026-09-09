@@ -1738,6 +1738,13 @@ class EditorFragment : Fragment() {
     private var characterBarAdapter: SymbolCharAdapter? = null
 
     /**
+     * Tracked separately from the view's visibility: the hide animation only
+     * flips it to GONE when it ends, so reading visibility mid-flight would let
+     * a second call restart an animation that is already running.
+     */
+    private var characterBarShown = false
+
+    /**
      * Fills the header's character strip from whatever text element is selected:
      * calligraphy tokens once the text has been broken apart, otherwise its
      * letters. Hidden unless the Symbols panel asked for it or calligraphy mode
@@ -1787,27 +1794,79 @@ class EditorFragment : Fragment() {
                 }
         }
 
+        b.btnDeleteLastDiacritic.addPressEffect {
+            viewModel.removeLastDiacriticFromSelectedChar(viewModel.resolvedCharIndex())
+        }
+        b.btnClearAllDiacritics.addPressEffect {
+            viewModel.clearAllDiacriticsFromSelectedChar(viewModel.resolvedCharIndex())
+        }
+
         adapter.submitList(chips)
         animateCharacterBar(visible = chips.isNotEmpty())
+        if (chips.isNotEmpty()) {
+            // Keep the focused letter reachable — tapping a token on canvas can
+            // point the strip at a chip that is scrolled off the end.
+            val target = selected.coerceIn(0, chips.lastIndex)
+            b.rvCalligraphyChars.post {
+                val rv = _binding?.rvCalligraphyChars ?: return@post
+                (rv.layoutManager as? androidx.recyclerview.widget.LinearLayoutManager)
+                    ?.scrollToPosition(target)
+            }
+        }
     }
 
     /**
-     * Grows/shrinks the header as the character strip comes and goes, instead of
-     * snapping the toolbar to a new height.
+     * Grows the header around the character strip as it comes and goes, on the
+     * same motion the table selection bar uses so the two read as one piece of
+     * chrome. The canvas no longer rides on the header's height — it hangs off
+     * headerBaseAnchor — so growing it here costs the artboard nothing.
      */
     private fun animateCharacterBar(visible: Boolean) {
         val b = _binding ?: return
-        val target = if (visible) View.VISIBLE else View.GONE
-        if (b.rvCalligraphyChars.visibility == target) return
+        if (characterBarShown == visible) return
+        characterBarShown = visible
 
-        android.transition.TransitionManager.beginDelayedTransition(
-            b.header,
-            android.transition.AutoTransition().apply {
-                duration = CHAR_BAR_ANIM_MS
-                interpolator = android.view.animation.DecelerateInterpolator()
-            }
-        )
-        b.rvCalligraphyChars.visibility = target
+        val bar = b.calligraphyBarLayout
+        val rise = -12f * resources.displayMetrics.density
+        bar.animate().cancel()
+
+        if (visible) {
+            androidx.transition.TransitionManager.beginDelayedTransition(
+                b.header,
+                androidx.transition.AutoTransition().apply {
+                    duration = CHAR_BAR_ANIM_MS
+                    interpolator = android.view.animation.DecelerateInterpolator()
+                }
+            )
+            bar.visibility = View.VISIBLE
+            bar.alpha = 0f
+            bar.translationY = rise
+            bar.animate()
+                .alpha(1f)
+                .translationY(0f)
+                .setDuration(CHAR_BAR_ANIM_MS)
+                .setInterpolator(android.view.animation.DecelerateInterpolator())
+                .start()
+        } else {
+            bar.animate()
+                .alpha(0f)
+                .translationY(rise)
+                .setDuration(CHAR_BAR_HIDE_MS)
+                .setInterpolator(android.view.animation.DecelerateInterpolator())
+                .withEndAction {
+                    val endB = _binding ?: return@withEndAction
+                    androidx.transition.TransitionManager.beginDelayedTransition(
+                        endB.header,
+                        androidx.transition.AutoTransition().apply {
+                            duration = CHAR_BAR_HIDE_MS
+                            interpolator = android.view.animation.DecelerateInterpolator()
+                        }
+                    )
+                    endB.calligraphyBarLayout.visibility = View.GONE
+                    endB.calligraphyBarLayout.translationY = 0f
+                }
+                .start()
+        }
     }
 
     private fun updateTableSelectionBar() {
@@ -1965,9 +2024,17 @@ class EditorFragment : Fragment() {
             }
             viewModel.setCanvasView(sizedCanvasView)
 
-            sizedCanvasView.onCalligraphyTokenSelected = { _, token ->
+            sizedCanvasView.onCalligraphyTokenSelected = { element, token ->
                 // Keep the Symbols strip in step with what was tapped on canvas.
+                // The chip highlight is driven by activeCharIndex, not by the
+                // token id, so setting only the id left the strip pointing at
+                // whatever letter was selected before.
                 viewModel.setActiveCalligraphyTokenId(token.id)
+                element.calligraphyData
+                    ?.tokens
+                    ?.indexOfFirst { it.id == token.id }
+                    ?.takeIf { it >= 0 }
+                    ?.let { viewModel.setActiveCharIndex(it) }
             }
             sizedCanvasView.onCalligraphyCompositionChanged = { element ->
                 viewModel.updateElement(element)
@@ -3646,7 +3713,10 @@ class EditorFragment : Fragment() {
     }
 
     companion object {
-        /** Header grow/shrink when the character strip appears. */
-        private const val CHAR_BAR_ANIM_MS = 200L
+        /** Slide/fade in of the floating character strip. */
+        private const val CHAR_BAR_ANIM_MS = 220L
+
+        /** Slide/fade out — shorter, so dismissal never feels sticky. */
+        private const val CHAR_BAR_HIDE_MS = 180L
     }
 }

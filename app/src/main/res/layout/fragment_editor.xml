@@ -310,36 +310,110 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <!--
-            Character strip. Lives in the header rather than the Symbols panel so
-            the panel keeps its full height for the symbol grid. Expands the
-            header the same way tableSelectionBar does, and is mutually
-            exclusive with it.
+            Character strip for calligraphy. Part of the header surface, so it
+            reads as one toolbar rather than a card floating over the artwork,
+            and mutually exclusive with tableSelectionBar. Growing the header no
+            longer resizes the canvas — see headerBaseAnchor below.
         -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvCalligraphyChars"
+        <LinearLayout
+            android:id="@+id/calligraphyBarLayout"
             android:layout_width="match_parent"
             android:layout_height="42dp"
             android:layout_marginTop="8dp"
-            android:clipToPadding="false"
+            android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:overScrollMode="never"
+            android:paddingHorizontal="6dp"
             android:visibility="gone"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/topToolbarRow" />
+            app:layout_constraintTop_toBottomOf="@id/topToolbarRow">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvCalligraphyChars"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:clipToPadding="false"
+                android:orientation="horizontal"
+                android:overScrollMode="never"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+            <LinearLayout
+                android:id="@+id/calligraphyCharActions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:layout_marginStart="4dp">
+
+                <ImageView
+                    android:id="@+id/btnDeleteLastDiacritic"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_marginStart="4dp"
+                    android:background="@drawable/button_bg_round"
+                    android:backgroundTint="@color/contrast"
+                    android:clickable="true"
+                    android:contentDescription="@string/symbols_remove_last"
+                    android:focusable="true"
+                    android:padding="8dp"
+                    android:src="@drawable/ic_undo"
+                    app:tint="@color/black" />
+
+                <ImageView
+                    android:id="@+id/btnClearAllDiacritics"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_marginStart="4dp"
+                    android:background="@drawable/button_bg_round"
+                    android:backgroundTint="@color/contrast"
+                    android:clickable="true"
+                    android:contentDescription="@string/symbols_clear_all"
+                    android:focusable="true"
+                    android:padding="8dp"
+                    android:src="@drawable/ic_delete"
+                    app:tint="@color/gray" />
+
+            </LinearLayout>
+
+        </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- Bottom-only lift for the header. See header_bottom_shadow.xml. -->
+    <!--
+        The canvas hangs off this fixed-height stand-in for the header rather
+        than off the header itself. The header is wrap_content so it grows when
+        the character strip or the table selection bar appears, and anchoring the
+        container to it pushed the artboard down and re-fitted the canvas to a
+        shorter box every time either one showed up.
+    -->
     <View
+        android:id="@+id/headerBaseAnchor"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/editor_header_base_height"
+        android:importantForAccessibility="no"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/header" />
+
+    <!--
+        Bottom-only lift for the header. The header has 15dp bottom corners
+        (ic_editor_header.xml), so the shadow is drawn from the header's own
+        silhouette and curves with them — a flat gradient strip ran straight
+        across and made the rounding look like a glitch.
+    -->
+    <com.webscare.urducanvas.common.views.EdgeShadowView
         android:id="@+id/headerBottomShadow"
         android:layout_width="0dp"
-        android:layout_height="10dp"
-        android:background="@drawable/header_bottom_shadow"
+        android:layout_height="27dp"
+        android:layout_marginTop="-15dp"
         android:importantForAccessibility="no"
-        android:translationZ="6dp"
+        android:translationZ="5dp"
+        app:shadowBlurRadius="7dp"
+        app:shadowCornerRadius="15dp"
+        app:shadowEdge="bottom"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/header" />
@@ -351,7 +425,7 @@
         app:layout_constraintBottom_toTopOf="@id/centerGuide"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/header"/>
+        app:layout_constraintTop_toBottomOf="@id/headerBaseAnchor"/>
 
 
     <!--
@@ -723,18 +797,24 @@
 
     </LinearLayout>
 
-    <View
+    <!--
+        Top-only lift for the panel sheet, shaped by the panel's own 30dp top
+        corners (panel_bg.xml) instead of running square across the width.
+    -->
+    <com.webscare.urducanvas.common.views.EdgeShadowView
         android:id="@+id/panelTopShadow"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:background="@drawable/top_shadow"
+        android:layout_height="48dp"
+        android:layout_marginBottom="-30dp"
         android:elevation="0dp"
-        android:translationZ="0dp"
         android:importantForAccessibility="no"
-        app:layout_constraintStart_toStartOf="parent"
+        android:translationZ="0dp"
+        app:shadowBlurRadius="10dp"
+        app:shadowCornerRadius="30dp"
+        app:shadowEdge="top"
+        app:layout_constraintBottom_toTopOf="@id/panelNavContainer"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/panelNavContainer"
-        app:layout_constraintBottom_toTopOf="@id/panelNavContainer"/>
+        app:layout_constraintStart_toStartOf="parent" />
 
     <com.webscare.urducanvas.common.views.GestureFrameLayout
         android:id="@+id/panelNavContainer"

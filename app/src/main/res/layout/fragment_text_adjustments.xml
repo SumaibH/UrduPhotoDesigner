@@ -117,7 +117,12 @@
             android:orientation="horizontal"
             android:paddingHorizontal="10dp">
 
-            <!-- Search icon — visible by default at start of row -->
+            <!--
+                Search — only Styles and Font have a list worth filtering, so
+                the icon is shown for those two tabs and hidden elsewhere. Once
+                a query is applied it turns into a cross that clears it, so the
+                filtered state is visible without opening the dialog again.
+            -->
             <ImageView
                 android:id="@+id/searchIcon"
                 android:layout_width="30dp"
@@ -128,6 +133,25 @@
                 android:padding="8dp"
                 android:src="@drawable/ic_search"
                 app:tint="@color/gray" />
+
+            <!--
+                Break apart / rejoin, in the header rather than inside the
+                Symbols panel: it is a mode switch for the whole layer, not a
+                symbol, and it was eating a row of the symbol grid.
+            -->
+            <ImageView
+                android:id="@+id/btnCalligraphyBreakdown"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="6dp"
+                android:background="@drawable/button_bg_small"
+                android:backgroundTint="@color/contrast"
+                android:contentDescription="@string/symbols_calligraphy"
+                android:padding="8dp"
+                android:src="@drawable/ic_magic_wand"
+                android:visibility="gone"
+                app:tint="@color/black" />
 
             <!-- TabLayout — unified UrduCanvas panel style -->
             <com.google.android.material.tabs.TabLayout

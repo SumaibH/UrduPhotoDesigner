@@ -11,7 +11,6 @@ import com.webscare.urducanvas.R
 import com.webscare.urducanvas.common.canvas.CanvasViewModel
 import com.webscare.urducanvas.common.canvas.enums.ElementType
 import com.webscare.urducanvas.common.canvas.model.CanvasElement
-import com.webscare.urducanvas.common.canvas.model.ExpansionDepth
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
 import com.webscare.urducanvas.databinding.FragmentTextSymbolsBinding
 import com.webscare.urducanvas.ui.editor.views.RailCategoryItem
@@ -35,8 +34,9 @@ class TextSymbolsFragment : Fragment() {
         listOf(
             RailCategoryItem("upper", getString(R.string.symbols_above)),
             RailCategoryItem("lower", getString(R.string.symbols_below)),
-            RailCategoryItem("side", getString(R.string.symbols_marks)),
-            RailCategoryItem("dots", getString(R.string.symbols_ornaments))
+            RailCategoryItem("quranic", getString(R.string.symbols_quranic)),
+            RailCategoryItem("honorifics", getString(R.string.symbols_honorifics)),
+            RailCategoryItem("ornaments", getString(R.string.symbols_ornaments))
         )
     }
 
@@ -50,13 +50,12 @@ class TextSymbolsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupRailAndPager()
-        setupActions()
         observeCanvasElements()
     }
 
     override fun onResume() {
         super.onResume()
-        // The character strip is rendered by the editor header, not by us.
+        // The character strip floats over the canvas, not in this panel.
         viewModel.setCharacterBarVisible(true)
     }
 
@@ -91,66 +90,15 @@ class TextSymbolsFragment : Fragment() {
         })
     }
 
-    private fun setupActions() {
-        binding.btnDeleteLastDiacritic.addPressEffect {
-            viewModel.removeLastDiacriticFromSelectedChar(viewModel.resolvedCharIndex())
-        }
-
-        binding.btnClearAllDiacritics.addPressEffect {
-            viewModel.clearAllDiacriticsFromSelectedChar(viewModel.resolvedCharIndex())
-        }
-
-        binding.btnCalligraphyBreakdown.addPressEffect {
-            val element = getSelectedTextElement() ?: return@addPressEffect
-
-            // Once the text is broken apart the button IS the way back — no need
-            // to reopen the sheet just to reach Rejoin.
-            if (element.calligraphyData?.tokens?.isNotEmpty() == true) {
-                viewModel.collapseSelectedCalligraphyToText()
-                viewModel.exitCalligraphyMode(saveAsComposition = false)
-                return@addPressEffect
-            }
-
-            val sheet = CalligraphyBreakdownBottomSheet.newInstance(isAlreadyExpanded = false)
-            sheet.onBreakWords = {
-                viewModel.expandSelectedTextToCalligraphy(ExpansionDepth.WORDS)
-            }
-            sheet.onBreakCharacters = {
-                viewModel.expandSelectedTextToCalligraphy(ExpansionDepth.CHARACTERS)
-            }
-            sheet.onCollapse = {
-                viewModel.collapseSelectedCalligraphyToText()
-            }
-            sheet.show(childFragmentManager, "calligraphy_breakdown_sheet")
-        }
-    }
-
     private fun observeCanvasElements() {
         viewModel.canvasElements.observe(viewLifecycleOwner) { refreshActionRow() }
         viewModel.isCalligraphyEditMode.observe(viewLifecycleOwner) { refreshActionRow() }
     }
 
-    /**
-     * The per-letter actions only mean something once the text has been broken
-     * apart, so they stay hidden until then. Calligraphy itself always shows —
-     * it is what performs the break.
-     */
     private fun refreshActionRow() {
         val b = _binding ?: return
         val element = getSelectedTextElement()
-        val expanded = element?.calligraphyData?.tokens?.isNotEmpty() == true
-
         b.tvEmptyState.visibility = if (element == null) View.VISIBLE else View.GONE
-        b.btnDeleteLastDiacritic.visibility = if (expanded) View.VISIBLE else View.GONE
-        b.btnClearAllDiacritics.visibility = if (expanded) View.VISIBLE else View.GONE
-
-        // The same button flips role: it breaks the text apart, then puts it back.
-        b.tvCalligraphyLabel.setText(
-            if (expanded) R.string.calligraphy_rejoin else R.string.symbols_calligraphy
-        )
-        b.ivCalligraphyIcon.setImageResource(
-            if (expanded) R.drawable.ic_group else R.drawable.ic_magic_wand
-        )
     }
 
     private fun getSelectedTextElement(): CanvasElement? {

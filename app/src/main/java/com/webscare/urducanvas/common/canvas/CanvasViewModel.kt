@@ -2597,6 +2597,38 @@ class CanvasViewModel @Inject constructor(
             markSelectedTextElementAsPremium(false)
         }
         updateSelectedTextElements { it.copy(kashidaSize = kasheeda) }
+        // Kashida makes the text wider, but the wrap box keeps the width it was fitted to.
+        // A multi-word layer has slack from wrapping and absorbs it; a single-word layer's
+        // box hugs the word exactly, so the elongated form had nowhere to go and the layer
+        // looked untouched. Re-fit after the update, once the typeface is back on the
+        // paint — measuring inside the transform would use a bare paint.
+        refitSelectedTextBoxes()
+    }
+
+    /**
+     * Re-measures the wrap box of every selected text layer against its current content.
+     *
+     * [CanvasElement.recalculateTextBounds] clamps `boxWidth` into
+     * `[widest word, natural unwrapped width]`, so this both grows a box that has become
+     * too tight and shrinks one that has become too loose.
+     */
+    private fun refitSelectedTextBoxes() {
+        val currentList = _canvasElements.value ?: return
+        val selectedGroupIds = currentList
+            .filter { it.isSelected && it.type == ElementType.GROUP }
+            .map { it.id }
+            .toSet()
+
+        var refitted = false
+        currentList.forEach { element ->
+            val isTargeted =
+                element.isSelected || (element.groupId != null && element.groupId in selectedGroupIds)
+            if (isTargeted && element.type == ElementType.TEXT) {
+                element.recalculateTextBounds(_canvasSize.value?.width, _canvasSize.value?.height)
+                refitted = true
+            }
+        }
+        if (refitted) _canvasElements.value = currentList
     }
 
     private fun markSelectedTextElementAsPremium(isPremium: Boolean) {
@@ -4080,6 +4112,21 @@ class CanvasViewModel @Inject constructor(
                 it.overrideShadowRadius = radius
             }
         ) {
+            // The token route returns before the mirrors below are written, so the
+            // panel kept reading the element's stale dx/dy. The next slider move
+            // then re-sent those and wiped the angle the pad had just set — the
+            // angle only reappeared once the pad was tapped again.
+            _shadowColor.value = color
+            _shadowDx.value = dx
+            _shadowDy.value = dy
+            _shadowRadius.value = radius
+            _shadowOpacity.value = opacity.coerceIn(0, 255)
+            _hasShadow.value = enabled
+            if (!skipAngleDistSync) {
+                val (angle, dist) = dxDyToAngleDistance(dx, dy)
+                _shadowAngle.value = angle
+                _shadowDistance.value = dist
+            }
             return
         }
 
@@ -4533,6 +4580,10 @@ class CanvasViewModel @Inject constructor(
             element.boxWidth = maxW
         }
         element.autoFitTextSize(canvasW, canvasH)
+        // Auto-fit may have shrunk the type until it no longer fills the wrap box
+        // it was handed above; leaving the box at 85% of the canvas draws the
+        // selection frame far wider than the glyphs inside it.
+        element.shrinkBoxToContent()
 
         val action = CanvasAction.AddText(
             text, element.copy(context = null)
@@ -4599,6 +4650,10 @@ class CanvasViewModel @Inject constructor(
             element.boxWidth = maxW
         }
         element.autoFitTextSize(canvasW, canvasH)
+        // Auto-fit may have shrunk the type until it no longer fills the wrap box
+        // it was handed above; leaving the box at 85% of the canvas draws the
+        // selection frame far wider than the glyphs inside it.
+        element.shrinkBoxToContent()
 
         // Push action for undo/redo (store a copy without transient fields)
         val action = CanvasAction.AddText(
@@ -4704,6 +4759,10 @@ class CanvasViewModel @Inject constructor(
             element.boxWidth = maxW
         }
         element.autoFitTextSize(canvasW, canvasH)
+        // Auto-fit may have shrunk the type until it no longer fills the wrap box
+        // it was handed above; leaving the box at 85% of the canvas draws the
+        // selection frame far wider than the glyphs inside it.
+        element.shrinkBoxToContent()
 
         val action = CanvasAction.AddText(
             text, element.copy(context = null)
@@ -6841,6 +6900,7 @@ class CanvasViewModel @Inject constructor(
 
         val cData = CalligraphyShapingHelper.decomposeText(selected.text, depth, selected.paint)
         selected.calligraphyData = cData
+        selected.recomputeCalligraphyBounds()
         val after = selected.copy(context = null)
 
         _canvasActions.push(CanvasAction.UpdateElement(selected.id, after, before))
@@ -6880,6 +6940,7 @@ class CanvasViewModel @Inject constructor(
         val before = selected.copy(context = null)
 
         transform(activeToken)
+        selected.recomputeCalligraphyBounds()
         val after = selected.copy(context = null)
 
         _canvasActions.push(CanvasAction.UpdateElement(selected.id, after, before))

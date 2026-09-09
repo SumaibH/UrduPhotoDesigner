@@ -58,6 +58,15 @@ class SymbolCharAdapter(
             binding.tvChar.text = item.displayText
             previewTypeface?.let { binding.tvChar.typeface = it }
 
+            val len = item.displayText.length
+            val dynamicSp = when {
+                len <= 1 -> 14.5f
+                len == 2 -> 12.5f
+                len == 3 -> 10.5f
+                else -> 9f
+            }
+            binding.tvChar.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, dynamicSp)
+
             // Stroke-based state, like the filter tiles: the glyph keeps its own
             // colour so the letter stays readable when selected.
             val density = ctx.resources.displayMetrics.density

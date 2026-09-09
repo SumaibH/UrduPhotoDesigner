@@ -25,113 +25,6 @@
         app:layout_constraintStart_toEndOf="@id/collapsibleRail"
         app:layout_constraintTop_toTopOf="parent">
 
-        <!--
-            Character toolbar. White so it reads as a surface above the panel,
-            with a soft shadow for separation. Everything inside scrolls
-            sideways, so a long action row can never run off the screen edge.
-        -->
-        <LinearLayout
-            android:id="@+id/charToolbar"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:background="@color/white"
-            android:orientation="vertical"
-            android:paddingVertical="5dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <!--
-                Plain row, not a HorizontalScrollView: the weighted spacer that
-                pushes the per-letter actions to the end needs a bounded width,
-                and a scroller measures its child unbounded. Three buttons fit.
-            -->
-            <LinearLayout
-                android:id="@+id/actionRow"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingHorizontal="6dp">
-
-                    <!-- Entry point: always available, it is what creates the
-                         composition the other two act on. -->
-                    <LinearLayout
-                        android:id="@+id/btnCalligraphyBreakdown"
-                        android:layout_width="wrap_content"
-                        android:layout_height="30dp"
-                        android:background="@drawable/button_bg_round"
-                        android:backgroundTint="@color/rail_selected_bg"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:gravity="center"
-                        android:orientation="horizontal"
-                        android:paddingHorizontal="12dp">
-
-                        <ImageView
-                            android:id="@+id/ivCalligraphyIcon"
-                            android:layout_width="13dp"
-                            android:layout_height="13dp"
-                            android:contentDescription="@null"
-                            android:src="@drawable/ic_magic_wand"
-                            app:tint="@color/rail_selected_text" />
-
-                        <TextView
-                            android:id="@+id/tvCalligraphyLabel"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="5dp"
-                            android:fontFamily="@font/medium"
-                            android:includeFontPadding="false"
-                            android:text="@string/symbols_calligraphy"
-                            android:textColor="@color/rail_selected_text"
-                            android:textSize="11sp" />
-
-                    </LinearLayout>
-
-                    <!-- Pushes the per-letter actions to the end -->
-                    <View
-                        android:layout_width="0dp"
-                        android:layout_height="1dp"
-                        android:layout_weight="1" />
-
-                    <ImageView
-                        android:id="@+id/btnDeleteLastDiacritic"
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:layout_marginStart="6dp"
-                        android:background="@drawable/button_bg_round"
-                        android:backgroundTint="@color/contrast"
-                        android:clickable="true"
-                        android:contentDescription="@string/symbols_remove_last"
-                        android:focusable="true"
-                        android:padding="8dp"
-                        android:src="@drawable/ic_undo"
-                        app:tint="@color/black" />
-
-                    <ImageView
-                        android:id="@+id/btnClearAllDiacritics"
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:layout_marginStart="6dp"
-                        android:background="@drawable/button_bg_round"
-                        android:backgroundTint="@color/contrast"
-                        android:clickable="true"
-                        android:contentDescription="@string/symbols_clear_all"
-                        android:focusable="true"
-                        android:padding="8dp"
-                        android:src="@drawable/ic_delete"
-                        app:tint="@color/gray" />
-
-            </LinearLayout>
-
-            <!--
-                The character strip is NOT here — it lives in the editor header
-                (rvCalligraphyChars) so this panel keeps its height for symbols.
-            -->
-
-        </LinearLayout>
-
         <!-- ═══ Symbol pages ═══ -->
         <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/viewPager"
@@ -141,7 +34,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/charToolbar" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <!-- Shown when nothing (or a non-text layer) is selected -->
         <TextView

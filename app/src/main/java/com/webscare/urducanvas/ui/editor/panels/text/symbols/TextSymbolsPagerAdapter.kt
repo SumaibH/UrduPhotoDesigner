@@ -10,8 +10,9 @@ class TextSymbolsPagerAdapter(
     private val categories = listOf(
         SymbolCategory.UPPER,
         SymbolCategory.LOWER,
-        SymbolCategory.SIDE_QURANIC,
-        SymbolCategory.DOTS_ACCENTS
+        SymbolCategory.QURANIC,
+        SymbolCategory.HONORIFICS,
+        SymbolCategory.ORNAMENTS
     )
 
     override fun getItemCount(): Int = categories.size

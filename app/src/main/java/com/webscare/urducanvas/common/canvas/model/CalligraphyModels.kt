@@ -28,9 +28,24 @@ data class CalligraphyData(
     @SerializedName("tokens") var tokens: MutableList<TextToken> = mutableListOf(),
     @SerializedName("accents") var floatingAccents: MutableList<FloatingAccent> = mutableListOf(),
     @SerializedName("activeTokenId") var activeTokenId: String? = null,
+    @SerializedName("selectedTokenIds") var selectedTokenIds: MutableSet<String> = mutableSetOf(),
     @SerializedName("originalFullText") var originalFullText: String = "",
     @SerializedName("isCompositionLocked") var isCompositionLocked: Boolean = false
 ) : Serializable {
+
+    fun isTokenSelected(id: String): Boolean = selectedTokenIds.contains(id) || activeTokenId == id
+
+    fun toggleTokenSelection(id: String) {
+        if (selectedTokenIds.contains(id)) {
+            selectedTokenIds.remove(id)
+            if (activeTokenId == id) {
+                activeTokenId = selectedTokenIds.firstOrNull()
+            }
+        } else {
+            selectedTokenIds.add(id)
+            activeTokenId = id
+        }
+    }
 
     /**
      * Independent copy, tokens and accents included.
@@ -41,7 +56,8 @@ data class CalligraphyData(
      */
     fun deepCopy(): CalligraphyData = copy(
         tokens = tokens.map { it.copy() }.toMutableList(),
-        floatingAccents = floatingAccents.map { it.copy() }.toMutableList()
+        floatingAccents = floatingAccents.map { it.copy() }.toMutableList(),
+        selectedTokenIds = selectedTokenIds.toMutableSet()
     )
 
     /**

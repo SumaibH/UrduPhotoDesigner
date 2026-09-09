@@ -25,7 +25,7 @@ class SymbolPageFragment : Fragment() {
     companion object {
         private const val ARG_CATEGORY = "arg_category"
 
-        /** Tile height in dp, kept in sync with item_symbol_card.xml (70dp + 3dp margins). */
+        /** Tile height in dp, kept in sync with item_symbol_card.xml (52dp card + 3dp margins each side). */
         private const val ROW_HEIGHT_DP = 58f
 
         /** Never stack more than this many rows, however tall the panel gets. */
@@ -86,7 +86,7 @@ class SymbolPageFragment : Fragment() {
     }
 
     /**
-     * Fits as many 76dp rows as the panel currently allows, at least one.
+     * Fits as many tile rows as the panel currently allows, at least one.
      *
      * The grid is wrap_content, so it measures to exactly rows x tile height —
      * a fill-height grid would instead divide the whole panel by the row count
@@ -100,8 +100,18 @@ class SymbolPageFragment : Fragment() {
         val rowPx = ROW_HEIGHT_DP * resources.displayMetrics.density
         val rows = (available / rowPx).toInt().coerceIn(1, MAX_ROWS)
 
-        (b.rvSymbols.layoutManager as? GridLayoutManager)?.let { lm ->
-            if (lm.spanCount != rows) lm.spanCount = rows
+        val lm = b.rvSymbols.layoutManager as? GridLayoutManager ?: return
+        if (lm.spanCount == rows) return
+
+        // Posted, not applied inline: this runs from a layout-change callback,
+        // and a requestLayout() raised mid-traversal is dropped. The grid then
+        // kept the row count it was measured with — three rows in a box that
+        // only had room for two, so the bottom row was sliced off.
+        b.rvSymbols.post {
+            val rv = _binding?.rvSymbols ?: return@post
+            (rv.layoutManager as? GridLayoutManager)?.let {
+                if (it.spanCount != rows) it.spanCount = rows
+            }
         }
     }
 

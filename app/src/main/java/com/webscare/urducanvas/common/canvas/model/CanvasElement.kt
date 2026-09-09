@@ -460,6 +460,76 @@ data class CanvasElement(
         }
     }
 
+    /**
+     * Recomputes the enclosing bounding box for a calligraphic text element and
+     * shifts the element origin (x, y) so the selection and bounds handles tightly
+     * wrap all tokens and accents.
+     */
+    fun recomputeCalligraphyBounds() {
+        val cData = calligraphyData ?: return
+        if (cData.tokens.isEmpty()) return
+        val fm = if (::paint.isInitialized) paint.fontMetrics else Paint.FontMetrics()
+        val baseLineHeight = (fm.bottom - fm.top) * lineSpacing
+
+        var minX = Float.MAX_VALUE
+        var maxX = -Float.MAX_VALUE
+        var minY = Float.MAX_VALUE
+        var maxY = -Float.MAX_VALUE
+
+        for (token in cData.tokens) {
+            val w = if (::paint.isInitialized) paint.measureText(token.getFullDisplayText()) * token.scale else 100f
+            val h = baseLineHeight * token.scale
+            val left = token.offsetX - w / 2f
+            val right = token.offsetX + w / 2f
+            val top = token.offsetY - h / 2f
+            val bottom = token.offsetY + h / 2f
+            if (left < minX) minX = left
+            if (right > maxX) maxX = right
+            if (top < minY) minY = top
+            if (bottom > maxY) maxY = bottom
+        }
+        for (accent in cData.floatingAccents) {
+            val w = if (::paint.isInitialized) paint.measureText(accent.symbol) * accent.scale else 50f
+            val h = baseLineHeight * accent.scale * 0.7f
+            val left = accent.offsetX - w / 2f
+            val right = accent.offsetX + w / 2f
+            val top = accent.offsetY - h / 2f
+            val bottom = accent.offsetY + h / 2f
+            if (left < minX) minX = left
+            if (right > maxX) maxX = right
+            if (top < minY) minY = top
+            if (bottom > maxY) maxY = bottom
+        }
+
+        if (minX < maxX && minY < maxY) {
+            val shiftX = (minX + maxX) / 2f
+            val shiftY = (minY + maxY) / 2f
+
+            if (kotlin.math.abs(shiftX) > 1f || kotlin.math.abs(shiftY) > 1f) {
+                for (token in cData.tokens) {
+                    token.offsetX -= shiftX
+                    token.offsetY -= shiftY
+                    token.homeOffsetX -= shiftX
+                    token.homeOffsetY -= shiftY
+                }
+                for (accent in cData.floatingAccents) {
+                    accent.offsetX -= shiftX
+                    accent.offsetY -= shiftY
+                }
+                val rad = Math.toRadians(rotation.toDouble())
+                val cosA = kotlin.math.cos(rad).toFloat()
+                val sinA = kotlin.math.sin(rad).toFloat()
+                val worldShiftX = (shiftX * cosA - shiftY * sinA) * scale
+                val worldShiftY = (shiftX * sinA + shiftY * cosA) * scale
+
+                x += worldShiftX
+                y += worldShiftY
+            }
+            logicalContentWidth = (maxX - minX)
+            logicalContentHeight = (maxY - minY)
+        }
+    }
+
     fun getTextWithKashida(): String {
         return applyKashidaToText(text, kashidaSize)
     }
@@ -663,6 +733,35 @@ data class CanvasElement(
 
         logicalContentWidth = (boxWidth ?: maxW) + getLabelPaddingX() * 2f
         logicalContentHeight = (boxHeight ?: totalH) + getLabelPaddingY() * 2f
+    }
+
+    /**
+     * Pulls [boxWidth] in to the widest line the text actually draws.
+     *
+     * A newly added layer is handed a wrap box of 85% of the canvas so long
+     * strings wrap instead of running off the artboard, and [autoFitTextSize]
+     * then shrinks the type until it fits. Once it has, the box is usually far
+     * wider than the glyphs left inside it — and since [getLocalContentWidth]
+     * reports boxWidth verbatim, the selection frame was drawn against the old
+     * 85% box rather than the text. That is the oversized frame a fresh text
+     * layer opened with.
+     *
+     * Re-wrapping at exactly the widest produced line yields the same lines
+     * (greedy wrapping only ever breaks where it already broke), so this is a
+     * pure bounds correction and never reflows the text.
+     */
+    fun shrinkBoxToContent() {
+        if (type != ElementType.TEXT) return
+        if (!::paint.isInitialized) updatePaintProperties()
+        val currentBox = boxWidth ?: return
+        if (currentBox <= 0f) return
+
+        paint.textSize = paintTextSize
+        val widest = getVisualLines(currentBox).maxOfOrNull { paint.measureText(it) } ?: 0f
+        if (widest <= 0f || widest >= currentBox - 0.5f) return
+
+        boxWidth = widest.coerceAtLeast(getMinWordWidth())
+        recalculateTextBounds()
     }
 
     fun recalculateTextBounds(canvasWidth: Float? = null, canvasHeight: Float? = null) {

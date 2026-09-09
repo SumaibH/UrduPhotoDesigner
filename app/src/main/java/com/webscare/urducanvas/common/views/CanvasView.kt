@@ -899,15 +899,29 @@ class CanvasView @JvmOverloads constructor(
 
     fun exitCalligraphyEdit() {
         activeCalligraphyElementId = null
+        calligraphyGesture = CalligraphyGesture.NONE
         currentMode = Mode.NONE
         invalidate()
     }
 
-    private var isDraggingCalligraphyToken = false
+    /**
+     * What a drag on the focused token is doing. The handles drawn around it by
+     * [drawTokenSelectionBox] used to be decoration only — a token could be
+     * moved but never resized or turned, so a composition could only ever be
+     * laid out at one size.
+     */
+    private enum class CalligraphyGesture { NONE, MOVE, SCALE, ROTATE }
+
+    private var calligraphyGesture = CalligraphyGesture.NONE
+    private val isDraggingCalligraphyToken
+        get() = calligraphyGesture != CalligraphyGesture.NONE
+
     private var calligraphyTouchStartOffsetX = 0f
     private var calligraphyTouchStartOffsetY = 0f
     private var calligraphyTouchStartLocalX = 0f
     private var calligraphyTouchStartLocalY = 0f
+    private var calligraphyTouchStartScale = 1f
+    private var calligraphyTouchStartRotation = 0f
 
     private fun mapCanvasPointToElementLocal(canvasX: Float, canvasY: Float, element: CanvasElement): FloatArray {
         val matrix = Matrix().apply {
@@ -5201,8 +5215,8 @@ class CanvasView @JvmOverloads constructor(
             canvas.drawText(displayText, xPos, yOffset, tokenPaint)
 
             // Selection box and handles when active in Calligraphy mode
-            if (isCalligraphyMode && token.id == cData.activeTokenId) {
-                drawTokenSelectionBox(canvas, textW, fmToken)
+            if (isCalligraphyMode && (token.id == cData.activeTokenId || cData.selectedTokenIds.contains(token.id))) {
+                drawTokenSelectionBox(canvas, textW, fmToken, element.scale, token.scale)
             }
 
             canvas.restore()
@@ -5232,49 +5246,149 @@ class CanvasView @JvmOverloads constructor(
         }
     }
 
-    private fun drawTokenSelectionBox(canvas: Canvas, textW: Float, fm: Paint.FontMetrics) {
-        val pad = 12f
-        val top = fm.ascent - pad
-        val bottom = fm.descent + pad
-        val left = -textW / 2f - pad
-        val right = textW / 2f + pad
+    /**
+     * Selection frame for the focused calligraphy token.
+     *
+     * The handles carry the same icons as the element selection frame — resize
+     * on the corners, rotate on the pin — rather than anonymous white dots, so
+     * it is visible at a glance that a letter can be resized and turned and not
+     * merely dragged.
+     *
+     * [elementScale] and [tokenScale] undo the transform this is drawn inside,
+     * keeping the icons and the frame at a fixed size on screen however small
+     * the letter itself is.
+     */
+    private fun drawTokenSelectionBox(
+        canvas: Canvas,
+        textW: Float,
+        fm: Paint.FontMetrics,
+        elementScale: Float,
+        tokenScale: Float
+    ) {
+        val dp = tokenLocalDp(elementScale, tokenScale)
+        val box = tokenSelectionBounds(textW, fm)
+        val pinY = tokenPinY(box.top, dp)
 
         val boxPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#0E9F6E") // Brand emerald green
+            color = TOKEN_FRAME_COLOR
             style = Paint.Style.STROKE
-            strokeWidth = 3f
-            pathEffect = DashPathEffect(floatArrayOf(12f, 8f), 0f)
+            strokeWidth = 1.5f * dp
+            pathEffect = DashPathEffect(floatArrayOf(6f * dp, 4f * dp), 0f)
         }
-        canvas.drawRect(left, top, right, bottom, boxPaint)
+        canvas.drawRect(box, boxPaint)
 
-        // Corner handles
-        val handlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.WHITE
-            style = Paint.Style.FILL
-        }
-        val handleStroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#0E9F6E")
-            style = Paint.Style.STROKE
-            strokeWidth = 3f
-        }
-        val r = 8f
-        val corners = floatArrayOf(
-            left, top,
-            right, top,
-            right, bottom,
-            left, bottom
+        val half = TOKEN_HANDLE_ICON_DP * dp / 2f
+
+        // One resize grip, on the bottom-left corner the element frame already
+        // uses for it. Four identical icons crowded a letter-sized box and read
+        // as four different controls; the other three corners are left bare.
+        resizeIcon.setBounds(
+            (box.left - half).toInt(),
+            (box.bottom - half).toInt(),
+            (box.left + half).toInt(),
+            (box.bottom + half).toInt()
         )
-        for (i in corners.indices step 2) {
-            canvas.drawCircle(corners[i], corners[i + 1], r, handlePaint)
-            canvas.drawCircle(corners[i], corners[i + 1], r, handleStroke)
-        }
+        resizeIcon.draw(canvas)
 
-        // Top rotation pin
-        val pinX = 0f
-        val pinY = top - 24f
-        canvas.drawLine(0f, top, pinX, pinY, handleStroke)
-        canvas.drawCircle(pinX, pinY, r + 2f, handlePaint)
-        canvas.drawCircle(pinX, pinY, r + 2f, handleStroke)
+        // Top rotation pin, on the same tether the element frame uses.
+        val tetherPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = TOKEN_FRAME_COLOR
+            style = Paint.Style.STROKE
+            strokeWidth = 1.5f * dp
+        }
+        canvas.drawLine(0f, box.top, 0f, pinY + half, tetherPaint)
+        rotateIcon.setBounds(
+            (-half).toInt(), (pinY - half).toInt(),
+            (half).toInt(), (pinY + half).toInt()
+        )
+        rotateIcon.draw(canvas)
+    }
+
+    /**
+     * One dp expressed in the focused token's own local units.
+     *
+     * The frame is drawn inside the element's and the token's transforms, so
+     * without this the chrome shrank with the letter and a 0.3x token ended up
+     * with handles too small to see, let alone hit.
+     */
+    private fun tokenLocalDp(elementScale: Float, tokenScale: Float): Float {
+        val onScreen = (scale * overallScale * elementScale * tokenScale).coerceAtLeast(0.0001f)
+        return resources.displayMetrics.density / onScreen
+    }
+
+    /**
+     * The dashed frame, in the token's unscaled local frame.
+     *
+     * The breathing room is a fraction of the token's own line height rather
+     * than a fixed number of units: a flat 12 units hugged a large word so
+     * tightly that the stroke ran through its glyphs, while swamping a small
+     * one. Sizing it from the content keeps the same optical gap at any size.
+     */
+    private fun tokenSelectionBounds(textW: Float, fm: Paint.FontMetrics): RectF {
+        val lineHeight = fm.descent - fm.ascent
+        val pad = (lineHeight * TOKEN_BOX_PAD_RATIO).coerceAtLeast(TOKEN_BOX_PAD_MIN)
+        return RectF(
+            -textW / 2f - pad,
+            fm.ascent - pad,
+            textW / 2f + pad,
+            fm.descent + pad
+        )
+    }
+
+    /** Where the rotation pin sits above [boxTop]. Shared so the hit test agrees with the drawing. */
+    private fun tokenPinY(boxTop: Float, dp: Float): Float = boxTop - TOKEN_PIN_GAP_DP * dp
+
+    /**
+     * Which handle of the focused token a point lands on, or null for none.
+     *
+     * Works in the token's own untransformed frame — the same one
+     * [drawTokenSelectionBox] draws in, reached by undoing the token's offset,
+     * rotation and scale in that order. Comparing against the drawn positions
+     * any other way meant a rotated or resized token's handles were nowhere
+     * near where they appeared.
+     */
+    private fun findTokenHandleAtLocalPoint(
+        localX: Float,
+        localY: Float,
+        element: CanvasElement,
+        token: TextToken
+    ): CalligraphyGesture? {
+        val scale = token.scale.coerceAtLeast(0.05f)
+
+        var px = localX - token.offsetX
+        var py = localY - token.offsetY
+        if (token.rotation != 0f) {
+            val r = Math.toRadians(-token.rotation.toDouble())
+            val cos = kotlin.math.cos(r).toFloat()
+            val sin = kotlin.math.sin(r).toFloat()
+            val rx = px * cos - py * sin
+            val ry = px * sin + py * cos
+            px = rx
+            py = ry
+        }
+        px /= scale
+        py /= scale
+
+        val tokenPaint = TextPaint(element.paint).apply {
+            token.resolveTypeface()?.let { typeface = it }
+        }
+        val textW = tokenPaint.measureText(token.getFullDisplayText())
+        val fm = try { tokenPaint.fontMetrics } catch (e: Exception) { Paint.FontMetrics() }
+
+        val dp = tokenLocalDp(element.scale, token.scale)
+        val box = tokenSelectionBounds(textW, fm)
+
+        // Same units the handles are drawn in, so the target sits on the icon
+        // however far the token is scaled or the canvas zoomed.
+        val touchR = TOKEN_HANDLE_TOUCH_DP * dp
+
+        if (hypot(px, py - tokenPinY(box.top, dp)) <= touchR) return CalligraphyGesture.ROTATE
+
+        // Only the bottom-left corner carries a grip, so only it resizes — the
+        // bare corners stay draggable like the rest of the token.
+        if (hypot(px - box.left, py - box.bottom) <= touchR) return CalligraphyGesture.SCALE
+
+        return null
     }
 
     private fun drawTextElement(
@@ -6594,6 +6708,22 @@ class CanvasView @JvmOverloads constructor(
                 return
             }
 
+            if (currentMode == Mode.CALLIGRAPHY_EDIT && activeCalligraphyElementId != null) {
+                val calElement = canvasElements.firstOrNull { it.id == activeCalligraphyElementId }
+                val cData = calElement?.calligraphyData
+                if (calElement != null && cData != null) {
+                    val localPt = mapCanvasPointToElementLocal(x, y, calElement)
+                    val hitToken = findTokenAtLocalPoint(localPt[0], localPt[1], calElement, cData)
+                    if (hitToken != null) {
+                        cData.toggleTokenSelection(hitToken.id)
+                        vibrateSoft()
+                        invalidate()
+                        onCalligraphyTokenSelected?.invoke(calElement, hitToken)
+                        return
+                    }
+                }
+            }
+
             val touchedElement = canvasElements.filter { !it.isLocked } // ignore locked
                 .sortedByDescending { it.zIndex }.firstOrNull { it.containsPoint(x, y) }
 
@@ -6972,14 +7102,26 @@ class CanvasView @JvmOverloads constructor(
                     val cData = calElement?.calligraphyData
                     if (calElement != null && cData != null) {
                         val localPt = mapCanvasPointToElementLocal(x, y, calElement)
-                        val hitToken = findTokenAtLocalPoint(localPt[0], localPt[1], calElement, cData)
+
+                        // Handles first: they sit outside the glyphs, so a token
+                        // hit test would never reach them, and the corners of a
+                        // neighbouring token overlap them.
+                        val focused = cData.getActiveToken()
+                        val handle = focused?.let {
+                            findTokenHandleAtLocalPoint(localPt[0], localPt[1], calElement, it)
+                        }
+                        val hitToken = focused?.takeIf { handle != null }
+                            ?: findTokenAtLocalPoint(localPt[0], localPt[1], calElement, cData)
+
                         if (hitToken != null) {
                             cData.activeTokenId = hitToken.id
                             calligraphyTouchStartOffsetX = hitToken.offsetX
                             calligraphyTouchStartOffsetY = hitToken.offsetY
                             calligraphyTouchStartLocalX = localPt[0]
                             calligraphyTouchStartLocalY = localPt[1]
-                            isDraggingCalligraphyToken = true
+                            calligraphyTouchStartScale = hitToken.scale
+                            calligraphyTouchStartRotation = hitToken.rotation
+                            calligraphyGesture = handle ?: CalligraphyGesture.MOVE
                             invalidate()
                             onCalligraphyTokenSelected?.invoke(calElement, hitToken)
                             return true
@@ -7577,10 +7719,55 @@ class CanvasView @JvmOverloads constructor(
                     val activeToken = cData?.getActiveToken()
                     if (calElement != null && activeToken != null) {
                         val localPt = mapCanvasPointToElementLocal(x, y, calElement)
-                        val dx = localPt[0] - calligraphyTouchStartLocalX
-                        val dy = localPt[1] - calligraphyTouchStartLocalY
-                        activeToken.offsetX = calligraphyTouchStartOffsetX + dx
-                        activeToken.offsetY = calligraphyTouchStartOffsetY + dy
+                        // Both transforms pivot on the token's own origin, so a
+                        // letter grows and turns where it sits instead of
+                        // wandering off its baseline.
+                        val cx = calligraphyTouchStartOffsetX
+                        val cy = calligraphyTouchStartOffsetY
+
+                        when (calligraphyGesture) {
+                            CalligraphyGesture.SCALE -> {
+                                val startDist = hypot(
+                                    calligraphyTouchStartLocalX - cx,
+                                    calligraphyTouchStartLocalY - cy
+                                )
+                                if (startDist > 1f) {
+                                    val dist = hypot(localPt[0] - cx, localPt[1] - cy)
+                                    activeToken.scale =
+                                        (calligraphyTouchStartScale * dist / startDist)
+                                            .coerceIn(TOKEN_MIN_SCALE, TOKEN_MAX_SCALE)
+                                }
+                            }
+
+                            CalligraphyGesture.ROTATE -> {
+                                val startAngle = atan2(
+                                    calligraphyTouchStartLocalY - cy,
+                                    calligraphyTouchStartLocalX - cx
+                                )
+                                val angle = atan2(localPt[1] - cy, localPt[0] - cx)
+                                activeToken.rotation = calligraphyTouchStartRotation +
+                                        Math.toDegrees((angle - startAngle).toDouble()).toFloat()
+                            }
+
+                            else -> {
+                                val newX = cx + (localPt[0] - calligraphyTouchStartLocalX)
+                                val newY = cy + (localPt[1] - calligraphyTouchStartLocalY)
+                                val deltaX = newX - activeToken.offsetX
+                                val deltaY = newY - activeToken.offsetY
+                                activeToken.offsetX = newX
+                                activeToken.offsetY = newY
+                                if (cData.selectedTokenIds.size > 1 && cData.selectedTokenIds.contains(activeToken.id)) {
+                                    for (otherId in cData.selectedTokenIds) {
+                                        if (otherId != activeToken.id) {
+                                            cData.findToken(otherId)?.let { other ->
+                                                other.offsetX += deltaX
+                                                other.offsetY += deltaY
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         invalidate()
                         return true
                     }
@@ -8165,9 +8352,10 @@ class CanvasView @JvmOverloads constructor(
 
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                 if (currentMode == Mode.CALLIGRAPHY_EDIT && isDraggingCalligraphyToken) {
-                    isDraggingCalligraphyToken = false
+                    calligraphyGesture = CalligraphyGesture.NONE
                     val calElement = canvasElements.firstOrNull { it.id == activeCalligraphyElementId }
                     if (calElement != null) {
+                        calElement.recomputeCalligraphyBounds()
                         onCalligraphyCompositionChanged?.invoke(calElement)
                     }
                     return true
@@ -8966,5 +9154,32 @@ class CanvasView @JvmOverloads constructor(
             }
         }
         displayBitmapCache.clear()
+    }
+
+    private companion object {
+        /**
+         * Gap between a token's glyphs and its selection box, as a fraction of
+         * the token's line height — see tokenSelectionBounds.
+         */
+        const val TOKEN_BOX_PAD_RATIO = 0.16f
+
+        /** Floor for that gap, so a tiny mark still gets a visible frame. */
+        const val TOKEN_BOX_PAD_MIN = 10f
+
+        /** How far the rotation pin stands off the top of that box, in dp. */
+        const val TOKEN_PIN_GAP_DP = 26f
+
+        /** Drawn size of a token handle icon, in dp. */
+        const val TOKEN_HANDLE_ICON_DP = 20f
+
+        /** Finger target for a token handle, in dp. */
+        const val TOKEN_HANDLE_TOUCH_DP = 16f
+
+        /** Brand emerald, shared by the token frame and its tether. */
+        val TOKEN_FRAME_COLOR = Color.parseColor("#0E9F6E")
+
+        /** Keeps a token legible and grabbable however hard its corner is dragged. */
+        const val TOKEN_MIN_SCALE = 0.2f
+        const val TOKEN_MAX_SCALE = 6f
     }
 }

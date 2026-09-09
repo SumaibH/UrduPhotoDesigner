@@ -559,23 +559,22 @@ class TextFragment : Fragment() {
             val customView = tab.customView ?: continue
             val titleView = customView.findViewById<TextView>(R.id.tabTitle) ?: continue
             val indicatorView = customView.findViewById<View>(R.id.tabIndicator)
+            val chevronView = customView.findViewById<android.widget.ImageView>(R.id.tabChevron)
             val isSelected = i == selectedIdx
 
-            if (isCatMode && i == 0) {
+            val textColor = when {
                 // Breadcrumb Back Chip: [← Language] or [← Styles]
                 // Styled with distinct chip background, dark green bold text, no underline indicator
-                titleView.setTextColor(ContextCompat.getColor(context, R.color.appColor))
-                titleView.typeface = boldFont
-                indicatorView?.visibility = View.GONE
-            } else if (isSelected) {
-                titleView.setTextColor(ContextCompat.getColor(context, R.color.tab_selected_text))
-                titleView.typeface = boldFont
-                indicatorView?.visibility = View.VISIBLE
-            } else {
-                titleView.setTextColor(ContextCompat.getColor(context, R.color.tab_unselected_text))
-                titleView.typeface = regularFont
-                indicatorView?.visibility = View.GONE
+                isCatMode && i == 0 -> ContextCompat.getColor(context, R.color.appColor)
+                isSelected -> ContextCompat.getColor(context, R.color.tab_selected_text)
+                else -> ContextCompat.getColor(context, R.color.tab_unselected_text)
             }
+            titleView.setTextColor(textColor)
+            titleView.typeface = if (isCatMode && i == 0 || isSelected) boldFont else regularFont
+            indicatorView?.visibility =
+                if (isSelected && !(isCatMode && i == 0)) View.VISIBLE else View.GONE
+            // The chevron belongs to the label, so it follows the label's colour.
+            chevronView?.imageTintList = android.content.res.ColorStateList.valueOf(textColor)
         }
     }
 
@@ -788,8 +787,17 @@ class TextFragment : Fragment() {
                                 mainViewModel.collapsePanel()
                                 lastRequestedFontId = null
                                 pendingFontEntity = null
-                                mainViewModel.clearFontDownloadState()
+                                // Downloading is silent otherwise — the font just
+                                // appears — so say so.
+                                view?.let {
+                                    Snackbar.make(
+                                        it, "${done.font_name} downloaded", Snackbar.LENGTH_SHORT
+                                    ).show()
+                                }
                             }
+                            // Always drop the finished entry: a terminal state left in the
+                            // StateFlow is replayed to every later collector.
+                            mainViewModel.clearFontDownloadState(done.id.toString())
                         }
 
                         is FontDownloadState.Error -> {
@@ -801,7 +809,7 @@ class TextFragment : Fragment() {
                             }
                             pendingFontEntity = null
                             lastRequestedFontId = null
-                            mainViewModel.clearFontDownloadState()
+                            mainViewModel.clearFontDownloadState(failedFont.id.toString())
                         }
 
                         else -> {

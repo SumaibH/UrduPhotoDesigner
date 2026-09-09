@@ -1,5 +1,6 @@
 package com.webscare.urducanvas.ui.editor.panels.text.symbols
 
+import android.graphics.Paint
 import android.graphics.Typeface
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -20,6 +21,12 @@ class SymbolGridAdapter(
      * default app font shapes several of these very differently.
      */
     private var previewTypeface: Typeface? = null
+
+    /**
+     * Scratch paint for glyph-coverage checks. Kept off the TextView's own paint
+     * so asking a question never leaves the view in a half-configured state.
+     */
+    private val probe = Paint()
 
     fun submitList(newItems: List<SymbolItem>) {
         items.clear()
@@ -49,10 +56,13 @@ class SymbolGridAdapter(
     inner class SymbolViewHolder(private val binding: ItemSymbolCardBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
+        /** The tile's own font, kept as the fallback for glyphs the element's font lacks. */
+        private val defaultTypeface: Typeface = binding.tvSymbolGlyph.typeface ?: Typeface.DEFAULT
+
         fun bind(item: SymbolItem) {
             // Typeface first: the carrier choice below asks this very paint
             // whether it can draw the dotted circle.
-            previewTypeface?.let { binding.tvSymbolGlyph.typeface = it }
+            binding.tvSymbolGlyph.typeface = previewTypefaceFor(item)
 
             binding.tvSymbolGlyph.text = displayGlyphFor(item)
 
@@ -67,6 +77,21 @@ class SymbolGridAdapter(
             binding.symbolCardRoot.addPressEffect {
                 onSymbolTapped(item)
             }
+        }
+
+        /**
+         * The element's font, but only when it can actually draw the symbol.
+         *
+         * Most display Urdu fonts cover the aeraab and nothing else, so the
+         * Quranic stop signs, the honorific ligatures and the ornaments all
+         * rendered as blank tiles — the grid looked broken while Above and Below
+         * looked fine. Falling back to the default typeface for those draws the
+         * glyph from the system font instead of drawing nothing.
+         */
+        private fun previewTypefaceFor(item: SymbolItem): Typeface {
+            val preview = previewTypeface ?: return defaultTypeface
+            probe.typeface = preview
+            return if (probe.hasGlyph(item.glyph)) preview else defaultTypeface
         }
 
         /**

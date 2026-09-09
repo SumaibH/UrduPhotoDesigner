@@ -31,8 +31,15 @@
             android:fontFamily="@font/bold"
             android:gravity="center"
             android:includeFontPadding="false"
+            android:maxLines="1"
+            android:paddingHorizontal="4dp"
+            android:paddingVertical="2dp"
             android:textColor="@color/black"
-            android:textSize="17sp"
+            android:textSize="14sp"
+            app:autoSizeMaxTextSize="15sp"
+            app:autoSizeMinTextSize="7sp"
+            app:autoSizeStepGranularity="1sp"
+            app:autoSizeTextType="uniform"
             tools:text="ک" />
 
     </com.google.android.material.card.MaterialCardView>
