@@ -101,7 +101,8 @@ import com.webscare.urducanvas.ui.editor.panels.text.symbols.CharChipModel
 import com.webscare.urducanvas.ui.editor.panels.text.symbols.SymbolCharAdapter
 import javax.inject.Inject
 import com.webscare.urducanvas.analytics.AnalyticsTracker
-import com.webscare.urducanvas.analytics.navigation.NavigationAnalyticsListener
+import com.webscare.urducanvas.analytics.navigation.PanelAnalyticsListener
+import com.webscare.urducanvas.analytics.session.SessionStateManager
 
 fun Int.dpToPx(context: Context): Int {
     return (this * context.resources.displayMetrics.density + 0.5f).toInt()
@@ -110,10 +111,13 @@ fun Int.dpToPx(context: Context): Int {
 @AndroidEntryPoint
 class EditorFragment : Fragment() {
     @Inject
-    lateinit var navigationAnalyticsListener: NavigationAnalyticsListener
+    lateinit var panelAnalyticsListener: PanelAnalyticsListener
 
     @Inject
     lateinit var analyticsTracker: AnalyticsTracker
+
+    @Inject
+    lateinit var sessionStateManager: SessionStateManager
 
     private var _binding: FragmentEditorBinding? = null
     private val binding get() = _binding!!
@@ -263,7 +267,7 @@ class EditorFragment : Fragment() {
         val navHostFragment =
             childFragmentManager.findFragmentById(R.id.panelNavHost) as NavHostFragment
         _navController = navHostFragment.navController
-        _navController?.addOnDestinationChangedListener(navigationAnalyticsListener)
+        _navController?.addOnDestinationChangedListener(panelAnalyticsListener)
 
         binding.panelNavContainer.dragListener = object : com.webscare.urducanvas.common.views.GestureFrameLayout.DragListener {
             override fun onDragBegin(downRawY: Float, currentRawY: Float) {
@@ -3706,7 +3710,20 @@ class EditorFragment : Fragment() {
         panelSheet?.snapTo(expanded = false, immediate = true)
         panelSheet = null
         _binding?.canvasContainer?.removeAllViews()
-        _navController?.removeOnDestinationChangedListener(navigationAnalyticsListener)
+        _navController?.removeOnDestinationChangedListener(panelAnalyticsListener)
+        panelAnalyticsListener.onEditorClosed()
+        // Leaving the editor is the only point at which a template's session is definitely
+        // over, so this is where "how long did they spend on it, and did anything come of
+        // it" gets reported. Returns null when the canvas was not opened from a template.
+        sessionStateManager.endTemplateSession()?.let { session ->
+            analyticsTracker.logTemplateSessionEnd(
+                templateId = session.templateId,
+                isModified = session.isModified,
+                editCount = session.editCount,
+                durationSeconds = session.durationSeconds,
+                outcome = session.outcome
+            )
+        }
         _navController = null
         cbOnEditTextRequested = {}
         cbOnElementSelected   = {}

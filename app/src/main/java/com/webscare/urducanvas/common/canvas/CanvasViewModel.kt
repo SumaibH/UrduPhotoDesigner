@@ -5887,6 +5887,9 @@ class CanvasViewModel @Inject constructor(
         val action = _canvasActions.pop()
         _redoStack.push(action)
         applyAction(action, isRedo = false)
+        // The action now on top was performed — and already reported — a while ago.
+        // Adopting it here stops notifyUndoRedoChanged reporting it a second time.
+        lastReportedAction = _canvasActions.lastOrNull()
         notifyUndoRedoChanged()
     }
 
@@ -5895,15 +5898,30 @@ class CanvasViewModel @Inject constructor(
         val action = _redoStack.pop()
         _canvasActions.push(action)
         applyAction(action, isRedo = true)
+        lastReportedAction = action
         notifyUndoRedoChanged()
     }
+
+    /**
+     * The last action handed to analytics, held by identity.
+     *
+     * [notifyUndoRedoChanged] runs from roughly seventy call sites, and only some of
+     * them have just pushed something: undo and redo shuffle actions between the two
+     * stacks, and several callers only want the button states refreshed. Reporting the
+     * stack top unconditionally therefore invented tool usage — every undo re-reported
+     * whichever action it uncovered, so the most-edited tools were counted twice over.
+     * Actions are freshly constructed on every push, so identity is enough to tell a
+     * new one from a re-run of this function over the same stack.
+     */
+    private var lastReportedAction: CanvasAction? = null
 
     private fun notifyUndoRedoChanged() {
         _canUndo.value = _canvasActions.isNotEmpty()
         _canRedo.value = _redoStack.isNotEmpty()
         refreshSelectedElements()
         val latestAction = _canvasActions.lastOrNull()
-        if (latestAction != null) {
+        if (latestAction != null && latestAction !== lastReportedAction) {
+            lastReportedAction = latestAction
             val (tool, subFeature) = getToolAndSubFeatureForAction(latestAction)
             analyticsTracker.logToolActionPerformed(tool, subFeature)
         }

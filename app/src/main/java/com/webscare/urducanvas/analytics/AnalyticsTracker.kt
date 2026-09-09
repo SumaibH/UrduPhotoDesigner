@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import com.google.firebase.analytics.FirebaseAnalytics
+import com.webscare.urducanvas.BuildConfig
 import com.webscare.urducanvas.analytics.AnalyticsConstants.Events
 import com.webscare.urducanvas.analytics.AnalyticsConstants.MAX_PARAM_KEY_LENGTH
 import com.webscare.urducanvas.analytics.AnalyticsConstants.MAX_STRING_LENGTH
@@ -48,7 +49,9 @@ class AnalyticsTracker @Inject constructor(
             bundle.putString(Params.USER_TIER, userTier)
 
             firebaseAnalytics.logEvent(eventName.take(AnalyticsConstants.MAX_EVENT_NAME_LENGTH), bundle)
-            Log.d(TAG, "Logged event [$eventName]: $params")
+            // Debug builds only: the parameter map carries template names and file paths,
+            // which have no business in a shipped device's logcat.
+            if (BuildConfig.DEBUG) Log.d(TAG, "Logged event [$eventName]: $params")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to log event $eventName", e)
         }
@@ -155,6 +158,7 @@ class AnalyticsTracker @Inject constructor(
 
     fun logToolActionPerformed(toolName: String, subFeature: String, actionDetail: String? = null) {
         sessionStateManager.recordAction("tool_act_${toolName}_$subFeature")
+        sessionStateManager.recordToolAction()
         logRawEvent(Events.TOOL_ACTION_PERFORMED, mapOf(
             Params.TOOL_NAME to toolName,
             Params.SUB_FEATURE to subFeature,
@@ -266,6 +270,7 @@ class AnalyticsTracker @Inject constructor(
 
     fun logExportCompleted(format: String, fileSizeMb: Double, durationSeconds: Long, templateId: Int?) {
         sessionStateManager.recordAction("export_completed")
+        sessionStateManager.recordTemplateExport()
         logRawEvent(Events.EXPORT_COMPLETED, mapOf(
             Params.EXPORT_FORMAT to format,
             Params.FILE_SIZE_MB to fileSizeMb,

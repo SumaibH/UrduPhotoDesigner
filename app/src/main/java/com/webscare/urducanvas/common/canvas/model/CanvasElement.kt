@@ -468,37 +468,50 @@ data class CanvasElement(
     fun recomputeCalligraphyBounds() {
         val cData = calligraphyData ?: return
         if (cData.tokens.isEmpty()) return
-        val fm = if (::paint.isInitialized) paint.fontMetrics else Paint.FontMetrics()
+        val hasPaint = ::paint.isInitialized
+        val fm = if (hasPaint) paint.fontMetrics else Paint.FontMetrics()
         val baseLineHeight = (fm.bottom - fm.top) * lineSpacing
+
+        // Measure on a copy. A token can carry its own face, and swapping the typeface on
+        // the element's own paint to find that out would leave the renderer holding a paint
+        // configured for whichever token happened to be measured last.
+        val measurePaint = if (hasPaint) Paint(paint) else Paint()
+        val baseTypeface = measurePaint.typeface
 
         var minX = Float.MAX_VALUE
         var maxX = -Float.MAX_VALUE
         var minY = Float.MAX_VALUE
         var maxY = -Float.MAX_VALUE
 
-        for (token in cData.tokens) {
-            val w = if (::paint.isInitialized) paint.measureText(token.getFullDisplayText()) * token.scale else 100f
-            val h = baseLineHeight * token.scale
-            val left = token.offsetX - w / 2f
-            val right = token.offsetX + w / 2f
-            val top = token.offsetY - h / 2f
-            val bottom = token.offsetY + h / 2f
-            if (left < minX) minX = left
-            if (right > maxX) maxX = right
-            if (top < minY) minY = top
-            if (bottom > maxY) maxY = bottom
+        fun accumulate(centreX: Float, centreY: Float, width: Float, height: Float, rotationDeg: Float) {
+            // A rotated token still needs an axis-aligned box, and the box that encloses it
+            // is wider than the token itself. Measuring the unrotated glyphs left the
+            // selection handles cutting through any letter the user had turned.
+            val rad = Math.toRadians(rotationDeg.toDouble())
+            val cosA = kotlin.math.abs(kotlin.math.cos(rad)).toFloat()
+            val sinA = kotlin.math.abs(kotlin.math.sin(rad)).toFloat()
+            val halfW = width / 2f
+            val halfH = height / 2f
+            val extentX = halfW * cosA + halfH * sinA
+            val extentY = halfW * sinA + halfH * cosA
+
+            if (centreX - extentX < minX) minX = centreX - extentX
+            if (centreX + extentX > maxX) maxX = centreX + extentX
+            if (centreY - extentY < minY) minY = centreY - extentY
+            if (centreY + extentY > maxY) maxY = centreY + extentY
         }
+
+        for (token in cData.tokens) {
+            measurePaint.typeface = token.resolveTypeface() ?: baseTypeface
+            val w = if (hasPaint) measurePaint.measureText(token.getFullDisplayText()) * token.scale else 100f
+            val h = baseLineHeight * token.scale
+            accumulate(token.offsetX, token.offsetY, w, h, token.rotation)
+        }
+        measurePaint.typeface = baseTypeface
         for (accent in cData.floatingAccents) {
-            val w = if (::paint.isInitialized) paint.measureText(accent.symbol) * accent.scale else 50f
+            val w = if (hasPaint) measurePaint.measureText(accent.symbol) * accent.scale else 50f
             val h = baseLineHeight * accent.scale * 0.7f
-            val left = accent.offsetX - w / 2f
-            val right = accent.offsetX + w / 2f
-            val top = accent.offsetY - h / 2f
-            val bottom = accent.offsetY + h / 2f
-            if (left < minX) minX = left
-            if (right > maxX) maxX = right
-            if (top < minY) minY = top
-            if (bottom > maxY) maxY = bottom
+            accumulate(accent.offsetX, accent.offsetY, w, h, accent.rotation)
         }
 
         if (minX < maxX && minY < maxY) {

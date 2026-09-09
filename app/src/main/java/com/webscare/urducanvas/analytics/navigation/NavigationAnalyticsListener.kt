@@ -10,11 +10,31 @@ import com.webscare.urducanvas.analytics.session.SessionStateManager
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Screen telemetry for the **root** nav graph only.
+ *
+ * The editor's panels run on their own nested NavController. They used to share this
+ * listener, and because screen state is a single slot on [SessionStateManager], opening
+ * any panel ended the editor's dwell timer — the editor, the screen users spend nearly
+ * all their time on, reported a few seconds and one view per visit. Panels are tools
+ * rather than screens, so they now report through PanelAnalyticsListener and nest inside
+ * the editor's dwell instead of replacing it.
+ */
 @Singleton
 class NavigationAnalyticsListener @Inject constructor(
     private val analyticsTracker: AnalyticsTracker,
     private val sessionStateManager: SessionStateManager
 ) : NavController.OnDestinationChangedListener {
+
+    /**
+     * Destination ids in the order we entered them.
+     *
+     * Navigation does not tell a listener whether it was pushed or popped to, and the
+     * direction is the whole point of the exit signal — a user who backs out of export has
+     * done something quite different from one who completes it. Landing on the destination
+     * directly beneath the top of this stack is a pop; anything else is a push.
+     */
+    private val visited = ArrayDeque<Int>()
 
     override fun onDestinationChanged(
         controller: NavController,
@@ -22,6 +42,7 @@ class NavigationAnalyticsListener @Inject constructor(
         arguments: Bundle?
     ) {
         val screenName = getScreenNameForDestination(destination.id)
+        val exitDirection = trackAndClassify(destination.id)
         val transition = sessionStateManager.onScreenChanged(screenName)
 
         // Log exit for previous screen if it existed
@@ -30,7 +51,7 @@ class NavigationAnalyticsListener @Inject constructor(
                 analyticsTracker.logScreenLeave(
                     screenName = prev,
                     durationSeconds = transition.durationSeconds,
-                    exitDirection = Values.EXIT_FORWARD,
+                    exitDirection = exitDirection,
                     lastAction = transition.lastAction
                 )
             }
@@ -42,6 +63,17 @@ class NavigationAnalyticsListener @Inject constructor(
             previousScreen = transition.previousScreen,
             entryPoint = arguments?.getString("ENTRY_POINT")
         )
+    }
+
+    private fun trackAndClassify(destinationId: Int): String {
+        val poppedBackTo = visited.size >= 2 && visited.elementAt(visited.size - 2) == destinationId
+        return if (poppedBackTo) {
+            visited.removeLast()
+            Values.EXIT_BACK
+        } else {
+            if (visited.lastOrNull() != destinationId) visited.addLast(destinationId)
+            Values.EXIT_FORWARD
+        }
     }
 
     private fun getScreenNameForDestination(destinationId: Int): String {
@@ -65,23 +97,7 @@ class NavigationAnalyticsListener @Inject constructor(
             R.id.bgRemovalFragment -> "bg_removal"
             R.id.searchFragment -> "search"
 
-            // Panel Nav Graph Destinations
-            R.id.textFragment -> "panel_text"
-            R.id.imagesFragment -> "panel_images"
-            R.id.objectsFragment -> "panel_stickers"
-            R.id.layersFragment -> "panel_layers"
-            R.id.filtersFragment -> "panel_filters"
-            R.id.colorPickerFragment -> "panel_color_picker"
-            R.id.adjustmentsFragment -> "panel_adjustments"
-            R.id.adjustmentsParentFragment -> "panel_adjustments_parent"
-            R.id.drawFragment -> "panel_draw"
-            R.id.shapesParentFragment -> "panel_shapes"
-            R.id.shapeFragment -> "panel_shape_edit"
-            R.id.textAdjustmentsFragment -> "panel_text_adjustments"
-            R.id.tableAdjustmentsFragment -> "panel_table_adjustments"
-            R.id.tablesParentFragment -> "panel_tables"
-            R.id.universalEraserFragment -> "panel_universal_eraser"
-
+            // Panel destinations belong to PanelAnalyticsListener and never reach here.
             else -> "destination_$destinationId"
         }
     }

@@ -23,6 +23,19 @@ class AdAnalyticsCoordinator @Inject constructor(
     private var activeAdUnitName: String? = null
     private var adDismissedTimeElapsedMs: Long = 0L
 
+    companion object {
+        /**
+         * How long after an ad is dismissed its outcome still counts as caused by the ad.
+         *
+         * One window for every outcome. Backgrounding used to use a shorter cutoff of its
+         * own, so a user who put the phone down twenty seconds after a rewarded ad fell
+         * between the two and produced no event at all — which quietly flattered the
+         * post-ad completion rate, because only the users who continued were ever counted.
+         */
+        private const val OUTCOME_WINDOW_SECONDS = 30L
+        private const val OUTCOME_WINDOW_MS = OUTCOME_WINDOW_SECONDS * 1000
+    }
+
     fun onAdOpportunity(adUnitName: String, adFormat: String, triggerFeature: String, rewardTarget: String? = null) {
         analyticsTracker.logAdOpportunity(adUnitName, adFormat, triggerFeature, rewardTarget)
     }
@@ -41,12 +54,18 @@ class AdAnalyticsCoordinator @Inject constructor(
         adDismissedTimeElapsedMs = SystemClock.elapsedRealtime()
         activeAdUnitName = adUnitName
 
-        // Start 30-second window to detect outcome if not explicitly resolved earlier
+        // Open the outcome window. Expiring without the user doing anything is itself the
+        // answer — they watched the ad and then dropped the feature — so the timeout has to
+        // report abandonment rather than just clearing the state, which is what it used to do.
         pendingOutcomeJob?.cancel()
         pendingOutcomeJob = scope.launch {
-            delay(30_000)
-            // If 30 seconds elapse without explicit continuation or abandonment, check if still active
+            delay(OUTCOME_WINDOW_MS)
             if (activeAdUnitName == adUnitName) {
+                analyticsTracker.logAdPostBehavior(
+                    adUnitName,
+                    Values.AD_OUTCOME_ABANDONED,
+                    OUTCOME_WINDOW_SECONDS
+                )
                 activeAdUnitName = null
                 sessionStateManager.clearAdMonitoring()
             }
@@ -59,44 +78,36 @@ class AdAnalyticsCoordinator @Inject constructor(
 
     /** Call when user continues using the feature unlocked by the ad (e.g., runs segmentation or exports) */
     fun onFeatureActionCompleted(featureName: String) {
-        val adUnit = activeAdUnitName
-        if (adUnit != null && adDismissedTimeElapsedMs > 0) {
-            val latency = ((SystemClock.elapsedRealtime() - adDismissedTimeElapsedMs) / 1000).coerceAtLeast(0)
-            if (latency <= 30) {
-                analyticsTracker.logAdPostBehavior(adUnit, Values.AD_OUTCOME_CONTINUED, latency)
-                pendingOutcomeJob?.cancel()
-                activeAdUnitName = null
-                sessionStateManager.clearAdMonitoring()
-            }
-        }
+        resolveOutcome(Values.AD_OUTCOME_CONTINUED)
     }
 
     /** Call when user backs out or cancels the feature after an ad */
     fun onFeatureAbandoned(featureName: String) {
-        val adUnit = activeAdUnitName
-        if (adUnit != null && adDismissedTimeElapsedMs > 0) {
-            val latency = ((SystemClock.elapsedRealtime() - adDismissedTimeElapsedMs) / 1000).coerceAtLeast(0)
-            if (latency <= 30) {
-                analyticsTracker.logAdPostBehavior(adUnit, Values.AD_OUTCOME_ABANDONED, latency)
-                pendingOutcomeJob?.cancel()
-                activeAdUnitName = null
-                sessionStateManager.clearAdMonitoring()
-            }
-        }
+        resolveOutcome(Values.AD_OUTCOME_ABANDONED)
     }
 
     /** Call when the entire app enters background */
     fun onAppBackgrounded() {
-        val adUnit = activeAdUnitName
-        if (adUnit != null && adDismissedTimeElapsedMs > 0) {
-            val latency = ((SystemClock.elapsedRealtime() - adDismissedTimeElapsedMs) / 1000).coerceAtLeast(0)
-            if (latency <= 15) {
-                // Left app shortly after ad dismissal
-                analyticsTracker.logAdPostBehavior(adUnit, Values.AD_OUTCOME_LEFT_APP, latency)
-            }
-            pendingOutcomeJob?.cancel()
-            activeAdUnitName = null
-            sessionStateManager.clearAdMonitoring()
+        resolveOutcome(Values.AD_OUTCOME_LEFT_APP)
+    }
+
+    /**
+     * Closes the open outcome window with [outcome], if one is open and still in date.
+     *
+     * Past the window the ad is no longer a plausible cause of what the user did, so the
+     * outcome goes unreported — but the window still closes, or the next ad would inherit
+     * a stale dismissal timestamp.
+     */
+    private fun resolveOutcome(outcome: String) {
+        val adUnit = activeAdUnitName ?: return
+        if (adDismissedTimeElapsedMs <= 0) return
+
+        val latency = ((SystemClock.elapsedRealtime() - adDismissedTimeElapsedMs) / 1000).coerceAtLeast(0)
+        if (latency <= OUTCOME_WINDOW_SECONDS) {
+            analyticsTracker.logAdPostBehavior(adUnit, outcome, latency)
         }
+        pendingOutcomeJob?.cancel()
+        activeAdUnitName = null
+        sessionStateManager.clearAdMonitoring()
     }
 }

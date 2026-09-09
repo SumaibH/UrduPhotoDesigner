@@ -5,6 +5,7 @@ import android.os.SystemClock
 import com.webscare.urducanvas.analytics.AnalyticsConstants
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -96,10 +97,72 @@ class SessionStateManager @Inject constructor(
         persistStateSnapshot()
     }
 
+    /**
+     * Committed editor actions so far this process.
+     *
+     * Monotonic and never reset: callers snapshot it and compare, which is how a tool panel
+     * tells "the user applied three edits" from "the user opened me and left".
+     */
+    private val _toolActionCount = AtomicInteger(0)
+    val toolActionCount: Int get() = _toolActionCount.get()
+
+    fun recordToolAction() {
+        _toolActionCount.incrementAndGet()
+    }
+
     fun setActiveTemplate(templateId: Int?, templateName: String?) {
         this.activeTemplateId = templateId
         this.activeTemplateName = templateName?.take(AnalyticsConstants.MAX_STRING_LENGTH)
+        templateOpenedAtElapsedMs = SystemClock.elapsedRealtime()
+        toolActionCountAtTemplateOpen = toolActionCount
+        exportedInTemplateSession = false
         persistStateSnapshot()
+    }
+
+    private var templateOpenedAtElapsedMs: Long = 0L
+    private var toolActionCountAtTemplateOpen: Int = 0
+    private var exportedInTemplateSession = false
+
+    /** Call when an export completes, so the template session can close as a success. */
+    fun recordTemplateExport() {
+        exportedInTemplateSession = true
+    }
+
+    /** How long a template was open for, and how much was done to it. */
+    data class TemplateSession(
+        val templateId: Int,
+        val durationSeconds: Long,
+        val editCount: Int,
+        val isModified: Boolean,
+        val outcome: String
+    )
+
+    /**
+     * Ends the open template session and returns what it amounted to, or null if no
+     * template was open.
+     *
+     * Editing is counted from committed canvas actions rather than from time on the
+     * screen, so a template someone opened and stared at does not read as engagement.
+     */
+    fun endTemplateSession(): TemplateSession? {
+        val id = activeTemplateId ?: return null
+        val edits = (toolActionCount - toolActionCountAtTemplateOpen).coerceAtLeast(0)
+        val duration = if (templateOpenedAtElapsedMs > 0) {
+            ((SystemClock.elapsedRealtime() - templateOpenedAtElapsedMs) / 1000).coerceAtLeast(0)
+        } else 0L
+        val outcome = if (exportedInTemplateSession) {
+            AnalyticsConstants.Values.STATUS_COMPLETED
+        } else {
+            AnalyticsConstants.Values.STATUS_ABANDONED
+        }
+
+        activeTemplateId = null
+        activeTemplateName = null
+        templateOpenedAtElapsedMs = 0L
+        exportedInTemplateSession = false
+        persistStateSnapshot()
+
+        return TemplateSession(id, duration, edits, edits > 0, outcome)
     }
 
     fun startWorkflow(workflowName: String, initialStep: String) {

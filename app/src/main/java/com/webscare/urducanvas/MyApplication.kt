@@ -66,6 +66,13 @@ class MyApplication : Application() {
     }
 
     private fun setupLifecycleAnalytics() {
+        // Set once per process. Without it every GA4 audience that wants to separate
+        // "users on the current build" from the long tail has nothing to filter on.
+        analyticsTracker.setUserProperty(
+            com.webscare.urducanvas.analytics.AnalyticsConstants.UserProperties.APP_VERSION,
+            BuildConfig.VERSION_NAME
+        )
+
         androidx.lifecycle.ProcessLifecycleOwner.get().lifecycle.addObserver(object : androidx.lifecycle.DefaultLifecycleObserver {
             override fun onStart(owner: androidx.lifecycle.LifecycleOwner) {
                 analyticsTracker.logAppForegrounded(sessionStateManager.currentScreen)

@@ -39,6 +39,7 @@ import kotlinx.coroutines.withContext
 import com.webscare.urducanvas.common.utils.InsetUtils.applyStatusBarTopPadding
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import com.webscare.urducanvas.analytics.AnalyticsTracker
 import com.webscare.urducanvas.analytics.ads.AdAnalyticsCoordinator
 
 @AndroidEntryPoint
@@ -46,6 +47,9 @@ class BgRemovalFragment : Fragment() {
 
     @Inject
     lateinit var adAnalyticsCoordinator: AdAnalyticsCoordinator
+
+    @Inject
+    lateinit var analyticsTracker: AnalyticsTracker
 
     private var _binding: FragmentBgRemovalBinding? = null
     private val binding get() = _binding!!
@@ -400,6 +404,10 @@ class BgRemovalFragment : Fragment() {
 
         binding.imageCanvas.onMaskConfirmed = { maskedBitmap ->
             adAnalyticsCoordinator.onFeatureActionCompleted("bg_removal")
+            // Distinct from the ad-outcome call above: that one asks whether the ad led
+            // anywhere, this one is the feature's own success, which is what the
+            // completion rate for background removal is computed from.
+            analyticsTracker.logFeatureCompleted("bg_removal")
             viewModel.applyMaskToSelected(maskedBitmap)
         }
 
