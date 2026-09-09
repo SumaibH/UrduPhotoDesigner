@@ -18,6 +18,9 @@ class FramePreviewView @JvmOverloads constructor(
     private var canvasHeight = 1920f
     private var iconDrawable: Drawable? = null
 
+    /** Reused across frames; onDraw must not allocate. */
+    private val reusableRect = RectF()
+
     // The tile around this view is white, so the artboard drawn inside it is the
     // contrast step of the hierarchy (see values/colors.xml).
     private val fillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -56,7 +59,8 @@ class FramePreviewView @JvmOverloads constructor(
         val bottom = top + frameH
 
         val inset = strokePaint.strokeWidth / 2f
-        val rect = RectF(left, top, right, bottom)
+        // Reused rather than allocated: onDraw runs on every frame this view is visible.
+        val rect = reusableRect.apply { set(left, top, right, bottom) }
 
         // Draw fill
         canvas.drawRoundRect(rect, cornerRadiusPx, cornerRadiusPx, fillPaint)

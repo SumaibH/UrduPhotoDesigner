@@ -4704,10 +4704,11 @@ class CanvasView @JvmOverloads constructor(
 
         ensureElementHydrated(e)
 
-        if (e.bitmap == null || e.bitmap?.isRecycled == true) {
-            Log.w("CanvasView", "drawBackgroundElement: background bitmap is null or recycled for element ${e.id}")
-        }
-
+        // A background element with no bitmap is ordinary — a canvas that has never been
+        // given a background image still carries one of these — and the let below already
+        // skips it. This used to warn about it instead, from inside onDraw: a log line and
+        // a fresh interpolated String every frame the canvas was visible, which buried real
+        // errors in logcat and kept the draw path allocating.
         e.bitmap?.let { bmp ->
             if (bmp.isRecycled) return@let
 

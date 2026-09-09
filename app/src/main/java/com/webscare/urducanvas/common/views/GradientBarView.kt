@@ -102,12 +102,26 @@ class GradientBarView @JvmOverloads constructor(
 
     // ── Geometry helpers ──────────────────────────────────────────────────────
 
-    private val barRect get() = RectF(
-        0f,
-        (height - trackHeight) / 2f,
-        width.toFloat(),
-        (height + trackHeight) / 2f
-    )
+    /**
+     * The bar's bounds, recomputed in place on each read.
+     *
+     * This was `get() = RectF(...)`, which handed back a brand new object every time it was
+     * touched — and onDraw reads it, so the view allocated a RectF per frame purely to
+     * describe geometry that only changes when the view is resized.
+     */
+    private val reusableBarRect = RectF()
+    private val barRect: RectF
+        get() = reusableBarRect.apply {
+            set(
+                0f,
+                (height - trackHeight) / 2f,
+                width.toFloat(),
+                (height + trackHeight) / 2f
+            )
+        }
+
+    /** Reused clip path; onDraw must not allocate. */
+    private val reusableClipPath = Path()
 
     /** Left pixel that maps to position 0. */
     private val trackStart get() = barPadding
@@ -198,7 +212,8 @@ class GradientBarView @JvmOverloads constructor(
 
         // 1 ── Gradient bar clipped to rounded rect
         canvas.withSave {
-            val clip = Path().apply {
+            val clip = reusableClipPath.apply {
+                rewind()
                 addRoundRect(rect, barCornerRadius, barCornerRadius, Path.Direction.CW)
             }
             clipPath(clip)
