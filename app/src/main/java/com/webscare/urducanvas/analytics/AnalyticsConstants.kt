@@ -4,20 +4,19 @@ package com.webscare.urducanvas.analytics
  * Event, parameter and value taxonomy for GA4.
  *
  * **Declared but never emitted yet.** Nothing below fires unless something calls it, and
- * a name sitting in this file is not evidence that it does. These four are deliberately
+ * a name sitting in this file is not evidence that it does. These two are deliberately
  * unbuilt rather than overlooked — do not build a report on them until they are wired:
  *
- * - [Events.TEMPLATE_IMPRESSION] — needs real viewport-visibility tracking. Logging it
- *   from `onBindViewHolder` would count a recycled row as a fresh impression and quietly
- *   inflate the denominator of every click-through rate, which is worse than no metric.
  * - [Events.WORKFLOW_STEP] and the `startWorkflow`/`updateWorkflowStep`/`endWorkflow`
  *   API on SessionStateManager — needs a product decision about what counts as a
  *   workflow before it means anything.
  * - [Events.SESSION_TERMINATED_ABNORMALLY] — needs the persisted snapshot to be read back
  *   and reconciled on the next launch.
- * - [UserProperties.DESIGNS_EXPORTED_BUCKET], [UserProperties.FAVORITE_CATEGORY],
- *   [UserProperties.PREFERRED_EXPORT_FORMAT], [UserProperties.ADS_WATCHED_BUCKET] — need
- *   counters that survive process death; only `sub_status` and `app_version` are set today.
+ *
+ * Everything else here is emitted. [Events.TEMPLATE_IMPRESSION] comes from
+ * `TemplateImpressionTracker` on real viewport visibility rather than on bind, and all six
+ * [UserProperties] are set — the four lifetime ones from counters `SessionStateManager`
+ * keeps in SharedPreferences so they survive process death.
  *
  * Every custom parameter here is also invisible in GA4 reports until it is registered as
  * a custom dimension in the Firebase console. That is console work, not code.
