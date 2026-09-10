@@ -125,6 +125,9 @@ class TextFragment : Fragment() {
         setupSwipeRefresh()
         setupEvents()
         setupModeSwitch()
+        // The view is new but the fragment (and so isStylesMode) is not — repaint the
+        // panel for whichever mode is actually active.
+        applyMode(isStylesMode)
         attachDragHandleSwipe()
         observePanelExpanded()
         observeFontData()
@@ -720,12 +723,17 @@ class TextFragment : Fragment() {
                     // Only rebuild tabs if still in language mode.
                     // If we restored inCategoryMode = true from ViewModel,
                     // rebuild category tabs instead so the UI matches state.
-                    if (inCategoryMode) {
-                        val cats = languageCategoryMap[selectedLanguage] ?: emptyList()
-                        if (cats.isNotEmpty()) showCategoryTabs(cats)
-                        else showLanguageTabs()
-                    } else {
-                        showLanguageTabs()
+                    // In Presets mode the tab row belongs to the preset groups, so leave
+                    // it alone — font data still flows through to submitFonts() below so
+                    // the list is ready when the user switches back.
+                    if (!isStylesMode) {
+                        if (inCategoryMode) {
+                            val cats = languageCategoryMap[selectedLanguage] ?: emptyList()
+                            if (cats.isNotEmpty()) showCategoryTabs(cats)
+                            else showLanguageTabs()
+                        } else {
+                            showLanguageTabs()
+                        }
                     }
 
                     submitFonts(buildFilteredList(fonts, query))
@@ -953,6 +961,7 @@ class TextFragment : Fragment() {
     }
 
     private fun applyExpandedUi(expanded: Boolean) {
+        if (_binding == null) return
         binding.fontsRV.alpha = 1f
         if (expanded) {
             binding.fontsRV.edgeEffectFactory = RecyclerView.EdgeEffectFactory()
@@ -1008,8 +1017,18 @@ class TextFragment : Fragment() {
             }
         }
 
-        // Sync item size on final settle state
+        // Sync item size on final settle state.
+        // On a rebuilt view this runs from onViewCreated, before the first layout pass,
+        // so fontsRV.width is still 0. Writing that 0 into the adapters' item-size
+        // metrics is what left the list compressed with its items drawn on top of each
+        // other after coming back from the adjustments panel. Everything above is
+        // width-independent and stays inline so the header does not flash; only the
+        // measurements wait for a real width, exactly as applySlideOffset() does.
         val rvWidth = binding.fontsRV.width
+        if (rvWidth == 0) {
+            binding.fontsRV.post { if (_binding != null) applyExpandedUi(expanded) }
+            return
+        }
         val rvPadding = binding.fontsRV.paddingLeft + binding.fontsRV.paddingRight
         val offset = if (expanded) 1f else 0f
         if (!isStylesMode) {
@@ -1215,7 +1234,22 @@ class TextFragment : Fragment() {
     private fun setMode(stylesMode: Boolean) {
         if (isStylesMode == stylesMode) return
         isStylesMode = stylesMode
+        applyMode(stylesMode)
+    }
 
+    /**
+     * Paints the whole panel for [stylesMode]: segmented-chip colours, the add-font
+     * button, the RecyclerView adapter and its metrics, and the tab row.
+     *
+     * Split out of [setMode] because [setMode] returns early when the mode has not
+     * changed — correct for a tap, wrong for a freshly inflated view. The fragment
+     * survives on the back stack while its view does not, so returning from the
+     * adjustments panel in Presets mode used to rebuild a view whose chip said "Fonts",
+     * whose add-font button was showing, and whose tab row listed languages instead of
+     * preset groups — and tapping "Presets" did nothing, because as far as [setMode]
+     * was concerned it was already in Presets mode.
+     */
+    private fun applyMode(stylesMode: Boolean) {
         val context = requireContext()
         val white = ContextCompat.getColor(context, R.color.white)
         val contrast = ContextCompat.getColor(context, R.color.contrast)
