@@ -57,7 +57,11 @@ import javax.inject.Inject
 import com.webscare.urducanvas.analytics.AnalyticsTracker
 import com.webscare.urducanvas.analytics.ads.AdAnalyticsCoordinator
 import com.webscare.urducanvas.analytics.session.SessionStateManager
-/** Log tag for this file. Was android.content.ContentValues.TAG, an accidental import *  that filed every one of these messages under "ContentValues". */private const val TAG = "ExportFragment"
+/**
+ * Log tag for this file. Was android.content.ContentValues.TAG, an accidental import that
+ * filed every one of these messages under "ContentValues".
+ */
+private const val TAG = "ExportFragment"
 
 @AndroidEntryPoint
 class ExportFragment : androidx.fragment.app.Fragment() {
@@ -336,16 +340,17 @@ class ExportFragment : androidx.fragment.app.Fragment() {
         }
 
         adAnalyticsCoordinator.onAdOpportunity("rewarded_export", "rewarded", "export_unlock", "export_reward")
-        adAnalyticsCoordinator.onAdImpression("rewarded_export", "rewarded", "export", "export_unlock", "export_reward")
         WebsCareAds.showRewarded(
             activity = requireActivity(),
             adUnitId = BuildConfig.AD_REWARDED_EXPORT,
             onRewarded = { _, _ ->
                 isSessionExportUnlocked = true
                 isPendingRewardAnimation = true
+                adAnalyticsCoordinator.onAdShown("rewarded_export", "rewarded", "export", "export_unlock", "export_reward")
                 adAnalyticsCoordinator.onAdRewardEarned("rewarded_export", "export_reward")
             },
             onDismissed = {
+                adAnalyticsCoordinator.onAdShown("rewarded_export", "rewarded", "export", "export_unlock", "export_reward")
                 adAnalyticsCoordinator.onAdDismissed("rewarded_export", "rewarded", isSessionExportUnlocked)
             },
             onNotReady = {

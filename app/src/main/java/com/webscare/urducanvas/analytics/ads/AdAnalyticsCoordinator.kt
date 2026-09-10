@@ -36,11 +36,41 @@ class AdAnalyticsCoordinator @Inject constructor(
         private const val OUTCOME_WINDOW_MS = OUTCOME_WINDOW_SECONDS * 1000
     }
 
+    /** True between requesting an ad and learning whether it actually rendered. */
+    private var impressionPending = false
+
     fun onAdOpportunity(adUnitName: String, adFormat: String, triggerFeature: String, rewardTarget: String? = null) {
+        impressionPending = true
         analyticsTracker.logAdOpportunity(adUnitName, adFormat, triggerFeature, rewardTarget)
     }
 
+    /**
+     * Records that the ad was actually put in front of the user.
+     *
+     * Callers may invoke this from more than one callback — a rewarded ad reports both
+     * "reward earned" and "dismissed", and either is proof it rendered — so only the first
+     * call after an opportunity emits anything.
+     *
+     * This used to be called *before* asking the SDK to show the ad, which meant an
+     * impression was recorded even when the very next callback was onNotReady. Ads that
+     * never appeared were counted as seen, so fill rate and every per-impression figure
+     * derived from it read high.
+     */
+    fun onAdShown(adUnitName: String, adFormat: String, screenName: String, triggerFeature: String, rewardTarget: String? = null) {
+        if (!impressionPending) return
+        impressionPending = false
+        activeAdUnitName = adUnitName
+        analyticsTracker.logAdImpression(adUnitName, adFormat, screenName, triggerFeature, rewardTarget)
+    }
+
+    /**
+     * Kept for the formats whose SDK entry point gives no way to tell a shown ad from a
+     * skipped one — interstitial and app-open expose a single completion callback. Those
+     * call sites still report optimistically; prefer [onAdShown] wherever the SDK
+     * distinguishes the two.
+     */
     fun onAdImpression(adUnitName: String, adFormat: String, screenName: String, triggerFeature: String, rewardTarget: String? = null) {
+        impressionPending = false
         activeAdUnitName = adUnitName
         analyticsTracker.logAdImpression(adUnitName, adFormat, screenName, triggerFeature, rewardTarget)
     }
@@ -73,6 +103,8 @@ class AdAnalyticsCoordinator @Inject constructor(
     }
 
     fun onAdFailedToShow(adUnitName: String, adFormat: String, reason: String) {
+        // Nothing rendered, so the pending impression must not be emitted later.
+        impressionPending = false
         analyticsTracker.logAdFailedToShow(adUnitName, adFormat, reason)
     }
 

@@ -8,7 +8,11 @@ import com.webscare.urducanvas.domain.repo.FetchTemplatesRepo
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import javax.inject.Inject
-/** Log tag for this file. Was android.content.ContentValues.TAG, an accidental import *  that filed every one of these messages under "ContentValues". */private const val TAG = "FetchTemplatesRepoImpl"
+/**
+ * Log tag for this file. Was android.content.ContentValues.TAG, an accidental import that
+ * filed every one of these messages under "ContentValues".
+ */
+private const val TAG = "FetchTemplatesRepoImpl"
 
 class FetchTemplatesRepoImpl @Inject constructor(
     private val api: EndPointsInterface

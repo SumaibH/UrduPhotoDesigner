@@ -7,7 +7,11 @@ import com.webscare.urducanvas.data.mapper.toEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlin.collections.map
-/** Log tag for this file. Was android.content.ContentValues.TAG, an accidental import *  that filed every one of these messages under "ContentValues". */private const val TAG = "GradientRepositoryImpl"
+/**
+ * Log tag for this file. Was android.content.ContentValues.TAG, an accidental import that
+ * filed every one of these messages under "ContentValues".
+ */
+private const val TAG = "GradientRepositoryImpl"
 
 class GradientRepositoryImpl(
   private val dao: com.webscare.urducanvas.data.local.GradientDao

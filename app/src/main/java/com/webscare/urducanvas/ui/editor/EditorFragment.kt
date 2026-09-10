@@ -104,7 +104,11 @@ import javax.inject.Inject
 import com.webscare.urducanvas.analytics.AnalyticsTracker
 import com.webscare.urducanvas.analytics.navigation.PanelAnalyticsListener
 import com.webscare.urducanvas.analytics.session.SessionStateManager
-/** Log tag for this file. Was android.content.ContentValues.TAG, an accidental import *  that filed every one of these messages under "ContentValues". */private const val TAG = "EditorFragment"
+/**
+ * Log tag for this file. Was android.content.ContentValues.TAG, an accidental import that
+ * filed every one of these messages under "ContentValues".
+ */
+private const val TAG = "EditorFragment"
 
 fun Int.dpToPx(context: Context): Int {
     return (this * context.resources.displayMetrics.density + 0.5f).toInt()

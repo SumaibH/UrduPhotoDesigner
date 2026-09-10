@@ -292,15 +292,16 @@ class BgRemovalFragment : Fragment() {
         // 3. Try to show rewarded ad if one hasn't been watched this cycle
         if (!adShownThisCycle) {
             adAnalyticsCoordinator.onAdOpportunity("rewarded_bg_removal", "rewarded", "bg_removal")
-            adAnalyticsCoordinator.onAdImpression("rewarded_bg_removal", "rewarded", "bg_removal", "bg_removal")
             WebsCareAds.showRewarded(
                 activity = requireActivity(),
                 adUnitId = BuildConfig.AD_REWARDED_BG_REMOVAL,
                 onRewarded = { _, _ ->
                     adShownThisCycle = true
+                    adAnalyticsCoordinator.onAdShown("rewarded_bg_removal", "rewarded", "bg_removal", "bg_removal")
                     adAnalyticsCoordinator.onAdRewardEarned("rewarded_bg_removal", "bg_removal")
                 },
                 onDismissed = {
+                    adAnalyticsCoordinator.onAdShown("rewarded_bg_removal", "rewarded", "bg_removal", "bg_removal")
                     adAnalyticsCoordinator.onAdDismissed("rewarded_bg_removal", "rewarded", adShownThisCycle)
                     // Ad was shown (rewarded or not) — canvas might be unstable, delay masking
                     binding.imageCanvas.postDelayed({
@@ -333,15 +334,16 @@ class BgRemovalFragment : Fragment() {
             }
 
             adAnalyticsCoordinator.onAdOpportunity("rewarded_bg_removal_done", "rewarded", "bg_removal_done")
-            adAnalyticsCoordinator.onAdImpression("rewarded_bg_removal_done", "rewarded", "bg_removal", "bg_removal_done")
             WebsCareAds.showRewarded(
                 activity = requireActivity(),
                 adUnitId = BuildConfig.AD_REWARDED_BG_REMOVAL,
                 onRewarded = { _, _ ->
                     adShownThisCycle = true
+                    adAnalyticsCoordinator.onAdShown("rewarded_bg_removal_done", "rewarded", "bg_removal", "bg_removal_done")
                     adAnalyticsCoordinator.onAdRewardEarned("rewarded_bg_removal_done", "bg_removal_done")
                 },
                 onDismissed = {
+                    adAnalyticsCoordinator.onAdShown("rewarded_bg_removal_done", "rewarded", "bg_removal", "bg_removal_done")
                     adAnalyticsCoordinator.onAdDismissed("rewarded_bg_removal_done", "rewarded", adShownThisCycle)
                     adPendingForDone = false
                     binding.imageCanvas.postDelayed({
