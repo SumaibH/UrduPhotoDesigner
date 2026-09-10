@@ -321,6 +321,8 @@ class SubscriptionsFragment : Fragment() {
     private fun setEvents() {
         binding.back.addPressEffect { findNavController().navigateUp() }
         binding.continueBtn.addPressEffect { onCtaClicked() }
+        // Starts inert: the plans arrive asynchronously and may never arrive at all.
+        updateCtaAvailability()
         binding.manageSubLink.addPressEffect {
             findNavController().navigate(R.id.manageSubscriptionFragment)
         }
@@ -347,6 +349,7 @@ class SubscriptionsFragment : Fragment() {
                     centerPlanListIfNeeded()
                     // First reveal — set instantly, nothing to count up from yet.
                     updatePlanTexts(animate = false)
+                    updateCtaAvailability()
                 }
             }
         }
@@ -458,7 +461,24 @@ class SubscriptionsFragment : Fragment() {
         binding.btnIdleText.isVisible = state == ButtonState.IDLE
         binding.btnSpinner.isVisible = state == ButtonState.BUSY
         binding.btnDone.isVisible = state == ButtonState.DONE
-        binding.continueBtn.isClickable = state == ButtonState.IDLE
+        // Idle is necessary but not sufficient — there also has to be a plan to buy.
+        binding.continueBtn.isClickable = state == ButtonState.IDLE && selectedPlan != null
+    }
+
+    /**
+     * Keeps the subscribe button in step with whether there is anything to subscribe to.
+     *
+     * The plan collector below bails out on an empty list, which leaves the skeleton
+     * shimmering — but the button lives outside that group, so it stayed lit and tappable
+     * while no plan existed. [onCtaClicked] then returned on the null plan and did nothing
+     * at all: no purchase, no message, no log. On a device where the billing query fails
+     * that is a live button that silently ignores every press.
+     */
+    private fun updateCtaAvailability() {
+        val hasPlan = selectedPlan != null
+        binding.continueBtn.isEnabled = hasPlan
+        binding.continueBtn.isClickable = hasPlan
+        binding.continueBtn.alpha = if (hasPlan) 1f else 0.5f
     }
 
     private fun onCtaClicked() {
