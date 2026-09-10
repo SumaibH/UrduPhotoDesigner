@@ -5,32 +5,40 @@
     android:layout_height="wrap_content"
     android:background="@drawable/bottom_sheet_bg"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:paddingBottom="8dp">
 
-    <!-- Handle bar -->
+    <!--
+      Header follows the house sheet (fragment_filter_bottom_sheet): a 40x4 handle
+      10dp down, then a start-aligned 18sp bold title 20dp in. This sheet used to
+      centre a 16sp title over the whole thing, which read as a different component
+      from every other sheet in the app.
+    -->
     <View
+        android:id="@+id/dragHandle"
         android:layout_width="40dp"
         android:layout_height="4dp"
         android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="16dp"
+        android:layout_marginTop="10dp"
         android:background="@drawable/drag_handle_bg" />
 
     <TextView
         android:id="@+id/tvDialogTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="14dp"
         android:fontFamily="@font/bold"
         android:text="@string/calligraphy_mode"
         android:textColor="@color/black"
-        android:textSize="16sp" />
+        android:textSize="18sp" />
 
     <TextView
         android:id="@+id/tvDialogSubtitle"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
+        android:layout_marginStart="20dp"
         android:layout_marginTop="4dp"
+        android:layout_marginEnd="20dp"
         android:layout_marginBottom="16dp"
         android:fontFamily="@font/regular"
         android:text="@string/calligraphy_sheet_subtitle"
@@ -42,6 +50,7 @@
         android:id="@+id/btnBreakWords"
         android:layout_width="match_parent"
         android:layout_height="56dp"
+        android:layout_marginHorizontal="16dp"
         android:layout_marginBottom="10dp"
         android:background="@drawable/button_bg_small"
         android:backgroundTint="@color/contrast"
@@ -92,6 +101,7 @@
         android:id="@+id/btnBreakCharacters"
         android:layout_width="match_parent"
         android:layout_height="56dp"
+        android:layout_marginHorizontal="16dp"
         android:layout_marginBottom="10dp"
         android:background="@drawable/button_bg_small"
         android:backgroundTint="@color/contrast"
@@ -142,6 +152,7 @@
         android:id="@+id/btnCollapseText"
         android:layout_width="match_parent"
         android:layout_height="52dp"
+        android:layout_marginHorizontal="16dp"
         android:background="@drawable/button_bg_small"
         android:backgroundTint="@color/contrast"
         android:clickable="true"

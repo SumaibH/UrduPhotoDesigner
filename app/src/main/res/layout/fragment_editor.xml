@@ -329,15 +329,33 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/topToolbarRow">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvCalligraphyChars"
+            <!--
+              Wrapped so the strip can fade out at its end instead of stopping dead
+              against the action buttons, matching the bottom nav next to Layers.
+            -->
+            <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:clipToPadding="false"
-                android:orientation="horizontal"
-                android:overScrollMode="never"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+                android:layout_weight="1">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvCalligraphyChars"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:orientation="horizontal"
+                    android:overScrollMode="never"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+                <View
+                    android:id="@+id/calligraphyFadeRight"
+                    android:layout_width="24dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="end"
+                    android:background="@drawable/nav_fade_right_gradient"
+                    android:clickable="false"
+                    android:focusable="false" />
+            </FrameLayout>
 
             <LinearLayout
                 android:id="@+id/calligraphyCharActions"
