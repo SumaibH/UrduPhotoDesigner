@@ -589,6 +589,9 @@ class SearchFragment : Fragment() {
         _binding?.popularTemplateRV?.adapter = null
         _binding?.fontsRV?.adapter = null
         _binding?.filesRV?.adapter = null
+        // Backing out while a template is loading left the dialog's infinite spinner
+        // animator running, and AnimationHandler kept the dialog's views alive with it.
+        dismissLoadingDialog()
         super.onDestroyView()
         _binding = null
     }

@@ -488,6 +488,14 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         updateManager.onDestroy()
+        if (isFinishing) {
+            // The ads SDK's handlers are process-scoped singletons that hold on to loaded
+            // ads — and a native ad holds its NativeAdView, which holds this Activity.
+            // LeakCanary saw MainActivity retained that way after every finish. The caches
+            // are worthless once the task is going away, so drop them. Guarded on
+            // isFinishing so a configuration change does not throw away preloaded ads.
+            WebsCareAds.destroyAllAds()
+        }
         _navController = null
         _binding = null
     }

@@ -39,7 +39,7 @@ class AdjustmentsParentFragment : androidx.fragment.app.Fragment() {
 
     private var mediator: TabLayoutMediator? = null
     private var tabs = mutableListOf<String>()
-    private lateinit var adapter: EffectsPagerAdapter
+    private var adapter: EffectsPagerAdapter? = null
     private var previewBitmap: Bitmap? = null
     private var elementId: String? = null
     private val viewModel: CanvasViewModel by activityViewModels()
@@ -140,7 +140,7 @@ class AdjustmentsParentFragment : androidx.fragment.app.Fragment() {
             )
             viewModel.populateAdjustmentsFromElement(it)
             binding.viewPager.adapter = adapter
-            adapter.stateRestorationPolicy =
+            adapter?.stateRestorationPolicy =
                 RecyclerView.Adapter.StateRestorationPolicy.PREVENT
 
             setupTabLayout()
@@ -187,6 +187,10 @@ class AdjustmentsParentFragment : androidx.fragment.app.Fragment() {
         mediator?.detach()
         mediator = null
         binding.viewPager.adapter = null
+        // The pager adapter is built on viewLifecycleOwner.lifecycle, so keeping the field
+        // after the view dies pins that registry — and through it the whole destroyed
+        // panel view tree — for as long as the fragment sits on the back stack.
+        adapter = null
         super.onDestroyView()
         _binding = null
     }

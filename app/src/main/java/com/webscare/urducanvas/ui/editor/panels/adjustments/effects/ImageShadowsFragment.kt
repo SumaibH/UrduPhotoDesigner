@@ -24,7 +24,7 @@ class ImageShadowsFragment : Fragment() {
     private var _binding: FragmentImagesShadowBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var colorsAdapter: ColorsAdapter
+    private var colorsAdapter: ColorsAdapter? = null
     private val viewModel: CanvasViewModel by activityViewModels()
 
     override fun onCreateView(
@@ -155,7 +155,7 @@ class ImageShadowsFragment : Fragment() {
     private fun initObservers() {
         viewModel.shadowColor.observe(viewLifecycleOwner) { color ->
             val safeColor = color ?: Color.BLACK
-            colorsAdapter.selectedColor = safeColor
+            colorsAdapter?.selectedColor = safeColor
             binding.shadowPad.handleColor = safeColor
         }
 
@@ -191,6 +191,9 @@ class ImageShadowsFragment : Fragment() {
     override fun onDestroyView() {
         _binding?.colors?.adapter = null
         super.onDestroyView()
+        // The adapter's callbacks close over this fragment's views; clearing the field
+        // stops the retained fragment from pinning the destroyed view tree.
+        colorsAdapter = null
         _binding = null
     }
 

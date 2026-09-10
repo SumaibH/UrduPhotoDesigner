@@ -27,8 +27,8 @@ class FiltersFragment : Fragment() {
 
     private val viewModel: CanvasViewModel by activityViewModels()
 
-    private lateinit var filtersAdapter: ImageFiltersAdapter
-    private lateinit var categoryAdapter: FilterCategoryAdapter
+    private var filtersAdapter: ImageFiltersAdapter? = null
+    private var categoryAdapter: FilterCategoryAdapter? = null
 
     private var elementId: String? = null
     private var previewBitmap: Bitmap? = null
@@ -125,7 +125,7 @@ class FiltersFragment : Fragment() {
             filterList = availableFilters,
             baseBitmap = previewBitmap,
             onFilterSelected = { filterItem ->
-                filtersAdapter.selectedFilter = filterItem.filter
+                filtersAdapter?.selectedFilter = filterItem.filter
                 elementId?.let { id ->
                     val intensityProgress = binding.filterIntensitySeekBar.progress
                     val intensity = if (filterItem.filter is ImageFilter.None) 1.0f else (intensityProgress / 100f)
@@ -133,8 +133,8 @@ class FiltersFragment : Fragment() {
                 }
 
                 val filterCategory = if (filterItem.filter.category == "Basic") "Portrait" else filterItem.filter.category
-                if (categoryAdapter.selectedCategory != filterCategory) {
-                    categoryAdapter.selectedCategory = filterCategory
+                if (categoryAdapter?.selectedCategory != filterCategory) {
+                    categoryAdapter?.selectedCategory = filterCategory
                     val catIndex = categories.indexOf(filterCategory)
                     if (catIndex != -1) {
                         binding.categoriesRecyclerView.smoothScrollToPosition(catIndex)
@@ -163,8 +163,8 @@ class FiltersFragment : Fragment() {
                     if (firstVisiblePos in availableFilters.indices) {
                         val category = availableFilters[firstVisiblePos].filter.category
                         val displayCategory = if (category == "Basic") "Portrait" else category
-                        if (categoryAdapter.selectedCategory != displayCategory) {
-                            categoryAdapter.selectedCategory = displayCategory
+                        if (categoryAdapter?.selectedCategory != displayCategory) {
+                            categoryAdapter?.selectedCategory = displayCategory
                         }
                     }
                 }
@@ -173,7 +173,7 @@ class FiltersFragment : Fragment() {
 
         categoryAdapter = FilterCategoryAdapter(categories) { categoryName ->
             isProgrammaticScroll = true
-            categoryAdapter.selectedCategory = categoryName
+            categoryAdapter?.selectedCategory = categoryName
             if (categoryName == categories.last()) {
                 binding.filtersRecyclerView.scrollToPosition(availableFilters.size - 1)
             } else {
@@ -200,7 +200,7 @@ class FiltersFragment : Fragment() {
                 if (fromUser) {
                     elementId?.let { id ->
                         val intensity = progress / 100f
-                        val currentFilter = filtersAdapter.selectedFilter
+                        val currentFilter = filtersAdapter?.selectedFilter
                             ?: viewModel.canvasElements.value?.find { it.id == id }?.imageFilter
                             ?: viewModel.currentImageFilter.value
                         if (currentFilter != null && currentFilter !is ImageFilter.None) {
@@ -215,7 +215,7 @@ class FiltersFragment : Fragment() {
                 seekBar?.let { sb ->
                     elementId?.let { id ->
                         val intensity = sb.progress / 100f
-                        val currentFilter = filtersAdapter.selectedFilter
+                        val currentFilter = filtersAdapter?.selectedFilter
                             ?: viewModel.canvasElements.value?.find { it.id == id }?.imageFilter
                             ?: viewModel.currentImageFilter.value
                         if (currentFilter != null && currentFilter !is ImageFilter.None) {
@@ -318,7 +318,7 @@ class FiltersFragment : Fragment() {
                 }
 
                 if (previewBitmap != null) {
-                    filtersAdapter.updatePreviewBitmap(previewBitmap)
+                    filtersAdapter?.updatePreviewBitmap(previewBitmap)
                 }
             }
 
@@ -331,7 +331,7 @@ class FiltersFragment : Fragment() {
         }
 
         viewModel.currentImageFilter.observe(viewLifecycleOwner) { currentFilter ->
-            filtersAdapter.selectedFilter = currentFilter
+            filtersAdapter?.selectedFilter = currentFilter
         }
     }
 
@@ -339,6 +339,14 @@ class FiltersFragment : Fragment() {
         super.onDestroyView()
         previewBitmap?.recycle()
         previewBitmap = null
+        // Both adapters capture this fragment's binding in their click callbacks. The
+        // fragment outlives its view while the panel sits on the back stack, so holding
+        // the adapters here kept the whole dead view tree reachable.
+        _binding?.filtersRecyclerView?.clearOnScrollListeners()
+        _binding?.filtersRecyclerView?.adapter = null
+        _binding?.categoriesRecyclerView?.adapter = null
+        filtersAdapter = null
+        categoryAdapter = null
         _binding = null
     }
 

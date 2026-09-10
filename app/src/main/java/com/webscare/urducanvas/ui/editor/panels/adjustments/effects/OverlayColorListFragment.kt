@@ -34,8 +34,8 @@ class OverlayColorListFragment : Fragment() {
     private var _binding: FragmentFillStrokeBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var colorsAdapter: ColorsAdapter
-    private lateinit var gradientsAdapter: GradientsAdapter
+    private var colorsAdapter: ColorsAdapter? = null
+    private var gradientsAdapter: GradientsAdapter? = null
     private val mainViewModel: MainViewModel by activityViewModels()
     private val viewModel: CanvasViewModel by activityViewModels()
     override fun onCreateView(
@@ -56,7 +56,7 @@ class OverlayColorListFragment : Fragment() {
     private fun initObservers() {
         mainViewModel.gradients.observe(viewLifecycleOwner) { gradients ->
             if (gradients.isNotEmpty()){
-                gradientsAdapter.updateList(gradients.reversed())
+                gradientsAdapter?.updateList(gradients.reversed())
             }
         }
     }
@@ -216,6 +216,14 @@ class OverlayColorListFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        // These adapters are built with callbacks that close over this fragment's views, and
+        // an editor panel sits on the back stack — so the fragment instance outlives its
+        // view hierarchy and the adapter fields kept the dead one alive. Detach from the
+        // lists first, then drop the references.
+        _binding?.colors?.adapter = null
+        _binding?.gradients?.adapter = null
+        colorsAdapter = null
+        gradientsAdapter = null
         _binding = null
     }
 

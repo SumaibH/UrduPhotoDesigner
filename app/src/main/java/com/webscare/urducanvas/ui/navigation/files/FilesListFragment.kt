@@ -931,9 +931,10 @@ class FilesListFragment : Fragment() {
 
     override fun onDestroyView() {
         _binding?.filesRV?.adapter = null
-        loadingDialog?.dismiss()
-        loadingDialog = null
-        dialogBinding = null
+        // dismissLoadingDialog() also cancels the infinite spinner animator; dismissing
+        // the dialog on its own leaves that animator registered with AnimationHandler,
+        // which then holds the dialog's views forever.
+        dismissLoadingDialog()
         super.onDestroyView()
         _binding = null
     }

@@ -104,8 +104,12 @@ class ExportFragment : androidx.fragment.app.Fragment() {
         // Edge to edge: the window no longer reserves the status bar, so leave the margin here.
         view.applyStatusBarTopPadding()
         
-        // Preload export interstitial ad
-        WebsCareAds.preloadInterstitial(requireContext(), BuildConfig.AD_INTERSTITIAL_EXPORT)
+        // Preload export interstitial ad.
+        // applicationContext, not requireContext(): a Hilt fragment's context is a
+        // FragmentContextWrapper around the Activity, and AdMob's loader holds the
+        // context it was given for the life of the request — LeakCanary traced a
+        // retained MainActivity straight back to a preload started from here.
+        WebsCareAds.preloadInterstitial(requireContext().applicationContext, BuildConfig.AD_INTERSTITIAL_EXPORT)
 
         view.alpha = 0f
         view.translationY = 80f
@@ -201,8 +205,8 @@ class ExportFragment : androidx.fragment.app.Fragment() {
             }
         }
 
-        WebsCareAds.preloadInterstitial(requireContext(), BuildConfig.AD_INTERSTITIAL_EXPORT)
-        WebsCareAds.preloadRewarded(requireContext(), BuildConfig.AD_REWARDED_EXPORT)
+        WebsCareAds.preloadInterstitial(requireContext().applicationContext, BuildConfig.AD_INTERSTITIAL_EXPORT)
+        WebsCareAds.preloadRewarded(requireContext().applicationContext, BuildConfig.AD_REWARDED_EXPORT)
 
         viewModel.exportResult.observe(viewLifecycleOwner) { result ->
             Log.d("ExportFragmentExportResult", "Received exportResult: $result")
@@ -992,6 +996,12 @@ class ExportFragment : androidx.fragment.app.Fragment() {
         if (!isExportCompleted) {
             adAnalyticsCoordinator.onFeatureAbandoned("export")
         }
+        // Taken from binding.btnExport.icon, so it carries the button — and through it the
+        // whole view hierarchy — for as long as this field holds it. LeakCanary caught it
+        // retaining a destroyed hierarchy.
+        rotateDrawable?.stop()
+        rotateDrawable?.callback = null
+        rotateDrawable = null
         _binding = null
     }
 }

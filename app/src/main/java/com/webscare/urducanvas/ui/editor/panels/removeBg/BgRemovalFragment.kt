@@ -107,7 +107,7 @@ class BgRemovalFragment : Fragment() {
         view.applyStatusBarTopPadding()
 
         // Preload background removal rewarded ad to make sure it's ready when requested
-        WebsCareAds.preloadRewarded(requireContext(), BuildConfig.AD_REWARDED_BG_REMOVAL)
+        WebsCareAds.preloadRewarded(requireContext().applicationContext, BuildConfig.AD_REWARDED_BG_REMOVAL)
 
         setupImage()
         imageCallbacks()

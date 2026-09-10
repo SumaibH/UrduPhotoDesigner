@@ -168,9 +168,17 @@ class BgRemovalCanvas @JvmOverloads constructor(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private var isCancelled = false
 
-    init {
-        // Marching ants animator - fast, smooth single outer-contour animation
-        ValueAnimator.ofFloat(0f, 16f).apply {
+    // Marching ants animator - fast, smooth single outer-contour animation.
+    // It repeats forever, and a running ValueAnimator is held by AnimationHandler, which
+    // lives in a ThreadLocal on the main thread. Starting it from init() and never
+    // cancelling it therefore pinned this view (and its fragment) for the life of the
+    // process. Tie it to the attached window instead.
+    private var antsAnimator: ValueAnimator? = null
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        if (antsAnimator != null) return
+        antsAnimator = ValueAnimator.ofFloat(0f, 16f).apply {
             duration = 400
             repeatCount = ValueAnimator.INFINITE
             addUpdateListener { animator ->
@@ -1128,5 +1136,11 @@ class BgRemovalCanvas @JvmOverloads constructor(
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         cancelProcessing()
+        antsAnimator?.removeAllUpdateListeners()
+        antsAnimator?.cancel()
+        antsAnimator = null
+        magnifierAnimator?.removeAllUpdateListeners()
+        magnifierAnimator?.cancel()
+        magnifierAnimator = null
     }
 }

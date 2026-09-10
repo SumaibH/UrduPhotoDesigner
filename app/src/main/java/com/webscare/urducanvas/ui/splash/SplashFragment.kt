@@ -29,6 +29,24 @@ class SplashFragment : Fragment(), TextureView.SurfaceTextureListener {
 
     private var mediaPlayer: MediaPlayer? = null
 
+    /**
+     * AdMob keeps the FullScreenContentCallback it was handed alive well past the ad being
+     * dismissed, so a dismissal lambda that captures `this` keeps the whole SplashFragment
+     * reachable — LeakCanary caught it three separate launches.
+     *
+     * The relay is a plain nested (non-inner) class, so the ads SDK holding it holds
+     * nothing else; the lambda that does capture the fragment lives in [Relay.action],
+     * which [onDestroy] clears.
+     */
+    private class Relay {
+        var action: (() -> Unit)? = null
+        fun fire() {
+            action?.invoke()
+        }
+    }
+
+    private val appOpenDismissRelay = Relay()
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -148,10 +166,14 @@ class SplashFragment : Fragment(), TextureView.SurfaceTextureListener {
         if (activity != null) {
             adAnalyticsCoordinator.onAdOpportunity("app_open_splash", "app_open", "splash_open")
             adAnalyticsCoordinator.onAdImpression("app_open_splash", "app_open", "splash", "splash_open")
-            WebsCareAds.showAppOpen(activity, BuildConfig.AD_APP_OPEN_SPLASH) {
+            appOpenDismissRelay.action = {
                 adAnalyticsCoordinator.onAdDismissed("app_open_splash", "app_open", rewardEarned = false)
                 performNavigation()
             }
+            // Bound to a local on purpose: a lambda that mentions `appOpenDismissRelay`
+            // directly would capture `this` and defeat the whole point of the relay.
+            val relay = appOpenDismissRelay
+            WebsCareAds.showAppOpen(activity, BuildConfig.AD_APP_OPEN_SPLASH) { relay.fire() }
         } else {
             performNavigation()
         }
@@ -179,5 +201,12 @@ class SplashFragment : Fragment(), TextureView.SurfaceTextureListener {
         _binding?.splashVideo?.surfaceTextureListener = null
         super.onDestroyView()
         _binding = null
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Cleared here rather than in onDestroyView so a configuration change while the
+        // app-open ad is on screen still navigates when it is dismissed.
+        appOpenDismissRelay.action = null
     }
 }

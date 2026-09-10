@@ -145,6 +145,15 @@ class EditorFragment : Fragment() {
                 _navController?.currentDestination?.id != R.id.drawFragment
 
     /** Last requested state of each docked kit, so a repeat request is a no-op. */
+    /**
+     * Per-view "is the kit showing" state, for the current view hierarchy only.
+     *
+     * Keyed by View, so every entry is a strong reference to one. The editor goes on the
+     * back stack, meaning this fragment instance outlives its views — and LeakCanary caught
+     * this holding four destroyed view hierarchies at once, the most frequent leak in the
+     * app. [onDestroyView] clears it; the state is meaningless across view rebuilds anyway,
+     * since the views it describes no longer exist.
+     */
     private val kitShown = mutableMapOf<View, Boolean>()
 
     /**
@@ -3731,6 +3740,8 @@ class EditorFragment : Fragment() {
         // with it or the strip would never animate back in.
         characterBarShown = false
         characterBarAdapter = null
+        // Keyed by View — see the field. Leaving entries here pins the whole hierarchy.
+        kitShown.clear()
         currentToolbarMode = null
         panelSheet?.snapTo(expanded = false, immediate = true)
         panelSheet = null
