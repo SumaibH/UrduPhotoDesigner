@@ -117,4 +117,7 @@
     <!-- Frame + icon inside a size tile: soft enough to read as an outline. -->
     <color name="tile_frame">#C3C9D2</color>
     <color name="screen_bg_transparent">#00FFFFFF</color>
+    <!-- Splash: the loading line's track and the publisher line, white at low alpha on the green. -->
+    <color name="splash_loader_track">#2EFFFFFF</color>
+    <color name="splash_publisher_text">#8CFFFFFF</color>
 </resources>

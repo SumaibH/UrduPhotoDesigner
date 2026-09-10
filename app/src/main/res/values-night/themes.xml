@@ -10,6 +10,16 @@
         <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
     </style>
 
+    <!-- Launch theme, night: same as values/themes.xml with light status bar icons. -->
+    <style name="Theme.UrduPhotoDesigner.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/screen_bg</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="postSplashScreenTheme">@style/Theme.UrduPhotoDesigner</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:enforceStatusBarContrast" tools:targetApi="q">false</item>
+        <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
+    </style>
+
 
     <!-- in res/values/styles.xml -->
     <style name="CustomToolbarTitleText" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">

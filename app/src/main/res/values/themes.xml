@@ -13,6 +13,23 @@
 
     <style name="Theme.UrduPhotoDesigner" parent="Base.Theme.UrduPhotoDesigner" />
 
+    <!--
+        Launch theme. Android 12+ paints its own splash (the launcher icon on the window
+        background) before the process is even up; this tells it what to paint, and
+        SplashFragment then picks up the very icon Android drew and blooms the brand
+        ground out of it. installSplashScreen() swaps postSplashScreenTheme back in.
+        windowSplashScreenAnimatedIcon has to be set explicitly: the library's default is
+        Android's generic robot, not the app's icon.
+    -->
+    <style name="Theme.UrduPhotoDesigner.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/screen_bg</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="postSplashScreenTheme">@style/Theme.UrduPhotoDesigner</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:enforceStatusBarContrast" tools:targetApi="q">false</item>
+        <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
+    </style>
+
     <!-- in res/values/styles.xml -->
     <style name="CustomToolbarTitleText" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
         <!-- fontFamily can reference res/font -->

@@ -1,15 +1,153 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<!--
+    The launch splash. SplashFragment runs the choreography; the resting layout here is
+    the settled frame of the design: the mark on the very spot Android's own splash icon
+    occupied (the centre of the screen), the wordmark and tagline beneath it, all on the
+    Home header's green, with a thin loading line and the publisher at the bottom.
+    Everything that animates starts hidden and is brought in by the fragment.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/splashRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/screen_bg"
     tools:context=".ui.splash.SplashFragment">
 
-    <TextureView
-        android:id="@+id/splashVideo"
+    <!--
+        The ground: gradient, lattice and sweep, with the calligraphy whispering over
+        the top right. Invisible until the fragment reveals it out of the icon's circle.
+        The calligraphy is sized and placed in code, from the screen width.
+    -->
+    <FrameLayout
+        android:id="@+id/groundGroup"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:visibility="invisible">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <com.webscare.urducanvas.ui.splash.SplashGroundView
+            android:id="@+id/ground"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <ImageView
+            android:id="@+id/calligraphy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:adjustViewBounds="true"
+            android:alpha="0"
+            android:contentDescription="@null"
+            android:importantForAccessibility="no"
+            android:scaleType="fitCenter"
+            android:src="@drawable/header_calligraphy" />
+    </FrameLayout>
+
+    <!--
+        Mark, wordmark and tagline. The mark is centred on the screen, exactly where
+        Android draws its splash icon, so the hand-off never moves it; the words hang
+        beneath.
+    -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/centerStack"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/mark"
+            android:layout_width="140dp"
+            android:layout_height="127dp"
+            android:alpha="0"
+            android:contentDescription="@string/app_name"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_urdu_canvas"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/whiteText" />
+
+        <TextView
+            android:id="@+id/wordmark"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="26dp"
+            android:alpha="0"
+            android:fontFamily="@font/bold"
+            android:includeFontPadding="false"
+            android:letterSpacing="-0.01"
+            android:text="@string/app_name"
+            android:textColor="@color/whiteText"
+            android:textSize="32sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/mark" />
+
+        <TextView
+            android:id="@+id/tagline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:alpha="0"
+            android:fontFamily="@font/regular"
+            android:text="@string/splash_tagline"
+            android:textColor="@color/home_header_subtitle"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/wordmark" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Loading line and publisher. Fades in as one once the words have settled. -->
+    <LinearLayout
+        android:id="@+id/footer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:alpha="0"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingBottom="56dp">
+
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/loader"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+            app:indeterminateAnimationType="disjoint"
+            app:indicatorColor="@color/whiteText"
+            app:trackColor="@color/splash_loader_track"
+            app:trackCornerRadius="2dp"
+            app:trackThickness="3dp" />
+
+        <TextView
+            android:id="@+id/publisher"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:fontFamily="@font/medium"
+            android:letterSpacing="0.18"
+            android:text="@string/splash_publisher"
+            android:textAllCaps="true"
+            android:textColor="@color/splash_publisher_text"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <!--
+        The launcher icon exactly as Android's own splash shows it, underneath Android's
+        view from the first frame. Hidden the moment the real one is handed over; if none
+        ever is, the bloom plays from this instead. 192dp is the circle Android draws
+        for a provided icon on a phone.
+    -->
+    <ImageView
+        android:id="@+id/iconReplica"
+        android:layout_width="192dp"
+        android:layout_height="192dp"
+        android:layout_gravity="center"
+        android:contentDescription="@null"
+        android:importantForAccessibility="no"
+        android:scaleType="fitCenter"
+        android:src="@mipmap/ic_launcher" />
+
+</FrameLayout>

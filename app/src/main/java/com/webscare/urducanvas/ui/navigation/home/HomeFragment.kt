@@ -1,6 +1,7 @@
 package com.webscare.urducanvas.ui.navigation.home
 
 import android.animation.ObjectAnimator
+import com.webscare.urducanvas.ui.splash.SplashLanding
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.Dialog
@@ -14,10 +15,10 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
-import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.ImageView
 import kotlin.math.abs
+import android.view.ViewGroup
 import android.view.ViewOutlineProvider
 import android.view.animation.LinearInterpolator
 import androidx.activity.result.contract.ActivityResultContracts
@@ -67,7 +68,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
-class HomeFragment : androidx.fragment.app.Fragment() {
+class HomeFragment : androidx.fragment.app.Fragment(), SplashLanding {
     @javax.inject.Inject
     lateinit var analyticsTracker: com.webscare.urducanvas.analytics.AnalyticsTracker
 
@@ -101,10 +102,10 @@ class HomeFragment : androidx.fragment.app.Fragment() {
 
     /** In-flight settle animation for the header; cancelled on a new gesture. */
     private var headerSnapSpring: SpringAnimation? = null
-    private var headerCornerRadius = -1f
 
     /** True while the snap spring is the one scrolling the feed. */
     private var snapDriving = false
+    private var headerCornerRadius = -1f
     private var headerBackground: GradientDrawable? = null
 
     val navOptions = NavOptions.Builder().setLaunchSingleTop(true).build()
@@ -294,7 +295,6 @@ class HomeFragment : androidx.fragment.app.Fragment() {
         springHeaderTo(target, startVelocity = 0f)
     }
 
-        val range = (expandedHeaderHeight - collapsedHeaderHeight()).coerceAtLeast(1)
     /**
      * The finger just lifted. A real flick is left to the feed's own fling, and the
      * settle timer catches it if it dies between the two header states; anything gentler
@@ -330,6 +330,7 @@ class HomeFragment : androidx.fragment.app.Fragment() {
     private fun headerSnapTarget(direction: Int): Int? {
         if (expandedHeaderHeight <= 0) return null
         if (headerProgress <= 0f || headerProgress >= 1f) return null
+        val range = (expandedHeaderHeight - collapsedHeaderHeight()).coerceAtLeast(1)
         val collapse = when {
             direction > 0 -> headerProgress >= HEADER_SNAP_COMMIT
             direction < 0 -> headerProgress > 1f - HEADER_SNAP_COMMIT
@@ -351,14 +352,14 @@ class HomeFragment : androidx.fragment.app.Fragment() {
 
         val start = scroll.scrollY.toFloat()
         if (start == targetY.toFloat()) return
-
         if (BuildConfig.DEBUG) {
             Log.d("HeaderSnap", "spring: $start -> $targetY at ${startVelocity.toInt()}px/s")
         }
+
         headerSnapSpring = SpringAnimation(FloatValueHolder(start)).apply {
             setStartValue(start)
-            spring = SpringForce(targetY.toFloat()).apply {
             setStartVelocity(startVelocity)
+            spring = SpringForce(targetY.toFloat()).apply {
                 stiffness = HEADER_SNAP_STIFFNESS
                 dampingRatio = HEADER_SNAP_DAMPING
             }
@@ -369,10 +370,10 @@ class HomeFragment : androidx.fragment.app.Fragment() {
                     cancel()
                     return@addUpdateListener
                 }
-                b.contentScroll.scrollTo(0, value.toInt().coerceAtLeast(0))
                 snapDriving = true
-            }
+                b.contentScroll.scrollTo(0, value.toInt().coerceAtLeast(0))
                 snapDriving = false
+            }
             addEndListener { _, _, _, _ -> headerSnapSpring = null }
             start()
         }
@@ -1070,7 +1071,6 @@ class HomeFragment : androidx.fragment.app.Fragment() {
 
         /** Quiet time after the last scroll event before the header snaps. */
         private const val HEADER_SNAP_SETTLE_MS = 90L
-    }
 
         /**
          * How far a pull in one direction has to get before a release commits to it:
@@ -1085,4 +1085,19 @@ class HomeFragment : androidx.fragment.app.Fragment() {
         /** The snap spring: brisk, with a little give at the end. */
         private const val HEADER_SNAP_STIFFNESS = 700f
         private const val HEADER_SNAP_DAMPING = 0.72f
+    }
+
+    // ─── Splash landing: what the launch splash collapses into ───────────────
+
+    override fun landingHeader(): View? = _binding?.header
+
+    override fun landingTitle(): TextView? = _binding?.title
+
+    override fun landingWatermark(): ImageView? = _binding?.headerCalligraphy
+
+    override fun landingContent(): List<View> =
+        _binding?.let { listOf(it.contentScroll, it.loadingState.root, it.errorState.root) } ?: emptyList()
+
+    override fun landingHeaderContent(): List<View> =
+        _binding?.let { listOf(it.expandedContent, it.headerActions) } ?: emptyList()
 }

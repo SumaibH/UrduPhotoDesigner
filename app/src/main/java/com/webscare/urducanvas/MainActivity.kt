@@ -40,6 +40,8 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import javax.inject.Inject
 import com.webscare.urducanvas.analytics.navigation.NavigationAnalyticsListener
+import com.webscare.urducanvas.ui.splash.SplashExitController
+import com.webscare.urducanvas.ui.splash.SplashHandoff
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -139,11 +141,17 @@ class MainActivity : AppCompatActivity() {
             androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO)
         }
 
-        installSplashScreen().setKeepOnScreenCondition { false }
+        val splashScreen = installSplashScreen()
+        splashScreen.setKeepOnScreenCondition { false }
         super.onCreate(savedInstanceState)
         _binding = ActivityMainBinding.inflate(layoutInflater)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         setContentView(binding.root)
+
+        // Android's own splash (the icon on the window background) is handed over here once
+        // the first frame is drawn; SplashFragment claims it and blooms the brand ground out
+        // of that very icon. Nothing is removed until the fragment has dissolved it.
+        splashScreen.setOnExitAnimationListener { provider -> splashHandoff.offer(provider) }
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
             statusBarInsetPx = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
@@ -169,6 +177,18 @@ class MainActivity : AppCompatActivity() {
             supportFragmentManager.findFragmentById(R.id.nav_host_main) as NavHostFragment
         _navController = navHostFragment.navController
 
+        // The exit from the splash into Home runs above the nav host, so the green can
+        // collapse into Home's header while Home lays itself out underneath. Chrome waits
+        // for it to land, and the add button then fades in rather than popping.
+        splashExit = SplashExitController(binding.main, navHostFragment.childFragmentManager) { running ->
+            splashExitRunning = running
+            if (!running) binding.fabAddImage.alpha = 0f
+            updateChromeVisibility()
+            if (!running && binding.fabAddImage.visibility == View.VISIBLE) {
+                binding.fabAddImage.animate().alpha(1f).setDuration(220).start()
+            }
+        }
+
         setupChrome()
         handleIncomingIntent(intent)
     }
@@ -192,10 +212,24 @@ class MainActivity : AppCompatActivity() {
      */
     private val darkChromeDestinations = setOf(
         R.id.homeFragment,
-        // Splash runs its green video full-bleed behind the bars, so it gets no
-        // white plate either — otherwise a white band sits over the artwork.
+        // Splash blooms its green up behind the bars, so it gets no white plate
+        // either — otherwise a white band sits over the artwork.
         R.id.splashFragment
     )
+
+    /** Runs the splash's collapse into Home's header; the chrome waits for it to land. */
+    lateinit var splashExit: SplashExitController
+        private set
+    private var splashExitRunning = false
+
+    /** Android's splash view on its way from the window to SplashFragment. */
+    val splashHandoff = SplashHandoff()
+
+    /**
+     * The splash starts on the window background and turns green a beat later, so it
+     * sets the status bar icon colour itself at each step.
+     */
+    fun setStatusBarIconsDark(dark: Boolean) = setStatusBarTextColor(darkIcons = dark)
 
     /** Status bar height in px, published for fragments that pad themselves. */
     var statusBarInsetPx: Int = 0
@@ -221,7 +255,7 @@ class MainActivity : AppCompatActivity() {
     fun updateChromeVisibility() {
         if (_binding == null) return
         val destId = _navController?.currentDestination?.id
-        val isTopLevel = isSplashCompleted &&
+        val isTopLevel = isSplashCompleted && !splashExitRunning &&
                 destId in topLevelDestinations &&
                 resumedDestinationId == destId
         if (isTopLevel && !bannerAdInitialised) {
@@ -318,6 +352,9 @@ class MainActivity : AppCompatActivity() {
 
         val paintsOwnChrome = destinationId in darkChromeDestinations
         binding.statusBarScrim.visibility = if (paintsOwnChrome) View.GONE else View.VISIBLE
+        // The splash starts on the window background and turns green a beat later; it drives
+        // its own icon colour at each step, so this must not snap it back.
+        if (destinationId == R.id.splashFragment) return
         setStatusBarTextColor(darkIcons = !paintsOwnChrome && !isNight)
     }
 
@@ -517,6 +554,8 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         updateManager.onDestroy()
+        splashHandoff.clear()
+        if (::splashExit.isInitialized) splashExit.cancel()
         if (isFinishing) {
             // The ads SDK's handlers are process-scoped singletons that hold on to loaded
             // ads — and a native ad holds its NativeAdView, which holds this Activity.
