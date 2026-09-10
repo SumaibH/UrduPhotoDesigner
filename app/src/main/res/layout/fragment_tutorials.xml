@@ -52,7 +52,6 @@
         android:text="@string/tutorials"
         android:textColor="@color/black"
         android:textSize="19sp"
-        app:layout_constraintBottom_toBottomOf="@id/back"
         app:layout_constraintEnd_toStartOf="@id/openChannel"
         app:layout_constraintStart_toEndOf="@id/back"
         app:layout_constraintTop_toTopOf="@id/back" />
@@ -71,18 +70,24 @@
         app:layout_constraintTop_toTopOf="@id/back"
         app:tint="@color/black" />
 
+    <!--
+      Title and subtitle are one block hanging off the top of the back button. The
+      subtitle used to be constrained to the button's *bottom* edge, so on top of its own
+      margin it inherited the button's leftover height and floated in a gap, reading as a
+      stray line rather than part of the header.
+    -->
     <TextView
         android:id="@+id/subtitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/regular"
         android:text="@string/tutorials_subtitle"
         android:textColor="@color/gray"
         android:textSize="13sp"
         app:layout_constraintEnd_toStartOf="@id/endGuide"
         app:layout_constraintStart_toStartOf="@id/title"
-        app:layout_constraintTop_toBottomOf="@id/back" />
+        app:layout_constraintTop_toBottomOf="@id/title" />
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefresh"
