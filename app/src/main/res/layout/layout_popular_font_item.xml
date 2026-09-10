@@ -26,13 +26,21 @@ app:shimmer_repeat_delay="0"
             app:shimmer_colored="true"
             app:shimmer_highlight_alpha="@dimen/shimmer_highlight_alpha">
 
+            <!--
+              fitCenter, not centerCrop. Font previews are wide glyph images of varying
+              aspect ratio; centerCrop scales them until they fill the card and throws
+              away whatever hangs over, which sliced the sides off every preview wider
+              than the tile. The editor's own font list has always used fitCenter — this
+              is the one place that did not.
+            -->
             <ImageView
                 android:id="@+id/image"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:adjustViewBounds="true"
                 android:background="@color/surface_2"
-                android:padding="6dp"
-                android:scaleType="centerCrop" />
+                android:padding="8dp"
+                android:scaleType="fitCenter" />
 
         </com.facebook.shimmer.ShimmerFrameLayout>
 
