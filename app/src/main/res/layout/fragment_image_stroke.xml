@@ -129,7 +129,7 @@
             app:layout_constraintTop_toTopOf="@id/borderTitle" />
 
 
-        <com.webscare.urducanvas.common.views.RangeSeekBar
+        <SeekBar
             android:id="@+id/border"
             android:layout_width="0dp"
             android:layout_height="wrap_content"

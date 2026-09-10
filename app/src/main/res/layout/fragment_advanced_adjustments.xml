@@ -41,7 +41,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/sharpnessTitle" />
 
-        <com.webscare.urducanvas.common.views.RangeSeekBar
+        <SeekBar
             android:id="@+id/sharpness"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -95,7 +95,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/clarityTitle" />
 
-        <com.webscare.urducanvas.common.views.RangeSeekBar
+        <SeekBar
             android:id="@+id/clarity"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -148,7 +148,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/fadeTitle" />
 
-        <com.webscare.urducanvas.common.views.RangeSeekBar
+        <SeekBar
             android:id="@+id/fade"
             android:layout_width="0dp"
             android:layout_height="wrap_content"

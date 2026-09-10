@@ -19,7 +19,7 @@ android {
 
     defaultConfig {
         applicationId = "com.webscare.urducanvas"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 37
         versionCode = appVersionCode
         versionName = appVersionName

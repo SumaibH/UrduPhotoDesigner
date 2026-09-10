@@ -63,7 +63,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@id/opacityTitle" />
 
-            <com.webscare.urducanvas.common.views.RangeSeekBar
+            <SeekBar
                 android:id="@+id/opacity"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -117,7 +117,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@id/radiusTitle" />
 
-            <com.webscare.urducanvas.common.views.RangeSeekBar
+            <SeekBar
                 android:id="@+id/radius"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -173,7 +173,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/distanceTitle" />
 
-        <com.webscare.urducanvas.common.views.RangeSeekBar
+        <SeekBar
             android:id="@+id/distance"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -227,7 +227,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/scaleTitle" />
 
-        <com.webscare.urducanvas.common.views.RangeSeekBar
+        <SeekBar
             android:id="@+id/shadowScale"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
