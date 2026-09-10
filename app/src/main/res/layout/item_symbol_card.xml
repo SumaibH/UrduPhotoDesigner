@@ -37,10 +37,10 @@
             android:gravity="center"
             android:includeFontPadding="false"
             android:maxLines="1"
-            android:paddingHorizontal="3dp"
+            android:paddingHorizontal="2dp"
             android:textColor="@color/black"
             app:autoSizeMaxTextSize="28sp"
-            app:autoSizeMinTextSize="9sp"
+            app:autoSizeMinTextSize="6sp"
             app:autoSizeStepGranularity="1sp"
             app:autoSizeTextType="uniform"
             tools:text="ـَ" />

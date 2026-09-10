@@ -88,7 +88,30 @@ object SymbolsRepository {
         SymbolItem("waqf_murakhkhas", "ۛ", "Waqf Murakhkhas", SymbolCategory.QURANIC),
         SymbolItem("saktah", "ۜ", "Saktah", SymbolCategory.QURANIC),
         SymbolItem("rub_el_hizb", "۞", "Rub el Hizb", SymbolCategory.QURANIC, isDiacritic = false),
-        SymbolItem("sajdah", "۩", "Sajdah", SymbolCategory.QURANIC, isDiacritic = false)
+        SymbolItem("sajdah", "۩", "Sajdah", SymbolCategory.QURANIC, isDiacritic = false),
+
+        // Waqf Qad Yusal — the one stop sign the original set left out.
+        SymbolItem("waqf_qad_yusal", "ۙ", "Waqf Qad Yusal", SymbolCategory.QURANIC),
+
+        // The small high marks. These carry recitation instructions rather than
+        // vowels, so they belong here and not under Above.
+        SymbolItem("high_rounded_zero", "۟", "Rounded Zero", SymbolCategory.QURANIC),
+        SymbolItem("high_rect_zero", "۠", "Rectangular Zero", SymbolCategory.QURANIC),
+        SymbolItem("high_sukun", "ۡ", "Sukun (Khah Head)", SymbolCategory.QURANIC),
+        SymbolItem("high_meem", "ۢ", "High Meem", SymbolCategory.QURANIC),
+        SymbolItem("high_madda", "ۤ", "High Madda", SymbolCategory.QURANIC),
+        SymbolItem("high_yeh", "ۧ", "High Yeh", SymbolCategory.QURANIC),
+        SymbolItem("high_noon", "ۨ", "High Noon", SymbolCategory.QURANIC),
+        SymbolItem("low_meem", "ۭ", "Low Meem", SymbolCategory.QURANIC),
+
+        // Sajdah and pause stops drawn as open or filled circles.
+        SymbolItem("low_stop", "۪", "Empty Low Stop", SymbolCategory.QURANIC),
+        SymbolItem("high_stop", "۫", "Empty High Stop", SymbolCategory.QURANIC),
+        SymbolItem("high_stop_filled", "۬", "Filled High Stop", SymbolCategory.QURANIC),
+
+        // Ornate parentheses, which is how an ayah number is normally set.
+        SymbolItem("ornate_open", "﴾", "Ornate Bracket Open", SymbolCategory.QURANIC, isDiacritic = false),
+        SymbolItem("ornate_close", "﴿", "Ornate Bracket Close", SymbolCategory.QURANIC, isDiacritic = false)
     )
 
     /** Names and salutations, each written as a single ligature glyph. */
@@ -119,7 +142,30 @@ object SymbolsRepository {
         SymbolItem("crescent", "☽", "Crescent", SymbolCategory.ORNAMENTS, isDiacritic = false),
         SymbolItem("flourish", "❦", "Flourish", SymbolCategory.ORNAMENTS, isDiacritic = false),
         SymbolItem("heart", "♥", "Heart", SymbolCategory.ORNAMENTS, isDiacritic = false),
-        SymbolItem("kashida", "ـ", "Kashida", SymbolCategory.ORNAMENTS, isDiacritic = false)
+        SymbolItem("kashida", "ـ", "Kashida", SymbolCategory.ORNAMENTS, isDiacritic = false),
+
+        // Urdu poetry marks. These are the two an Urdu compositor actually reaches
+        // for and neither was here: ؎ heads a couplet, ؏ marks a misra.
+        SymbolItem("poetic_verse", "؎", "Verse Sign", SymbolCategory.ORNAMENTS, isDiacritic = false),
+        SymbolItem("misra", "؏", "Misra Sign", SymbolCategory.ORNAMENTS, isDiacritic = false),
+        SymbolItem("sanah", "؁", "Sanah (Year)", SymbolCategory.ORNAMENTS, isDiacritic = false),
+
+        // Urdu punctuation, which is not what a Latin keyboard offers.
+        SymbolItem("urdu_full_stop", "۔", "Full Stop", SymbolCategory.ORNAMENTS, isDiacritic = false),
+        SymbolItem("arabic_comma", "،", "Comma", SymbolCategory.ORNAMENTS, isDiacritic = false),
+        SymbolItem("arabic_semicolon", "؛", "Semicolon", SymbolCategory.ORNAMENTS, isDiacritic = false),
+        SymbolItem("arabic_question", "؟", "Question Mark", SymbolCategory.ORNAMENTS, isDiacritic = false),
+        SymbolItem("triple_dot_punct", "؞", "Triple Dot", SymbolCategory.ORNAMENTS, isDiacritic = false),
+
+        // More florets and rules for framing a composition.
+        SymbolItem("floret_six", "❋", "Six Floret", SymbolCategory.ORNAMENTS, isDiacritic = false),
+        SymbolItem("floret_eight", "✽", "Eight Floret", SymbolCategory.ORNAMENTS, isDiacritic = false),
+        SymbolItem("floret_open", "✾", "Open Floret", SymbolCategory.ORNAMENTS, isDiacritic = false),
+        SymbolItem("rosette", "✿", "Rosette", SymbolCategory.ORNAMENTS, isDiacritic = false),
+        SymbolItem("star_filled", "★", "Filled Star", SymbolCategory.ORNAMENTS, isDiacritic = false),
+        SymbolItem("star_hollow", "☆", "Hollow Star", SymbolCategory.ORNAMENTS, isDiacritic = false),
+        SymbolItem("lozenge", "◈", "Lozenge", SymbolCategory.ORNAMENTS, isDiacritic = false),
+        SymbolItem("bullet_hollow", "◦", "Hollow Bullet", SymbolCategory.ORNAMENTS, isDiacritic = false)
     )
 
     fun getSymbolsForCategory(category: SymbolCategory): List<SymbolItem> {

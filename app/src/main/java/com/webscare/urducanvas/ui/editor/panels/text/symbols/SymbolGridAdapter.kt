@@ -1,10 +1,13 @@
 package com.webscare.urducanvas.ui.editor.panels.text.symbols
 
 import android.graphics.Paint
+import android.graphics.Rect
 import android.graphics.Typeface
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.util.TypedValue
 import android.widget.Toast
+import androidx.core.widget.TextViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
 import com.webscare.urducanvas.databinding.ItemSymbolCardBinding
@@ -65,6 +68,7 @@ class SymbolGridAdapter(
             binding.tvSymbolGlyph.typeface = previewTypefaceFor(item)
 
             binding.tvSymbolGlyph.text = displayGlyphFor(item)
+            fitGlyphToTile(displayGlyphFor(item))
 
             // The tile carries no caption any more, so the name lives on long
             // press — the same affordance the rail categories use.
@@ -109,10 +113,55 @@ class SymbolGridAdapter(
             val carrier = if (paint.hasGlyph(DOTTED_CIRCLE)) DOTTED_CIRCLE else TATWEEL
             return carrier + item.glyph
         }
+
+        /**
+         * Sizes the glyph so its *ink* fits the tile.
+         *
+         * The tile used to rely on TextView autosize, which measures the advance width
+         * the font reports. That is the right measure for a run of text and the wrong
+         * one for these: the honorific ligatures — Bismillah and Muhammad worst of all —
+         * report a modest advance and then draw far outside it, so autosize saw
+         * something that fitted while the tile clipped both ends of it. Lowering the
+         * autosize floor changed nothing for exactly that reason.
+         *
+         * getTextBounds returns the inked rectangle, so measuring with that and stepping
+         * down until it fits is the measure that matches what the user sees.
+         */
+        private fun fitGlyphToTile(glyph: String) {
+            val tv = binding.tvSymbolGlyph
+            // Autosize and an explicit text size are mutually exclusive; setTextSize is
+            // silently ignored while autosize owns the view.
+            TextViewCompat.setAutoSizeTextTypeWithDefaults(
+                tv, TextViewCompat.AUTO_SIZE_TEXT_TYPE_NONE
+            )
+
+            val density = tv.resources.displayMetrics.density
+            val availW = (TILE_DP - 2 * TILE_INSET_DP) * density
+            val availH = availW
+
+            probe.typeface = tv.typeface
+            var sizePx = MAX_GLYPH_SP * density
+            val minPx = MIN_GLYPH_SP * density
+            val ink = Rect()
+            while (sizePx > minPx) {
+                probe.textSize = sizePx
+                probe.getTextBounds(glyph, 0, glyph.length, ink)
+                if (ink.width() <= availW && ink.height() <= availH) break
+                sizePx -= density   // 1dp per step
+            }
+            tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, sizePx)
+        }
     }
 
     private companion object {
         const val TATWEEL = "ـ"
         const val DOTTED_CIRCLE = "◌"
+
+        /** Matches the card in item_symbol_card.xml, and its horizontal padding. */
+        const val TILE_DP = 52f
+        const val TILE_INSET_DP = 2f
+
+        const val MAX_GLYPH_SP = 28f
+        const val MIN_GLYPH_SP = 6f
     }
 }
