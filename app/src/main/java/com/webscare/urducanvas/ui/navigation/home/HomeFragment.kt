@@ -659,12 +659,10 @@ class HomeFragment : androidx.fragment.app.Fragment() {
             view?.post { findNavController().navigate(R.id.popularFontsFragment) }
         }
 
-        binding.sizesSection.sectionSeeAllBtn.addPressEffect {
-            filtersVM.clearFilters()
-            view?.post {
-                findNavController().navigate(R.id.templateCategoriesFragment, null, navOptions)
-            }
-        }
+        // "See all" under Canvas Sizes shows the rest of the canvas sizes, which is exactly
+        // what the New Canvas sheet lists. It used to open the template categories screen —
+        // a different section's destination entirely.
+        binding.sizesSection.sectionSeeAllBtn.addPressEffect { openNewCanvasSheet() }
 
     }
 
@@ -996,9 +994,11 @@ class HomeFragment : androidx.fragment.app.Fragment() {
         _binding?.sizesRV?.adapter = null
         _binding?.categoriesRV?.adapter = null
         _binding?.popularTemplateRV?.adapter = null
-        loadingDialog?.dismiss()
-        loadingDialog = null
-        dialogBinding = null
+        // Go through dismissLoadingDialog() rather than dismiss() directly: the dialog's
+        // spinner is an infinite ObjectAnimator, and a running animator is held by the
+        // main thread's AnimationHandler, so dismissing without cancelling leaks the
+        // dialog's view tree.
+        dismissLoadingDialog()
         super.onDestroyView()
         _binding = null
     }
