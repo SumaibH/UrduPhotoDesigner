@@ -18,6 +18,7 @@ import com.webscare.urducanvas.common.utils.isDarkModeEnabled
 import com.webscare.urducanvas.common.utils.startShimmerSoft
 import com.webscare.urducanvas.data.model.TutorialVideo
 import com.webscare.urducanvas.databinding.LayoutTutorialItemBinding
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 class TutorialsAdapter(
@@ -97,9 +98,12 @@ class TutorialsAdapter(
         }
     }
 
+    // Locale.US on purpose: the ".0" trim below matches a dot, and on an Urdu or Arabic
+    // locale the default format would produce a different separator — and Eastern Arabic
+    // digits — leaving "١٫٢K" with the trim silently doing nothing.
     private fun formatViews(views: Long): String = when {
-        views >= 1_000_000 -> String.format("%.1fM", views / 1_000_000f).replace(".0", "")
-        views >= 1_000 -> String.format("%.1fK", views / 1_000f).replace(".0", "")
+        views >= 1_000_000 -> String.format(Locale.US, "%.1fM", views / 1_000_000f).replace(".0", "")
+        views >= 1_000 -> String.format(Locale.US, "%.1fK", views / 1_000f).replace(".0", "")
         else -> views.toString()
     }
 
