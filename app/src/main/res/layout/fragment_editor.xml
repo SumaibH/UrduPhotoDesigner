@@ -473,7 +473,7 @@
         android:layout_height="wrap_content"
         android:background="@drawable/alignment_kit_bg"
         android:orientation="vertical"
-        android:padding="6dp"
+        android:padding="@dimen/align_kit_padding"
         android:translationZ="6dp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/canvasContainer"
@@ -482,77 +482,77 @@
 
         <ImageView
             android:id="@+id/leftAlign"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
+            android:layout_width="@dimen/align_kit_button"
+            android:layout_height="@dimen/align_kit_button"
             android:background="@drawable/button_bg"
             android:backgroundTint="@color/contrast"
             android:foreground="?selectableItemBackground"
-            android:padding="6dp"
+            android:padding="@dimen/align_kit_padding"
             android:src="@drawable/ic_left"
             android:tooltipText="Align Left"
             app:tint="@color/black" />
 
         <ImageView
             android:id="@+id/rightAlign"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_marginTop="6dp"
+            android:layout_width="@dimen/align_kit_button"
+            android:layout_height="@dimen/align_kit_button"
+            android:layout_marginTop="@dimen/align_kit_gap"
             android:background="@drawable/button_bg"
             android:backgroundTint="@color/contrast"
             android:foreground="?selectableItemBackground"
-            android:padding="6dp"
+            android:padding="@dimen/align_kit_padding"
             android:src="@drawable/ic_right"
             android:tooltipText="Align Right"
             app:tint="@color/black" />
 
         <ImageView
             android:id="@+id/center_horizontal"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_marginTop="6dp"
+            android:layout_width="@dimen/align_kit_button"
+            android:layout_height="@dimen/align_kit_button"
+            android:layout_marginTop="@dimen/align_kit_gap"
             android:background="@drawable/button_bg"
             android:backgroundTint="@color/contrast"
             android:foreground="?selectableItemBackground"
-            android:padding="6dp"
+            android:padding="@dimen/align_kit_padding"
             android:src="@drawable/ic_center_vertical"
             android:tooltipText="Align Center Horizontal"
             app:tint="@color/black" />
 
         <ImageView
             android:id="@+id/center_vertical"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_marginTop="6dp"
+            android:layout_width="@dimen/align_kit_button"
+            android:layout_height="@dimen/align_kit_button"
+            android:layout_marginTop="@dimen/align_kit_gap"
             android:background="@drawable/button_bg"
             android:backgroundTint="@color/contrast"
             android:foreground="?selectableItemBackground"
-            android:padding="6dp"
+            android:padding="@dimen/align_kit_padding"
             android:src="@drawable/ic_center_horizontal"
             android:tooltipText="Align Center Vertical"
             app:tint="@color/black" />
 
         <ImageView
             android:id="@+id/topAlign"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_marginTop="6dp"
+            android:layout_width="@dimen/align_kit_button"
+            android:layout_height="@dimen/align_kit_button"
+            android:layout_marginTop="@dimen/align_kit_gap"
             android:background="@drawable/button_bg"
             android:backgroundTint="@color/contrast"
             android:foreground="?selectableItemBackground"
-            android:padding="6dp"
+            android:padding="@dimen/align_kit_padding"
             android:src="@drawable/ic_top"
             android:tooltipText="Align Top"
             app:tint="@color/black" />
 
         <ImageView
             android:id="@+id/bottomAlign"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_marginTop="6dp"
+            android:layout_width="@dimen/align_kit_button"
+            android:layout_height="@dimen/align_kit_button"
+            android:layout_marginTop="@dimen/align_kit_gap"
             android:background="@drawable/button_bg"
             android:backgroundTint="@color/contrast"
             android:foreground="?selectableItemBackground"
-            android:padding="6dp"
+            android:padding="@dimen/align_kit_padding"
             android:src="@drawable/ic_bottom"
             android:tooltipText="Align Bottom"
             app:tint="@color/black" />
@@ -561,18 +561,18 @@
             android:id="@+id/view"
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="@dimen/align_kit_gap"
             android:background="@color/appColor" />
 
         <LinearLayout
             android:id="@+id/alignType"
-            android:layout_width="30dp"
+            android:layout_width="@dimen/align_kit_button"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="@dimen/align_kit_gap"
             android:background="@drawable/button_bg"
             android:backgroundTint="@color/contrast"
             android:orientation="vertical"
-            android:padding="6dp">
+            android:padding="@dimen/align_kit_padding">
 
             <ImageView
                 android:id="@+id/art_board"
@@ -588,7 +588,7 @@
                 android:id="@+id/selection"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="@dimen/align_kit_type_gap"
                 android:contentDescription="@string/align_to_selection"
                 android:foreground="?selectableItemBackground"
                 android:src="@drawable/ic_align_selection_stroke"

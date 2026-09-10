@@ -3341,45 +3341,6 @@ class EditorFragment : Fragment() {
         }
     }
 
-    /**
-     * Where the guideline rests, in pixels from the top of the content box — which is the
-     * same thing as saying how much height the panel gets.
-     *
-     * A flat 35% of the screen is right on a tall phone and nowhere near enough on a short
-     * one. At 360×640dp the panel came out 224dp: the effects rail showed two of its four
-     * categories, and every slider below Radius was cut off with no way to reach it. So a
-     * short screen gets a floor instead of a fraction — capped at [MAX_PANEL_FRACTION] so
-     * the canvas is never the smaller half.
-     */
-    private fun panelRestingGuidePx(rootHeight: Int): Int {
-        val minPanelPx = (MIN_PANEL_HEIGHT_DP * resources.displayMetrics.density).toInt()
-        val floorPx = minPanelPx.coerceAtMost((rootHeight * MAX_PANEL_FRACTION).toInt())
-        val panelPx = (rootHeight * DEFAULT_PANEL_FRACTION).toInt().coerceAtLeast(floorPx)
-        return rootHeight - panelPx
-    }
-
-    /**
-     * Parks the static [R.id.centerGuide] on the same line the panel rests at.
-     *
-     * The canvas, the context tools row and the add button all sit above that guideline,
-     * and it is deliberately *not* the one the sheet animates — resizing the canvas on
-     * every drag frame would be both expensive and ugly. But it was pinned at a hard 65%,
-     * so once the resting panel grew past that on a short screen it covered the bottom of
-     * the canvas and swallowed the add button. Same number, computed once per layout.
-     */
-    private fun syncStaticCenterGuide(root: ConstraintLayout, rootHeight: Int) {
-        val guide = root.findViewById<Guideline>(R.id.centerGuide) ?: return
-        val restingPx = panelRestingGuidePx(rootHeight)
-        val lp = guide.layoutParams as? ConstraintLayout.LayoutParams ?: return
-        if (lp.guideBegin == restingPx) return
-        lp.guideBegin = restingPx
-        // guidePercent wins over guideBegin when both are set, and the XML declares 65%.
-        // Clearing it is what actually moves the guideline — PanelSheetBehavior does the
-        // same thing to the expandable one.
-        lp.guidePercent = -1f
-        guide.layoutParams = lp
-    }
-
     private fun initPanelSheet() {
         val root = _binding?.root as? ConstraintLayout ?: return
         val guideline = root.findViewById<Guideline>(R.id.centerExpandableGuide) ?: return
@@ -3391,8 +3352,7 @@ class EditorFragment : Fragment() {
             if (rootHeight <= 0) return@doOnLayout
             val b = _binding ?: return@doOnLayout
 
-            syncStaticCenterGuide(root, rootHeight)
-            val collapsedPx = panelRestingGuidePx(rootHeight)   // resting position
+            val collapsedPx = (rootHeight * 0.65f).toInt()   // resting position
 
             val expandedPx = 0
 
@@ -3427,7 +3387,34 @@ class EditorFragment : Fragment() {
         if (!registeredDragHandles.contains(view)) {
             registeredDragHandles.add(view)
             b.panelNavContainer.dragHandles = ArrayList(registeredDragHandles)
+            dropHandleWhenDetached(view)
         }
+    }
+
+    /**
+     * Drops a panel's drag handle the moment that panel's view leaves the window.
+     *
+     * The editor outlives every panel that hands it a handle, and nothing was giving the
+     * handle back — so closing a panel left [currentDragHandle] pointing at a destroyed
+     * ConstraintLayout for as long as the editor was open. LeakCanary caught it as
+     * `EditorFragment.currentDragHandle`. Listening on the view itself keeps the cleanup
+     * next to the registration instead of asking every panel to remember to detach.
+     */
+    private fun dropHandleWhenDetached(view: View) {
+        if (view.getTag(R.id.tag_drag_handle_watched) == true) return
+        view.setTag(R.id.tag_drag_handle_watched, true)
+        view.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+            override fun onViewAttachedToWindow(v: View) = Unit
+
+            override fun onViewDetachedFromWindow(v: View) {
+                v.removeOnAttachStateChangeListener(this)
+                v.setTag(R.id.tag_drag_handle_watched, null)
+                v.setOnTouchListener(null)
+                if (currentDragHandle === v) currentDragHandle = null
+                registeredDragHandles.remove(v)
+                _binding?.panelNavContainer?.dragHandles = ArrayList(registeredDragHandles)
+            }
+        })
     }
 
     /** Called by child panels to hand their drag handle to the sheet behavior. */
@@ -3439,6 +3426,7 @@ class EditorFragment : Fragment() {
         isPanelExpandable = true
         currentDragHandle = handleView
         handleView.setOnTouchListener(null)  // ensure any block is cleared
+        dropHandleWhenDetached(handleView)
         // Sheet may not exist yet if layout hasn't run — post it
         val rootView = _binding?.root ?: return
         rootView.post {
@@ -3448,8 +3436,7 @@ class EditorFragment : Fragment() {
             val rootHeight = (root.height - root.paddingTop - root.paddingBottom)
                 .takeIf { it > 0 } ?: return@post
 
-            syncStaticCenterGuide(root, rootHeight)
-            val collapsedPx = panelRestingGuidePx(rootHeight)
+            val collapsedPx = (rootHeight * 0.65f).toInt()
             val expandedPx = 0
 
             // Reset drag handles tracker
@@ -3820,17 +3807,5 @@ class EditorFragment : Fragment() {
 
         /** Slide/fade out — shorter, so dismissal never feels sticky. */
         private const val CHAR_BAR_HIDE_MS = 180L
-
-        /** Share of the screen the resting panel takes when there is room for it. */
-        private const val DEFAULT_PANEL_FRACTION = 0.35f
-
-        /** Never let the panel take more than this, however short the screen. */
-        private const val MAX_PANEL_FRACTION = 0.55f
-
-        /**
-         * Enough for the panel header, the tab row and roughly four rows of controls.
-         * Below this the effects and filter panels start hiding controls off the bottom.
-         */
-        private const val MIN_PANEL_HEIGHT_DP = 320
     }
 }

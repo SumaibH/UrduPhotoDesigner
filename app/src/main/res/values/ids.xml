@@ -10,4 +10,10 @@
         it off the view sidesteps both.
     -->
     <item name="tag_template" type="id" />
+
+    <!--
+        Marks a panel drag handle that EditorFragment is already watching for detach, so
+        re-entering a panel does not stack a second listener on the same view.
+    -->
+    <item name="tag_drag_handle_watched" type="id" />
 </resources>

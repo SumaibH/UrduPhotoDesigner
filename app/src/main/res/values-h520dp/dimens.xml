@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Editor chrome, medium tier: 520dp to 639dp of available height, which is most
+    phones held in portrait. See values/dimens.xml for what these are and why they are
+    bucketed. Sizes and gaps move together so the proportions hold across tiers.
+-->
+<resources>
+    <dimen name="align_kit_padding">6dp</dimen>
+    <dimen name="align_kit_button">28dp</dimen>
+    <dimen name="align_kit_gap">5dp</dimen>
+    <dimen name="align_kit_type_gap">10dp</dimen>
+
+    <dimen name="panel_header_btn">28dp</dimen>
+    <dimen name="panel_header_btn_padding">7dp</dimen>
+    <dimen name="panel_header_gap">9dp</dimen>
+    <dimen name="panel_header_title_size">15sp</dimen>
+    <dimen name="panel_tab_row_height">40dp</dimen>
+    <dimen name="panel_content_top_gap">6dp</dimen>
+    <dimen name="panel_content_bottom_gap">11dp</dimen>
+
+    <dimen name="rail_item_height">32dp</dimen>
+    <dimen name="rail_collapse_height">40dp</dimen>
+</resources>

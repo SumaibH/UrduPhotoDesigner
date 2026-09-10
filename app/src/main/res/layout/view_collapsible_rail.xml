@@ -24,11 +24,11 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:listitem="@layout/item_rail_category" />
 
-    <!-- Bottom Toggle Row (44dp touch target) -->
+    <!-- Bottom toggle row; height is tiered by screen height, see dimens.xml -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/clToggleContainer"
         android:layout_width="0dp"
-        android:layout_height="44dp"
+        android:layout_height="@dimen/rail_collapse_height"
         android:clickable="true"
         android:focusable="true"
         android:foreground="?attr/selectableItemBackground"

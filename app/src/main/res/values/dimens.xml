@@ -12,5 +12,46 @@
         without resizing the artboard. Keep the three values in step.
     -->
     <dimen name="editor_header_base_height">52dp</dimen>
+
+    <!--
+        Editor chrome that has to shrink on a short screen.
+
+        Everything below is bucketed by available height, in three tiers:
+
+            values/          under 520dp   compact   — landscape, split screen, tiny phones
+            values-h520dp/   520 – 639dp   medium    — most phones in portrait
+            values-h640dp/   640dp and up  full      — tall phones and tablets
+
+        Sizes AND the margins between them live here together on purpose. Scaling the
+        buttons without scaling the gaps changes the rhythm of the stack, and the panel
+        stops looking like the same panel from one device to the next.
+
+        The alignment kit is the piece that forces the issue: it is a fixed vertical
+        stack pinned inside the canvas area with nothing to scroll, so its height is
+        just the sum of six buttons, five gaps, the padding, a 1dp divider and the
+        align-target block. At full size that is about 263dp, and the canvas area is
+        only ever ~65% of what is left after the header — 284dp on a 320x569dp phone.
+        Twenty-one dp of headroom is not a margin of safety, hence the middle tier.
+
+        align_kit_padding is both the kit's own inset and each button's icon inset.
+    -->
+    <dimen name="align_kit_padding">5dp</dimen>
+    <dimen name="align_kit_button">26dp</dimen>
+    <dimen name="align_kit_gap">4dp</dimen>
+    <dimen name="align_kit_type_gap">9dp</dimen>
+
+    <!-- Panel header: the back button, its title and the tab row beneath them. -->
+    <dimen name="panel_header_btn">26dp</dimen>
+    <dimen name="panel_header_btn_padding">6dp</dimen>
+    <dimen name="panel_header_gap">7dp</dimen>
+    <dimen name="panel_header_title_size">14sp</dimen>
+    <dimen name="panel_tab_row_height">36dp</dimen>
+    <dimen name="panel_content_top_gap">4dp</dimen>
+    <dimen name="panel_content_bottom_gap">8dp</dimen>
+
+    <!-- Effects rail: the category list down the panel's left edge, and its collapse row. -->
+    <dimen name="rail_item_height">30dp</dimen>
+    <dimen name="rail_collapse_height">34dp</dimen>
+
     <item name="shimmer_highlight_alpha" format="float" type="dimen">1.0</item>
 </resources>
