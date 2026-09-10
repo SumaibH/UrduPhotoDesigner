@@ -1,7 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Home header gradient.
+
+    The angle must stay a multiple of 45. GradientDrawable throws while inflating
+    otherwise, and because this is Home's root background that takes the whole screen
+    down on first launch — the app never gets past the splash.
+
+    The design calls for 115°, and that was carried in a drawable-v26/ copy on the
+    assumption that API 26 lifted the restriction. It does not, at least not everywhere:
+    a Huawei JKM-LX1 on Android 9 (API 28) still throws on 115. Since the app cannot rely
+    on a minSdk floor to make the angle legal, there is no version qualifier that helps —
+    135 is the nearest legal angle, is visually near-identical, and works on everything.
+-->
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
     <gradient
-        android:angle="115"
+        android:angle="135"
         android:startColor="@color/home_header_start"
         android:centerColor="@color/home_header_center"
         android:endColor="@color/home_header_end"
