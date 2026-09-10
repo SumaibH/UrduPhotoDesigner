@@ -111,6 +111,9 @@
     <color name="surface_1">#F7F7F7</color>
     <color name="surface_2">#FFFFFF</color>
     <color name="surface_stroke">#ECECEC</color>
+    <!-- Hairline separators inside a list. Lighter than surface_stroke so a long
+         run of rows reads as one surface rather than a stack of boxes. -->
+    <color name="surface_stroke_subtle">#F1F1F1</color>
     <!-- Frame + icon inside a size tile: soft enough to read as an outline. -->
     <color name="tile_frame">#C3C9D2</color>
     <color name="screen_bg_transparent">#00FFFFFF</color>
