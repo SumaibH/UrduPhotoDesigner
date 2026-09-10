@@ -56,9 +56,42 @@ class SpringNestedScrollView @JvmOverloads constructor(
     /** Fired when a drag ends, from either path. */
     var onGestureEnd: (() -> Unit)? = null
 
+    /**
+     * The content's velocity when the last gesture let go, in scroll pixels per second:
+     * positive means the content was moving up (a header would be collapsing), negative
+     * down. Zero for a release without a fling. Valid inside [onGestureEnd].
+     */
+    var releaseVelocityY = 0f
+        private set
+
+    /** Which way the last drag moved the content: 1 up (collapsing), -1 down, 0 unknown. */
+    var lastDragDirection = 0
+        private set
+
+    /** The child list driving the current nested gesture, if any. */
+    private var nestedTarget: android.view.View? = null
+
     override fun onStartNestedScroll(child: android.view.View, target: android.view.View, axes: Int, type: Int): Boolean {
-        if (type == androidx.core.view.ViewCompat.TYPE_TOUCH) isGestureInProgress = true
+        if (type == androidx.core.view.ViewCompat.TYPE_TOUCH) {
+            isGestureInProgress = true
+            releaseVelocityY = 0f
+            lastDragDirection = 0
+            nestedTarget = target
+        }
         return super.onStartNestedScroll(child, target, axes, type)
+    }
+
+    override fun onNestedPreScroll(target: android.view.View, dx: Int, dy: Int, consumed: IntArray, type: Int) {
+        if (type == androidx.core.view.ViewCompat.TYPE_TOUCH && dy != 0) {
+            lastDragDirection = if (dy > 0) 1 else -1
+        }
+        super.onNestedPreScroll(target, dx, dy, consumed, type)
+    }
+
+    override fun onNestedPreFling(target: android.view.View, velocityX: Float, velocityY: Float): Boolean {
+        // The child reports its fling before it tells us the gesture is over.
+        releaseVelocityY = velocityY
+        return super.onNestedPreFling(target, velocityX, velocityY)
     }
 
     override fun onStopNestedScroll(target: android.view.View, type: Int) {
@@ -67,6 +100,13 @@ class SpringNestedScrollView @JvmOverloads constructor(
             isGestureInProgress = false
             onGestureEnd?.invoke()
         }
+    }
+
+    /** Ends any fling in flight — this view's own, and the child list's if it started one. */
+    fun stopFlings() {
+        lastFlingVelocity = 0f
+        fling(0)
+        (nestedTarget as? androidx.recyclerview.widget.RecyclerView)?.stopScroll()
     }
 
     private var initialX = 0f
@@ -119,16 +159,10 @@ class SpringNestedScrollView @JvmOverloads constructor(
         trackVelocity(ev)
 
         when (ev.actionMasked) {
-            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                isGestureInProgress = false
-                onGestureEnd?.invoke()
-            }
-
-            MotionEvent.ACTION_DOWN -> isGestureInProgress = true
-        }
-
-        when (ev.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
+                isGestureInProgress = true
+                releaseVelocityY = 0f
+                lastDragDirection = 0
                 springAnim?.cancel()
                 lastFlingVelocity = 0f
                 lastY = ev.rawY
@@ -140,6 +174,7 @@ class SpringNestedScrollView @JvmOverloads constructor(
             MotionEvent.ACTION_MOVE -> {
                 val dy = lastY - ev.rawY
                 lastY = ev.rawY
+                if (abs(dy) > 1f) lastDragDirection = if (dy > 0) 1 else -1
 
                 val pullUp   = dy < 0 && isAtTop    && !canScrollVertically(-1)
                 val pullDown = dy > 0 && isAtBottom && !canScrollVertically(1)
@@ -152,18 +187,31 @@ class SpringNestedScrollView @JvmOverloads constructor(
 
             MotionEvent.ACTION_UP,
             MotionEvent.ACTION_CANCEL -> {
+                // Finger velocity is positive downwards; content velocity is the reverse.
                 val velocityY = captureVelocityY()
                 recycleVelocity()
 
                 val child = scrollChild
                 if (child != null && (isBouncing || abs(child.translationY) > 0f)) {
                     springBack(velocityY)
+                    endGesture(-velocityY)
                     return true
                 }
+                // The gesture ends after the parent has had its say, so a listener that
+                // wants to take over from the fling this starts can stop it.
+                val handled = super.onTouchEvent(ev)
+                endGesture(-velocityY)
+                return handled
             }
         }
 
         return super.onTouchEvent(ev)
+    }
+
+    private fun endGesture(contentVelocityY: Float) {
+        releaseVelocityY = contentVelocityY
+        isGestureInProgress = false
+        onGestureEnd?.invoke()
     }
 
     override fun fling(velocityY: Int) {

@@ -15,6 +15,9 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
+import android.widget.ImageView
+import kotlin.math.abs
 import android.view.ViewOutlineProvider
 import android.view.animation.LinearInterpolator
 import androidx.activity.result.contract.ActivityResultContracts
@@ -99,6 +102,9 @@ class HomeFragment : androidx.fragment.app.Fragment() {
     /** In-flight settle animation for the header; cancelled on a new gesture. */
     private var headerSnapSpring: SpringAnimation? = null
     private var headerCornerRadius = -1f
+
+    /** True while the snap spring is the one scrolling the feed. */
+    private var snapDriving = false
     private var headerBackground: GradientDrawable? = null
 
     val navOptions = NavOptions.Builder().setLaunchSingleTop(true).build()
@@ -248,14 +254,16 @@ class HomeFragment : androidx.fragment.app.Fragment() {
         binding.contentScroll.setOnScrollChangeListener(
             androidx.core.widget.NestedScrollView.OnScrollChangeListener { _, _, scrollY, _, _ ->
                 applyHeaderProgress(scrollY)
-                scheduleHeaderSnap()
+                // The snap's own scrolls must not re-arm the settle, which would cancel it
+                // on its very first frame and leave the header creeping in 90ms steps.
+                if (!snapDriving) scheduleHeaderSnap()
             }
         )
 
-        // The snap must not fight the finger. SpringNestedScrollView reports the
-        // gesture from both paths — a direct drag and one that starts on a child
-        // list and reaches the scroll view through nested scrolling.
-        binding.contentScroll.onGestureEnd = { scheduleHeaderSnap() }
+        // Snap the moment the finger lifts. SpringNestedScrollView reports the gesture
+        // from both paths — a direct drag and one that starts on a child list and
+        // reaches the scroll view through nested scrolling — with its release velocity.
+        binding.contentScroll.onGestureEnd = { snapHeaderOnRelease() }
 
         // Sync header once scroll view settles its restored scroll position
         binding.contentScroll.post {
@@ -266,8 +274,9 @@ class HomeFragment : androidx.fragment.app.Fragment() {
     }
 
     /**
-     * Waits for the feed to go quiet — a lift is usually followed by a fling, and
-     * snapping on ACTION_UP alone would yank the header out from under it.
+     * Waits for the feed to go quiet, then settles a header a fling left half-way.
+     * Only flings come through here; a plain release snaps at once in
+     * [snapHeaderOnRelease].
      */
     private fun scheduleHeaderSnap() {
         val scroll = _binding?.contentScroll ?: return
@@ -278,42 +287,80 @@ class HomeFragment : androidx.fragment.app.Fragment() {
         scroll.postDelayed(headerSnapRunnable, HEADER_SNAP_SETTLE_MS)
     }
 
-    /**
-     * Settles a half-collapsed header onto whichever end it is nearest, by
-     * scrolling the feed — the header follows from that, so the two never
-     * disagree about where they are.
-     */
     private val headerSnapRunnable = Runnable {
         val b = _binding ?: return@Runnable
         if (b.contentScroll.isGestureInProgress) return@Runnable
-        if (expandedHeaderHeight <= 0) return@Runnable
-        if (headerProgress <= 0f || headerProgress >= 1f) return@Runnable
+        val target = headerSnapTarget(b.contentScroll.lastDragDirection) ?: return@Runnable
+        springHeaderTo(target, startVelocity = 0f)
+    }
 
         val range = (expandedHeaderHeight - collapsedHeaderHeight()).coerceAtLeast(1)
-        val target = if (headerProgress >= 0.5f) range else 0
-        springHeaderTo(target)
+    /**
+     * The finger just lifted. A real flick is left to the feed's own fling, and the
+     * settle timer catches it if it dies between the two header states; anything gentler
+     * snaps right now, in the direction the finger was moving — a short pull up is
+     * enough to collapse, a short pull down enough to expand — carrying the release
+     * velocity into the spring so the motion never breaks.
+     */
+    private fun snapHeaderOnRelease() {
+        val b = _binding ?: return
+        val velocity = b.contentScroll.releaseVelocityY
+        val direction = b.contentScroll.lastDragDirection
+        if (BuildConfig.DEBUG) {
+            Log.d(
+                "HeaderSnap", "release: velocity=${velocity.toInt()}px/s direction=$direction " +
+                        "progress=${"%.2f".format(headerProgress)} scrollY=${b.contentScroll.scrollY}"
+            )
+        }
+        if (abs(velocity) >= HEADER_FLING_VELOCITY) {
+            scheduleHeaderSnap()
+            return
+        }
+        b.contentScroll.removeCallbacks(headerSnapRunnable)
+        val target = headerSnapTarget(direction) ?: return
+        b.contentScroll.stopFlings()
+        springHeaderTo(target, startVelocity = velocity)
     }
 
     /**
-     * Settles the feed onto [targetY] on a spring rather than a fixed-duration
-     * scroll, so the header eases in with a little overshoot instead of arriving
-     * at a constant speed and stopping dead.
-     *
-     * The spring drives the scroll position; the header follows from that, so
-     * the two cannot disagree about where they are.
+     * Where a half-collapsed header should settle — collapsed or expanded, as a scroll
+     * offset — or null when it is already resting at either end. [direction] is which
+     * way the content was last moving: 1 up (collapsing), -1 down (expanding), 0 unknown.
      */
-    private fun springHeaderTo(targetY: Int) {
+    private fun headerSnapTarget(direction: Int): Int? {
+        if (expandedHeaderHeight <= 0) return null
+        if (headerProgress <= 0f || headerProgress >= 1f) return null
+        val collapse = when {
+            direction > 0 -> headerProgress >= HEADER_SNAP_COMMIT
+            direction < 0 -> headerProgress > 1f - HEADER_SNAP_COMMIT
+            else -> headerProgress >= 0.5f
+        }
+        return if (collapse) range else 0
+    }
+
+    /**
+     * Settles the feed onto [targetY] on a spring, [startVelocity] carried in from the
+     * finger, so the header lands with a little give rather than stopping dead.
+     *
+     * The spring drives the scroll position; the header follows from that, so the two
+     * cannot disagree about where they are.
+     */
+    private fun springHeaderTo(targetY: Int, startVelocity: Float) {
         val scroll = _binding?.contentScroll ?: return
         headerSnapSpring?.cancel()
 
         val start = scroll.scrollY.toFloat()
         if (start == targetY.toFloat()) return
 
+        if (BuildConfig.DEBUG) {
+            Log.d("HeaderSnap", "spring: $start -> $targetY at ${startVelocity.toInt()}px/s")
+        }
         headerSnapSpring = SpringAnimation(FloatValueHolder(start)).apply {
             setStartValue(start)
             spring = SpringForce(targetY.toFloat()).apply {
-                stiffness = SpringForce.STIFFNESS_LOW
-                dampingRatio = SpringForce.DAMPING_RATIO_LOW_BOUNCY
+            setStartVelocity(startVelocity)
+                stiffness = HEADER_SNAP_STIFFNESS
+                dampingRatio = HEADER_SNAP_DAMPING
             }
             addUpdateListener { _, value, _ ->
                 val b = _binding ?: return@addUpdateListener
@@ -323,7 +370,9 @@ class HomeFragment : androidx.fragment.app.Fragment() {
                     return@addUpdateListener
                 }
                 b.contentScroll.scrollTo(0, value.toInt().coerceAtLeast(0))
+                snapDriving = true
             }
+                snapDriving = false
             addEndListener { _, _, _, _ -> headerSnapSpring = null }
             start()
         }
@@ -1022,4 +1071,18 @@ class HomeFragment : androidx.fragment.app.Fragment() {
         /** Quiet time after the last scroll event before the header snaps. */
         private const val HEADER_SNAP_SETTLE_MS = 90L
     }
+
+        /**
+         * How far a pull in one direction has to get before a release commits to it:
+         * this much of the collapse to snap closed on a pull up, this much of the
+         * expansion to snap open on a pull down. Small, so a deliberate nudge is enough.
+         */
+        private const val HEADER_SNAP_COMMIT = 0.22f
+
+        /** Releases faster than this, in px/s, are flings: left to run, settled after. */
+        private const val HEADER_FLING_VELOCITY = 1000f
+
+        /** The snap spring: brisk, with a little give at the end. */
+        private const val HEADER_SNAP_STIFFNESS = 700f
+        private const val HEADER_SNAP_DAMPING = 0.72f
 }
