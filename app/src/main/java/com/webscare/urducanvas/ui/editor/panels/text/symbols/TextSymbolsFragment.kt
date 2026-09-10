@@ -114,12 +114,22 @@ class TextSymbolsFragment : Fragment() {
 
         if (symbol.isDiacritic) {
             viewModel.appendDiacriticToSelectedChar(index, symbol.glyph)
+            return
+        }
+
+        // Kashida is not an ornament. It stretches the join between two letters, so it
+        // belongs to the token as an elongation rather than as a mark dropped on top of
+        // the composition — which is what treating it as a floating accent produced: a
+        // tatweel sitting loose on the canvas, unattached to any letter.
+        if (symbol.id == SYMBOL_KASHIDA && element.calligraphyData != null) {
+            viewModel.adjustKashidaOnSelectedTokens(+1)
+            return
+        }
+
+        if (element.calligraphyData != null) {
+            viewModel.addFloatingCalligraphyAccent(symbol.glyph)
         } else {
-            if (element.calligraphyData != null) {
-                viewModel.addFloatingCalligraphyAccent(symbol.glyph)
-            } else {
-                viewModel.appendDiacriticToSelectedChar(index, symbol.glyph)
-            }
+            viewModel.appendDiacriticToSelectedChar(index, symbol.glyph)
         }
     }
 
@@ -130,6 +140,9 @@ class TextSymbolsFragment : Fragment() {
     }
 
     companion object {
+        /** Matches the SymbolItem id in SymbolsRepository. */
+        private const val SYMBOL_KASHIDA = "kashida"
+
         fun newInstance(): TextSymbolsFragment {
             return TextSymbolsFragment()
         }

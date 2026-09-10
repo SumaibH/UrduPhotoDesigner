@@ -188,19 +188,50 @@ data class TextToken(
     /**
      * Complete display text including diacritics and kashida elongation.
      */
-    fun getFullDisplayText(): String {
-        val base = if (kashidaCount > 0) {
-            val tatweel = "ـ".repeat(kashidaCount)
-            // Insert tatweel before last char if possible or append
-            if (shapedText.length > 1) {
-                shapedText.substring(0, shapedText.length - 1) + tatweel + shapedText.last()
-            } else {
-                shapedText + tatweel
+    fun getFullDisplayText(): String = elongate(shapedText, kashidaCount) + diacritics
+
+    /**
+     * True when this token has a connection a kashida could stretch.
+     *
+     * Isolated letters have none on either side, so asking for one is meaningless —
+     * the caller should leave [kashidaCount] alone rather than store a value that can
+     * never be drawn.
+     */
+    fun canTakeKashida(): Boolean =
+        shapedText.endsWith(ZWJ) || shapedText.startsWith(ZWJ)
+
+    companion object {
+        private const val ZWJ = '‍'
+        private const val TATWEEL = "ـ"
+
+        /** Upper bound on elongation, past which the stroke stops reading as a letter. */
+        const val MAX_KASHIDA = 8
+
+        /**
+         * Stretches a shaped token by [count] tatweel, at a join that actually exists.
+         *
+         * A kashida elongates a *connection*, so it can only sit where one letter joins
+         * the next. [CalligraphyShapingHelper] already worked out which sides join and
+         * recorded it as the ZWJ markers around the letter, so those are read here rather
+         * than re-deriving the joining class — the shaping is the authority.
+         *
+         * The previous version pushed the tatweel in before the last character whatever
+         * that character was. On an isolated letter — every one of ا د ذ ر ز و ڑ ے, which
+         * is most of "اردو" — that appended a tatweel to a letter that joins to nothing,
+         * and it rendered as a dash floating in space.
+         */
+        private fun elongate(shaped: String, count: Int): String {
+            if (count <= 0 || shaped.isEmpty()) return shaped
+            val tatweel = TATWEEL.repeat(count.coerceAtMost(MAX_KASHIDA))
+            return when {
+                // Joins forward: stretch the outgoing connection, inside the trailing ZWJ.
+                shaped.last() == ZWJ -> shaped.dropLast(1) + tatweel + ZWJ
+                // Joins backward only: stretch the incoming connection, after the ZWJ.
+                shaped.first() == ZWJ -> ZWJ + tatweel + shaped.drop(1)
+                // Isolated: nothing to stretch, so nothing is drawn.
+                else -> shaped
             }
-        } else {
-            shapedText
         }
-        return base + diacritics
     }
 }
 

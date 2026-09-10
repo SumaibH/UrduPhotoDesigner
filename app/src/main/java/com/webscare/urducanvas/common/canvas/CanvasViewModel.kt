@@ -7179,11 +7179,48 @@ class CanvasViewModel @Inject constructor(
         notifyCanvasUpdated()
     }
 
+    /**
+     * Stretches the focused letter by one kashida, or by [delta] of them.
+     *
+     * A kashida elongates the join between two letters, so it only means anything on a
+     * token that actually connects to a neighbour — [TextToken.canTakeKashida]. Asking
+     * for one on an isolated letter is left alone rather than stored, because the
+     * renderer would have nowhere to put it.
+     *
+     * With no token focused this applies to every token that can take it, matching how
+     * the rest of the text properties behave in calligraphy mode.
+     */
+    fun adjustKashidaOnSelectedTokens(delta: Int) {
+        val currentList = _canvasElements.value?.toMutableList() ?: return
+        val selected = currentList.firstOrNull { it.isSelected && it.type == ElementType.TEXT } ?: return
+        val cData = selected.calligraphyData ?: return
+
+        val targets = cData.getActiveToken()?.let { listOf(it) } ?: cData.tokens
+        val eligible = targets.filter { it.canTakeKashida() }
+        if (eligible.isEmpty()) return
+
+        val before = selected.snapshotForUndo()
+        eligible.forEach {
+            it.kashidaCount = (it.kashidaCount + delta).coerceIn(0, TextToken.MAX_KASHIDA)
+        }
+        selected.recomputeCalligraphyBounds()
+
+        val after = selected.snapshotForUndo()
+        _canvasActions.push(CanvasAction.UpdateElement(selected.id, after, before))
+        _redoStack.clear()
+        _canvasElements.value = currentList
+        notifyUndoRedoChanged()
+        markChanged()
+        notifyCanvasUpdated()
+    }
+
     fun addFloatingCalligraphyAccent(symbol: String) {
         val currentList = _canvasElements.value?.toMutableList() ?: return
         val selected = currentList.firstOrNull { it.isSelected && it.type == ElementType.TEXT } ?: return
         val cData = selected.calligraphyData ?: return
-        val before = selected.copy(context = null)
+        // snapshotForUndo, not copy: the accent list below is mutated in place, and a
+        // shallow copy would leave before and after pointing at the same list.
+        val before = selected.snapshotForUndo()
 
         val accent = FloatingAccent(
             symbol = symbol,
@@ -7193,7 +7230,7 @@ class CanvasViewModel @Inject constructor(
         )
         cData.floatingAccents.add(accent)
 
-        val after = selected.copy(context = null)
+        val after = selected.snapshotForUndo()
         _canvasActions.push(CanvasAction.UpdateElement(selected.id, after, before))
         _redoStack.clear()
         _canvasElements.value = currentList
