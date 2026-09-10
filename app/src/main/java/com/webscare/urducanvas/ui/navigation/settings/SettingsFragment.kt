@@ -54,9 +54,35 @@ class SettingsFragment : androidx.fragment.app.Fragment() {
         // Edge to edge: the window no longer reserves the status bar, so leave the margin here.
         view.applyStatusBarTopPadding()
 
+        alignRowIcons()
         observeSubscription()
         setEvents()
         setVersionInfo()
+    }
+
+    /**
+     * Pins every settings row's leading icon into one fixed-width box.
+     *
+     * Compound drawables are laid out at their intrinsic width, and these icons range
+     * from 12dp to 18dp, so each row's label started at a different x — "Request a
+     * Feature" sat visibly further left than the rows above and below it. Centring each
+     * glyph in a common box lines the labels up without stretching any of the artwork.
+     */
+    private fun alignRowIcons() {
+        val b = _binding ?: return
+        val box = (ROW_ICON_BOX_DP * resources.displayMetrics.density).toInt()
+        listOf(
+            b.preferences, b.tutorials, b.support, b.privacy, b.rate,
+            b.whatsappChannel, b.improve, b.requestFeature, b.reportBug
+        ).forEach { row ->
+            val start = row.compoundDrawablesRelative[0] ?: return@forEach
+            val pad = ((box - start.intrinsicWidth) / 2).coerceAtLeast(0)
+            val boxed = android.graphics.drawable.InsetDrawable(start, pad, 0, pad, 0)
+            boxed.setBounds(0, 0, box, start.intrinsicHeight)
+            row.setCompoundDrawablesRelative(
+                boxed, null, row.compoundDrawablesRelative[2], null
+            )
+        }
     }
 
     override fun onResume() {
@@ -252,5 +278,10 @@ class SettingsFragment : androidx.fragment.app.Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    companion object {
+        /** Wide enough for the broadest row icon (18dp) with a little air either side. */
+        private const val ROW_ICON_BOX_DP = 20
     }
 }

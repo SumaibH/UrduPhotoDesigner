@@ -251,7 +251,7 @@
     <string name="terms_of_use">Terms Of Use</string>
     <string name="privacy_policy">Privacy Policy</string>
     <string name="cancel_subscription">Cancel Subscription</string>
-    <string name="rate_the_app">Rate The App</string>
+    <string name="rate_the_app">Rate the App</string>
     <string name="help_us_improve">Help Us Improve</string>
     <string name="current_plan">Current Plan</string>
     <string name="monthly">Monthly</string>
@@ -378,8 +378,8 @@
     <string name="no_ads_ever">No Ads – Ever</string>
     <string name="stickers">Stickers</string>
     <string name="shapes">Shapes</string>
-    <string name="request_for_a_feature">Request a feature</string>
-    <string name="report_a_bug">Report a bug</string>
+    <string name="request_for_a_feature">Request a Feature</string>
+    <string name="report_a_bug">Report a Bug</string>
     <string name="premium_assets_detected">Premium Assets Detected</string>
     <string name="this_project_uses_premium_assets_please_remove_them_or_subscribe_to_export">This project uses premium assets. Please remove them or subscribe to export</string>
     <string name="see_more">See more</string>

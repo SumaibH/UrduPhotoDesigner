@@ -207,10 +207,23 @@ class MainActivity : AppCompatActivity() {
             updateChromeVisibility()
         }
 
+    /**
+     * The destination whose fragment is actually resumed on screen.
+     *
+     * Navigation reports a destination change as soon as the graph moves, which is before
+     * the new fragment has been committed and drawn — so showing the chrome off the
+     * destination alone popped the add button in over the tail of the splash, ahead of
+     * Home. Hiding still keys off the destination, because that has to be immediate;
+     * only showing waits for the fragment to resume.
+     */
+    private var resumedDestinationId: Int? = null
+
     fun updateChromeVisibility() {
         if (_binding == null) return
         val destId = _navController?.currentDestination?.id
-        val isTopLevel = isSplashCompleted && destId in topLevelDestinations
+        val isTopLevel = isSplashCompleted &&
+                destId in topLevelDestinations &&
+                resumedDestinationId == destId
         if (isTopLevel && !bannerAdInitialised) {
             bannerAdInitialised = true
             binding.mainBannerAd.setAdUnitId(BuildConfig.AD_BANNER_MAIN)
@@ -236,6 +249,22 @@ class MainActivity : AppCompatActivity() {
         binding.fabAddImage.addPressEffect {
             pickImageLauncher.launch("image/*")
         }
+
+        // Chrome appears when the destination's fragment is genuinely on screen, not when
+        // the graph says it is on its way there.
+        val navHost = supportFragmentManager.findFragmentById(R.id.nav_host_main) as NavHostFragment
+        navHost.childFragmentManager.registerFragmentLifecycleCallbacks(
+            object : androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks() {
+                override fun onFragmentResumed(
+                    fm: androidx.fragment.app.FragmentManager,
+                    f: androidx.fragment.app.Fragment
+                ) {
+                    resumedDestinationId = _navController?.currentDestination?.id
+                    updateChromeVisibility()
+                }
+            },
+            false
+        )
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
             if (destination.id == R.id.homeFragment && !updateCheckTriggered) {

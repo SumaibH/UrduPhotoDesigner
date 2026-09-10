@@ -246,20 +246,30 @@ class SearchFragment : Fragment() {
         }
     }
 
+    /**
+     * Suggested searches, in English because that is the only language the data is in.
+     *
+     * Search matches against template name, category, subcategory and tags — all of
+     * which the backend stores in English — so the Urdu chips that used to be here could
+     * never return a single result however popular the term was. Every entry below is a
+     * real category or subcategory name, ordered by how many templates carry it, so no
+     * chip is ever a dead end.
+     */
     private val popularKeywords = listOf(
-        "شاعری",
-        "اقوال زریں",
-        "اسلامک",
-        "پوسٹر",
-        "بزنس کارڈ",
-        "یوٹیوب تھمب نیل",
-        "عید مبارک",
-        "جمعتہ المبارک",
-        "شادی کارڈ",
-        "Poetry",
         "Islamic",
-        "Thumbnail",
-        "Poster"
+        "Ramadan",
+        "Shadi Invitation",
+        "Urdu Poetry",
+        "Greetings",
+        "Stickers",
+        "Urdu Posters",
+        "Duaen",
+        "Eid",
+        "Urdu Logos",
+        "Mehndi",
+        "National",
+        "Jumma Mubarak",
+        "Publishing"
     )
 
     private fun setupPopularKeywords() {
