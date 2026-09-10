@@ -4718,7 +4718,15 @@ class CanvasView @JvmOverloads constructor(
             val sw = bmp.width * totalScale
             val sh = bmp.height * totalScale
 
-            if (!allowFreeDrag) {
+            // Only the artboard's own background is pinned so it can never expose bare
+            // canvas. A photo added through "Add Photo" is an ordinary IMAGE element that
+            // merely renders cover-filled, and the user expects to move it.
+            //
+            // Clamping it too made it immovable rather than merely bounded: that entry
+            // point sizes the canvas from the photo, so the cover scale lands the image
+            // exactly on the canvas and xMin == xMax == w/2. coerceIn to a single point
+            // then re-centred it on every frame, silently undoing each drag.
+            if (!allowFreeDrag && e.type == ElementType.BACKGROUND) {
                 val theta = Math.toRadians(e.rotation.toDouble())
                 val cosA = abs(cos(theta))
                 val sinA = abs(sin(theta))

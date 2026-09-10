@@ -1095,7 +1095,13 @@ class CanvasViewModel @Inject constructor(
             val cropH = (maxY - minY + 1).coerceIn(1, bh - minY)
 
             val croppedBitmap = Bitmap.createBitmap(fullBitmap, minX, minY, cropW, cropH)
-            fullBitmap.recycle()
+            // Bitmap.createBitmap is documented to hand back the *source object* when the
+            // requested subset is the whole bitmap and no transform applies. Erasing inside
+            // an image does not shrink its bounding box, so that is the ordinary case here —
+            // and recycling unconditionally then destroyed the very bitmap just kept. The
+            // element survived with its geometry intact but no pixels: base64 encoding a
+            // recycled bitmap returns "", so the image vanished on screen and saved empty.
+            if (croppedBitmap !== fullBitmap) fullBitmap.recycle()
 
             val bitmapData = ImageProcessor.bitmapToBase64Lossless(croppedBitmap)
             val centerX = minX + cropW / 2f
