@@ -504,9 +504,15 @@ class ExportFragment : androidx.fragment.app.Fragment() {
             performExportRendering()
         } else {
             adAnalyticsCoordinator.onAdOpportunity("interstitial_export_start", "interstitial", "export_start")
-            adAnalyticsCoordinator.onAdImpression("interstitial_export_start", "interstitial", "export", "export_start")
             WebsCareAds.showInterstitial(requireActivity(), BuildConfig.AD_INTERSTITIAL_EXPORT) {
-                adAnalyticsCoordinator.onAdDismissed("interstitial_export_start", "interstitial", true)
+                // The impression is decided here, not before the call: the SDK runs this
+                // same lambda whether the ad played or there was nothing to play.
+                val shown = adAnalyticsCoordinator.onAdCompletionCallback(
+                    "interstitial_export_start", "interstitial", "export", "export_start"
+                )
+                if (shown) {
+                    adAnalyticsCoordinator.onAdDismissed("interstitial_export_start", "interstitial", true)
+                }
                 performExportRendering()
             }
         }
@@ -707,9 +713,13 @@ class ExportFragment : androidx.fragment.app.Fragment() {
                     val activity = activity
                     if (activity != null) {
                         adAnalyticsCoordinator.onAdOpportunity("interstitial_export_finish", "interstitial", "export_finish")
-                        adAnalyticsCoordinator.onAdImpression("interstitial_export_finish", "interstitial", "export", "export_finish")
                         WebsCareAds.showInterstitial(activity, BuildConfig.AD_INTERSTITIAL_EXPORT) {
-                            adAnalyticsCoordinator.onAdDismissed("interstitial_export_finish", "interstitial", true)
+                            val shown = adAnalyticsCoordinator.onAdCompletionCallback(
+                                "interstitial_export_finish", "interstitial", "export", "export_finish"
+                            )
+                            if (shown) {
+                                adAnalyticsCoordinator.onAdDismissed("interstitial_export_finish", "interstitial", true)
+                            }
                             performFinishNavigation()
                         }
                     } else {

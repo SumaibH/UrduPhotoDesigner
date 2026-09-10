@@ -165,9 +165,16 @@ class SplashFragment : Fragment(), TextureView.SurfaceTextureListener {
         val activity = activity
         if (activity != null) {
             adAnalyticsCoordinator.onAdOpportunity("app_open_splash", "app_open", "splash_open")
-            adAnalyticsCoordinator.onAdImpression("app_open_splash", "app_open", "splash", "splash_open")
             appOpenDismissRelay.action = {
-                adAnalyticsCoordinator.onAdDismissed("app_open_splash", "app_open", rewardEarned = false)
+                // showAppOpen runs its completion lambda whether an ad played or there
+                // was no fill, so whether this counts as an impression is decided here
+                // from how long the round trip took, not optimistically up front.
+                val shown = adAnalyticsCoordinator.onAdCompletionCallback(
+                    "app_open_splash", "app_open", "splash", "splash_open"
+                )
+                if (shown) {
+                    adAnalyticsCoordinator.onAdDismissed("app_open_splash", "app_open", rewardEarned = false)
+                }
                 performNavigation()
             }
             // Bound to a local on purpose: a lambda that mentions `appOpenDismissRelay`

@@ -22,7 +22,7 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 class TutorialsAdapter(
-    private val onVideoClicked: (TutorialVideo) -> Unit
+    private val onVideoClicked: (TutorialVideo, Int) -> Unit
 ) : ListAdapter<TutorialVideo, TutorialsAdapter.VideoViewHolder>(DIFF) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VideoViewHolder {
@@ -84,7 +84,7 @@ class TutorialsAdapter(
                 })
                 .into(binding.thumbnail)
 
-            binding.root.addPressEffect { onVideoClicked(video) }
+            binding.root.addPressEffect { onVideoClicked(video, bindingAdapterPosition) }
         }
 
         /**

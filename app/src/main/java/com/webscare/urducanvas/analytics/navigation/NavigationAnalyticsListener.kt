@@ -64,7 +64,15 @@ class NavigationAnalyticsListener @Inject constructor(
             entryPoint = arguments?.getString("ENTRY_POINT")
         )
 
-        if (screenName !in EDITING_FLOW) endTemplateSession()
+        if (screenName !in EDITING_FLOW) {
+            endTemplateSession()
+            // The design workflow ends on the same boundary and for the same reason: the
+            // editor fragment is removed on the way *into* export, so its own lifecycle
+            // cannot tell an abandoned attempt from one still in progress. Whether it
+            // counts as completed is decided by the template session's own outcome,
+            // which already knows whether an export happened.
+            analyticsTracker.endDesignWorkflow()
+        }
     }
 
     /**
@@ -127,6 +135,7 @@ class NavigationAnalyticsListener @Inject constructor(
             R.id.popularFontsFragment -> "popular_fonts"
             R.id.bgRemovalFragment -> "bg_removal"
             R.id.searchFragment -> "search"
+            R.id.tutorialsFragment -> "tutorials"
 
             // Panel destinations belong to PanelAnalyticsListener and never reach here.
             else -> "destination_$destinationId"

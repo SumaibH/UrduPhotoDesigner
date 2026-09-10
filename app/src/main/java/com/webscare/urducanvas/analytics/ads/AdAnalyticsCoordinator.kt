@@ -22,6 +22,7 @@ class AdAnalyticsCoordinator @Inject constructor(
     private var pendingOutcomeJob: Job? = null
     private var activeAdUnitName: String? = null
     private var adDismissedTimeElapsedMs: Long = 0L
+    private var opportunityElapsedMs: Long = 0L
 
     companion object {
         /**
@@ -34,14 +35,67 @@ class AdAnalyticsCoordinator @Inject constructor(
          */
         private const val OUTCOME_WINDOW_SECONDS = 30L
         private const val OUTCOME_WINDOW_MS = OUTCOME_WINDOW_SECONDS * 1000
+
+        /**
+         * Shortest plausible round trip for an ad that was actually presented, from
+         * asking the SDK to show it to the completion callback. Anything faster is the
+         * SDK saying it had nothing to show. Generous on purpose: counting a real
+         * impression as a no-fill costs more than the reverse, because it understates
+         * a number the whole ad funnel divides by.
+         */
+        private const val MIN_RENDER_MS = 700L
     }
 
     /** True between requesting an ad and learning whether it actually rendered. */
     private var impressionPending = false
 
+    init {
+        sessionStateManager.setActionListener { action ->
+            // "view_x" is arriving somewhere, not doing something — and the very first
+            // one after a splash app-open ad is the navigation the dismissal itself
+            // triggered. Counting those would make every app-open ad look like a success
+            // as reliably as the old timeout made them all look like failures.
+            if (!action.startsWith("view_")) onUserActivityAfterAd()
+        }
+    }
+
     fun onAdOpportunity(adUnitName: String, adFormat: String, triggerFeature: String, rewardTarget: String? = null) {
         impressionPending = true
+        opportunityElapsedMs = SystemClock.elapsedRealtime()
         analyticsTracker.logAdOpportunity(adUnitName, adFormat, triggerFeature, rewardTarget)
+    }
+
+    /**
+     * Records an impression for a format whose SDK cannot tell a shown ad from a skipped
+     * one, using how long the completion callback took to come back.
+     *
+     * `WebsCareAds.showInterstitial` and `showAppOpen` expose a single completion lambda
+     * that fires whether the ad played or there was nothing to play, so every one of
+     * those call sites reported an impression optimistically — a no-fill counted as an ad
+     * the user saw, and fill rate plus everything derived from it read high.
+     *
+     * A real full-screen ad cannot be presented, watched and dismissed inside
+     * [MIN_RENDER_MS]; a no-fill returns almost immediately. So the elapsed time is the
+     * signal. This is a heuristic and is labelled as one: the clean fix is a WebsCareAds
+     * release that reports shown and skipped separately, at which point these call sites
+     * move to [onAdShown] like the rewarded ones already did.
+     */
+    fun onAdCompletionCallback(
+        adUnitName: String,
+        adFormat: String,
+        screenName: String,
+        triggerFeature: String
+    ): Boolean {
+        if (!impressionPending) return false
+        impressionPending = false
+        val elapsed = SystemClock.elapsedRealtime() - opportunityElapsedMs
+        if (elapsed < MIN_RENDER_MS) {
+            analyticsTracker.logAdFailedToShow(adUnitName, adFormat, "no_fill_or_skipped")
+            return false
+        }
+        activeAdUnitName = adUnitName
+        analyticsTracker.logAdImpression(adUnitName, adFormat, screenName, triggerFeature, null)
+        return true
     }
 
     /**
@@ -110,6 +164,24 @@ class AdAnalyticsCoordinator @Inject constructor(
 
     /** Call when user continues using the feature unlocked by the ad (e.g., runs segmentation or exports) */
     fun onFeatureActionCompleted(featureName: String) {
+        resolveOutcome(Values.AD_OUTCOME_CONTINUED)
+    }
+
+    /**
+     * Any sign that the user is still using the app after an ad was dismissed.
+     *
+     * An app-open ad gates the app rather than a feature, so nothing ever called
+     * [onFeatureActionCompleted] for it and its window could only ever expire — every
+     * single app-open ad reported `abandoned_feature` at exactly 30 seconds, which
+     * dragged the whole outcome distribution with it. For that placement "did the ad
+     * cost us the session" is the real question, and a screen view or a tool action
+     * inside the window is the answer.
+     *
+     * Deliberately weaker than [onFeatureActionCompleted]: it only resolves a window
+     * that is still open, so an ad shown for a feature is still judged on that feature.
+     */
+    fun onUserActivityAfterAd() {
+        if (activeAdUnitName == null) return
         resolveOutcome(Values.AD_OUTCOME_CONTINUED)
     }
 

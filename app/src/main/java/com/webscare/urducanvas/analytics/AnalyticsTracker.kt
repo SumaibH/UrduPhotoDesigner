@@ -67,6 +67,33 @@ class AnalyticsTracker @Inject constructor(
             Params.PREVIOUS_SCREEN to previousScreen,
             Params.ENTRY_POINT to entryPoint
         ))
+        logStandardScreenView(screenName)
+    }
+
+    /**
+     * Also reports the screen under GA4's own event name.
+     *
+     * This is a single-Activity app and nothing was telling Firebase which screen was on
+     * show, so every event went up stamped `ga_screen_class=MainActivity` and the whole
+     * built-in *Engagement → Pages and screens* surface reported one row. Screens per
+     * session, per-screen engagement time, entrances and exits — all unusable.
+     *
+     * [Events.SCREEN_VIEW_CUSTOM] stays, because it carries the previous screen and the
+     * entry point, and [logScreenLeave] carries dwell time and exit direction. GA4 cannot
+     * derive any of those. This one exists so the free reports work too.
+     */
+    private fun logStandardScreenView(screenName: String) {
+        try {
+            val bundle = Bundle().apply {
+                putString(FirebaseAnalytics.Param.SCREEN_NAME, screenName.take(MAX_STRING_LENGTH))
+                // The class name is what GA4 groups by when a screen name is missing.
+                // Ours is always present, so this just keeps the two columns consistent.
+                putString(FirebaseAnalytics.Param.SCREEN_CLASS, screenName.take(MAX_STRING_LENGTH))
+            }
+            firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW, bundle)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to log standard screen_view for $screenName", e)
+        }
     }
 
     fun logScreenLeave(screenName: String, durationSeconds: Long, exitDirection: String, lastAction: String) {
@@ -129,6 +156,7 @@ class AnalyticsTracker @Inject constructor(
         sessionStateManager.setActiveTemplate(templateId, name)
         syncUserProfile(sessionStateManager.recordTemplateCategory(category))
         sessionStateManager.recordAction("open_template_$templateId")
+        startDesignWorkflow(Values.SOURCE_TEMPLATE)
         logRawEvent(Events.TEMPLATE_OPENED, mapOf(
             Params.TEMPLATE_ID to templateId,
             Params.TEMPLATE_NAME to name,
@@ -275,6 +303,9 @@ class AnalyticsTracker @Inject constructor(
         sessionStateManager.recordAction("export_completed")
         sessionStateManager.recordTemplateExport()
         syncUserProfile(sessionStateManager.recordExport(format))
+        // Decides how endDesignWorkflow() closes out — an export is what makes the
+        // attempt a success, and it happens before the flow is left.
+        workflowExported = true
         logRawEvent(Events.EXPORT_COMPLETED, mapOf(
             Params.EXPORT_FORMAT to format,
             Params.FILE_SIZE_MB to fileSizeMb,
@@ -301,12 +332,213 @@ class AnalyticsTracker @Inject constructor(
         ))
     }
 
-    fun logSubscriptionAction(planId: String, status: String, errorMessage: String? = null) {
+    /**
+     * [priceMicros] and [currency] are attached only on a successful purchase, and only
+     * when Play actually gave us a price. GA4 reads `value` and `currency` by name on any
+     * event, so this is what puts a subscription into the monetisation reports instead of
+     * leaving it as a custom event nobody's revenue report can see.
+     *
+     * This is a *client-side* signal and does not survive a refund. The Play-to-Firebase
+     * console link remains the source of truth for real revenue; this is here so the
+     * paywall funnel can be cut by plan price without joining against it.
+     */
+    fun logSubscriptionAction(
+        planId: String,
+        status: String,
+        errorMessage: String? = null,
+        priceMicros: Long? = null,
+        currency: String? = null
+    ) {
         sessionStateManager.recordAction("sub_${planId}_$status")
-        logRawEvent(Events.SUBSCRIPTION_ACTION, mapOf(
+        val params = mutableMapOf<String, Any?>(
             Params.PLAN_ID to planId,
             Params.WORKFLOW_STATUS to status,
             Params.ERROR_MESSAGE to errorMessage
+        )
+        if (status == Values.STATUS_SUCCESS && priceMicros != null && priceMicros > 0) {
+            params[Params.VALUE] = priceMicros / 1_000_000.0
+            params[Params.CURRENCY] = currency
+        }
+        logRawEvent(Events.SUBSCRIPTION_ACTION, params)
+    }
+
+    // ─── Saved Projects ───
+
+    fun logProjectSaved(elementCount: Int, canvasSize: String, sourceType: String) {
+        sessionStateManager.recordAction("save_project")
+        logRawEvent(Events.PROJECT_SAVED, mapOf(
+            Params.ELEMENT_COUNT to elementCount,
+            Params.CANVAS_SIZE to canvasSize,
+            Params.SOURCE_TYPE to sourceType
+        ))
+    }
+
+    /**
+     * [daysSinceEdit] is the whole point of this event: how long a design sat before its
+     * owner came back to it. -1 when the file has no usable timestamp.
+     */
+    fun logProjectOpened(elementCount: Int, canvasSize: String, daysSinceEdit: Int) {
+        sessionStateManager.recordAction("open_project")
+        startDesignWorkflow(Values.SOURCE_PROJECT)
+        logRawEvent(Events.PROJECT_OPENED, mapOf(
+            Params.ELEMENT_COUNT to elementCount,
+            Params.CANVAS_SIZE to canvasSize,
+            Params.DAYS_SINCE_EDIT to daysSinceEdit
+        ))
+    }
+
+    fun logProjectDeleted(daysSinceEdit: Int) {
+        sessionStateManager.recordAction("delete_project")
+        logRawEvent(Events.PROJECT_DELETED, mapOf(
+            Params.DAYS_SINCE_EDIT to daysSinceEdit
+        ))
+    }
+
+    // ─── Fonts ───
+
+    fun logFontDownload(
+        fontId: String,
+        fontName: String,
+        language: String?,
+        status: String,
+        durationMs: Long = 0,
+        error: String? = null
+    ) {
+        logRawEvent(Events.FONT_DOWNLOAD, mapOf(
+            Params.FONT_ID to fontId,
+            Params.FONT_NAME to fontName,
+            Params.LANGUAGE to language,
+            Params.WORKFLOW_STATUS to status,
+            "duration_ms" to durationMs,
+            Params.ERROR_MESSAGE to error
+        ))
+    }
+
+    /** [justDownloaded] separates "tried the font they came for" from "reused one". */
+    fun logFontApplied(fontId: String, fontName: String, language: String?, justDownloaded: Boolean) {
+        sessionStateManager.recordAction("apply_font_$fontId")
+        logRawEvent(Events.FONT_APPLIED, mapOf(
+            Params.FONT_ID to fontId,
+            Params.FONT_NAME to fontName,
+            Params.LANGUAGE to language,
+            "just_downloaded" to justDownloaded
+        ))
+    }
+
+    // ─── Canvas Creation ───
+
+    fun logCanvasCreated(presetName: String, canvasSize: String, isCustom: Boolean, sourceType: String) {
+        sessionStateManager.recordAction("create_canvas")
+        startDesignWorkflow(sourceType)
+        logRawEvent(Events.CANVAS_CREATED, mapOf(
+            Params.PRESET_NAME to presetName,
+            Params.CANVAS_SIZE to canvasSize,
+            "is_custom" to isCustom,
+            Params.SOURCE_TYPE to sourceType
+        ))
+    }
+
+    // ─── Search ───
+
+    /**
+     * [term] has already been sanitised by the caller. A zero [resultCount] is the
+     * interesting case: those searches are a content roadmap written by users.
+     */
+    fun logSearch(term: String, resultCount: Int, placement: String) {
+        sessionStateManager.recordAction("search")
+        logRawEvent(Events.SEARCH, mapOf(
+            Params.SEARCH_TERM to term,
+            Params.RESULT_COUNT to resultCount,
+            Params.PLACEMENT to placement,
+            "is_zero_result" to (resultCount == 0)
+        ))
+    }
+
+    // ─── Tutorials & Review ───
+
+    fun logTutorialOpened(videoId: String, title: String, position: Int) {
+        sessionStateManager.recordAction("open_tutorial")
+        logRawEvent(Events.TUTORIAL_OPENED, mapOf(
+            Params.VIDEO_ID to videoId,
+            Params.TEMPLATE_NAME to title,
+            Params.LIST_POSITION to position
+        ))
+    }
+
+    /**
+     * [status] is one of: `skipped` (the eligibility rule said no), `requested`,
+     * `shown`, `failed`. Play never tells an app whether the user actually rated
+     * anything, so `shown` means the flow completed, not that a review was left.
+     */
+    fun logReviewPrompt(status: String, trigger: String, exportCount: Int) {
+        logRawEvent(Events.REVIEW_PROMPT, mapOf(
+            Params.WORKFLOW_STATUS to status,
+            Params.TRIGGER_FEATURE to trigger,
+            "export_count" to exportCount
+        ))
+    }
+
+    // ─── Workflow Funnel ───
+
+    /**
+     * A workflow is one attempt at making a design, named by where it started, and it
+     * has three steps: [Values.STEP_OPENED] → [Values.STEP_COMPOSED] → [Values.STEP_EXPORTED].
+     *
+     * The gap between opened and composed is the reason this exists: people who reached
+     * a canvas and never put anything on it are invisible to every other event, because
+     * nothing they did was worth an event of its own.
+     *
+     * The whole funnel is driven from inside this class off events that already fire, so
+     * there is one place that decides what a step is rather than a dozen call sites each
+     * having an opinion.
+     */
+    private var workflowSource: String? = null
+    private var workflowComposed = false
+    private var workflowExported = false
+
+    private fun startDesignWorkflow(sourceType: String) {
+        // Restarting is correct: opening a second design abandons the first attempt, and
+        // NavigationAnalyticsListener has already closed it out by the time we get here.
+        workflowSource = sourceType
+        workflowComposed = false
+        workflowExported = false
+        sessionStateManager.startWorkflow(Values.WORKFLOW_DESIGN, Values.STEP_OPENED)
+        logWorkflowStep(Values.STEP_OPENED, Values.STATUS_STARTED, sourceType)
+    }
+
+    /**
+     * Called when an element lands on the canvas. Only the first one in a workflow is
+     * reported — the step is "this became a design", not "the user did a thing".
+     */
+    fun notifyCanvasComposed() {
+        val source = workflowSource ?: return
+        if (workflowComposed) return
+        workflowComposed = true
+        sessionStateManager.updateWorkflowStep(Values.STEP_COMPOSED)
+        logWorkflowStep(Values.STEP_COMPOSED, Values.STATUS_SUCCESS, source)
+    }
+
+    /**
+     * Closes an open workflow. Called by NavigationAnalyticsListener when the user leaves
+     * the editing flow — the editor fragment's own lifecycle cannot be used, because it is
+     * removed on the way *into* export.
+     */
+    fun endDesignWorkflow() {
+        val source = workflowSource ?: return
+        val status = if (workflowExported) Values.STATUS_COMPLETED else Values.STATUS_ABANDONED
+        workflowSource = null
+        workflowComposed = false
+        workflowExported = false
+        sessionStateManager.endWorkflow(status)
+        logWorkflowStep(Values.STEP_EXPORTED, status, source)
+    }
+
+    private fun logWorkflowStep(step: String, status: String, sourceType: String?) {
+        logRawEvent(Events.WORKFLOW_STEP, mapOf(
+            Params.WORKFLOW_NAME to Values.WORKFLOW_DESIGN,
+            Params.WORKFLOW_STEP to step,
+            Params.WORKFLOW_STATUS to status,
+            Params.SOURCE_TYPE to sourceType
         ))
     }
 
@@ -323,6 +555,22 @@ class AnalyticsTracker @Inject constructor(
         setUserProperty(UserProperties.ADS_WATCHED_BUCKET, profile.adsWatchedBucket)
         profile.preferredFormat?.let { setUserProperty(UserProperties.PREFERRED_EXPORT_FORMAT, it) }
         profile.favouriteCategory?.let { setUserProperty(UserProperties.FAVORITE_CATEGORY, it) }
+    }
+
+    /**
+     * Turns collection on or off for this device.
+     *
+     * Firebase stops collecting locally rather than collecting and discarding server
+     * side, and the setting persists across launches on its own — so this only needs
+     * calling when the user changes it, plus once at startup to re-apply a stored "off"
+     * in case the app was reinstalled over a previous refusal.
+     */
+    fun setCollectionEnabled(enabled: Boolean) {
+        try {
+            firebaseAnalytics.setAnalyticsCollectionEnabled(enabled)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to set analytics collection to $enabled", e)
+        }
     }
 
     fun setUserProperty(name: String, value: String?) {

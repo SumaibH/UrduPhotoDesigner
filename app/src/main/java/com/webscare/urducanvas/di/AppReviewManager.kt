@@ -6,6 +6,7 @@ import android.util.Log
 import com.google.android.play.core.review.ReviewManager
 import com.google.android.play.core.review.ReviewManagerFactory
 import com.google.android.play.core.review.testing.FakeReviewManager
+import com.webscare.urducanvas.analytics.AnalyticsTracker
 import com.webscare.urducanvas.common.datastore.PreferenceDataStoreAPI
 import com.webscare.urducanvas.common.datastore.PreferenceDataStoreKeysConstants.KEY_EXPORT_COUNT_FOR_REVIEW
 import com.webscare.urducanvas.common.datastore.PreferenceDataStoreKeysConstants.KEY_LAST_REVIEW_REQUEST_TIMESTAMP
@@ -21,7 +22,8 @@ import javax.inject.Singleton
 @Singleton
 class AppReviewManager @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val dataStore: PreferenceDataStoreAPI
+    private val dataStore: PreferenceDataStoreAPI,
+    private val analyticsTracker: AnalyticsTracker
 ) {
 
     companion object {
@@ -57,16 +59,22 @@ class AppReviewManager @Inject constructor(
 
                 if (!isEligible) {
                     Log.d(TAG, "Not eligible for in-app review. Count: $newCount, CooldownPassed: $isCooldownPassed")
+                    analyticsTracker.logReviewPrompt("skipped", "export", newCount)
                     withContext(Dispatchers.Main) { onComplete?.invoke() }
                     return@launch
                 }
 
                 Log.d(TAG, "Requesting in-app review flow. Export count: $newCount")
+                analyticsTracker.logReviewPrompt("requested", "export", newCount)
                 withContext(Dispatchers.Main) {
                     reviewManager.requestReviewFlow().addOnCompleteListener { requestTask ->
                         if (requestTask.isSuccessful) {
                             val reviewInfo = requestTask.result
                             reviewManager.launchReviewFlow(activity, reviewInfo).addOnCompleteListener {
+                                // Play never says whether a review was actually left, so
+                                // "shown" means the flow completed — including the case
+                                // where Play silently decided not to show anything.
+                                analyticsTracker.logReviewPrompt("shown", "export", newCount)
                                 CoroutineScope(Dispatchers.IO).launch {
                                     dataStore.putPreference(KEY_LAST_REVIEW_REQUEST_TIMESTAMP, System.currentTimeMillis())
                                 }
@@ -74,6 +82,7 @@ class AppReviewManager @Inject constructor(
                             }
                         } else {
                             Log.w(TAG, "In-app review requestFlow failed", requestTask.exception)
+                            analyticsTracker.logReviewPrompt("failed", "export", newCount)
                             onComplete?.invoke()
                         }
                     }
@@ -90,15 +99,20 @@ class AppReviewManager @Inject constructor(
      * Attempts the in-app review dialog first; invokes [onFallback] if the flow cannot be started.
      */
     fun launchExplicitReview(activity: Activity, onFallback: () -> Unit) {
+        analyticsTracker.logReviewPrompt("requested", "settings", 0)
         reviewManager.requestReviewFlow().addOnCompleteListener { requestTask ->
             if (requestTask.isSuccessful) {
                 val reviewInfo = requestTask.result
                 reviewManager.launchReviewFlow(activity, reviewInfo).addOnCompleteListener { flowTask ->
                     if (!flowTask.isSuccessful) {
+                        analyticsTracker.logReviewPrompt("failed", "settings", 0)
                         onFallback()
+                    } else {
+                        analyticsTracker.logReviewPrompt("shown", "settings", 0)
                     }
                 }
             } else {
+                analyticsTracker.logReviewPrompt("failed", "settings", 0)
                 onFallback()
             }
         }

@@ -32,6 +32,13 @@ object PreferenceDataStoreKeysConstants {
     val KEY_DEFAULT_URDU_FONT_NAME = stringPreferencesKey("key_default_urdu_font_name")
     val KEY_HAPTIC_FEEDBACK = booleanPreferencesKey("key_haptic_feedback")
     val KEY_SMART_SNAPPING = booleanPreferencesKey("key_smart_snapping")
+
+    /**
+     * Whether the user lets us collect usage analytics. Defaults to true, and turning it
+     * off calls setAnalyticsCollectionEnabled(false) - Firebase then stops collecting on
+     * the device rather than collecting and discarding server side.
+     */
+    val KEY_ANALYTICS_ENABLED = booleanPreferencesKey("key_analytics_enabled")
     val KEY_AUTO_SAVE_INTERVAL = stringPreferencesKey("key_auto_save_interval")
 
     val KEY_EXPORT_COUNT_FOR_REVIEW = intPreferencesKey("key_export_count_for_review")

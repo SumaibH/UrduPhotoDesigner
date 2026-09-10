@@ -47,6 +47,9 @@ class PreferencesFragment : Fragment() {
     @Inject
     lateinit var dataStore: PreferencesDataStoreHelper
 
+    @Inject
+    lateinit var analyticsTracker: com.webscare.urducanvas.analytics.AnalyticsTracker
+
     private var resolutionAdapter: ExportOptionAdapter<Any>? = null
     private var qualityAdapter: ExportOptionAdapter<Any>? = null
     private var formatAdapter: ExportOptionAdapter<Any>? = null
@@ -168,6 +171,12 @@ class PreferencesFragment : Fragment() {
             )
             binding.smartSnappingSwitch.setCheckedQuietly(isSnappingEnabled)
             viewModel.setSmartSnappingEnabled(isSnappingEnabled)
+
+            val isAnalyticsEnabled = dataStore.getFirstPreference(
+                PreferenceDataStoreKeysConstants.KEY_ANALYTICS_ENABLED,
+                true
+            )
+            binding.analyticsSwitch.setCheckedQuietly(isAnalyticsEnabled)
         }
     }
 
@@ -411,6 +420,15 @@ class PreferencesFragment : Fragment() {
             viewModel.setSmartSnappingEnabled(isChecked)
             viewLifecycleOwner.lifecycleScope.launch {
                 dataStore.putPreference(PreferenceDataStoreKeysConstants.KEY_SMART_SNAPPING, isChecked)
+            }
+        }
+
+        // Usage analytics opt-out. Firebase persists the flag itself, so this only has to
+        // set it once per change; MyApplication re-applies the stored value at startup.
+        binding.analyticsSwitch.onCheckedChangeListener = { isChecked ->
+            analyticsTracker.setCollectionEnabled(isChecked)
+            viewLifecycleOwner.lifecycleScope.launch {
+                dataStore.putPreference(PreferenceDataStoreKeysConstants.KEY_ANALYTICS_ENABLED, isChecked)
             }
         }
 

@@ -1107,6 +1107,14 @@ class CanvasViewModel @Inject constructor(
             val centerX = minX + cropW / 2f
             val centerY = minY + cropH / 2f
 
+            // A draw or erase session is a multi-step operation with an outcome, unlike
+            // the immediate-apply panels whose apply rate tool_panel_closed already
+            // reports through was_applied. Worth its own completion event.
+            analyticsTracker.logFeatureCompleted(
+                featureName = if (_isEraserActive.value == true) "eraser" else "draw",
+                detail = "${cropW}x$cropH"
+            )
+
             val rasterized = session.copy(
                 bitmap = croppedBitmap,
                 bitmapData = bitmapData,
@@ -5947,6 +5955,9 @@ class CanvasViewModel @Inject constructor(
             lastReportedAction = latestAction
             val (tool, subFeature) = getToolAndSubFeatureForAction(latestAction)
             analyticsTracker.logToolActionPerformed(tool, subFeature)
+            // First committed action in a design workflow is what turns "opened a canvas"
+            // into "made something". The tracker ignores every call after the first.
+            analyticsTracker.notifyCanvasComposed()
         }
     }
 
@@ -6988,6 +6999,7 @@ class CanvasViewModel @Inject constructor(
 
         val cData = CalligraphyShapingHelper.decomposeText(selected.text, depth, selected.paint)
         selected.calligraphyData = cData
+        analyticsTracker.logFeatureCompleted("calligraphy", detail = "expand_" + depth.name.lowercase())
         selected.recomputeCalligraphyBounds()
         val after = selected.copy(context = null)
 
@@ -7009,6 +7021,7 @@ class CanvasViewModel @Inject constructor(
 
         val collapsedText = CalligraphyShapingHelper.collapseToString(cData)
         selected.text = collapsedText
+        analyticsTracker.logFeatureCompleted("calligraphy", detail = "rejoin")
         selected.calligraphyData = null
         val after = selected.copy(context = null)
 

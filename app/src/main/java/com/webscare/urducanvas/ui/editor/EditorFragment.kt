@@ -101,6 +101,7 @@ import com.webscare.urducanvas.common.utils.InsetUtils.applyStatusBarTopPadding
 import com.webscare.urducanvas.ui.editor.panels.text.symbols.CharChipModel
 import com.webscare.urducanvas.ui.editor.panels.text.symbols.SymbolCharAdapter
 import javax.inject.Inject
+import com.webscare.urducanvas.analytics.AnalyticsConstants
 import com.webscare.urducanvas.analytics.AnalyticsTracker
 import com.webscare.urducanvas.analytics.navigation.PanelAnalyticsListener
 import com.webscare.urducanvas.analytics.session.SessionStateManager
@@ -885,6 +886,18 @@ class EditorFragment : Fragment() {
             // ---- Save to DB ---------------------------------------------------------
             val id = mainViewModel.insertExportResult(exportModel!!)
             exportModel!!.id = id
+
+            // Whether people come back to their own work is the single best retention
+            // signal a design tool has, and nothing was recording that they had any.
+            analyticsTracker.logProjectSaved(
+                elementCount = viewModel.canvasElements.value?.size ?: 0,
+                canvasSize = "${canvasSize.width.toInt()}x${canvasSize.height.toInt()}",
+                sourceType = if (sessionStateManager.activeTemplateId != null) {
+                    AnalyticsConstants.Values.SOURCE_TEMPLATE
+                } else {
+                    AnalyticsConstants.Values.SOURCE_BLANK
+                }
+            )
 
             withContext(Dispatchers.Main) {
                 viewModel.setExportResult(exportModel!!)

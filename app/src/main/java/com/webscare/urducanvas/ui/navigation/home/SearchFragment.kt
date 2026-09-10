@@ -77,6 +77,9 @@ class SearchFragment : Fragment() {
     private var dialogBinding: DialogLoadingProgressBinding? = null
     private var rotationAnimator: ObjectAnimator? = null
 
+    /** Last query reported to analytics, so one search produces one event. */
+    private var lastReportedQuery: String? = null
+
     val navOptions = NavOptions.Builder().setLaunchSingleTop(true).build()
     private var bundle: Bundle = Bundle()
 
@@ -552,6 +555,7 @@ class SearchFragment : Fragment() {
 
     private fun updateUI(result: SearchResults) {
         val isBlankQuery = result.query.isBlank()
+        reportSearch(result)
 
         // Templates
         templatesAdapter.submitList(result.templates)
@@ -577,6 +581,30 @@ class SearchFragment : Fragment() {
         }
     }
 
+    /**
+     * Reports the query and how many results it found. The zero-result ones are the
+     * point: those searches are a content roadmap written by users.
+     *
+     * The query is free text somebody typed, so it is sanitised before it leaves the
+     * device — anything that looks like an email or a phone number is dropped entirely
+     * rather than truncated, because a partial identifier is still an identifier, and
+     * GA4 rejects events carrying them anyway. The results flow re-emits on every
+     * upstream change, so the last reported query is held to keep one search to one
+     * event.
+     */
+    private fun reportSearch(result: SearchResults) {
+        val term = result.query.trim()
+        if (term.isBlank() || term == lastReportedQuery) return
+        lastReportedQuery = term
+        if (PERSONAL_DATA.containsMatchIn(term)) return
+
+        analyticsTracker.logSearch(
+            term = term.take(100),
+            resultCount = result.templates.size + result.fonts.size + result.files.size,
+            placement = "search"
+        )
+    }
+
     data class SearchResults(
         val query: String = "",
         val templates: List<TemplateEntity>,
@@ -594,5 +622,17 @@ class SearchFragment : Fragment() {
         dismissLoadingDialog()
         super.onDestroyView()
         _binding = null
+    }
+
+    companion object {
+        /**
+         * Anything email- or phone-shaped in a search box is not a search term. GA4
+         * refuses events carrying personal data anyway, so these are dropped here
+         * rather than sent and discarded server side.
+         */
+        private val PERSONAL_DATA = Regex(
+            "[\\w.+-]+@[\\w-]+\\.[\\w.]+" +   // anything email-shaped
+            "|\\+?\\d[\\d\\s().-]{7,}"        // or a run of digits long enough to be a number
+        )
     }
 }

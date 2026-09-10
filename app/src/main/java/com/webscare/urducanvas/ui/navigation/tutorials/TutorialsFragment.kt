@@ -16,6 +16,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.webscare.urducanvas.R
+import com.webscare.urducanvas.analytics.AnalyticsTracker
 import com.webscare.urducanvas.common.sealed.Response
 import com.webscare.urducanvas.common.utils.Constants
 import com.webscare.urducanvas.common.utils.InsetUtils.applyStatusBarTopPadding
@@ -24,6 +25,7 @@ import com.webscare.urducanvas.data.model.TutorialVideo
 import com.webscare.urducanvas.databinding.FragmentTutorialsBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * The tutorial videos published on the UrduCanvas YouTube channel.
@@ -36,6 +38,9 @@ class TutorialsFragment : Fragment() {
 
     private var _binding: FragmentTutorialsBinding? = null
     private val binding get() = _binding!!
+
+    @Inject
+    lateinit var analyticsTracker: AnalyticsTracker
 
     private val viewModel: TutorialsViewModel by viewModels()
     private var adapter: TutorialsAdapter? = null
@@ -53,7 +58,7 @@ class TutorialsFragment : Fragment() {
         // reserve it itself.
         view.applyStatusBarTopPadding()
 
-        adapter = TutorialsAdapter(::openVideo)
+        adapter = TutorialsAdapter { video, position -> openVideo(video, position) }
         binding.tutorialsRV.layoutManager = LinearLayoutManager(requireContext())
         binding.tutorialsRV.adapter = adapter
 
@@ -133,7 +138,8 @@ class TutorialsFragment : Fragment() {
 
     // ── Playback ──────────────────────────────────────────────────────────────
 
-    private fun openVideo(video: TutorialVideo) {
+    private fun openVideo(video: TutorialVideo, position: Int) {
+        analyticsTracker.logTutorialOpened(video.id, video.title, position)
         // vnd.youtube: opens the installed app directly on the video. When YouTube is
         // not installed the intent throws, and the watch page handles it in a browser.
         val appIntent = Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:${video.id}"))

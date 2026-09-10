@@ -331,6 +331,26 @@ class BillingManager @Inject constructor(
             ?.any { it.priceAmountMicros == 0L } == true
     }
 
+    /**
+     * The price the subscriber will actually be billed, in micros, plus its currency.
+     *
+     * Deliberately the *last* pricing phase rather than the first: a plan that opens with
+     * a free trial or an intro price lists that phase first, and reporting a 0 or a
+     * discounted figure as the purchase value would understate revenue for exactly the
+     * plans that convert best. Returns nulls if Play has not given us the details yet, in
+     * which case the event simply goes up without a value.
+     */
+    private fun recurringPriceOf(productId: String): Pair<Long?, String?> {
+        val phase = availableProducts.find { it.productId == productId }
+            ?.subscriptionOfferDetails
+            ?.firstOrNull()
+            ?.pricingPhases
+            ?.pricingPhaseList
+            ?.lastOrNull()
+            ?: return null to null
+        return phase.priceAmountMicros to phase.priceCurrencyCode
+    }
+
     // ─── Billing client setup ──────────────────────────────────────────────────
 
     private val _billingState = MutableStateFlow<BillingState>(BillingState.Idle)
@@ -458,7 +478,13 @@ class BillingManager @Inject constructor(
                     val prodId = purchase.products.firstOrNull() ?: "unknown"
                     when (purchase.purchaseState) {
                         Purchase.PurchaseState.PURCHASED -> {
-                            analyticsTracker.logSubscriptionAction(prodId, Values.STATUS_SUCCESS)
+                            val (micros, currency) = recurringPriceOf(prodId)
+                            analyticsTracker.logSubscriptionAction(
+                                prodId,
+                                Values.STATUS_SUCCESS,
+                                priceMicros = micros,
+                                currency = currency
+                            )
                             acknowledgePurchase(purchase)
                         }
                         Purchase.PurchaseState.PENDING -> {

@@ -24,6 +24,8 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.snackbar.Snackbar
 import com.webscare.urducanvas.R
+import com.webscare.urducanvas.analytics.AnalyticsConstants
+import com.webscare.urducanvas.analytics.AnalyticsTracker
 import com.webscare.urducanvas.common.canvas.CanvasViewModel
 import com.webscare.urducanvas.common.canvas.enums.UnitType
 import com.webscare.urducanvas.common.canvas.model.CanvasSize
@@ -34,6 +36,7 @@ import com.webscare.urducanvas.databinding.PopupUnitSelectorBinding
 import com.webscare.urducanvas.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class CreateFragment : BottomSheetDialogFragment() {
@@ -41,6 +44,9 @@ class CreateFragment : BottomSheetDialogFragment() {
     private val binding get() = _binding!!
 
     private val unitList = listOf("Pixels", "Inches", "Centimeters")
+
+    @Inject
+    lateinit var analyticsTracker: AnalyticsTracker
 
     private val mainViewModel: MainViewModel by activityViewModels()
 
@@ -106,6 +112,7 @@ class CreateFragment : BottomSheetDialogFragment() {
                     viewModel.resizeCanvas(selected)   // ← no clearCanvas, no navigate
                     dismiss()
                 } else {
+                    reportCanvasCreated(selected, isCustom = false)
                     viewModel.clearCanvas()
                     viewModel.setCanvasSize(selected)
                     view?.post { findNavController().navigate(R.id.editorFragment, null) }
@@ -219,6 +226,7 @@ class CreateFragment : BottomSheetDialogFragment() {
                     viewModel.resizeCanvas(newSize)   // ← no clearCanvas, no navigate
                     dismiss()
                 } else {
+                    reportCanvasCreated(newSize, isCustom = true)
                     viewModel.clearCanvas()
                     viewModel.setCanvasSize(newSize)
                     view?.post { findNavController().navigate(R.id.editorFragment, null) }
@@ -228,6 +236,24 @@ class CreateFragment : BottomSheetDialogFragment() {
 
             back.addPressEffect { dismiss() }
         }
+    }
+
+    /**
+     * The blank-canvas half of Home's two entry points, which had no telemetry at all —
+     * so the split between starting from a template and starting from nothing was
+     * unknowable, and so was whether anyone uses Custom or which presets earn their place
+     * in the list.
+     *
+     * Resizing an existing canvas deliberately does not report this: it is not a new
+     * design, and counting it would inflate the blank-canvas side of that split.
+     */
+    private fun reportCanvasCreated(size: CanvasSize, isCustom: Boolean) {
+        analyticsTracker.logCanvasCreated(
+            presetName = if (isCustom) "custom" else size.name,
+            canvasSize = "${size.width.toInt()}x${size.height.toInt()}",
+            isCustom = isCustom,
+            sourceType = AnalyticsConstants.Values.SOURCE_BLANK
+        )
     }
 
     @SuppressLint("DefaultLocale")

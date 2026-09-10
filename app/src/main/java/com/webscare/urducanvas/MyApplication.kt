@@ -10,6 +10,8 @@ import dagger.hilt.android.HiltAndroidApp
 import com.webscare.urducanvas.analytics.AnalyticsTracker
 import com.webscare.urducanvas.analytics.ads.AdAnalyticsCoordinator
 import com.webscare.urducanvas.analytics.session.SessionStateManager
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 @HiltAndroidApp
 class MyApplication : Application() {
@@ -25,6 +27,9 @@ class MyApplication : Application() {
 
     @Inject
     lateinit var adAnalyticsCoordinator: AdAnalyticsCoordinator
+
+    @Inject
+    lateinit var preferencesDataStore: com.webscare.urducanvas.common.datastore.PreferencesDataStoreHelper
 
     companion object {
         var defaultDensityDpi: Int = 0
@@ -66,6 +71,17 @@ class MyApplication : Application() {
     }
 
     private fun setupLifecycleAnalytics() {
+        // Firebase persists the collection flag itself, so this is belt and braces: it
+        // re-applies a stored refusal after a reinstall, where the SDK's own copy is gone
+        // but the app's preference survived a backup restore.
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+            val enabled = preferencesDataStore.getPreference(
+                com.webscare.urducanvas.common.datastore.PreferenceDataStoreKeysConstants.KEY_ANALYTICS_ENABLED,
+                true
+            ).first()
+            if (!enabled) analyticsTracker.setCollectionEnabled(false)
+        }
+
         // Set once per process. Without it every GA4 audience that wants to separate
         // "users on the current build" from the long tail has nothing to filter on.
         analyticsTracker.setUserProperty(

@@ -610,4 +610,6 @@
         <item quantity="one">%d year ago</item>
         <item quantity="other">%d years ago</item>
     </plurals>
+    <string name="share_usage_data">Share usage data</string>
+    <string name="share_usage_data_desc">Helps us see which features get used so we know what to improve. Never includes your designs or personal information.</string>
 </resources>

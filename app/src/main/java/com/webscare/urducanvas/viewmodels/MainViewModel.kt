@@ -899,6 +899,11 @@ class MainViewModel @Inject constructor(
         val fontId = font.id.toString()
         fontJobs[fontId]?.cancel()
         val job = viewModelScope.launch {
+            val startedAtMs = System.currentTimeMillis()
+            analyticsTracker.logFontDownload(
+                fontId, font.font_name, font.font_language,
+                com.webscare.urducanvas.analytics.AnalyticsConstants.Values.STATUS_STARTED
+            )
             updateFontState(
                 fontId,
                 FontDownloadState.Progress(0, font.copy(is_downloading = true))
@@ -946,9 +951,20 @@ class MainViewModel @Inject constructor(
                     FontDownloadState.SuccessWithTypeface(downloadedFile, updatedFont)
                 )
                 Log.d("FONT_DEBUG", "After emitting SUCCESS for $fontId")
+                analyticsTracker.logFontDownload(
+                    fontId, font.font_name, font.font_language,
+                    com.webscare.urducanvas.analytics.AnalyticsConstants.Values.STATUS_SUCCESS,
+                    durationMs = System.currentTimeMillis() - startedAtMs
+                )
 
             } catch (e: Exception) {
                 updateFontStatusUseCase.invoke(fontId, false)
+                analyticsTracker.logFontDownload(
+                    fontId, font.font_name, font.font_language,
+                    com.webscare.urducanvas.analytics.AnalyticsConstants.Values.STATUS_FAILED,
+                    durationMs = System.currentTimeMillis() - startedAtMs,
+                    error = e.message
+                )
                 updateFontState(
                     fontId,
                     FontDownloadState.Error(e.message ?: "Download failed", font)

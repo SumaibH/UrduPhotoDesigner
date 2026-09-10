@@ -71,6 +71,28 @@ object AnalyticsConstants {
 
         // Workflow / Funnel
         const val WORKFLOW_STEP = "workflow_step"
+
+        // Saved projects. Reopening your own work is the earliest reliable signal that
+        // the app has become a habit rather than a thing someone tried once.
+        const val PROJECT_SAVED = "project_saved"
+        const val PROJECT_OPENED = "project_opened"
+        const val PROJECT_DELETED = "project_deleted"
+
+        // Fonts — the reason a lot of people install an Urdu design app in the first place.
+        const val FONT_DOWNLOAD = "font_download"
+        const val FONT_APPLIED = "font_applied"
+
+        // The blank-canvas half of Home's two entry points.
+        const val CANVAS_CREATED = "canvas_created"
+
+        /**
+         * GA4's own recommended event name, not a custom one, so it shows up in the
+         * standard search reports without an Exploration having to be built by hand.
+         */
+        const val SEARCH = "search"
+
+        const val TUTORIAL_OPENED = "tutorial_opened"
+        const val REVIEW_PROMPT = "review_prompt"
     }
 
     // ─── Parameter Keys (Max 40 chars, consolidated into 28 keys) ───
@@ -111,6 +133,26 @@ object AnalyticsConstants {
         const val LATENCY_SECONDS = "latency_seconds"
         const val FILE_SIZE_MB = "file_size_mb"
         const val REWARD_EARNED = "reward_earned"
+
+        const val ELEMENT_COUNT = "element_count"
+        const val DAYS_SINCE_EDIT = "days_since_edit"
+        const val SOURCE_TYPE = "source_type"
+        const val FONT_ID = "font_id"
+        const val FONT_NAME = "font_name"
+        const val LANGUAGE = "language"
+        const val CANVAS_SIZE = "canvas_size"
+        const val PRESET_NAME = "preset_name"
+        const val RESULT_COUNT = "result_count"
+        const val VIDEO_ID = "video_id"
+        const val LIST_POSITION = "list_position"
+
+        /** GA4's recommended parameter name for [Events.SEARCH]. */
+        const val SEARCH_TERM = "search_term"
+
+        // Revenue. GA4 reads these two by name on any event, so a purchase reported
+        // with them lands in the monetisation reports rather than only in Explorations.
+        const val VALUE = "value"
+        const val CURRENCY = "currency"
     }
 
     // ─── User Property Keys (Max 24 chars) ───
@@ -142,5 +184,21 @@ object AnalyticsConstants {
         const val STATUS_CANCELLED = "cancelled"
         const val STATUS_COMPLETED = "completed"
         const val STATUS_ABANDONED = "abandoned"
+
+        // ── Workflows ─────────────────────────────────────────────────────────
+        //
+        // A workflow is one attempt at making a design, named by where it started, and
+        // it has three steps. The gap between "opened" and "composed" is the drop-off
+        // no other event captures: people who reached a canvas and never put anything
+        // on it.
+        const val WORKFLOW_DESIGN = "design"
+        const val STEP_OPENED = "opened"
+        const val STEP_COMPOSED = "composed"
+        const val STEP_EXPORTED = "exported"
+
+        const val SOURCE_TEMPLATE = "template"
+        const val SOURCE_BLANK = "blank"
+        const val SOURCE_PHOTO = "photo"
+        const val SOURCE_PROJECT = "project"
     }
 }

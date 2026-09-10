@@ -101,11 +101,23 @@ class SessionStateManager @Inject constructor(
         return ((now - screenStartTimeElapsedMs) / 1000).coerceAtLeast(0)
     }
 
+    /**
+     * Notified on every [recordAction]. One slot, set once by AdAnalyticsCoordinator so
+     * it can tell whether the user did anything in the window after an ad was dismissed.
+     * Both are singletons, so there is nothing here to leak.
+     */
+    private var actionListener: ((String) -> Unit)? = null
+
+    fun setActionListener(listener: ((String) -> Unit)?) {
+        actionListener = listener
+    }
+
     fun recordAction(actionName: String) {
         val sanitized = actionName.take(AnalyticsConstants.MAX_STRING_LENGTH)
         _lastAction.set(sanitized)
         lastActionTimestampMs = System.currentTimeMillis()
         persistStateSnapshot()
+        actionListener?.invoke(sanitized)
     }
 
     /**

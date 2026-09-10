@@ -28,6 +28,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
 import com.webscare.urducanvas.R
+import com.webscare.urducanvas.analytics.AnalyticsTracker
 import com.webscare.urducanvas.common.canvas.CanvasViewModel
 import com.webscare.urducanvas.common.canvas.enums.PanelType
 import com.webscare.urducanvas.common.canvas.sealed.FontDownloadState
@@ -53,12 +54,16 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class TextFragment : Fragment() {
 
     private var _binding: FragmentTextBinding? = null
     private val binding get() = _binding!!
+
+    @Inject
+    lateinit var analyticsTracker: AnalyticsTracker
 
     private val viewModel: CanvasViewModel by activityViewModels()
     private val mainViewModel: MainViewModel by activityViewModels()
@@ -691,6 +696,13 @@ class TextFragment : Fragment() {
 
     private fun handleFontSelection(font: FontEntity, isDownloaded: Boolean) {
         if (isDownloaded) {
+            // justDownloaded separates "used the font they came here for" from "reached
+            // for one they already had", which is the difference between font discovery
+            // driving a design and a design happening to use a font.
+            analyticsTracker.logFontApplied(
+                font.id.toString(), font.font_name, font.font_language,
+                justDownloaded = lastRequestedFontId == font.id
+            )
             mainViewModel.recordRecentFont(font.id)
             viewModel.setFont(font)
             mainViewModel.collapsePanel()

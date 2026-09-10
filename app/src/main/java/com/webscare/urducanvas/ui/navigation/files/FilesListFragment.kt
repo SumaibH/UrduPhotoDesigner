@@ -49,6 +49,7 @@ import com.webscare.urducanvas.databinding.DialogLoadingProgressBinding
 import com.webscare.urducanvas.databinding.FragmentFilesListBinding
 import com.webscare.urducanvas.databinding.LayoutFilesPopupBinding
 import com.webscare.urducanvas.viewmodels.FiltersViewModel
+import com.webscare.urducanvas.analytics.AnalyticsTracker
 import com.webscare.urducanvas.viewmodels.MainViewModel
 import android.content.Intent
 import androidx.core.content.FileProvider
@@ -71,6 +72,9 @@ import java.util.Locale
 
 @AndroidEntryPoint
 class FilesListFragment : Fragment() {
+
+    @javax.inject.Inject
+    lateinit var analyticsTracker: AnalyticsTracker
     private var _binding: FragmentFilesListBinding? = null
     private val binding get() = _binding
 
@@ -108,6 +112,24 @@ class FilesListFragment : Fragment() {
 
     private var rotationAnimator: ObjectAnimator? = null
     val navOptions = NavOptions.Builder().setLaunchSingleTop(true).build()
+
+    /**
+     * How long a project sat before its owner came back to it, in days.
+     *
+     * -1 when the stored date cannot be read: projects saved before the date column was
+     * populated carry an empty string, and a wrong number is worse than a missing one in
+     * a retention metric.
+     */
+    private fun daysSince(dateText: String?): Int {
+        if (dateText.isNullOrBlank()) return -1
+        return try {
+            val then = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(dateText)
+                ?: return -1
+            ((System.currentTimeMillis() - then.time) / 86_400_000L).toInt().coerceAtLeast(0)
+        } catch (e: Exception) {
+            -1
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -187,7 +209,10 @@ class FilesListFragment : Fragment() {
             lifecycleScope.launch {
                 selectedItems.forEach { item ->
                     when (item) {
-                        is ExportResult -> viewModel.deleteExportResult(item)
+                        is ExportResult -> {
+                            analyticsTracker.logProjectDeleted(daysSince(item.updatedDate))
+                            viewModel.deleteExportResult(item)
+                        }
                         is ImageEntity  -> viewModel.deleteImage(item)
                         is FontEntity   -> viewModel.deleteFont(item)
                     }
@@ -489,6 +514,13 @@ class FilesListFragment : Fragment() {
             is ExportResult -> {
                 canvasViewModel.loadTemplateFromJsonFile(item, requireContext(), titleHint = "Loading Project") { success ->
                     if (success && isAdded) {
+                        // Reported on success only: a project that failed to load is not
+                        // a return visit, it is a bug, and feature_error already has it.
+                        analyticsTracker.logProjectOpened(
+                            elementCount = 0,
+                            canvasSize = "${item.canvasSize.width.toInt()}x${item.canvasSize.height.toInt()}",
+                            daysSinceEdit = daysSince(item.updatedDate)
+                        )
                         findNavController().navigate(R.id.editorFragment, bundle, navOptions)
                     }
                 }
@@ -666,7 +698,10 @@ class FilesListFragment : Fragment() {
                     else            -> null
                 }
                 when (item) {
-                    is ExportResult -> viewModel.deleteExportResult(item)
+                    is ExportResult -> {
+                        analyticsTracker.logProjectDeleted(daysSince(item.updatedDate))
+                        viewModel.deleteExportResult(item)
+                    }
                     is ImageEntity  -> viewModel.deleteImage(item)
                     is FontEntity   -> viewModel.deleteFont(item)
                 }
