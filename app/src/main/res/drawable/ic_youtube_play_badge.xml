@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The play mark drawn over a tutorial thumbnail. Filled rather than the outline
+  ic_youtube used for the settings row and the header, because at this size on top of
+  a busy thumbnail an outline all but disappears.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="34dp"
+    android:viewportWidth="48"
+    android:viewportHeight="34">
+    <path
+        android:fillColor="#E62117"
+        android:pathData="M47 5.3a6 6 0 0 0-4.2-4.2C39 0 24 0 24 0S9 0 5.2 1.1A6 6 0 0 0 1 5.3C0 9.1 0 17 0 17s0 7.9 1 11.7a6 6 0 0 0 4.2 4.2C9 34 24 34 24 34s15 0 18.8-1.1a6 6 0 0 0 4.2-4.2C48 24.9 48 17 48 17s0-7.9-1-11.7z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M19.2 24.2L31.7 17 19.2 9.8z" />
+</vector>

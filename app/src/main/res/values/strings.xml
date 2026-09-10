@@ -582,4 +582,32 @@
     <string name="calligraphy_break_letters_desc">Join and stretch letters the traditional calligraphic way</string>
     <string name="calligraphy_rejoin_title">Rejoin into one text</string>
     <string name="calligraphy_rejoin_desc">Turn every piece back into normal text</string>
+    <!-- Tutorials -->
+    <string name="tutorials">Tutorials</string>
+    <string name="tutorials_subtitle">Learn UrduCanvas from our YouTube channel</string>
+    <string name="open_youtube_channel">Open our YouTube channel</string>
+    <string name="back">Back</string>
+    <string name="retry">Try again</string>
+    <string name="tutorials_empty_title">No tutorials yet</string>
+    <string name="tutorials_empty_message">New videos are posted on our YouTube channel — check back soon.</string>
+    <string name="tutorials_error_title">Could not load tutorials</string>
+    <string name="tutorials_error_message">Check your connection and try again.</string>
+    <string name="tutorial_meta">%1$s views · %2$s</string>
+    <string name="age_today">Today</string>
+    <plurals name="age_days">
+        <item quantity="one">%d day ago</item>
+        <item quantity="other">%d days ago</item>
+    </plurals>
+    <plurals name="age_weeks">
+        <item quantity="one">%d week ago</item>
+        <item quantity="other">%d weeks ago</item>
+    </plurals>
+    <plurals name="age_months">
+        <item quantity="one">%d month ago</item>
+        <item quantity="other">%d months ago</item>
+    </plurals>
+    <plurals name="age_years">
+        <item quantity="one">%d year ago</item>
+        <item quantity="other">%d years ago</item>
+    </plurals>
 </resources>

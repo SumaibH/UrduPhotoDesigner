@@ -174,6 +174,10 @@ class SettingsFragment : androidx.fragment.app.Fragment() {
             view?.post { findNavController().navigate(R.id.preferencesFragment) }
         }
 
+        binding.tutorials.addPressEffect {
+            view?.post { findNavController().navigate(R.id.tutorialsFragment) }
+        }
+
         binding.support.addPressEffect {
             openEmail(
                 to = "support@urducanvas.com",

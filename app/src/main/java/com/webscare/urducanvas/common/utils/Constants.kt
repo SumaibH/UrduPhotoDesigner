@@ -13,6 +13,21 @@ object Constants {
     const val BASE_URL_GLIDE = "https://dashboard.urdufonts.com/"
     const val BASE_URL_DOWNLOAD = "https://dashboard.urdufonts.com"
 
+    // ── Tutorials ─────────────────────────────────────────────────────────────
+    //
+    // The Tutorials screen reads the channel's public Atom feed rather than the
+    // YouTube Data API: no key to ship in the APK, no quota, no billing account.
+    // The trade-off is that the feed only carries the 15 most recent uploads.
+    //
+    // The feed is addressed by channel id, not by the @handle. To re-derive it if the
+    // channel ever moves, open https://www.youtube.com/@UrduCanvasEditor and read
+    // "externalId":"UC…" out of the page source.
+    const val YOUTUBE_CHANNEL_HANDLE = "@UrduCanvasEditor"
+    const val YOUTUBE_CHANNEL_ID = "UChsxCI6I2g19AngjX0iflMg"
+    const val YOUTUBE_FEED_URL =
+        "https://www.youtube.com/feeds/videos.xml?channel_id=$YOUTUBE_CHANNEL_ID"
+    const val YOUTUBE_CHANNEL_URL = "https://www.youtube.com/$YOUTUBE_CHANNEL_HANDLE"
+
     const val PEXELS_BASE_URL = "https://api.pexels.com/"
     const val PEXELS_API_KEY = "YUm6Jh5M8TEmXCi8UTIIZ0UbrByP5xWj8IFVoqkVy93mpihh4fQOYJxg"
     const val PEXELS_ID_OFFSET = 10_000_000

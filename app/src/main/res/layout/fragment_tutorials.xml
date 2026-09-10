@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/screen_bg"
+    tools:context=".ui.navigation.tutorials.TutorialsFragment">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/topGuide"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.02" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/startGuide"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.05" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/endGuide"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.95" />
+
+    <ImageView
+        android:id="@+id/back"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/button_bg_round"
+        android:backgroundTint="@color/surface_1"
+        android:contentDescription="@string/back"
+        android:padding="10dp"
+        android:src="@drawable/ic_back"
+        app:layout_constraintStart_toEndOf="@id/startGuide"
+        app:layout_constraintTop_toBottomOf="@id/topGuide"
+        app:tint="@color/black" />
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:ellipsize="end"
+        android:fontFamily="@font/bold"
+        android:maxLines="1"
+        android:text="@string/tutorials"
+        android:textColor="@color/black"
+        android:textSize="19sp"
+        app:layout_constraintBottom_toBottomOf="@id/back"
+        app:layout_constraintEnd_toStartOf="@id/openChannel"
+        app:layout_constraintStart_toEndOf="@id/back"
+        app:layout_constraintTop_toTopOf="@id/back" />
+
+    <ImageView
+        android:id="@+id/openChannel"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/button_bg_round"
+        android:backgroundTint="@color/surface_1"
+        android:contentDescription="@string/open_youtube_channel"
+        android:padding="9dp"
+        android:src="@drawable/ic_youtube"
+        app:layout_constraintBottom_toBottomOf="@id/back"
+        app:layout_constraintEnd_toStartOf="@id/endGuide"
+        app:layout_constraintTop_toTopOf="@id/back"
+        app:tint="@color/black" />
+
+    <TextView
+        android:id="@+id/subtitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:fontFamily="@font/regular"
+        android:text="@string/tutorials_subtitle"
+        android:textColor="@color/gray"
+        android:textSize="13sp"
+        app:layout_constraintEnd_toStartOf="@id/endGuide"
+        app:layout_constraintStart_toStartOf="@id/title"
+        app:layout_constraintTop_toBottomOf="@id/back" />
+
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefresh"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="12dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/subtitle">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/tutorialsRV"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingHorizontal="16dp"
+            android:paddingBottom="24dp"
+            tools:itemCount="4"
+            tools:listitem="@layout/layout_tutorial_item" />
+
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <!-- Cold-start skeletons. Kept as real inflated rows rather than a drawn
+         placeholder so the shimmer lands on exactly the shapes the list will use. -->
+    <LinearLayout
+        android:id="@+id/skeletonContainer"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/subtitle">
+
+        <include layout="@layout/layout_tutorial_skeleton" />
+
+        <include layout="@layout/layout_tutorial_skeleton" />
+
+        <include layout="@layout/layout_tutorial_skeleton" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/emptyState"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/endGuide"
+        app:layout_constraintStart_toEndOf="@id/startGuide"
+        app:layout_constraintTop_toBottomOf="@id/subtitle"
+        tools:visibility="visible">
+
+        <ImageView
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:alpha="0.35"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_youtube"
+            app:tint="@color/gray" />
+
+        <TextView
+            android:id="@+id/emptyTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:fontFamily="@font/medium"
+            android:text="@string/tutorials_empty_title"
+            android:textColor="@color/black"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/emptyMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:fontFamily="@font/regular"
+            android:gravity="center"
+            android:text="@string/tutorials_empty_message"
+            android:textColor="@color/gray"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/retry"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/button_bg_round"
+            android:backgroundTint="@color/surface_1"
+            android:fontFamily="@font/medium"
+            android:paddingHorizontal="22dp"
+            android:paddingVertical="10dp"
+            android:text="@string/retry"
+            android:textColor="@color/black"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
