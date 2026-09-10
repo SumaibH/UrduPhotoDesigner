@@ -3304,7 +3304,7 @@ class CanvasViewModel @Inject constructor(
     fun endBatchUpdate(elementId: String) {
         val currentList = _canvasElements.value ?: emptyList()
         val finalElement = currentList.find { it.id == elementId }
-            ?.copy(context = null) // Capture final state for undo
+            ?.snapshotForUndo() // Capture final state for undo
 
         if (finalElement != null && currentBatchAction != null) {
             when (currentBatchAction) {
@@ -3375,7 +3375,7 @@ class CanvasViewModel @Inject constructor(
     fun startBatchUpdate(elementId: String, actionType: String) {
         val currentList = _canvasElements.value ?: emptyList()
         val initialElement = currentList.find { it.id == elementId }
-            ?.copy(context = null) // Capture initial state for undo
+            ?.snapshotForUndo() // Capture initial state for undo
 
         if (initialElement != null) {
             currentBatchAction = when (actionType) {
@@ -3428,14 +3428,8 @@ class CanvasViewModel @Inject constructor(
             // Only push to undo stack if no batch action is in progress.
             // Continuous actions (drag, rotate, resize) will be handled by endBatchUpdate.
             if (currentBatchAction == null) {
-                val oldCopy = oldElement.copy(
-                    context = null,
-                    drawStrokes = oldElement.drawStrokes?.map { it.copy(path = Path(it.path)) }
-                        ?.toMutableList())
-                val newCopy = elementToUpdate.copy(
-                    context = null,
-                    drawStrokes = elementToUpdate.drawStrokes?.map { it.copy(path = Path(it.path)) }
-                        ?.toMutableList())
+                val oldCopy = oldElement.snapshotForUndo()
+                val newCopy = elementToUpdate.snapshotForUndo()
 
                 _canvasActions.push(
                     CanvasAction.UpdateElement(

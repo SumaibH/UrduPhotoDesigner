@@ -7178,6 +7178,11 @@ class CanvasView @JvmOverloads constructor(
                             calligraphyTouchStartScale = hitToken.scale
                             calligraphyTouchStartRotation = hitToken.rotation
                             calligraphyGesture = handle ?: CalligraphyGesture.MOVE
+                            // The gesture mutates the token in place, so the "before"
+                            // has to be captured now. Ending at ACTION_UP with a single
+                            // updateElement() took its old and new snapshots from the
+                            // same already-mutated object, and undo restored nothing.
+                            onStartBatchUpdate?.invoke(calElement.id, "adjustments")
                             invalidate()
                             onCalligraphyTokenSelected?.invoke(calElement, hitToken)
                             return true
@@ -8412,7 +8417,11 @@ class CanvasView @JvmOverloads constructor(
                     val calElement = canvasElements.firstOrNull { it.id == activeCalligraphyElementId }
                     if (calElement != null) {
                         calElement.recomputeCalligraphyBounds()
+                        // Closes the batch opened on touch-down, which is what actually
+                        // pushes the undo entry. The composition callback still runs so
+                        // the panel and the saved project see the new arrangement.
                         onCalligraphyCompositionChanged?.invoke(calElement)
+                        onEndBatchUpdate?.invoke(calElement.id)
                     }
                     return true
                 }

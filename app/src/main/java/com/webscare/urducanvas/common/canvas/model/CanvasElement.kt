@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.Paint
+import android.graphics.Path
 import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Typeface
@@ -459,6 +460,21 @@ data class CanvasElement(
             }
         }
     }
+
+    /**
+     * An independent copy of this element, safe to keep on an undo stack.
+     *
+     * [copy] is a shallow data-class copy, so a snapshot taken with it shares the very
+     * mutable collections the editor goes on to change in place. Undo then restores an
+     * "old" element already carrying the new values and nothing moves. Strokes were
+     * already handled at each call site; calligraphy tokens were not, which is why a
+     * per-letter move, scale or rotate could not be undone at all.
+     */
+    fun snapshotForUndo(): CanvasElement = copy(
+        context = null,
+        drawStrokes = drawStrokes?.map { it.copy(path = Path(it.path)) }?.toMutableList(),
+        calligraphyData = calligraphyData?.deepCopy()
+    )
 
     /**
      * Recomputes the enclosing bounding box for a calligraphic text element and
