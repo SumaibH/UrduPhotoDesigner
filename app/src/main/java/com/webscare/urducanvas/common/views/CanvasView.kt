@@ -1128,6 +1128,28 @@ class CanvasView @JvmOverloads constructor(
     private fun selectionUnits(): List<List<CanvasElement>> =
         selectedElements.groupBy { it.groupId ?: it.id }.values.toList()
 
+    /**
+     * One entry per selected unit, for the ViewModel: a group reports its sentinel once,
+     * a loose element reports itself. The ViewModel counts objects rather than children,
+     * and resolveSelectedForCanvas expands sentinels back into children on the way in.
+     */
+    private fun selectionReport(): List<CanvasElement> {
+        val out = mutableListOf<CanvasElement>()
+        val seenGroups = mutableSetOf<String>()
+        selectedElements.forEach { el ->
+            val gid = el.groupId
+            if (gid == null) {
+                out.add(el)
+                return@forEach
+            }
+            if (!seenGroups.add(gid)) return@forEach
+            out.add(
+                canvasElements.firstOrNull { it.type == ElementType.GROUP && it.id == gid } ?: el
+            )
+        }
+        return out
+    }
+
     /** Combined axis-aligned bounds of one alignment unit. */
     private fun unitBounds(unit: List<CanvasElement>): RectF {
         var l = Float.MAX_VALUE; var t = Float.MAX_VALUE
@@ -7737,7 +7759,13 @@ class CanvasView @JvmOverloads constructor(
                             val sentinel = canvasElements.firstOrNull {
                                 it.type == ElementType.GROUP && it.id == gid
                             }
-                            if (groupMembers.isNotEmpty() && groupMembers.all { it.isSelected }) {
+                            // Ask selectedElements, not the isSelected flag. A group is
+                            // reported to the ViewModel as its sentinel, so on the way back
+                            // only the sentinel carries isSelected and the children — which
+                            // resolveSelectedForCanvas puts straight back into
+                            // selectedElements — read as unselected.
+                            val selectedIds = selectedElements.mapTo(mutableSetOf()) { it.id }
+                            if (groupMembers.isNotEmpty() && groupMembers.all { it.id in selectedIds }) {
                                 // Already in the selection — let the drag take it, matching
                                 // what an ungrouped element does when tapped again.
                                 touchedDownElement = touchedElement
@@ -7747,17 +7775,16 @@ class CanvasView @JvmOverloads constructor(
                                 currentMode = Mode.NONE
                             } else {
                                 groupMembers.forEach { element ->
-                                    if (!element.isSelected) {
-                                        element.isSelected = true
-                                        selectedElements.add(element)
-                                    }
+                                    element.isSelected = true
+                                    if (element.id !in selectedIds) selectedElements.add(element)
                                 }
                                 sentinel?.isSelected = true
-                                onElementSelected?.invoke(selectedElements.toList())
                                 vibrateSoft()
-                                invalidate()
-                                return true
                             }
+                            // Deliberately falls through to the shared tail, the way the
+                            // ungrouped branch below does — it arms the drag and reports the
+                            // selection. Returning early here skipped that and left a
+                            // re-tapped group impossible to drag.
                         } else {
                             // Fresh tap on a grouped child → select whole group as one unit
                             val groupMembers = canvasElements.filter { it.groupId == gid }
@@ -7820,15 +7847,11 @@ class CanvasView @JvmOverloads constructor(
                         }
                     }
                     onStartBatchUpdate?.invoke(touchedElement.id, "drag")
-                    // Report sentinel to ViewModel when a group is selected,
-                    // so it sees 1 unit not N children.
-                    val reportForSelection = if (touchedElement.groupId != null) {
-                        val sent = canvasElements.firstOrNull {
-                            it.type == ElementType.GROUP && it.id == touchedElement.groupId
-                        }
-                        if (sent != null) listOf(sent) else selectedElements.toList()
-                    } else selectedElements.toList()
-                    onElementSelected?.invoke(reportForSelection)
+                    // One entry per selected unit, so the ViewModel sees objects not children.
+                    // This used to report listOf(sentinel) for the touched group alone, which
+                    // silently dropped every other selected group once two could be held at
+                    // once. selectionReport() gives the same answer for a lone group.
+                    onElementSelected?.invoke(selectionReport())
                     invalidate()
                     return true
                 } else {
@@ -8583,13 +8606,28 @@ class CanvasView @JvmOverloads constructor(
                 }
                 if (isDragCandidate && touchedDownElement != null) {
                     val element = touchedDownElement!!
-                    element.isSelected = false
-                    selectedElements.remove(element)
+                    // A grouped child stands for its whole group here. Dropping just the one
+                    // tapped would leave a partial group selected, and the next align or drag
+                    // would move the group minus that child — the very tearing that aligning
+                    // in units exists to prevent.
+                    val gid = element.groupId
+                    val leaving =
+                        if (gid != null) canvasElements.filter { it.groupId == gid }
+                        else listOf(element)
+                    leaving.forEach {
+                        it.isSelected = false
+                        selectedElements.remove(it)
+                    }
+                    if (gid != null) {
+                        canvasElements.firstOrNull {
+                            it.type == ElementType.GROUP && it.id == gid
+                        }?.isSelected = false
+                    }
                     if (selectedElements.isEmpty()) {
                         inSelectionMode = false
                         onExitSelectionMode?.invoke()
                     }
-                    onElementSelected?.invoke(selectedElements)
+                    onElementSelected?.invoke(selectionReport())
                     invalidate()
                 }
                 isDragCandidate = false
