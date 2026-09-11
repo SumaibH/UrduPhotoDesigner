@@ -223,6 +223,11 @@ class ImageStrokeFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        // Setting an adapter registers an observer on it that points back at the
+        // RecyclerView, so an adapter left attached keeps the dead view tree alive
+        // for as long as the fragment does. Every other panel detaches here.
+        _binding?.colors?.adapter = null
+        _binding?.gradients?.adapter = null
         super.onDestroyView()
         _binding = null
     }

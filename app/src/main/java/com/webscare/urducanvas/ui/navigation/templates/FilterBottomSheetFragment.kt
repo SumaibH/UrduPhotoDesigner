@@ -190,6 +190,7 @@ class FilterBottomSheetFragment : BottomSheetDialogFragment() {
     }
 
     override fun onDestroyView() {
+        _binding?.sizesRV?.adapter = null
         super.onDestroyView()
         _binding = null
     }

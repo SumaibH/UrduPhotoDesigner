@@ -535,6 +535,13 @@ class SubscriptionsFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        // This fragment is a destination on the root graph, so the instance
+        // outlives its view. planAdapter is a lateinit field that cannot be
+        // nulled, and its selection lambda captures this fragment — left
+        // attached, it kept the whole dead hierarchy alive through the observer
+        // the RecyclerView registers on it.
+        _binding?.planList?.adapter = null
+        _binding?.templateSlider?.adapter = null
         super.onDestroyView()
         sliderHandler.removeCallbacks(sliderTick)
         sliderCallbackRegistered = false

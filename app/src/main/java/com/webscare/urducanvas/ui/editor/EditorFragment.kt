@@ -3780,6 +3780,7 @@ class EditorFragment : Fragment() {
         // The new view inflates hidden, so the tracked state has to start over
         // with it or the strip would never animate back in.
         characterBarShown = false
+        _binding?.rvCalligraphyChars?.adapter = null
         characterBarAdapter = null
         // Keyed by View — see the field. Leaving entries here pins the whole hierarchy.
         kitShown.clear()

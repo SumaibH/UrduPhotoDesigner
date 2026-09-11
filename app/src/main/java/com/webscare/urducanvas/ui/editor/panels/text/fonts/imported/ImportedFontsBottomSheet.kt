@@ -340,6 +340,7 @@ class ImportedFontsBottomSheet : BottomSheetDialogFragment() {
     }
 
     override fun onDestroyView() {
+        _binding?.fontsRV?.adapter = null
         super.onDestroyView()
         _binding = null
     }
