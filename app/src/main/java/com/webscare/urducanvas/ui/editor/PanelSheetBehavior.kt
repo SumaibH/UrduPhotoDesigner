@@ -25,7 +25,7 @@ import kotlin.math.abs
 class PanelSheetBehavior(
     private val root: ConstraintLayout,
     private val guideline: Guideline,
-    private val dragHandleView: View,
+    dragHandleView: View,
     private val collapsedPx: Int,
     expandedPx: Int,                   // raw value — clamped to 90 % internally
     private val onSlide: (Float) -> Unit,
@@ -55,6 +55,23 @@ class PanelSheetBehavior(
     )
 
     // ── State ─────────────────────────────────────────────────────────────────
+
+    /**
+     * The panel's drag handle, held only until [attach] has put a listener on it.
+     *
+     * The editor outlives every panel that hands it a handle, and this behavior is
+     * held by the editor for as long as it is open — so keeping the handle keeps
+     * the whole destroyed panel view tree with it, through the handle's parent
+     * chain. LeakCanary caught exactly that after repeated open/close cycles:
+     * EditorFragment → panelSheet → PanelSheetBehavior → a dead ConstraintLayout.
+     *
+     * `dropHandleWhenDetached` already fixed this shape once for the editor's own
+     * `currentDragHandle` and could not reach this second copy of the reference.
+     * Nothing here needs the view once its listener is set — the view holds the
+     * listener, not the other way round — so the reference is dropped rather than
+     * nulled out from the far end.
+     */
+    private var pendingDragHandle: View? = dragHandleView
 
     var isSwipeEnabled = true
     var touchDragZoneEnabled = true
@@ -171,7 +188,8 @@ class PanelSheetBehavior(
 
     @SuppressLint("ClickableViewAccessibility")
     fun attach() {
-        dragHandleView.setOnTouchListener { _, event -> onTouch(event) }
+        pendingDragHandle?.setOnTouchListener { _, event -> onTouch(event) }
+        pendingDragHandle = null
 
         root.setOnTouchListener { _, event ->
             if (!touchDragZoneEnabled) return@setOnTouchListener false
