@@ -23,7 +23,16 @@ class TableLayoutCache(
     val cols: Int,
     val rowHeightsPx: List<Float>,
     val colWidthsPx: List<Float>,
-    val cellLayouts: List<List<CellLayout>>
+    val cellLayouts: List<List<CellLayout>>,
+    /**
+     * The vertical grid lines, left to right: [cols] + 1 offsets from the table's centre
+     * origin. Published because the borders have to fall exactly where the cells do, and
+     * [colWidthsPx] is in logical order -- summing it works out to the same offsets only
+     * while the table is LTR or every column is the same width.
+     */
+    val colEdgesPx: List<Float>,
+    /** The horizontal grid lines, top to bottom: [rows] + 1 offsets. */
+    val rowEdgesPx: List<Float>
 ) {
     companion object {
         fun build(
@@ -87,10 +96,17 @@ class TableLayoutCache(
             val left0 = -totalW / 2f
             val top0 = -totalH / 2f
 
-            val colLefts = mutableListOf<Float>()
+            // Left-to-right placement order. In an RTL table the first logical column is the
+            // rightmost one on screen, so the offsets have to accumulate over the *reversed*
+            // widths. Accumulating over the logical order and then reading the slot at the
+            // mirrored index gave every column a different column's width -- which is why
+            // "Auto Expand" handed the single-digit index column the width measured for the
+            // price column, and squeezed the prices into the index column's width.
+            val visualWidths = if (data.isRTL) colWidths.reversed() else colWidths
+            val visualLefts = mutableListOf<Float>()
             var curX = left0
-            colWidths.forEach { w ->
-                colLefts.add(curX)
+            visualWidths.forEach { w ->
+                visualLefts.add(curX)
                 curX += w
             }
 
@@ -105,10 +121,11 @@ class TableLayoutCache(
                 val rTop = rowTops[r]
                 val rBottom = rTop + rowHeights[r]
                 List(cCount) { c ->
-                    // Handle RTL column ordering
+                    // Where this column sits on screen, carrying its own width with it.
                     val visualCol = if (data.isRTL) (cCount - 1 - c) else c
-                    val cLeft = colLefts[visualCol]
-                    val cRight = cLeft + colWidths[visualCol]
+                    val cWidth = colWidths[c]
+                    val cLeft = visualLefts[visualCol]
+                    val cRight = cLeft + cWidth
                     val cellRect = RectF(cLeft, rTop, cRight, rBottom)
                     val cellObj = if (r < data.cells.size && c < data.cells[r].size) data.cells[r][c] else null
                     val mergedStyle = mergeStyle(data, r, c, cellObj?.override)
@@ -129,7 +146,7 @@ class TableLayoutCache(
                         }
                         typeface = if (tf != null) Typeface.create(tf, styleInt) else Typeface.create(Typeface.DEFAULT, styleInt)
                     }
-                    val availableTextWidth = (colWidths[visualCol] - (data.paddingH * 2)).coerceAtLeast(10f)
+                    val availableTextWidth = (cWidth - (data.paddingH * 2)).coerceAtLeast(10f)
                     val lines = if (data.contentWrap) {
                         if (text.isNotBlank()) text.split("\n") else emptyList()
                     } else {
@@ -139,7 +156,12 @@ class TableLayoutCache(
                 }
             }
 
-            return TableLayoutCache(totalW, totalH, rCount, cCount, rowHeights, colWidths, layouts)
+            val colEdges = visualLefts + (left0 + visualWidths.sum())
+            val rowEdges = rowTops + (top0 + rowHeights.sum())
+
+            return TableLayoutCache(
+                totalW, totalH, rCount, cCount, rowHeights, colWidths, layouts, colEdges, rowEdges
+            )
         }
 
         private fun wrapTextToLines(text: String, paint: TextPaint, maxAvailableWidth: Float): List<String> {

@@ -3483,11 +3483,11 @@ class CanvasView @JvmOverloads constructor(
         when (tableData.borderMode) {
             com.webscare.urducanvas.common.canvas.enums.TableBorderMode.ALL -> {
                 for (r in 0..cache.rows) {
-                    val y = top + cache.rowHeightsPx.take(r).sum()
+                    val y = cache.rowEdgesPx[r]
                     canvas.drawLine(left, y, right, y, borderPaint)
                 }
                 for (c in 0..cache.cols) {
-                    val x = left + cache.colWidthsPx.take(c).sum()
+                    val x = cache.colEdgesPx[c]
                     canvas.drawLine(x, top, x, bottom, borderPaint)
                 }
                 if (radiusPx > 0f) {
@@ -3503,23 +3503,23 @@ class CanvasView @JvmOverloads constructor(
             }
             com.webscare.urducanvas.common.canvas.enums.TableBorderMode.INNER -> {
                 for (r in 1 until cache.rows) {
-                    val y = top + cache.rowHeightsPx.take(r).sum()
+                    val y = cache.rowEdgesPx[r]
                     canvas.drawLine(left, y, right, y, borderPaint)
                 }
                 for (c in 1 until cache.cols) {
-                    val x = left + cache.colWidthsPx.take(c).sum()
+                    val x = cache.colEdgesPx[c]
                     canvas.drawLine(x, top, x, bottom, borderPaint)
                 }
             }
             com.webscare.urducanvas.common.canvas.enums.TableBorderMode.HORIZONTAL -> {
                 for (r in 0..cache.rows) {
-                    val y = top + cache.rowHeightsPx.take(r).sum()
+                    val y = cache.rowEdgesPx[r]
                     canvas.drawLine(left, y, right, y, borderPaint)
                 }
             }
             com.webscare.urducanvas.common.canvas.enums.TableBorderMode.VERTICAL -> {
                 for (c in 0..cache.cols) {
-                    val x = left + cache.colWidthsPx.take(c).sum()
+                    val x = cache.colEdgesPx[c]
                     canvas.drawLine(x, top, x, bottom, borderPaint)
                 }
             }
@@ -3716,6 +3716,21 @@ class CanvasView @JvmOverloads constructor(
         }
     }
 
+    /**
+     * How much of [delta] can move from one row/column into its neighbour without pushing
+     * either below [minRatio].
+     *
+     * Both sides are checked because either can already be under the floor -- auto-measured
+     * widths are free to produce a 2% column, and the previous inline version fed such a pair
+     * to coerceIn() with its lower bound above its upper bound, which throws.
+     */
+    private fun clampRatioDelta(delta: Float, target: Float, partner: Float, minRatio: Float): Float {
+        val lower = -(target - minRatio)
+        val upper = partner - minRatio
+        if (lower > upper) return 0f
+        return delta.coerceIn(lower, upper)
+    }
+
     private fun getTableCellAt(element: CanvasElement, canvasX: Float, canvasY: Float): Pair<Int, Int>? {
         val tableData = element.tableData ?: return null
         val totalW = element.logicalContentWidth.takeIf { it > 0f } ?: (canvasWidth * 0.8f)
@@ -3800,8 +3815,6 @@ class CanvasView @JvmOverloads constructor(
             val colCenterX = cellRect.centerX()
             val topEdgeY = top - offset
 
-            // Visual column index accounting for RTL
-            val visualCol = if (tableData.isRTL) (tableData.cols - 1 - sc) else sc
 
             // 1. Check Top Column Resize Handle
             val topHitRect = RectF(
@@ -3811,7 +3824,10 @@ class CanvasView @JvmOverloads constructor(
                 topEdgeY + 18f * density
             )
             if (topHitRect.contains(lx, ly)) {
-                return TableHandleHit(TableHandleType.COL_RESIZE, colIndex = visualCol)
+                // Logical, not visual: the drag handler indexes colWidthRatios, which is
+                // stored in logical order. Handing it the mirrored index resized a
+                // different column than the one the handle was attached to.
+                return TableHandleHit(TableHandleType.COL_RESIZE, colIndex = sc)
             }
 
             // 2. Check Right Row Resize Handle
@@ -8191,30 +8207,23 @@ class CanvasView @JvmOverloads constructor(
                                 val targetCol = draggedColIndex
                                 val minRatio = 0.05f
 
-                                if (targetCol < cCount - 1) {
-                                    val partnerCol = targetCol + 1
-                                    val rawDelta = localDx / totalW
-                                    val maxNegativeDelta = -(ratios[targetCol] - minRatio)
-                                    val maxPositiveDelta = ratios[partnerCol] - minRatio
-                                    val clampedDelta = rawDelta.coerceIn(maxNegativeDelta, maxPositiveDelta)
-                                    if (clampedDelta != 0f) {
-                                        ratios[targetCol] += clampedDelta
-                                        ratios[partnerCol] -= clampedDelta
-                                        activeTable.tableLayoutCache = null
-                                        invalidate()
-                                    }
-                                } else {
-                                    val partnerCol = targetCol - 1
-                                    val rawDelta = -localDx / totalW
-                                    val maxNegativeDelta = -(ratios[targetCol] - minRatio)
-                                    val maxPositiveDelta = ratios[partnerCol] - minRatio
-                                    val clampedDelta = rawDelta.coerceIn(maxNegativeDelta, maxPositiveDelta)
-                                    if (clampedDelta != 0f) {
-                                        ratios[targetCol] += clampedDelta
-                                        ratios[partnerCol] -= clampedDelta
-                                        activeTable.tableLayoutCache = null
-                                        invalidate()
-                                    }
+                                // The handle sits on the dragged column's right-hand edge, and
+                                // width is traded with whichever column is physically next to it.
+                                // In an RTL table that neighbour is the *previous* logical column,
+                                // so work the partner out from screen order, not from the index.
+                                val visualIndex = if (data.isRTL) cCount - 1 - targetCol else targetCol
+                                val hasRightNeighbour = visualIndex < cCount - 1
+                                val partnerVisual = if (hasRightNeighbour) visualIndex + 1 else visualIndex - 1
+                                val partnerCol = if (data.isRTL) cCount - 1 - partnerVisual else partnerVisual
+                                // On the last visual column there is no edge to the right, so the
+                                // left edge moves instead and dragging right shrinks the column.
+                                val rawDelta = if (hasRightNeighbour) localDx / totalW else -localDx / totalW
+                                val clampedDelta = clampRatioDelta(rawDelta, ratios[targetCol], ratios[partnerCol], minRatio)
+                                if (clampedDelta != 0f) {
+                                    ratios[targetCol] += clampedDelta
+                                    ratios[partnerCol] -= clampedDelta
+                                    activeTable.tableLayoutCache = null
+                                    invalidate()
                                 }
                                 touchStartX = x
                                 touchStartY = y
@@ -8234,30 +8243,15 @@ class CanvasView @JvmOverloads constructor(
                                 val targetRow = draggedRowIndex
                                 val minRatio = 0.05f
 
-                                if (targetRow < rCount - 1) {
-                                    val partnerRow = targetRow + 1
-                                    val rawDelta = localDy / totalH
-                                    val maxNegativeDelta = -(ratios[targetRow] - minRatio)
-                                    val maxPositiveDelta = ratios[partnerRow] - minRatio
-                                    val clampedDelta = rawDelta.coerceIn(maxNegativeDelta, maxPositiveDelta)
-                                    if (clampedDelta != 0f) {
-                                        ratios[targetRow] += clampedDelta
-                                        ratios[partnerRow] -= clampedDelta
-                                        activeTable.tableLayoutCache = null
-                                        invalidate()
-                                    }
-                                } else {
-                                    val partnerRow = targetRow - 1
-                                    val rawDelta = -localDy / totalH
-                                    val maxNegativeDelta = -(ratios[targetRow] - minRatio)
-                                    val maxPositiveDelta = ratios[partnerRow] - minRatio
-                                    val clampedDelta = rawDelta.coerceIn(maxNegativeDelta, maxPositiveDelta)
-                                    if (clampedDelta != 0f) {
-                                        ratios[targetRow] += clampedDelta
-                                        ratios[partnerRow] -= clampedDelta
-                                        activeTable.tableLayoutCache = null
-                                        invalidate()
-                                    }
+                                val hasRowBelow = targetRow < rCount - 1
+                                val partnerRow = if (hasRowBelow) targetRow + 1 else targetRow - 1
+                                val rawDelta = if (hasRowBelow) localDy / totalH else -localDy / totalH
+                                val clampedDelta = clampRatioDelta(rawDelta, ratios[targetRow], ratios[partnerRow], minRatio)
+                                if (clampedDelta != 0f) {
+                                    ratios[targetRow] += clampedDelta
+                                    ratios[partnerRow] -= clampedDelta
+                                    activeTable.tableLayoutCache = null
+                                    invalidate()
                                 }
                                 touchStartX = x
                                 touchStartY = y
