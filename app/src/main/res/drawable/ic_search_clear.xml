@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Clear-the-search cross. Drawn as strokes rather than Material's filled disc so it
-    sits at the same weight as the magnifier at the other end of the pill instead of
-    reading as a solid blob. One definition, so every search bar in the app follows it.
+    Clear-the-search cross. A bare stroked X — no disc and no ring — so it sits at the
+    same weight as the magnifier at the other end of the pill rather than reading as a
+    button inside a button. One definition, so every search bar in the app follows it.
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="18dp"
@@ -11,14 +11,9 @@
     android:viewportHeight="24">
 
     <path
-        android:pathData="M12,3.1A8.9,8.9 0 1 0 12,20.9 8.9,8.9 0 1 0 12,3.1z"
+        android:pathData="M7.4,7.4L16.6,16.6M16.6,7.4L7.4,16.6"
         android:strokeColor="#FF8E94A2"
-        android:strokeWidth="1.6" />
-
-    <path
-        android:pathData="M9.1,9.1L14.9,14.9M14.9,9.1L9.1,14.9"
-        android:strokeColor="#FF8E94A2"
-        android:strokeWidth="1.6"
+        android:strokeWidth="1.9"
         android:strokeLineCap="round" />
 
 </vector>
