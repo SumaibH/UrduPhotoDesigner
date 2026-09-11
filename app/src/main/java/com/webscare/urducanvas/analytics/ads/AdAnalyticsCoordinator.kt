@@ -43,7 +43,7 @@ class AdAnalyticsCoordinator @Inject constructor(
          * impression as a no-fill costs more than the reverse, because it understates
          * a number the whole ad funnel divides by.
          */
-        private const val MIN_RENDER_MS = 700L
+        const val MIN_RENDER_MS = 700L
 
         /** The `adType` strings WebsCareAds passes to its analytics callbacks. */
         private const val FORMAT_NATIVE = "native"

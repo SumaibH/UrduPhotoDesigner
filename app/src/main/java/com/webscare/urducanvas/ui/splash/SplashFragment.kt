@@ -124,6 +124,22 @@ class SplashFragment : Fragment() {
 
     private val appOpenDismissRelay = Relay()
 
+    /**
+     * True only while [WebsCareAds.showAppOpen] is on the stack, so a dismissal that
+     * arrives inside the call can be read for what it is: the SDK reporting that it had
+     * no ad rather than one the user has already seen.
+     */
+    private var askingForAppOpen = false
+
+    /** One splash asks for the ad as often as it needs to, but reports one opportunity. */
+    private var opportunityLogged = false
+
+    /** An ad took the screen and its dismissal still owes the splash a navigation. */
+    private var handedToAd = false
+
+    /** When the ad was handed over, to tell a dismissal from a failure to present. */
+    private var adHandoffAt = 0L
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -519,19 +535,32 @@ class SplashFragment : Fragment() {
      * Leaves for Home once the splash has held long enough — and, when an app-open ad is
      * on its way, once it has loaded, so the ad plays over the splash rather than over
      * a Home that has only just appeared.
+     *
+     * Readiness is asked for rather than polled, because WebsCareAds 1.0.2 has no way to
+     * answer the question: [WebsCareAds.isAdLoaded] delegates to the interstitial handler
+     * alone, so it resolves an app-open unit against the interstitial cache — where it can
+     * never appear — and returns false forever. Polling it meant every cold start sat out
+     * the whole of [MAX_AD_WAIT_MS] before leaving, ad or no ad. [askForAppOpen] asks
+     * instead, and the SDK's own answer is the signal; see there.
      */
     private val exitCheck = object : Runnable {
         override fun run() {
             val root = _binding?.root ?: return
-            val elapsed = SystemClock.uptimeMillis() - startedAt
-            val adStillLoading = waitsForAppOpen() &&
-                    elapsed < MAX_AD_WAIT_MS &&
-                    !WebsCareAds.isAdLoaded(BuildConfig.AD_APP_OPEN_SPLASH)
-            if (adStillLoading) {
-                root.postDelayed(this, AD_POLL_MS)
-            } else {
-                navigateToHome()
+            if (navigated) return
+            if (!waitsForAppOpen()) {
+                leave()
+                return
             }
+            // The ad has the screen: its dismissal leaves for Home.
+            if (askForAppOpen()) return
+            if (SystemClock.uptimeMillis() - startedAt < MAX_AD_WAIT_MS) {
+                root.postDelayed(this, AD_POLL_MS)
+                return
+            }
+            if (opportunityLogged) {
+                adAnalyticsCoordinator.onAdFailedToShow("app_open_splash", "app_open", "no_fill_or_skipped")
+            }
+            leave()
         }
     }
 
@@ -541,36 +570,89 @@ class SplashFragment : Fragment() {
                 BuildConfig.AD_APP_OPEN_SPLASH.isNotEmpty() &&
                 !billingManager.isSubscribed.value
 
-    private fun navigateToHome() {
+    /**
+     * Asks the SDK to play the splash app-open ad, and reports whether it did.
+     *
+     * True means the ad is on screen and leaving for Home is now [appOpenDismissRelay]'s
+     * job. False means the SDK had nothing to play — which it says by running the
+     * completion lambda before [WebsCareAds.showAppOpen] has even returned — and the
+     * caller should ask again in a moment. That inline answer is what tells the two apart,
+     * exactly: a real ad cannot be presented and dismissed inside a single call, and the
+     * SDK's not-ready path starts a preload on its way out, so asking early is also
+     * what keeps a failed load retrying.
+     *
+     * The ad opportunity is logged on the first ask only, so a splash that asks eight
+     * times before an ad arrives still reports one opportunity and one outcome.
+     */
+    private fun askForAppOpen(): Boolean {
+        val activity = activity ?: return false
+        if (!opportunityLogged) {
+            opportunityLogged = true
+            adAnalyticsCoordinator.onAdOpportunity("app_open_splash", "app_open", "splash_open")
+        }
+
+        var answeredInline = false
+        askingForAppOpen = true
+        adHandoffAt = SystemClock.elapsedRealtime()
+        appOpenDismissRelay.action = {
+            if (askingForAppOpen) answeredInline = true else finishWithAppOpen()
+        }
+        // Bound to a local on purpose: a lambda that mentions `appOpenDismissRelay`
+        // directly would capture `this` and defeat the whole point of the relay.
+        val relay = appOpenDismissRelay
+        WebsCareAds.showAppOpen(activity, BuildConfig.AD_APP_OPEN_SPLASH) { relay.fire() }
+        askingForAppOpen = false
+
+        if (answeredInline) return false
+        handedToAd = true
+        return true
+    }
+
+    /**
+     * Reports what the ad did and leaves for Home.
+     *
+     * Reaching here at all means the SDK took the ad rather than answering inline, so
+     * this is a dismissal — unless it came back almost at once, which is the ad failing
+     * to present rather than the user closing it. Counting one of those as an impression
+     * is how fill rate ends up reading high.
+     */
+    private fun finishWithAppOpen() {
+        _binding?.root?.removeCallbacks(appOpenWatchdog)
+        if (SystemClock.elapsedRealtime() - adHandoffAt < AdAnalyticsCoordinator.MIN_RENDER_MS) {
+            adAnalyticsCoordinator.onAdFailedToShow("app_open_splash", "app_open", "failed_to_show")
+        } else {
+            adAnalyticsCoordinator.onAdShown("app_open_splash", "app_open", "splash", "splash_open")
+            adAnalyticsCoordinator.onAdDismissed("app_open_splash", "app_open", rewardEarned = false)
+        }
+        leave()
+    }
+
+    /**
+     * The ad is gone and nothing was reported: AdMob dropped the dismissal, which would
+     * otherwise leave the splash on screen for the rest of the process. Armed from
+     * [onResume] rather than from a timer, so the splash never tries to navigate from
+     * behind a full-screen ad, where the activity is stopped and the fragment manager
+     * would refuse the transaction.
+     */
+    private val appOpenWatchdog = Runnable {
+        appOpenDismissRelay.action = null
+        finishWithAppOpen()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Back in front of the user with an ad still owing us its dismissal. That
+        // callback is what normally leaves, so give it the moment it usually needs.
+        if (handedToAd && !navigated) {
+            _binding?.root?.postDelayed(appOpenWatchdog, APP_OPEN_DISMISS_GRACE_MS)
+        }
+    }
+
+    /** Hands the splash to the exit choreography, once. */
+    private fun leave() {
         if (navigated || !isAdded || view == null) return
         navigated = true
-
-        val performNavigation = {
-            view?.post { leaveForHome() }
-        }
-
-        val activity = activity
-        if (activity != null) {
-            adAnalyticsCoordinator.onAdOpportunity("app_open_splash", "app_open", "splash_open")
-            appOpenDismissRelay.action = {
-                // showAppOpen runs its completion lambda whether an ad played or there
-                // was no fill, so whether this counts as an impression is decided here
-                // from how long the round trip took, not optimistically up front.
-                val shown = adAnalyticsCoordinator.onAdCompletionCallback(
-                    "app_open_splash", "app_open", "splash", "splash_open"
-                )
-                if (shown) {
-                    adAnalyticsCoordinator.onAdDismissed("app_open_splash", "app_open", rewardEarned = false)
-                }
-                performNavigation()
-            }
-            // Bound to a local on purpose: a lambda that mentions `appOpenDismissRelay`
-            // directly would capture `this` and defeat the whole point of the relay.
-            val relay = appOpenDismissRelay
-            WebsCareAds.showAppOpen(activity, BuildConfig.AD_APP_OPEN_SPLASH) { relay.fire() }
-        } else {
-            performNavigation()
-        }
+        view?.post { leaveForHome() }
     }
 
     /**
@@ -671,6 +753,7 @@ class SplashFragment : Fragment() {
             b.root.removeCallbacks(fallback)
             b.root.removeCallbacks(statusBarFlip)
             b.root.removeCallbacks(exitCheck)
+            b.root.removeCallbacks(appOpenWatchdog)
             listOf(b.mark, b.wordmark, b.tagline, b.calligraphy, b.footer, b.iconReplica)
                 .forEach { it.animate().cancel() }
         }
@@ -748,6 +831,12 @@ class SplashFragment : Fragment() {
         /** How long it will keep waiting beyond that for the app-open ad to load. */
         const val MAX_AD_WAIT_MS = 3000L
         const val AD_POLL_MS = 150L
+
+        /**
+         * How long the dismissal callback has to arrive once the app-open ad is off the
+         * screen again, before the splash leaves without it.
+         */
+        const val APP_OPEN_DISMISS_GRACE_MS = 500L
 
         /** The mark, tagline and footer fade before the exit overlay takes over the frame. */
     }
