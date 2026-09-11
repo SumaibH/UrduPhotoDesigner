@@ -345,7 +345,7 @@ class TextFragment : Fragment() {
 
                 tl.getTabAt(selectPos)?.select()
                 updateTextTabStyles(tl, selectPos)
-                com.webscare.urducanvas.common.utils.PanelTabHelper.scrollToTabIfOverflows(tl, selectPos)
+                com.webscare.urducanvas.common.utils.PanelTabHelper.showBreadcrumbFully(tl)
             }
 
             attachTabListener()
@@ -1455,7 +1455,7 @@ class TextFragment : Fragment() {
 
                 tl.getTabAt(selectPos)?.select()
                 updateTextTabStyles(tl, selectPos)
-                com.webscare.urducanvas.common.utils.PanelTabHelper.scrollToTabIfOverflows(tl, selectPos)
+                com.webscare.urducanvas.common.utils.PanelTabHelper.showBreadcrumbFully(tl)
             }
 
             attachTabListener()

@@ -114,6 +114,23 @@ object PanelTabHelper {
         chevronView?.imageTintList = ColorStateList.valueOf(textColor)
     }
 
+    /**
+     * Parks a tab row at its start, so a pinned breadcrumb chip is fully on screen.
+     *
+     * The rows that have one put [← Language] / [← Styles] / [← Style] at position 0
+     * and then select a category further along. Both select() and
+     * [scrollToTabIfOverflows] centre that selection, which opens the row already
+     * scrolled with the chip clipped by the start edge — the way back is the first
+     * thing cut off. On the initial build the chip matters more than centring, so
+     * those rows call this instead.
+     *
+     * Posted twice over: once for the tabs to be laid out, and once more so it lands
+     * after the scroll the selection itself starts.
+     */
+    fun showBreadcrumbFully(tabLayout: TabLayout) {
+        tabLayout.post { tabLayout.post { tabLayout.scrollTo(0, 0) } }
+    }
+
     fun scrollToTabIfOverflows(tabLayout: TabLayout, position: Int) {
         tabLayout.post {
             if (tabLayout.tabCount <= 0) return@post

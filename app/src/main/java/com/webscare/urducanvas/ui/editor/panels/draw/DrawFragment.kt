@@ -193,6 +193,8 @@ class DrawFragment : Fragment() {
         val selectPos = if (current == null) 1 else categories.indexOf(current) + 2
         b.tabLayout.getTabAt(selectPos)?.select()
         applyCategoryTabStyles(selectPos)
+        // select() scrolls its tab into view, which clips the [← Style] chip.
+        PanelTabHelper.showBreadcrumbFully(b.tabLayout)
 
         b.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
