@@ -86,6 +86,7 @@
     <!-- Screen UI theme (see values/colors.xml for the hierarchy). Dark keeps
          the same three steps, just lit from the other end. -->
     <color name="screen_bg">#121214</color>
+    <color name="watermark_tint">#FFFFFF</color>
     <color name="surface_1">#202024</color>
     <color name="surface_2">#2A2A2F</color>
     <color name="surface_stroke">#2E2E33</color>

@@ -8,6 +8,32 @@
     android:background="@color/screen_bg"
     tools:context=".ui.navigation.settings.subscriptions.SubscriptionsFragment">
 
+    <!--
+        The header glyph, laid into the page behind everything else.
+
+        First child so it sits under the content, and outside the scroll view so it
+        stays put while the plans and features move over it — a watermark on the
+        page rather than a picture in the list. It bleeds off the end edge the same
+        way Home's header does, and its densest strokes sit beside the headline,
+        which is the one part of this screen that is not covered by a card.
+    -->
+    <ImageView
+        android:id="@+id/watermark"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:alpha="0.07"
+        android:contentDescription="@null"
+        android:importantForAccessibility="no"
+        android:scaleType="fitCenter"
+        android:src="@drawable/header_calligraphy"
+        android:translationX="58dp"
+        android:translationY="-18dp"
+        app:layout_constraintDimensionRatio="614:900"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_percent="0.66"
+        app:tint="@color/watermark_tint" />
+
     <!-- ── Fixed top bar (does not scroll) ───────────────────────────────── -->
     <LinearLayout
         android:id="@+id/topBar"

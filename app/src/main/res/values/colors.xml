@@ -108,6 +108,9 @@
                        artboard inside a size tile, a font preview)
          The editor keeps its own palette and is deliberately exempt. -->
     <color name="screen_bg">#FFFFFF</color>
+    <!-- The header glyph laid into a page as a watermark: brand green on a light
+         page, plain white on a dark one. Always paired with a low view alpha. -->
+    <color name="watermark_tint">#005D28</color>
     <color name="surface_1">#F7F7F7</color>
     <color name="surface_2">#FFFFFF</color>
     <color name="surface_stroke">#ECECEC</color>
