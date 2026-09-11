@@ -53,6 +53,7 @@ class TableLayoutOptionsFragment : Fragment() {
                 if (data.rows < 15) {
                     data.rows += 1
                     data.cells.add(0, MutableList(data.cols) { com.webscare.urducanvas.common.canvas.model.TableCell() })
+                    data.onRowInserted(0)
                 }
             }
         }
@@ -61,6 +62,7 @@ class TableLayoutOptionsFragment : Fragment() {
                 if (data.rows < 15) {
                     data.rows += 1
                     data.cells.add(MutableList(data.cols) { com.webscare.urducanvas.common.canvas.model.TableCell() })
+                    data.onRowInserted(data.rows - 1)
                 }
             }
         }
@@ -71,6 +73,7 @@ class TableLayoutOptionsFragment : Fragment() {
                     if (data.cells.size > data.rows) {
                         data.cells.removeAt(data.cells.size - 1)
                     }
+                    data.onRowRemoved(data.rows)
                 }
             }
         }
@@ -100,6 +103,7 @@ class TableLayoutOptionsFragment : Fragment() {
                     data.cells.forEach { row ->
                         row.add(0, com.webscare.urducanvas.common.canvas.model.TableCell())
                     }
+                    data.onColumnInserted(0)
                 }
             }
         }
@@ -110,6 +114,7 @@ class TableLayoutOptionsFragment : Fragment() {
                     data.cells.forEach { row ->
                         row.add(com.webscare.urducanvas.common.canvas.model.TableCell())
                     }
+                    data.onColumnInserted(data.cols - 1)
                 }
             }
         }
@@ -122,6 +127,7 @@ class TableLayoutOptionsFragment : Fragment() {
                             row.removeAt(row.size - 1)
                         }
                     }
+                    data.onColumnRemoved(data.cols)
                 }
             }
         }

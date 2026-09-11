@@ -709,6 +709,9 @@ object TablePresetRepository {
     fun applyPresetToTable(preset: TablePresetStyle, tableData: TableData) {
         tableData.rows = preset.rows
         tableData.cols = preset.cols
+        // The preset decides the geometry, so track sizes and index-keyed state from the
+        // old grid no longer describe anything.
+        tableData.onGridReplaced()
         tableData.hasHeader = preset.hasHeader
         tableData.hasFooter = preset.hasFooter
         tableData.hasHeaderCol = preset.hasHeaderCol

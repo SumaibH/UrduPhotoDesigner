@@ -80,34 +80,109 @@ data class TableData(
 ) {
 
     /**
-     * Brings the stored column/row tracks back in step with [cols] and [rows].
+     * Keeps the index-keyed state in step after a row is inserted at [index].
      *
-     * The layout builder ignores a ratio list whose length does not match the grid, so
-     * adding or deleting a row or column used to silently throw away every width the user
-     * had dragged, and leave a wrong-length list behind for good. A new track gets an even
-     * share, a removed one is dropped from the tail, and the list is renormalised either
-     * way. Any selection that now points outside the grid is dropped at the same time.
+     * Call once [rows] and [cells] have been updated. Track sizes, per-row styles and the
+     * cell selection are all keyed by absolute row index, so an insert anywhere but the end
+     * moves every one of them -- which is why these take a position instead of just
+     * resizing to the new count. "+ Row Above" inserts at 0, so getting this wrong shifts
+     * the whole table's styling down by one row.
      */
-    fun onGridResized() {
-        colWidthRatios = colWidthRatios?.let { fitTracks(it, cols) }
-        rowHeightRatios = rowHeightRatios?.let { fitTracks(it, rows) }
-        selectedCells.retainAll { it.first in 0 until rows && it.second in 0 until cols }
-        // Styles are keyed by absolute index, so shrinking the grid strands the entries for
-        // the rows and columns that are gone. They are not harmless: grow the table again and
-        // the new, blank row comes back wearing the deleted row's styling.
-        rowStyles.keys.retainAll { it in 0 until rows }
-        colStyles.keys.retainAll { it in 0 until cols }
+    fun onRowInserted(index: Int) {
+        rowHeightRatios = rowHeightRatios?.let { insertTrack(it, index, rows) }
+        rowStyles = shiftKeysForInsert(rowStyles, index)
+        selectedCells = selectedCells.mapTo(mutableSetOf()) { (r, c) ->
+            if (r >= index) (r + 1) to c else r to c
+        }
+        pruneToGrid()
     }
 
-    private fun fitTracks(src: MutableList<Float>, target: Int): MutableList<Float> {
+    /** Counterpart to [onRowInserted], for the row that used to sit at [index]. */
+    fun onRowRemoved(index: Int) {
+        rowHeightRatios = rowHeightRatios?.let { removeTrack(it, index, rows) }
+        rowStyles = shiftKeysForRemove(rowStyles, index)
+        selectedCells = selectedCells.mapNotNullTo(mutableSetOf()) { (r, c) ->
+            when {
+                r == index -> null
+                r > index -> (r - 1) to c
+                else -> r to c
+            }
+        }
+        pruneToGrid()
+    }
+
+    /** As [onRowInserted], for a column. Note [index] is logical, not left-to-right. */
+    fun onColumnInserted(index: Int) {
+        colWidthRatios = colWidthRatios?.let { insertTrack(it, index, cols) }
+        colStyles = shiftKeysForInsert(colStyles, index)
+        selectedCells = selectedCells.mapTo(mutableSetOf()) { (r, c) ->
+            if (c >= index) r to (c + 1) else r to c
+        }
+        pruneToGrid()
+    }
+
+    /** As [onRowRemoved], for a column. */
+    fun onColumnRemoved(index: Int) {
+        colWidthRatios = colWidthRatios?.let { removeTrack(it, index, cols) }
+        colStyles = shiftKeysForRemove(colStyles, index)
+        selectedCells = selectedCells.mapNotNullTo(mutableSetOf()) { (r, c) ->
+            when {
+                c == index -> null
+                c > index -> r to (c - 1)
+                else -> r to c
+            }
+        }
+        pruneToGrid()
+    }
+
+    /**
+     * A preset brings its own geometry and its own styling, so anything keyed to the old
+     * grid is gone. Dragged track sizes are kept only when they still fit, since the layout
+     * builder discards a ratio list whose length does not match and would leave the stale
+     * one behind for good.
+     */
+    fun onGridReplaced() {
+        if (colWidthRatios?.size != cols) colWidthRatios = null
+        if (rowHeightRatios?.size != rows) rowHeightRatios = null
+        pruneToGrid()
+    }
+
+    /** Drops anything still pointing outside the current grid. */
+    private fun pruneToGrid() {
+        rowStyles.keys.retainAll { it in 0 until rows }
+        colStyles.keys.retainAll { it in 0 until cols }
+        selectedCells.retainAll { it.first in 0 until rows && it.second in 0 until cols }
+    }
+
+    private fun insertTrack(src: MutableList<Float>, index: Int, target: Int): MutableList<Float> {
         if (target <= 0) return src
         val out = src.toMutableList()
+        out.add(index.coerceIn(0, out.size), 1f / target)
+        return normaliseTracks(out, target)
+    }
+
+    private fun removeTrack(src: MutableList<Float>, index: Int, target: Int): MutableList<Float> {
+        if (target <= 0) return src
+        val out = src.toMutableList()
+        if (index in out.indices) out.removeAt(index)
+        return normaliseTracks(out, target)
+    }
+
+    private fun normaliseTracks(out: MutableList<Float>, target: Int): MutableList<Float> {
         while (out.size > target) out.removeAt(out.size - 1)
         while (out.size < target) out.add(1f / target)
         val sum = out.sum()
         return if (sum > 0f) out.map { it / sum }.toMutableList()
         else MutableList(target) { 1f / target }
     }
+
+    private fun shiftKeysForInsert(src: MutableMap<Int, TableTextStyle>, index: Int) =
+        src.mapKeys { (k, _) -> if (k >= index) k + 1 else k }.toMutableMap()
+
+    private fun shiftKeysForRemove(src: MutableMap<Int, TableTextStyle>, index: Int) =
+        src.filterKeys { it != index }
+            .mapKeys { (k, _) -> if (k > index) k - 1 else k }
+            .toMutableMap()
     fun deepCopy(): TableData {
         return TableData(
             rows = rows,
