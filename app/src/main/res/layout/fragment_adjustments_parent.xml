@@ -52,7 +52,7 @@
         android:backgroundTint="@color/contrast"
         app:tint="@color/black"
         android:padding="@dimen/panel_header_btn_padding"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="@dimen/panel_header_top_margin"
         android:background="@drawable/button_bg_round"
         android:src="@drawable/ic_back"
         app:layout_constraintStart_toEndOf="@id/startGuide"
@@ -110,7 +110,7 @@
         android:id="@+id/toolbarRow"
         android:layout_width="0dp"
         android:layout_height="@dimen/panel_tab_row_height"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="@dimen/panel_tab_row_top_margin"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/back">

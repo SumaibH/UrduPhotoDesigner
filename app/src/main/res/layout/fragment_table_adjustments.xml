@@ -48,7 +48,7 @@
         android:id="@+id/toolbarRow"
         android:layout_width="0dp"
         android:layout_height="@dimen/panel_tab_row_height"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="@dimen/panel_tab_row_top_margin"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/back">
