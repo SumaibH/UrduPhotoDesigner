@@ -373,7 +373,18 @@ class FontsListFragment : androidx.fragment.app.Fragment() {
                 }.collect { (queryRaw, finalList) ->
                     // The shared search dialog has no list of its own to count, so the list
                     // reports here — this is the font tab's half of the panel search event.
-                    if (queryRaw.isNotBlank()) mainViewModel.setSearchResultCount(finalList.size)
+                    //
+                    // Only the page the user is looking at may report. There is one of these
+                    // per language tab and this collector runs at STARTED, which every
+                    // created-but-offscreen ViewPager2 page is: several tabs were each
+                    // writing their own filtered size for one query and the last one to
+                    // emit won. FragmentStateAdapter caps offscreen pages below RESUMED,
+                    // and a dialog on top does not stop the page underneath it, so
+                    // isResumed is exactly "this is the list on screen". Same discipline as
+                    // ImagesListFragment's activeSearchTab guard.
+                    if (queryRaw.isNotBlank() && isResumed) {
+                        mainViewModel.reportSearchResultCount(queryRaw, finalList.size)
+                    }
                     submitWithScrollPreservation(finalList)
                 }
             }

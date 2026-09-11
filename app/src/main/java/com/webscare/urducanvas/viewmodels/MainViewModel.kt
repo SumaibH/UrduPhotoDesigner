@@ -77,6 +77,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+/**
+ * What `search`'s `result_count` carries when nothing on screen counted the query. Not
+ * zero, which is a real and meaningful answer — somebody searched for something the
+ * catalogue does not have.
+ */
+private const val UNKNOWN_RESULT_COUNT = -1
+
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val fetchAPITemplatesUseCase: FetchAPITemplatesUseCase,
@@ -427,19 +434,41 @@ class MainViewModel @Inject constructor(
     val queryDebounced = rawQuery.map { it.trim() }.distinctUntilChanged()
 
     /**
-     * How many rows the currently filtered panel list shows for [searchQuery].
+     * How many rows the panel on screen shows for one particular query.
      *
      * A zero-result search is the interesting one — it is a content request written by a
-     * user — but the search dialog is shared by four panels and never sees a list, so the
+     * user — but the search dialog is shared by three panels and never sees a list, so the
      * lists report their own count here and the dialog reads it when the query is committed.
-     * -1 means nothing has reported yet, which is deliberately not zero: an unknown count
-     * must not be indistinguishable from "found nothing".
+     * -1 means no list on screen has counted this query, which is deliberately not zero: an
+     * unknown count must not be indistinguishable from "found nothing".
+     *
+     * The count is stored *with the query it describes* and thrown away when a search
+     * starts, because a bare number here was being read by the wrong panel. It was a single
+     * value that nothing reset: the tables panel opens the dialog and no table list counts
+     * anything, so a table search reported whatever the fonts or brushes list had written
+     * last. Pairing it with the query, resetting on open, and only letting the page that is
+     * actually resumed write it — the lists' half of this — is what makes the number belong
+     * to the search it is attached to. The images panel already worked this way; it keeps
+     * its own count and never comes through here.
      */
-    private val _searchResultCount = MutableStateFlow(-1)
-    val searchResultCount: StateFlow<Int> = _searchResultCount.asStateFlow()
+    private var searchResultReport: Pair<String, Int>? = null
 
-    fun setSearchResultCount(count: Int) {
-        _searchResultCount.value = count
+    /** Called when the search dialog opens: no earlier panel's count may be read now. */
+    fun beginPanelSearch() {
+        searchResultReport = null
+    }
+
+    /** Reported by the list that is on screen, for the query it just filtered on. */
+    fun reportSearchResultCount(query: String, count: Int) {
+        val term = query.trim()
+        if (term.isEmpty()) return
+        searchResultReport = term to count
+    }
+
+    /** The count for [query], or -1 if the panel on screen never counted that query. */
+    fun searchResultCountFor(query: String): Int {
+        val (countedQuery, count) = searchResultReport ?: return UNKNOWN_RESULT_COUNT
+        return if (countedQuery == query.trim()) count else UNKNOWN_RESULT_COUNT
     }
 
     fun setQuery(q: String) {

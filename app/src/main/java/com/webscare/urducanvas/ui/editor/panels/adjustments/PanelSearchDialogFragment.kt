@@ -61,6 +61,11 @@ class PanelSearchDialogFragment : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Whatever a previous panel's list counted belongs to that panel's search, not this
+        // one. Dropping it here is what makes an uncounted panel — the tables one, which has
+        // no list that filters — report "unknown" instead of a stale number.
+        mainViewModel.beginPanelSearch()
+
         val currentQuery = mainViewModel.searchQuery.value
         binding.editSearchInput.setText(currentQuery)
         binding.editSearchInput.setSelection(currentQuery.length)
@@ -107,9 +112,11 @@ class PanelSearchDialogFragment : DialogFragment() {
      * catalogue is missing — were the half we never saw.
      *
      * The result count comes from whichever list is filtering, because this dialog is shared
-     * by four panels and sees no list of its own. Sanitised the same way the home call site
-     * sanitises: a free-text box is where an email or a phone number ends up, and GA4 rejects
-     * events carrying them anyway.
+     * by three panels and sees no list of its own — and it is asked for *by query*, so a
+     * count belonging to some other search cannot be read as this one's. The tables panel
+     * has no list that filters, so its searches honestly report -1. Sanitised the same way
+     * the home call site sanitises: a free-text box is where an email or a phone number ends
+     * up, and GA4 rejects events carrying them anyway.
      */
     private fun reportSearch() {
         val term = mainViewModel.searchQuery.value.trim()
@@ -119,7 +126,7 @@ class PanelSearchDialogFragment : DialogFragment() {
 
         analyticsTracker.logSearch(
             term = term.take(100),
-            resultCount = mainViewModel.searchResultCount.value,
+            resultCount = mainViewModel.searchResultCountFor(term),
             placement = placement
         )
     }

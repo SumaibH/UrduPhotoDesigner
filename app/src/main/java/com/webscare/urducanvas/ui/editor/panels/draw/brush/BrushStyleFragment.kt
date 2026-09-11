@@ -88,8 +88,9 @@ class BrushStyleFragment : Fragment() {
         }
 
         styleAdapter.updateStyles(list)
-        // The shared search dialog has no list of its own to count, so the list reports here.
-        if (searching) mainViewModel.setSearchResultCount(list.size)
+        // The shared search dialog has no list of its own to count, so the list reports here,
+        // for the query it just filtered on and only while this page is the one on screen.
+        if (searching && isResumed) mainViewModel.reportSearchResultCount(query, list.size)
         binding.brushStylesRV.isVisible = list.isNotEmpty()
         binding.emptyLabel.isVisible = list.isEmpty()
         if (list.isEmpty()) {

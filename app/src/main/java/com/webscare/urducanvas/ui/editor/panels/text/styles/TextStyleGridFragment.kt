@@ -108,8 +108,15 @@ class TextStyleGridFragment : Fragment() {
                     adapter.submitPresets(filtered)
                     // The shared search dialog has no list of its own to count. "None" is
                     // always kept by filterPresets and is not a result, so it comes off here.
-                    if (query.isNotBlank()) {
-                        mainViewModel.setSearchResultCount((filtered.size - 1).coerceAtLeast(0))
+                    //
+                    // isResumed keeps the offscreen category pages out of it: there is one
+                    // of these per preset category, this collector runs at STARTED, and
+                    // every created page was writing its own count for the same query.
+                    if (query.isNotBlank() && isResumed) {
+                        mainViewModel.reportSearchResultCount(
+                            query,
+                            (filtered.size - 1).coerceAtLeast(0)
+                        )
                     }
                 }
             }
