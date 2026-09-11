@@ -7616,13 +7616,18 @@ class CanvasView @JvmOverloads constructor(
 
                         // Is this child already individually selected (e.g. from layers panel)?
                         // Also treat GROUP_EDIT mode as "child already entered".
-                        // Also treat it as child entered if the group is currently selected,
-                        // so clicking a child of the selected group selects only that child.
-                        val isGroupAlreadySelected =
-                            selectedElements.size > 1 && selectedElements.all { it.groupId == gid || it.type == ElementType.GROUP }
-
+                        //
+                        // A *selected group* deliberately does NOT count as entered. It used
+                        // to: touching an already-selected group dropped straight into
+                        // GROUP_EDIT and dragged the one child under the finger, so the
+                        // ordinary "tap to select, drag to move" gesture pulled a single
+                        // element out of the group instead of moving the group — and there
+                        // was no way left to move a group at all. Entering a group is the
+                        // double-tap's job (see onDoubleTap), or picking a child in the
+                        // layers panel.
                         val isChildAlreadySelectedAlone =
-                            (selectedElements.size == 1 && selectedElements.first().id == touchedElement.id) || (currentMode == Mode.GROUP_EDIT && activeGroupId == gid) || isGroupAlreadySelected
+                            (selectedElements.size == 1 && selectedElements.first().id == touchedElement.id) ||
+                                    (currentMode == Mode.GROUP_EDIT && activeGroupId == gid)
 
                         if (isChildAlreadySelectedAlone) {
                             // ── Group-edit mode: drag just this child ────────────────────────
