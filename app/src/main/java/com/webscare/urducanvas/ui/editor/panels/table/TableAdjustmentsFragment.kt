@@ -48,7 +48,7 @@ class TableAdjustmentsFragment : Fragment() {
 
     private var mediator: TabLayoutMediator? = null
     private val tabs = listOf("Font", "Appearance", "Format", "Structure", "Styles")
-    private lateinit var adapter: TableAdjustmentsPagerAdapter
+    private var adapter: TableAdjustmentsPagerAdapter? = null
 
     private val viewModel: CanvasViewModel by activityViewModels()
     private val mainViewModel: MainViewModel by activityViewModels()
@@ -74,8 +74,9 @@ class TableAdjustmentsFragment : Fragment() {
             childFragmentManager,
             viewLifecycleOwner.lifecycle,
             tabs
-        )
-        adapter.stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT
+        ).also {
+            it.stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT
+        }
 
         binding.viewPager.adapter = adapter
         binding.viewPager.isUserInputEnabled = false
@@ -90,7 +91,14 @@ class TableAdjustmentsFragment : Fragment() {
 
     private fun setupTabLayout() {
         mediator?.detach()
-        binding.tabLayout.setupPanelTabs(binding.viewPager, tabs) { position ->
+        // Hold on to it. setupPanelTabs returns the TabLayoutMediator and this screen was
+        // throwing the return away, so the field stayed null and the detach() in
+        // onDestroyView did nothing. attach() registers a PagerAdapterObserver on the
+        // adapter, and that observer is an inner class holding the mediator, which holds
+        // the TabLayout and the ViewPager2 -- so with the fragment living on the editor's
+        // nested back stack, the whole dead panel view tree stayed reachable through the
+        // adapter. TextAdjustmentsFragment already captures it; this one did not.
+        mediator = binding.tabLayout.setupPanelTabs(binding.viewPager, tabs) { position ->
             if (position != 0) {
                 mainViewModel.setQuery("")
             }
@@ -123,6 +131,9 @@ class TableAdjustmentsFragment : Fragment() {
         mediator?.detach()
         mediator = null
         _binding?.viewPager?.adapter = null
+        // Detaching the mediator unregisters its observer, but the adapter itself is what
+        // the surviving fragment holds, so drop it too.
+        adapter = null
         mainViewModel.setQuery("")
         super.onDestroyView()
         _binding = null
