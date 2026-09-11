@@ -241,15 +241,11 @@ class LayersFragment : Fragment() {
 
         selectionToolbar.group.addPressEffect {
             val selected = viewModel.selectedElements.value.orEmpty()
-            val groupIds = selected.mapNotNull { it.groupId }.toSet()
-            // Ungroup only when every selected element belongs to the same single group
-            // (i.e. user selected the whole group and wants to dissolve it).
+            // Ungroup when the selection is one whole group and nothing else.
             // In every other case (mix of standalone + grouped, or elements from different
             // groups) we merge everything into one new group — Photoshop / Illustrator style.
-            val allSameSingleGroup = groupIds.size == 1 &&
-                    selected.all { it.groupId == groupIds.first() || it.type == ElementType.GROUP }
-            if (allSameSingleGroup) viewModel.ungroupElements()
-            else viewModel.mergeIntoGroup()
+            if (selectionIsOneWholeGroup(selected)) viewModel.ungroupElements()
+            else if (selected.size >= 2) viewModel.mergeIntoGroup()
             updateSelectionToolbar()
         }
 
@@ -258,10 +254,14 @@ class LayersFragment : Fragment() {
         }
 
         selectionToolbar.delete.addPressEffect {
+            // Count what is selected *now* — this toolbar is wired once when selection mode
+            // opens, so the captured count was whatever was picked first and the dialog
+            // offered to delete "1 layer" while taking all of them.
+            val deleteCount = viewModel.selectedElements.value?.size ?: 0
             DialogUtils.showDeleteDialog(
                 context      = requireContext(),
                 titleText    = getString(R.string.confirm_delete),
-                subtitleText = getString(R.string.delete_n_layers, count)
+                subtitleText = getString(R.string.delete_n_layers, deleteCount)
             ) {
                 viewModel.removeSelectedElements()
                 exitSelectionMode()
@@ -344,7 +344,7 @@ class LayersFragment : Fragment() {
                         }
                     }
 
-                    // ── Standalone: can only join a group by landing ON the GroupHeader row
+                    // ── Standalone: joins a group by landing on its header or its children
                     is DisplayItem.Standalone -> {
                         when (targetItem) {
                             // Landing ON GroupHeader → join that group
@@ -355,8 +355,20 @@ class LayersFragment : Fragment() {
                                     newGroupId = targetItem.element.id
                                 )
                             }
-                            // Can't land inside a group's children — blocked
-                            is DisplayItem.Child -> return false
+                            // Landing on a group's child → join that group too.
+                            // Blocking this used to make an expanded group impossible to
+                            // join at all: the header sits above its children, so a row
+                            // dragged up towards it was always stopped by a child first.
+                            // The Child branch above retypes back to Standalone the moment
+                            // the row is dragged out again, so this stays reversible.
+                            is DisplayItem.Child -> {
+                                val targetGroupId = targetItem.element.groupId ?: return false
+                                adapter.retypeItem(
+                                    fromPos,
+                                    asChild = true,
+                                    newGroupId = targetGroupId
+                                )
+                            }
                             // Standalone ↔ Standalone reorder — allowed
                             else -> { /* no change */ }
                         }
@@ -405,6 +417,11 @@ class LayersFragment : Fragment() {
         viewModel.selectedElements.observe(viewLifecycleOwner) { selectedList ->
             if (!isAdded) return@observe
             updateSelectionToolbar()
+            // Selection is toggled in place on the element, so the diff in submitList()
+            // compares one instance against itself and never repaints the row. Without
+            // this the second layer you pick — and every row you deselect — keeps the
+            // wrong highlight.
+            adapter.rebindAll()
             if (selectedList.isNotEmpty()) {
                 val pos = adapter.currentList().indexOfFirst { it.id == selectedList.last().id }
                 if (pos != -1) binding.layers.smoothScrollToPosition(pos)
@@ -447,7 +464,12 @@ class LayersFragment : Fragment() {
         for (element in sortedElements) {
             when {
                 element.type == ElementType.GROUP -> {
-                    result.add(DisplayItem.GroupHeader(element))
+                    result.add(
+                        DisplayItem.GroupHeader(
+                            element,
+                            childCount = childrenByGroup[element.id]?.size ?: 0
+                        )
+                    )
                     if (!element.isGroupCollapsed) {
                         childrenByGroup[element.id]?.forEach { child ->
                             result.add(DisplayItem.Child(child))
@@ -478,7 +500,15 @@ class LayersFragment : Fragment() {
     }
 
     private fun handleToggleCollapse(element: CanvasElement) {
-        element.isGroupCollapsed = !element.isGroupCollapsed
+        // The row holds whatever instance was current when it was last bound, and the
+        // ViewModel hands out fresh copies on every republish (undo, reorder, an edit on
+        // canvas). Flipping the flag on the row's own copy left buildDisplayList reading
+        // the ViewModel's copy, which still said "expanded" — so the chevron did nothing.
+        // Resolve by id, the way the lock button already does.
+        val target = viewModel.canvasElements.value?.find { it.id == element.id } ?: element
+        val collapsed = !target.isGroupCollapsed
+        target.isGroupCollapsed  = collapsed
+        element.isGroupCollapsed = collapsed
         viewModel.canvasElements.value?.let { elements ->
             CoroutineScope(Dispatchers.IO).launch {
                 val sorted      = elements.sortedBy { it.zIndex }.reversed()
@@ -524,7 +554,10 @@ class LayersFragment : Fragment() {
 
         val allLocked  = selected.isNotEmpty() && selected.all { it.isLocked }
         val allHidden  = selected.isNotEmpty() && selected.all { !it.isVisible }
-        val anyGrouped = selected.any { it.groupId != null }
+        // The icon has to answer the same question the button does, or it promises
+        // "un-group" and then merges instead.
+        val isWholeGroup = selectionIsOneWholeGroup(selected)
+        val canGroup     = isWholeGroup || selected.size >= 2
 
         selectionToolbar.lock.setImageDrawable(
             ContextCompat.getDrawable(
@@ -545,11 +578,33 @@ class LayersFragment : Fragment() {
 
         selectionToolbar.group.setImageDrawable(
             ContextCompat.getDrawable(
-                requireContext(), if (anyGrouped) R.drawable.ic_group else R.drawable.ic_un_group
+                requireContext(), if (isWholeGroup) R.drawable.ic_group else R.drawable.ic_un_group
             )
         )
         selectionToolbar.group.contentDescription =
-            if (anyGrouped) getString(R.string.un_group_all) else getString(R.string.group_all)
+            if (isWholeGroup) getString(R.string.un_group_all) else getString(R.string.group_all)
+        // One standalone layer is nothing to group — say so instead of ignoring the tap.
+        selectionToolbar.group.isEnabled = canGroup
+        selectionToolbar.group.alpha     = if (canGroup) 1f else 0.4f
+    }
+
+    /**
+     * True when everything selected belongs to — or *is* — one and the same group.
+     *
+     * A GROUP sentinel carries the id in [CanvasElement.id] while its children carry it in
+     * [CanvasElement.groupId]; reading only groupId made a lone selected group header look
+     * ungrouped, so the button fell through to a merge that then bailed out on its own
+     * "needs 2 elements" guard and did nothing at all.
+     */
+    private fun selectionIsOneWholeGroup(selected: List<CanvasElement>): Boolean {
+        if (selected.isEmpty()) return false
+        val groupIds = mutableSetOf<String>()
+        for (el in selected) {
+            val id = if (el.type == ElementType.GROUP) el.id else el.groupId ?: return false
+            groupIds.add(id)
+            if (groupIds.size > 1) return false
+        }
+        return groupIds.size == 1
     }
 
     // ── Popup menu ────────────────────────────────────────────────────────────

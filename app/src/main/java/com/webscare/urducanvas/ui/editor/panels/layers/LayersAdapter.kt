@@ -19,7 +19,11 @@ import com.webscare.urducanvas.databinding.LayoutLayersItemCollapsedBinding
 
 // ── Display model ─────────────────────────────────────────────────────────────
 sealed class DisplayItem {
-    data class GroupHeader(val element: CanvasElement) : DisplayItem()
+    /**
+     * [childCount] is carried on the row because a collapsed group has no Child rows left
+     * in the list to count, and that is exactly when the badge is worth reading.
+     */
+    data class GroupHeader(val element: CanvasElement, val childCount: Int = 0) : DisplayItem()
     data class Child(val element: CanvasElement) : DisplayItem()
     data class Standalone(val element: CanvasElement) : DisplayItem()
 }
@@ -74,8 +78,12 @@ class LayersAdapter(
      *
      * notifyDataSetChanged() invalidates the structure, which sends the layout manager
      * back to the top — see [submitList].
+     *
+     * Selection lives on the CanvasElement itself and is toggled in place, so the same
+     * instance sits in both the old and the new diff list and [LayersDiff] can never see
+     * the change. Callers that flip isSelected have to ask for the rebind themselves.
      */
-    private fun rebindAll() {
+    fun rebindAll() {
         if (itemCount > 0) notifyItemRangeChanged(0, itemCount)
     }
 
@@ -124,8 +132,12 @@ class LayersAdapter(
             if (a.isLocked != b.isLocked) return false
             if (a.isGroupCollapsed != b.isGroupCollapsed) return false
             if (a.type != b.type) return false
-            if (old[oldPos] is DisplayItem.GroupHeader) {
+            val oldHeader = old[oldPos] as? DisplayItem.GroupHeader
+            if (oldHeader != null) {
                 if (childCount(old, a.id) != childCount(new, b.id)) return false
+                // Collapsed groups have no child rows to count, so compare the carried
+                // number too or the badge would freeze at whatever it last showed.
+                if (oldHeader.childCount != (new[newPos] as? DisplayItem.GroupHeader)?.childCount) return false
             }
             return true
         }
@@ -334,8 +346,16 @@ class LayersAdapter(
             binding.apply {
                 title.text = element.customName ?: "Group"
 
-                val childCount = adapter.items.count {
-                    it is DisplayItem.Child && it.element.groupId == element.id
+                // While the group is open, count the rows actually on screen — a drag
+                // retypes rows in place without rebuilding the list, so that is the live
+                // number. Collapsed, there are no child rows left, so use the count the
+                // row was built with.
+                val childCount = if (element.isGroupCollapsed) {
+                    (displayItem as? DisplayItem.GroupHeader)?.childCount ?: 0
+                } else {
+                    adapter.items.count {
+                        it is DisplayItem.Child && it.element.groupId == element.id
+                    }
                 }
                 badge.text       = childCount.toString()
                 badge.visibility = if (childCount > 0) View.VISIBLE else View.GONE
