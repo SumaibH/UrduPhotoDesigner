@@ -25,9 +25,6 @@ import com.webscare.urducanvas.viewmodels.MainViewModel
 @dagger.hilt.android.AndroidEntryPoint
 class PremiumAssetsSheet : BottomSheetDialogFragment() {
 
-    @javax.inject.Inject
-    lateinit var analyticsTracker: com.webscare.urducanvas.analytics.AnalyticsTracker
-
     private var _binding: FragmentPremiumAssetsSheetBinding? = null
     private val binding get() = _binding!!
     private val viewModel: CanvasViewModel by activityViewModels()
@@ -41,12 +38,13 @@ class PremiumAssetsSheet : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val items = viewModel.getPremiumAssets()
 
-        // This is a paywall: it is what a free user is shown instead of their export, and
-        // it is the highest-intent moment in the app. paywall_viewed fired only from the
-        // subscriptions screen, so the whole upsell that leads there had no impressions to
-        // divide conversions by — and the export block is the reason most people reach it.
-        analyticsTracker.logPaywallViewed("export_premium_assets")
-
+        // Deliberately no paywall_viewed here. This sheet cannot convert: it is a title, a
+        // list of the premium assets in the design and a back button, opened from an
+        // optional "see more" link on the export screen, with no purchase CTA and no route
+        // to subscriptions. The decision is presented by the export block itself, which is
+        // where the impression is now reported from — see
+        // ExportFragment.updatePremiumBannerVisibility. Logging it here as well would
+        // double-count the one decision and credit it to a surface nobody can buy from.
         binding.assets.adapter = PremiumAssetsAdapter(items, mainViewModel.localFonts.value)
 
         binding.back.addPressEffect { dismiss() }

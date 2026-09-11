@@ -247,6 +247,14 @@ class ExportFragment : androidx.fragment.app.Fragment() {
     private var isSessionExportUnlocked = false
     private var isPendingRewardAnimation = false
 
+    /**
+     * One `paywall_viewed` per showing of the export block, not per redraw of it.
+     *
+     * Reset with the view, so coming back here from the subscriptions screen — or from
+     * anywhere else that destroyed this view — counts as a new impression, which it is.
+     */
+    private var paywallReported = false
+
     override fun onResume() {
         super.onResume()
         if (isPendingRewardAnimation) {
@@ -291,6 +299,21 @@ class ExportFragment : androidx.fragment.app.Fragment() {
         premiumAssets.isVisible = locked
 
         if (locked) {
+            // THIS is the paywall: the export the user asked for is withheld, the copy below
+            // spells out the choice ("Upgrade to Pro or watch a video ad to export"), and
+            // btnExport turns into Buy Now, which routes to the subscriptions screen. It was
+            // emitting nothing, while `paywall_viewed` sat on PremiumAssetsSheet — an
+            // optional "see more" list of the offending assets with a title, a list and a
+            // back button, no purchase CTA and no route to subscriptions, reachable only
+            // from two of the four branches below. Impressions have to come from the surface
+            // that presents the decision or there is nothing to divide conversions by.
+            //
+            // Once per appearance of the locked state: this runs again on every
+            // hasPremiumAsset and isSubscribed emission, and a redraw is not a second view.
+            if (!paywallReported) {
+                paywallReported = true
+                analyticsTracker.logPaywallViewed("export_block")
+            }
             btnExport.text = getString(R.string.buy_now)
             btnExport.setIconResource(R.drawable.ic_premium_stroke)
 
@@ -1003,6 +1026,7 @@ class ExportFragment : androidx.fragment.app.Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        paywallReported = false
         if (!isExportCompleted) {
             adAnalyticsCoordinator.onFeatureAbandoned("export")
         }
