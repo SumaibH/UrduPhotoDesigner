@@ -4913,42 +4913,46 @@ class CanvasViewModel @Inject constructor(
     fun updateSelectedTableData(transform: (com.webscare.urducanvas.common.canvas.model.TableData) -> Unit) {
         val currentList = _canvasElements.value?.toMutableList() ?: return
         var modified = false
-        var targetElementId: String? = null
-        var oldData: com.webscare.urducanvas.common.canvas.model.TableData? = null
-        var newData: com.webscare.urducanvas.common.canvas.model.TableData? = null
+        // One entry per table that actually changed.
+        //
+        // These were three single-valued locals overwritten on each match, so with more
+        // than one table selected only the last one was ever recorded. Adding the no-op
+        // guard on top of that made it worse rather than better: a last table that did not
+        // change -- say it was already at the 15-row cap while the other was not --
+        // suppressed the undo entry for the table that *did* change, and skipped
+        // markChanged() with it, leaving an edit on screen that could neither be undone nor
+        // relied on to survive leaving the editor.
+        val edits = mutableListOf<Triple<String, com.webscare.urducanvas.common.canvas.model.TableData, com.webscare.urducanvas.common.canvas.model.TableData>>()
 
         val updatedList = currentList.map { element ->
             if (element.isSelected && element.type == ElementType.TABLE) {
                 modified = true
-                targetElementId = element.id
                 val data = element.tableData ?: com.webscare.urducanvas.common.canvas.model.TableData.createDefault()
-                oldData = data.deepCopy()
-                val updatedData = data.deepCopy()
-                transform(updatedData)
-                newData = updatedData
-                _selectedTableCellCount.value = updatedData.selectedCells.size
-                element.copy(tableData = updatedData).also {
+                val before = data.deepCopy()
+                val after = data.deepCopy()
+                transform(after)
+                _selectedTableCellCount.value = after.selectedCells.size
+                if (before != after) edits += Triple(element.id, before, after)
+                element.copy(tableData = after).also {
                     it.tableLayoutCache = null
                 }
             } else element
         }
-        // A transform that changed nothing must not land on the undo stack. The table
-        // panels call this unconditionally -- tapping "+" on a 15-row table, or re-picking
-        // the direction the table is already in, ran the transform, found nothing to do,
-        // and still pushed an entry. Those entries cost the user an undo each and appear
-        // to do nothing when they come back off the stack.
-        val changed = oldData != newData
-        if (modified && changed && targetElementId != null && oldData != null && newData != null) {
-            _canvasElements.value = updatedList
-            _canvasActions.push(CanvasAction.UpdateTableData(targetElementId!!, oldData!!, newData!!))
-            _redoStack.clear()
-            _isExplicitChange = false
-            notifyUndoRedoChanged()
-            markChanged()
-        } else if (modified) {
-            // Still publish: selection-only edits have to reach the canvas.
-            _canvasElements.value = updatedList
+
+        if (!modified) return
+        // Selection-only and no-op edits still have to reach the canvas; they just are not
+        // undoable. Tapping "+" on a table already at the cap used to cost an undo that did
+        // nothing visible when it came back off the stack.
+        _canvasElements.value = updatedList
+        if (edits.isEmpty()) return
+
+        edits.forEach { (id, before, after) ->
+            _canvasActions.push(CanvasAction.UpdateTableData(id, before, after))
         }
+        _redoStack.clear()
+        _isExplicitChange = false
+        notifyUndoRedoChanged()
+        markChanged()
     }
 
     // ── Table Scope-Aware Helper Setters ──
