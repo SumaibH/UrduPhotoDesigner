@@ -574,6 +574,38 @@ class CanvasView @JvmOverloads constructor(
     }
 
     var localFonts: List<com.webscare.urducanvas.data.model.FontEntity> = emptyList()
+        set(value) {
+            field = value
+            tableTypefaceCache.clear()
+        }
+
+    /**
+     * Typefaces already resolved for table cells, keyed by font id ("" for the default).
+     *
+     * Table layout is rebuilt from scratch on every column-drag move event, and building it
+     * asks for a typeface once per cell. Without this, dragging a divider on a 7x3 table was
+     * reading twenty-one font files off disk per frame, on the UI thread.
+     */
+    private val tableTypefaceCache = HashMap<String, Typeface?>()
+
+    /** Resolves a table cell's font id to a typeface, loading each file at most once. */
+    private fun tableTypeface(fontId: String?): Typeface? {
+        if (fontId == null) return null
+        return tableTypefaceCache.getOrPut(fontId) {
+            val path = localFonts.find { it.id.toString() == fontId }
+                ?.file_path?.takeIf { it.isNotBlank() }
+                ?: return@getOrPut null
+            try {
+                if (path.startsWith("fonts/") || !path.startsWith("/")) {
+                    Typeface.createFromAsset(context.assets, path)
+                } else {
+                    Typeface.createFromFile(path)
+                }
+            } catch (e: Exception) {
+                null
+            }
+        }
+    }
 
     // ── Pan mode (single-finger pan without selecting elements) ───
     private var isPanMode = false
@@ -3391,23 +3423,7 @@ class CanvasView @JvmOverloads constructor(
                 data = tableData,
                 totalW = totalW,
                 totalH = totalH,
-                fontLookup = { fontId ->
-                    if (fontId == null) null
-                    else {
-                        val font = localFonts.find { it.id.toString() == fontId }
-                        font?.file_path?.takeIf { it.isNotBlank() }?.let { path ->
-                            try {
-                                if (path.startsWith("fonts/") || !path.startsWith("/")) {
-                                    Typeface.createFromAsset(context.assets, path)
-                                } else {
-                                    Typeface.createFromFile(path)
-                                }
-                            } catch (e: Exception) {
-                                null
-                            }
-                        }
-                    }
-                }
+                fontLookup = ::tableTypeface
             ).also { element.tableLayoutCache = it }
 
         val left = -totalW / 2f
@@ -3742,7 +3758,7 @@ class CanvasView @JvmOverloads constructor(
                 data = tableData,
                 totalW = totalW,
                 totalH = totalH,
-                fontLookup = { null }
+                fontLookup = ::tableTypeface
             )
 
         val forwardMatrix = Matrix().apply {
@@ -3785,7 +3801,7 @@ class CanvasView @JvmOverloads constructor(
                 data = tableData,
                 totalW = totalW,
                 totalH = totalH,
-                fontLookup = { null }
+                fontLookup = ::tableTypeface
             )
 
         val forwardMatrix = Matrix().apply {
