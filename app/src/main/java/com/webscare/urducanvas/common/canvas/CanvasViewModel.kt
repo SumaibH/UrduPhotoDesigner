@@ -4903,13 +4903,22 @@ class CanvasViewModel @Inject constructor(
                 }
             } else element
         }
-        if (modified && targetElementId != null && oldData != null && newData != null) {
+        // A transform that changed nothing must not land on the undo stack. The table
+        // panels call this unconditionally -- tapping "+" on a 15-row table, or re-picking
+        // the direction the table is already in, ran the transform, found nothing to do,
+        // and still pushed an entry. Those entries cost the user an undo each and appear
+        // to do nothing when they come back off the stack.
+        val changed = oldData != newData
+        if (modified && changed && targetElementId != null && oldData != null && newData != null) {
             _canvasElements.value = updatedList
             _canvasActions.push(CanvasAction.UpdateTableData(targetElementId!!, oldData!!, newData!!))
             _redoStack.clear()
             _isExplicitChange = false
             notifyUndoRedoChanged()
             markChanged()
+        } else if (modified) {
+            // Still publish: selection-only edits have to reach the canvas.
+            _canvasElements.value = updatedList
         }
     }
 
@@ -6141,6 +6150,7 @@ class CanvasViewModel @Inject constructor(
                 val updated = list.map { element ->
                     if (element.id == action.elementId && element.type == ElementType.TABLE) {
                         val targetData = if (isRedo) action.newData else action.oldData
+                        _selectedTableCellCount.value = targetData.selectedCells.size
                         element.copy(tableData = targetData.deepCopy()).also {
                             it.tableLayoutCache = null
                         }
