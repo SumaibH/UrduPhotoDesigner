@@ -269,13 +269,16 @@ class TemplatesFragment : androidx.fragment.app.Fragment() {
             startOffset = 3,
             nativeSize = com.webscare.ads.NativeSize.SMALL
         )
-        adAnalyticsCoordinator.onAdSlotAttached(
-            adUnitName = "native_templates",
-            adUnitId = com.webscare.urducanvas.BuildConfig.AD_NATIVE_TEMPLATES,
-            adFormat = "native",
-            triggerFeature = "templates_category"
-        )
+        // The opportunity is reported from switchToGrid, where this adapter is actually
+        // attached — not here. Building it requests nothing: this screen opens in sections
+        // mode, and a user who never filters or searches never sees the grid at all, so
+        // reporting at construction invented an opportunity for an ad that was never asked
+        // for. Same mistake in kind as logging an impression before the ad renders.
+        nativeTemplatesSlotReported = false
     }
+
+    /** One `ad_opportunity` per grid adapter actually reaching the list. */
+    private var nativeTemplatesSlotReported = false
 
     // ─── Layout Switching ─────────────────────────────────────────────────────
 
@@ -295,7 +298,22 @@ class TemplatesFragment : androidx.fragment.app.Fragment() {
             rv.layoutManager = com.webscare.urducanvas.common.views.SafeStaggeredGridLayoutManager(2, RecyclerView.VERTICAL).apply {
                 gapStrategy = StaggeredGridLayoutManager.GAP_HANDLING_MOVE_ITEMS_BETWEEN_SPANS
             }
-        if (rv.adapter !== wrappedTemplatesAdapter) rv.adapter = wrappedTemplatesAdapter
+        if (rv.adapter !== wrappedTemplatesAdapter) {
+            rv.adapter = wrappedTemplatesAdapter
+            // The in-feed slots exist from here on: the wrapped adapter loads its batch
+            // lazily when an ad row is first bound, which is only possible once it is on a
+            // list. Once per adapter, not once per switch back and forth, because the batch
+            // it already loaded is not requested again.
+            if (!nativeTemplatesSlotReported) {
+                nativeTemplatesSlotReported = true
+                adAnalyticsCoordinator.onAdSlotAttached(
+                    adUnitName = "native_templates",
+                    adUnitId = com.webscare.urducanvas.BuildConfig.AD_NATIVE_TEMPLATES,
+                    adFormat = "native",
+                    triggerFeature = "templates_category"
+                )
+            }
+        }
         rv.itemAnimator = null; rv.isNestedScrollingEnabled = false
         val pad = resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._18sdp)
         rv.setPadding(pad, rv.paddingTop, pad, rv.paddingBottom); rv.clipToPadding = false

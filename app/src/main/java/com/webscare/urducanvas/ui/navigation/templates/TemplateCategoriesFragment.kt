@@ -256,16 +256,18 @@ class TemplateCategoriesFragment : androidx.fragment.app.Fragment() {
             startOffset = 3,
             nativeSize = com.webscare.ads.NativeSize.SMALL
         )
-        adAnalyticsCoordinator.onAdSlotAttached(
-            adUnitName = "native_templates",
-            adUnitId = BuildConfig.AD_NATIVE_TEMPLATES,
-            adFormat = "native",
-            triggerFeature = "templates_all_categories"
-        )
+        // The opportunity is reported from switchToGrid, where this adapter is actually
+        // attached — not here. This screen opens in sections mode (below), and a user who
+        // never filters or searches never sees the grid, so reporting at construction
+        // invented an opportunity for an ad that was never requested.
+        nativeTemplatesSlotReported = false
 
         binding.categoriesRV.edgeEffectFactory = SpringEdgeEffectFactory()
         switchToSections()
     }
+
+    /** One `ad_opportunity` per grid adapter actually reaching the list. */
+    private var nativeTemplatesSlotReported = false
 
     // ─── Layout Switching ─────────────────────────────────────────────────────
 
@@ -285,7 +287,21 @@ class TemplateCategoriesFragment : androidx.fragment.app.Fragment() {
             rv.layoutManager = com.webscare.urducanvas.common.views.SafeStaggeredGridLayoutManager(2, RecyclerView.VERTICAL).apply {
                 gapStrategy = StaggeredGridLayoutManager.GAP_HANDLING_MOVE_ITEMS_BETWEEN_SPANS
             }
-        if (rv.adapter !== wrappedGridAdapter) rv.adapter = wrappedGridAdapter
+        if (rv.adapter !== wrappedGridAdapter) {
+            rv.adapter = wrappedGridAdapter
+            // The in-feed slots exist from here on: the wrapped adapter loads its batch
+            // lazily when an ad row is first bound, which cannot happen until it is on a
+            // list. Once per adapter, not once per switch back and forth.
+            if (!nativeTemplatesSlotReported) {
+                nativeTemplatesSlotReported = true
+                adAnalyticsCoordinator.onAdSlotAttached(
+                    adUnitName = "native_templates",
+                    adUnitId = BuildConfig.AD_NATIVE_TEMPLATES,
+                    adFormat = "native",
+                    triggerFeature = "templates_all_categories"
+                )
+            }
+        }
         rv.itemAnimator = null; rv.isNestedScrollingEnabled = false
         val pad = resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._18sdp)
         rv.setPadding(pad, rv.paddingTop, pad, rv.paddingBottom); rv.clipToPadding = false
