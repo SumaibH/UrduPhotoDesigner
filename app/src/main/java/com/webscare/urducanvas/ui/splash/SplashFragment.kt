@@ -22,6 +22,7 @@ import android.view.View
 import android.view.ViewAnimationUtils
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
 import androidx.core.splashscreen.SplashScreenViewProvider
@@ -29,6 +30,7 @@ import androidx.core.view.OneShotPreDrawListener
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.webscare.ads.WebsCareAds
 import com.webscare.urducanvas.BuildConfig
 import com.webscare.urducanvas.MainActivity
@@ -41,6 +43,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlin.math.hypot
 import kotlin.math.max
+import kotlin.math.roundToInt
 
 /**
  * The launch splash, picking up exactly where Android's own leaves off.
@@ -571,35 +574,22 @@ class SplashFragment : Fragment() {
     }
 
     /**
-     * The exit. The splash's content — mark, tagline, footer — fades out first, leaving
-     * the bare green sheet with the wordmark and the calligraphy; that is handed to the
-     * activity's exit overlay, painted identically above the navigation host, and only
-     * then is Home navigated to. The overlay morphs into Home's header once Home has laid
-     * itself out.
+     * The exit. The whole settled splash — ground, mark, wordmark, tagline, loading line
+     * — is handed to the activity's exit overlay, which repaints it above the navigation
+     * host so the fragment can be popped without a pixel moving, and only then is Home
+     * navigated to. Nothing is faded out here: the overlay has to hold this picture for
+     * however long Home takes to lay itself out, and the pieces leave during the collapse
+     * instead, while everything is already in motion.
      */
     private fun leaveForHome() {
-        val b = _binding
         val main = activity as? MainActivity
-        if (b == null || main == null || !isAdded) {
+        if (main == null || !isAdded) {
             navigate()
             return
         }
         main.isSplashCompleted = true
-        b.mark.animate()
-            .alpha(0f)
-            .scaleX(EXIT_MARK_SCALE).scaleY(EXIT_MARK_SCALE)
-            .setDuration(EXIT_PREFADE_MS)
-            .setInterpolator(EMPHASIZED)
-            .start()
-        b.tagline.animate().alpha(0f).setDuration(EXIT_PREFADE_MS).start()
-        b.footer.animate()
-            .alpha(0f)
-            .setDuration(EXIT_PREFADE_MS)
-            .withEndAction {
-                buildExitSpec()?.let { main.splashExit.begin(it) }
-                navigate()
-            }
-            .start()
+        buildExitSpec()?.let { main.splashExit.begin(it) }
+        navigate()
     }
 
     private fun navigate() {
@@ -610,27 +600,64 @@ class SplashFragment : Fragment() {
         findNavController().navigate(R.id.homeFragment, null, navOptions)
     }
 
-    /** The bare splash, in window coordinates, for [SplashExitOverlay] to paint. */
+    /** The settled splash, in window coordinates, for [SplashExitOverlay] to paint. */
     private fun buildExitSpec(): SplashExitSpec? {
         val b = _binding ?: return null
         if (b.root.width == 0 || b.wordmark.width == 0) return null
-        val watermark = ContextCompat.getDrawable(requireContext(), R.drawable.header_calligraphy)?.mutate()
-        val location = IntArray(2)
-        b.wordmark.getLocationInWindow(location)
-        val textX = location[0] + b.wordmark.compoundPaddingLeft.toFloat()
-        val textBaseline = location[1] + b.wordmark.baseline.toFloat()
+        val context = requireContext()
+        // The footer group carries its children's fade, so it multiplies into both.
+        val footerAlpha = b.footer.alpha
+        val mark = ContextCompat.getDrawable(context, R.drawable.ic_urdu_canvas)?.mutate()?.apply {
+            setTint(ContextCompat.getColor(context, R.color.whiteText))
+        }
         return SplashExitSpec(
-            text = b.wordmark.text.toString(),
-            textPaint = TextPaint(b.wordmark.paint),
-            textX = textX,
-            textBaseline = textBaseline,
-            watermark = watermark,
-            watermarkBounds = windowBounds(b.calligraphy, location),
-            watermarkAlpha = b.calligraphy.alpha
+            wordmark = textSpec(b.wordmark),
+            tagline = if (b.tagline.alpha > 0f) textSpec(b.tagline) else null,
+            publisher = if (footerAlpha > 0f) textSpec(b.publisher, footerAlpha, allCaps = true) else null,
+            mark = mark?.let { d ->
+                b.mark.drawnBoundsInWindow()?.let { SplashImage(d, it, b.mark.alpha) }
+            },
+            watermark = ContextCompat.getDrawable(context, R.drawable.header_calligraphy)?.mutate()
+                ?.let { SplashImage(it, windowBounds(b.calligraphy), b.calligraphy.alpha) },
+            loaderTrack = if (footerAlpha > 0f) loaderBounds(b.loader) else null,
+            loaderTrackColor = scaleAlpha(ContextCompat.getColor(context, R.color.splash_loader_track), footerAlpha),
+            loaderColor = scaleAlpha(ContextCompat.getColor(context, R.color.whiteText), footerAlpha),
+            loaderCorner = b.loader.trackCornerRadius.toFloat()
         )
     }
 
-    private fun windowBounds(view: View, location: IntArray): RectF {
+    /** A text view's own text, paint and position, in window coordinates. */
+    private fun textSpec(view: TextView, groupAlpha: Float = 1f, allCaps: Boolean = false): SplashText {
+        val location = IntArray(2)
+        view.getLocationInWindow(location)
+        val paint = TextPaint(view.paint)
+        paint.alpha = (paint.alpha * view.alpha * groupAlpha).roundToInt().coerceIn(0, 255)
+        return SplashText(
+            text = view.text.toString().let { if (allCaps) it.uppercase() else it },
+            paint = paint,
+            x = location[0] + view.compoundPaddingLeft.toFloat(),
+            baseline = location[1] + view.baseline.toFloat()
+        )
+    }
+
+    /**
+     * The loading line's track, in window coordinates: the indicator sits centred in a
+     * view that is taller than the line it draws.
+     */
+    private fun loaderBounds(view: LinearProgressIndicator): RectF {
+        val bounds = windowBounds(view)
+        val thickness = view.trackThickness.toFloat()
+        if (thickness <= 0f || thickness >= bounds.height()) return bounds
+        val inset = (bounds.height() - thickness) / 2f
+        bounds.inset(0f, inset)
+        return bounds
+    }
+
+    private fun scaleAlpha(color: Int, factor: Float): Int =
+        ColorUtils.setAlphaComponent(color, (Color.alpha(color) * factor).roundToInt().coerceIn(0, 255))
+
+    private fun windowBounds(view: View): RectF {
+        val location = IntArray(2)
         view.getLocationInWindow(location)
         return RectF(
             location[0].toFloat(), location[1].toFloat(),
@@ -723,7 +750,5 @@ class SplashFragment : Fragment() {
         const val AD_POLL_MS = 150L
 
         /** The mark, tagline and footer fade before the exit overlay takes over the frame. */
-        const val EXIT_PREFADE_MS = 220L
-        const val EXIT_MARK_SCALE = 0.92f
     }
 }

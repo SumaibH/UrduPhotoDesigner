@@ -1098,6 +1098,12 @@ class HomeFragment : androidx.fragment.app.Fragment(), SplashLanding {
     override fun landingContent(): List<View> =
         _binding?.let { listOf(it.contentScroll, it.loadingState.root, it.errorState.root) } ?: emptyList()
 
-    override fun landingHeaderContent(): List<View> =
-        _binding?.let { listOf(it.expandedContent, it.headerActions) } ?: emptyList()
+    /**
+     * In unfolding order. These are the children of the expanded header rather than the
+     * container itself: the scroll morph owns [expandedContent]'s own alpha, so the two
+     * never write the same property.
+     */
+    override fun landingHeaderContent(): List<View> = _binding?.let {
+        listOf(it.headerActions, it.subtitle, it.searchBar, it.blankCanvas, it.create, it.filesHint)
+    } ?: emptyList()
 }

@@ -1,7 +1,6 @@
 package com.webscare.urducanvas.ui.splash
 
 import android.animation.ValueAnimator
-import android.graphics.RectF
 import android.os.Bundle
 import android.os.Looper
 import android.os.MessageQueue
@@ -11,7 +10,6 @@ import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.LinearInterpolator
-import android.widget.ImageView
 import androidx.core.animation.doOnEnd
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.Fragment
@@ -20,13 +18,14 @@ import com.webscare.urducanvas.BuildConfig
 import com.webscare.urducanvas.ui.splash.SplashArt.Companion.EMPHASIZED
 
 /**
- * Runs the splash's exit: the bare green ground morphing into Home's header, the
- * wordmark landing in the title slot, Home's page rising in underneath as the ground
- * lifts, and the header's own content blooming in once the ground has settled.
+ * Runs the splash's exit: the splash ground morphing into Home's header, the lockup
+ * gathering onto the title, Home's page rising in underneath as the ground lifts, and
+ * the header unfolding as the ground settles into it.
  *
- * [begin] puts a [SplashExitOverlay] above the navigation host that paints the bare
- * splash pixel for pixel, so the splash fragment can be popped without anything on
- * screen changing. Home is then created and laid out under that static overlay — the
+ * [begin] puts a [SplashExitOverlay] above the navigation host that paints the whole
+ * settled splash pixel for pixel, so the splash fragment can be popped without anything
+ * on screen changing — and so the wait for Home is spent looking at the splash itself,
+ * not at a half-dismantled one. Home is then created and laid out under that static overlay — the
  * expensive part happens while nothing is moving. The animation starts only once Home's
  * first frame is up and the main thread has gone quiet (or [IDLE_WAIT_MAX_MS] has
  * passed), from the header and title Home actually laid out, so it lands exactly and
@@ -150,7 +149,7 @@ class SplashExitController(
             titleX = location[0] + title.compoundPaddingLeft.toFloat(),
             titleBaseline = location[1] + title.baseline.toFloat(),
             titlePaint = TextPaint(title.paint),
-            watermarkBounds = landing.landingWatermark()?.let { drawnBoundsInWindow(it) }
+            watermarkBounds = landing.landingWatermark()?.drawnBoundsInWindow()
         )
         log("landing: header bottom ${headerBottom.toInt()}px, title at (${location[0]}, ${location[1] + title.baseline})")
 
@@ -169,10 +168,12 @@ class SplashExitController(
             }
             start()
         }
-        // The page rises as the ground lifts off it; the header's own content blooms in
-        // once the ground has settled into the header.
+        // The page rises as the ground lifts off it; the header's own rows unfold one
+        // after another while the ground is still settling into the header.
         content.forEach { rise(it, RISE_DELAY_MS, RISE_MS) }
-        headerContent.forEach { rise(it, HEADER_RISE_DELAY_MS, HEADER_RISE_MS) }
+        headerContent.forEachIndexed { i, v ->
+            rise(v, HEADER_RISE_DELAY_MS + i * HEADER_STAGGER_MS, HEADER_RISE_MS)
+        }
     }
 
     private fun rise(view: View, delay: Long, duration: Long) {
@@ -184,24 +185,6 @@ class SplashExitController(
             .setInterpolator(EMPHASIZED)
             .withLayer()
             .start()
-    }
-
-    /**
-     * Where an image view actually paints its drawable, in window coordinates, with its
-     * scale type, scale and translation applied — the header's calligraphy is scaled up
-     * and pushed off the corner, so its view bounds say nothing about where the ink is.
-     */
-    private fun drawnBoundsInWindow(view: ImageView): RectF? {
-        val drawable = view.drawable ?: return null
-        val parent = view.parent as? View ?: return null
-        val rect = RectF(0f, 0f, drawable.intrinsicWidth.toFloat(), drawable.intrinsicHeight.toFloat())
-        view.imageMatrix.mapRect(rect)
-        rect.offset(view.paddingLeft.toFloat(), view.paddingTop.toFloat())
-        view.matrix.mapRect(rect)
-        val location = IntArray(2)
-        parent.getLocationInWindow(location)
-        rect.offset(location[0] + view.left.toFloat(), location[1] + view.top.toFloat())
-        return rect
     }
 
     /** No landing screen came: fade the overlay out and let whatever is there show. */
@@ -259,9 +242,14 @@ class SplashExitController(
         const val RISE_MS = 450L
         const val RISE_DP = 24f
 
-        /** The header's content blooms in as the ground settles into the header. */
-        const val HEADER_RISE_DELAY_MS = 520L
-        const val HEADER_RISE_MS = 340L
+        /**
+         * The header unfolds while the ground is still settling into it, one row after
+         * another, so the overlay dissolves onto a header that is already filling rather
+         * than onto an empty bar that populates itself afterwards.
+         */
+        const val HEADER_RISE_DELAY_MS = 300L
+        const val HEADER_STAGGER_MS = 40L
+        const val HEADER_RISE_MS = 280L
         const val HEADER_RISE_DP = 10f
 
         const val DISMISS_MS = 250L

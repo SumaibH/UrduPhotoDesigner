@@ -11,8 +11,8 @@ import android.widget.TextView
  * A screen the splash can land on: Home. The exit collapses the splash ground into
  * [landingHeader], carries the wordmark onto [landingTitle] and the calligraphy onto
  * [landingWatermark], rises [landingContent] in underneath while the ground lifts, and
- * blooms [landingHeaderContent] in once the ground has settled into the header. Every
- * one of them may be null or empty once the fragment's view is gone.
+ * unfolds [landingHeaderContent] — in the order given — as the ground settles into the
+ * header. Every one of them may be null or empty once the fragment's view is gone.
  */
 interface SplashLanding {
     fun landingHeader(): View?
@@ -22,20 +22,41 @@ interface SplashLanding {
     fun landingHeaderContent(): List<View>
 }
 
+/** A run of text exactly as the splash laid it out, in window coordinates. */
+class SplashText(
+    val text: String,
+    val paint: TextPaint,
+    val x: Float,
+    val baseline: Float
+)
+
+/** A drawable exactly where the splash drew it, in window coordinates. */
+class SplashImage(
+    val drawable: Drawable,
+    val bounds: RectF,
+    val alpha: Float
+)
+
 /**
- * Everything the exit overlay needs to paint the bare splash exactly as the fragment
- * left it, in window coordinates: the ground and its art, the calligraphy and the
- * wordmark. The mark, tagline and footer are not carried: the fragment fades them
- * out before handing over.
+ * The whole settled splash in window coordinates, so [SplashExitOverlay] can repaint it
+ * above the navigation host without a single pixel moving at the hand-off — ground and
+ * art, the calligraphy, the mark, the wordmark, the tagline and the loading line.
+ *
+ * Nothing is faded out before the hand-off on purpose: the overlay has to hold this
+ * picture for as long as Home takes to lay itself out, and a half-dismantled splash is
+ * a bad thing to stare at. The pieces leave during the collapse, while everything is
+ * already moving.
  */
 class SplashExitSpec(
-    val text: String,
-    val textPaint: TextPaint,
-    val textX: Float,
-    val textBaseline: Float,
-    val watermark: Drawable?,
-    val watermarkBounds: RectF,
-    val watermarkAlpha: Float
+    val wordmark: SplashText,
+    val tagline: SplashText?,
+    val publisher: SplashText?,
+    val mark: SplashImage?,
+    val watermark: SplashImage?,
+    val loaderTrack: RectF?,
+    val loaderTrackColor: Int,
+    val loaderColor: Int,
+    val loaderCorner: Float
 )
 
 /** Where the overlay lands, in window coordinates, read off Home once it is laid out. */
@@ -47,3 +68,22 @@ class SplashLandingTarget(
     val titlePaint: TextPaint,
     val watermarkBounds: RectF?
 )
+
+/**
+ * Where an image view actually paints its drawable, in window coordinates, with its
+ * scale type, scale and translation applied — Home's calligraphy is scaled up and
+ * pushed off the corner, and the splash's mark is fit inside a box, so neither view's
+ * bounds say where the ink is.
+ */
+internal fun ImageView.drawnBoundsInWindow(): RectF? {
+    val drawable = drawable ?: return null
+    val parent = parent as? View ?: return null
+    val rect = RectF(0f, 0f, drawable.intrinsicWidth.toFloat(), drawable.intrinsicHeight.toFloat())
+    imageMatrix?.mapRect(rect)
+    rect.offset(paddingLeft.toFloat(), paddingTop.toFloat())
+    matrix.mapRect(rect)
+    val location = IntArray(2)
+    parent.getLocationInWindow(location)
+    rect.offset(location[0] + left.toFloat(), location[1] + top.toFloat())
+    return rect
+}
