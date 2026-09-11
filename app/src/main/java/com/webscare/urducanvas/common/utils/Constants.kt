@@ -151,27 +151,63 @@ object Constants {
             .joinToString("")
     }
 
+    /**
+     * The swatch palette shared by every colour picker in the editor.
+     *
+     * Was 124 entries of which only 97 were distinct, opening on raw web primaries —
+     * #FF0000, #00FF00, #0000FF — which are the colours nobody picks and everybody
+     * recognises as a default. This is ordered instead: neutrals, then each hue as two
+     * tints, the hue and two shades, then the palettes this app is actually used for.
+     */
     val colorList = listOf(
-        "#FFFFFF", "#000000", "#FF0000", "#00FF00", "#0000FF",
-        "#FFFF00", "#00FFFF", "#FF00FF", "#C0C0C0", "#808080",
-        "#800000", "#808000", "#008000", "#800080", "#008080",
-        "#000080", "#FFA07A", "#FA8072", "#E9967A", "#F08080",
-        "#CD5C5C", "#DC143C", "#B22222", "#8B0000", "#FF4500",
-        "#FF6347", "#FF7F50", "#FF8C00", "#FFA500", "#FFD700",
-        "#FFFFE0", "#FFFACD", "#FAFAD2", "#FFEFD5", "#FFE4B5",
-        "#FFDAB9", "#EEE8AA", "#F0E68C", "#BDB76B", "#E6E6FA",
-        "#D8BFD8", "#DDA0DD", "#EE82EE", "#DA70D6", "#FF00FF",
-        "#BA55D3", "#9370DB", "#8A2BE2", "#9400D3", "#9932CC",
-        "#8B008B", "#800080", "#4B0082", "#6A5ACD", "#483D8B",
-        "#7B68EE", "#ADFF2F", "#7FFF00", "#7CFC00", "#00FF00",
-        "#32CD32", "#98FB98", "#90EE90", "#00FA9A", "#00FF7F",
-        "#3CB371", "#2E8B57", "#228B22", "#008000", "#006400",
-        "#9ACD32", "#6B8E23", "#556B2F", "#66CDAA", "#8FBC8F",
-        "#20B2AA", "#008B8B", "#008080", "#00FFFF", "#00CED1",
-        "#40E0D0", "#48D1CC", "#00BFFF", "#1E90FF", "#6495ED",
-        "#4682B4", "#4169E1", "#0000FF", "#0000CD", "#00008B",
-        "#191970", "#87CEFA", "#87CEEB", "#ADD8E6", "#B0C4DE",
-        "#708090", "#778899", "#A9A9A9", "#696969", "#2F4F4F"
+        // Neutrals — white through black, warmed slightly so they sit on paper
+        "#FFFFFF", "#F7F7F5", "#EDEDEA", "#DCDCD8", "#C4C4BF", "#A8A8A2",
+        "#8A8A85", "#6B6B67", "#4E4E4B", "#333331", "#1C1C1B", "#000000",
+        // Reds
+        "#EEB0B0", "#E06D6D", "#D32F2F", "#9C2323", "#651717",
+        // Crimson & maroon
+        "#D3A9B0", "#AF606D", "#8C1C2E", "#681522", "#430D16",
+        // Oranges
+        "#FBCD9E", "#F8A34D", "#F57C00", "#B55C00", "#763C00",
+        // Ambers & gold
+        "#F5DBA8", "#ECBD5F", "#E4A11B", "#A97714", "#6D4D0D",
+        // Yellows
+        "#FAE89E", "#F6D44D", "#F2C200", "#B39000", "#745D00",
+        // Limes
+        "#D3E8BA", "#AED580", "#8BC34A", "#679037", "#435E24",
+        // Greens
+        "#B0CEB1", "#6DA470", "#2E7D32", "#225D25", "#163C18",
+        // Emerald & flag green
+        "#A2C7B4", "#549775", "#0B6B3A", "#084F2B", "#05331C",
+        // Teals
+        "#9ECCC7", "#4DA197", "#00796B", "#005A4F", "#003A33",
+        // Cyans
+        "#9ED7DE", "#4DB6C1", "#0097A7", "#00707C", "#004850",
+        // Blues
+        "#A6C4E7", "#5B93D3", "#1565C0", "#104B8E", "#0A305C",
+        // Indigo & navy
+        "#ADB2D6", "#6972B3", "#283593", "#1E276D", "#131947",
+        // Violets
+        "#C6B6E3", "#9779CB", "#6A3FB5", "#4E2F86", "#331E57",
+        // Purples & plum
+        "#CDAADC", "#A362BE", "#7B1FA2", "#5B1778", "#3B0F4E",
+        // Magenta & rose
+        "#E8A7C1", "#D45D8C", "#C2185B", "#901243", "#5D0C2C",
+        // Pinks
+        "#F7AAC4", "#F06292", "#E91E63", "#AC1649", "#700E30",
+        // Browns & clay
+        "#CCBEB9", "#A1887F", "#795548", "#5A3F35", "#3A2923",
+        // Sand & cream
+        "#FBF3E4", "#F1E2C3", "#E3CB9B", "#C8A86E", "#A2814A",
+        // Ramadan & Eid — lantern gold on deep green
+        "#03301C", "#1FA463", "#7FCBA3", "#E4C36A", "#F0D27A", "#FFF3C4",
+        "#B98A2E",
+        // Pakistan — the flag, and what sits well beside it
+        "#01411C", "#04552A", "#D4AF37", "#123D2A",
+        // Wedding — maroon, rose and gold
+        "#4A0E1C", "#F0C1D4", "#D4A03C", "#5B1230",
+        // Metals, as flat swatches
+        "#FFD700", "#B08D57", "#C0C0C0", "#8E9BA5", "#B87333", "#6E7A82",
     ).map { ColorItem(it) }
 
     val shadowColorList = listOf(
