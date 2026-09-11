@@ -1,6 +1,8 @@
 package com.webscare.urducanvas.ui.editor.panels.preview
 
 import android.content.Context
+import android.graphics.Color
+import android.graphics.PorterDuff
 import android.graphics.Typeface
 import android.util.AttributeSet
 import android.util.TypedValue
@@ -10,9 +12,15 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
+import androidx.lifecycle.findViewTreeLifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.webscare.urducanvas.R
+import com.webscare.urducanvas.common.utils.Constants
+import com.webscare.urducanvas.common.utils.SvgLoader
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
+import com.webscare.urducanvas.common.utils.isDarkModeEnabled
+import com.webscare.urducanvas.data.model.FontEntity
 import com.webscare.urducanvas.databinding.ViewAssetPreviewBinding
 import java.io.File
 
@@ -167,8 +175,7 @@ class AssetPreviewView @JvmOverloads constructor(
             binding.assetImage.layoutParams = binding.assetImage.layoutParams.apply {
                 height = dp(if (expanded) IMAGE_EXPANDED_DP else IMAGE_COLLAPSED_DP)
             }
-            val thumb = font.entity.font_image?.takeIf { it.isNotBlank() } ?: font.entity.image_url
-            Glide.with(this).load(thumb).into(binding.assetImage)
+            loadFontThumbnail(font.entity)
             return
         }
 
@@ -190,6 +197,51 @@ class AssetPreviewView @JvmOverloads constructor(
             binding.alphabetRow.text = URDU_ALPHABET
             binding.numeralRow.typeface = local
             binding.numeralRow.text = URDU_NUMERALS
+        }
+    }
+
+    /**
+     * The tile's thumbnail, loaded the way the tile loads it.
+     *
+     * Not as simple as handing the URL to Glide: `image_url` is a path relative to
+     * the asset host and has to be prefixed, most of them are SVGs that Glide
+     * cannot decode, and `font_image` is the absolute-URL fallback used only when
+     * there is no `image_url` at all. Loading the bare field showed an empty page
+     * for every font that wasn't downloaded — which is exactly the case this
+     * fallback exists for.
+     */
+    private fun loadFontThumbnail(font: FontEntity) {
+        val relative = font.image_url
+        val dark = context.isDarkModeEnabled()
+        if (dark) {
+            binding.assetImage.setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN)
+        } else {
+            binding.assetImage.clearColorFilter()
+        }
+
+        if (relative.isNotEmpty()) {
+            val url = Constants.BASE_URL_GLIDE + relative
+            if (relative.endsWith(".svg", ignoreCase = true)) {
+                val scope = findViewTreeLifecycleOwner()?.lifecycleScope ?: return
+                SvgLoader.load(
+                    url = url,
+                    imageView = binding.assetImage,
+                    scope = scope,
+                    cachedXml = null,
+                    maxPx = 1024,
+                    applyWhiteTint = dark
+                ) { _, _ -> }
+            } else {
+                Glide.with(this).load(url).into(binding.assetImage)
+            }
+            return
+        }
+
+        val absolute = font.font_image?.takeIf { it.isNotBlank() }
+        if (absolute != null) {
+            Glide.with(this).load(absolute).into(binding.assetImage)
+        } else {
+            binding.assetImage.setImageResource(R.drawable.ic_font_thumbnail)
         }
     }
 

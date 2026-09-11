@@ -305,21 +305,24 @@ class PanelSheetBehavior(
 
     // ── Content-driven third stop ─────────────────────────────────────────────
 
-    /** Where [holdAtHeight] found the sheet, so [releaseHeight] can put it back. */
+    /** Where [growBy] found the sheet, so [releaseHeight] can put it back. */
     private var heldRestingGuideBegin: Int? = null
 
     /**
-     * Raises the sheet until the panel is [heightPx] tall, if it isn't already.
+     * Raises the sheet by [extraPx], for content that needs more room than the
+     * collapsed panel gives but has no business taking the screen — the in-panel
+     * asset preview.
      *
-     * The in-panel asset preview needs more room than a collapsed panel gives but
-     * has no business taking the screen, so it asks for a height rather than
-     * asking to expand. This only ever grows the sheet — from expanded, or from
-     * anything already taller, nothing moves. Returns whether the sheet moved.
+     * Deliberately relative. An absolute target would have to know how much of the
+     * sheet the panel fragment actually gets, which is the sheet height minus the
+     * editor's bottom bar and varies by device; the caller knows how short it is
+     * because it can measure itself. This only ever grows the sheet, never past
+     * fully expanded, and does nothing while expanded. Returns whether it moved.
      */
-    fun holdAtHeight(heightPx: Int): Boolean {
-        if (isExpanded) return false
-        val target = (panelSpaceHeight - heightPx).coerceIn(expandedPx, collapsedPx)
+    fun growBy(extraPx: Int): Boolean {
+        if (isExpanded || extraPx <= 0) return false
         val resting = currentGuideBegin
+        val target = (resting - extraPx).coerceAtLeast(expandedPx)
         if (target >= resting) return false
         heldRestingGuideBegin = resting
         springTo(target)
@@ -327,8 +330,8 @@ class PanelSheetBehavior(
     }
 
     /**
-     * Puts the sheet back where [holdAtHeight] found it — unless the user has
-     * expanded the panel in the meantime, in which case they now own its height.
+     * Puts the sheet back where [growBy] found it — unless the user has expanded
+     * the panel in the meantime, in which case they now own its height.
      */
     fun releaseHeight() {
         val resting = heldRestingGuideBegin ?: return

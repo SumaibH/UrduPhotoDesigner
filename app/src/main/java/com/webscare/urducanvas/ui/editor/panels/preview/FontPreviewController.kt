@@ -17,6 +17,11 @@ import com.webscare.urducanvas.data.model.FontEntity
  *
  * @param download the panel's own download call, so analytics and the tile's
  *   progress spinner behave exactly as they do for a tap.
+ * @param primaryLabel `preview_add_to_canvas` in the main panels,
+ *   `preview_use_on_canvas` in the adjustments panels. Passed as a resource id at
+ *   the call site rather than held as a constant here: a `const val` holding an
+ *   `R.string` inlines into its callers, and one stale class file then means a
+ *   `NoSuchMethodError` at the first long-press rather than a compile error.
  */
 class FontPreviewController(
     private val fragment: Fragment,
@@ -95,9 +100,4 @@ class FontPreviewController(
         download(font)
     }
 
-    companion object {
-        /** The main panels add a new element; the adjustments panels change the selected one. */
-        const val ADD = R.string.preview_add_to_canvas
-        const val USE = R.string.preview_use_on_canvas
-    }
 }

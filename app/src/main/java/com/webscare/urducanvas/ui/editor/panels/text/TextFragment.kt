@@ -731,7 +731,7 @@ class TextFragment : Fragment(), PreviewHostOwner {
                     ?.takeIf { it.isNotBlank() } ?: getString(R.string.fonts)
             },
             expanded = { isPanelExpanded },
-            primaryLabel = FontPreviewController.USE,
+            primaryLabel = R.string.preview_use_on_canvas,
             download = { font ->
                 fontsAdapter.addDownloadingId(font.id)
                 mainViewModel.downloadFont(font)

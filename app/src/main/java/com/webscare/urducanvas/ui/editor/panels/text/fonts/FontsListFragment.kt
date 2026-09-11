@@ -331,7 +331,7 @@ class FontsListFragment : androidx.fragment.app.Fragment() {
                     ?: getString(R.string.fonts)
             },
             expanded = { mainViewModel.isPanelExpanded(PanelType.FONTS) },
-            primaryLabel = FontPreviewController.USE,
+            primaryLabel = R.string.preview_use_on_canvas,
             download = { font ->
                 fontsAdapter.addDownloadingId(font.id)
                 mainViewModel.downloadFont(font)

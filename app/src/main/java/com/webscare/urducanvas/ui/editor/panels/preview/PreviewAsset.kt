@@ -51,9 +51,15 @@ sealed class PreviewAsset {
         override val breadcrumb: String,
         val entity: ImageEntity
     ) : PreviewAsset() {
+        /**
+         * Most stickers have no alt text and are filed under a numbered name, so
+         * the raw file name is as likely to be "9" as anything readable. Fall back
+         * to the set it came from rather than putting a bare digit in the header.
+         */
         override val title
             get() = entity.alt_text?.takeIf { it.isNotBlank() }
-                ?: entity.file_name.substringBeforeLast('.')
+                ?: readableName(entity.file_name)
+                ?: entity.category
         override val isPremium get() = entity.is_premium && !entity.is_subscribed
         // Images are streamed and cached by Glide rather than recorded as downloaded,
         // so there is no per-item flag on the entity to read — and nothing for a
@@ -62,7 +68,9 @@ sealed class PreviewAsset {
         override val canDownload get() = false
         override val details
             get() = listOf(
-                entity.category,
+                // Dropped when the header is already showing it, which is what
+                // happens whenever the file name had nothing readable in it.
+                entity.category.takeIf { it != title }.orEmpty(),
                 if (entity.file_name.endsWith(".svg", true)) "SVG" else "PNG",
                 readableSize(entity.file_size)
             )
@@ -86,6 +94,20 @@ sealed class PreviewAsset {
     }
 
     companion object {
+        /**
+         * A file name worth showing as a title, or null when there is nothing in it
+         * — a bare number, or a name that was only ever an id.
+         */
+        internal fun readableName(raw: String): String? {
+            val stem = raw.substringBeforeLast('.')
+                .replace('_', ' ')
+                .replace('-', ' ')
+                .trim()
+            if (stem.isEmpty()) return null
+            if (stem.none { it.isLetter() }) return null
+            return stem.replaceFirstChar { it.uppercase() }
+        }
+
         /** file_size arrives as a byte count in a string, and sometimes already formatted. */
         internal fun readableSize(raw: String?): String {
             val bytes = raw?.trim()?.toLongOrNull() ?: return raw?.trim().orEmpty()

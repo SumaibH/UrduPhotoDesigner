@@ -112,7 +112,12 @@ class PanelPreviewHost(
         mute()
         backCallback.isEnabled = true
         if (!expanded) {
-            holdingSheet = editorSheet()?.holdAtHeight(previewHeightPx()) == true
+            // How short this panel is right now, measured rather than assumed: how
+            // much of the sheet a panel fragment gets depends on the editor's
+            // bottom bar and the device, and a fixed target got it wrong on a tall
+            // screen where the collapsed panel is already most of the way there.
+            val deficit = previewHeightPx() - panelRoot.height
+            holdingSheet = editorSheet()?.growBy(deficit) == true
         }
 
         preview.isVisible = true
@@ -257,7 +262,7 @@ class PanelPreviewHost(
          * need to be worth looking at above the chips, the sample field and the
          * actions row. Collapsed panels are well short of it.
          */
-        private const val PREVIEW_PANEL_DP = 340
+        private const val PREVIEW_PANEL_DP = 360
     }
 }
 
