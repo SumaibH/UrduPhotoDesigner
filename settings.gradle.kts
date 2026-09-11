@@ -42,7 +42,23 @@ rootProject.name = "UrduCanvas"
 include(":app")
 
 // Redirect build outputs outside OneDrive to eliminate Windows file locking and deletion errors
-val buildDirBase = java.io.File(System.getProperty("user.home"), ".gradle_builds/UrduCanvas")
+//
+// Two builds of this project at once then fight over that one tree: whichever is
+// behind finds R.jar or a dex archive deleted under it and fails with an IOException
+// that looks nothing like the real cause. `-PbuildSlot=<name>` gives a session its own
+// tree — worth it when a second agent or Android Studio is building alongside you.
+// Without the property nothing changes.
+private val buildSlot: String? =
+    (providers.gradleProperty("buildSlot").orNull
+        ?: System.getProperty("buildSlot")
+        ?: System.getenv("URDUCANVAS_BUILD_SLOT"))
+        ?.trim()
+        ?.takeIf { it.isNotEmpty() }
+
+val buildDirBase = java.io.File(
+    System.getProperty("user.home"),
+    ".gradle_builds/UrduCanvas" + (buildSlot?.let { "-$it" } ?: "")
+)
 gradle.beforeProject {
     val projName = if (name == "UrduCanvas") "root" else name
     layout.buildDirectory.set(java.io.File(buildDirBase, projName))
