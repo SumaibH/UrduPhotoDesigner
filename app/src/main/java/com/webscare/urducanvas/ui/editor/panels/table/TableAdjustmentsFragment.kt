@@ -99,7 +99,8 @@ class TableAdjustmentsFragment : Fragment() {
 
     private fun setupSearchBar() {
         binding.searchIcon.addPressEffect {
-            com.webscare.urducanvas.ui.editor.panels.adjustments.PanelSearchDialogFragment.newInstance()
+            com.webscare.urducanvas.ui.editor.panels.adjustments.PanelSearchDialogFragment
+                .newInstance("table_adjustments")
                 .show(childFragmentManager, "panel_search_dialog")
         }
 

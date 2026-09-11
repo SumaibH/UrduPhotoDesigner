@@ -177,7 +177,7 @@ class TextAdjustmentsFragment : androidx.fragment.app.Fragment() {
                 mainViewModel.setQuery("")
             } else {
                 com.webscare.urducanvas.ui.editor.panels.adjustments.PanelSearchDialogFragment
-                    .newInstance()
+                    .newInstance("text_adjustments")
                     .show(childFragmentManager, "panel_search_dialog")
             }
         }

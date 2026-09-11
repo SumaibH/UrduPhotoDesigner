@@ -75,7 +75,7 @@ class DrawFragment : Fragment() {
      */
     private fun setupSearchBar() {
         binding.searchIcon.addPressEffect {
-            PanelSearchDialogFragment.newInstance()
+            PanelSearchDialogFragment.newInstance("draw_panel")
                 .show(childFragmentManager, "brush_search_dialog")
         }
 

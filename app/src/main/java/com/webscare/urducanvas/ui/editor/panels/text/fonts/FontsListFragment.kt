@@ -369,8 +369,11 @@ class FontsListFragment : androidx.fragment.app.Fragment() {
                     mainViewModel.queryDebounced.onStart { emit("") },
                     mainViewModel.recentFonts
                 ) { fonts, queryRaw, _ ->
-                    buildFilteredList(fonts, queryRaw)
-                }.collect { finalList ->
+                    queryRaw to buildFilteredList(fonts, queryRaw)
+                }.collect { (queryRaw, finalList) ->
+                    // The shared search dialog has no list of its own to count, so the list
+                    // reports here — this is the font tab's half of the panel search event.
+                    if (queryRaw.isNotBlank()) mainViewModel.setSearchResultCount(finalList.size)
                     submitWithScrollPreservation(finalList)
                 }
             }

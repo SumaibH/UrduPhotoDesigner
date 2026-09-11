@@ -48,6 +48,7 @@ class AnalyticsTracker @Inject constructor(
             // Always attach user tier
             val userTier = if (sessionStateManager.isSubscribed) Values.TIER_SUBSCRIBED else Values.TIER_FREE
             bundle.putString(Params.USER_TIER, userTier)
+            stampTrafficType(bundle)
 
             firebaseAnalytics.logEvent(eventName.take(AnalyticsConstants.MAX_EVENT_NAME_LENGTH), bundle)
             // Debug builds only: the parameter map carries template names and file paths,
@@ -55,6 +56,26 @@ class AnalyticsTracker @Inject constructor(
             if (BuildConfig.DEBUG) Log.d(TAG, "Logged event [$eventName]: $params")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to log event $eventName", e)
+        }
+    }
+
+    /**
+     * Marks events from a non-production build as internal traffic.
+     *
+     * All three flavours share one `applicationId` — google-services.json has a single
+     * client, and an `applicationIdSuffix` breaks the build, AdMob and Play billing — so
+     * every dev and debug run was reporting into the production GA4 stream alongside real
+     * users. `traffic_type` is GA4's own built-in parameter: the internal-traffic data
+     * filter in the console matches on this key and value, which is why it needs no
+     * custom-dimension registration and why the value must stay exactly "internal".
+     *
+     * Stamped here and in [logStandardScreenView] because those are the only two places
+     * that hand a bundle to Firebase, and the standard `screen_view` path deliberately
+     * bypasses [logRawEvent].
+     */
+    private fun stampTrafficType(bundle: Bundle) {
+        if (!BuildConfig.IS_PROD_LOGIC || BuildConfig.DEBUG) {
+            bundle.putString(Params.TRAFFIC_TYPE, Values.TRAFFIC_INTERNAL)
         }
     }
 
@@ -90,6 +111,7 @@ class AnalyticsTracker @Inject constructor(
                 // Ours is always present, so this just keeps the two columns consistent.
                 putString(FirebaseAnalytics.Param.SCREEN_CLASS, screenName.take(MAX_STRING_LENGTH))
             }
+            stampTrafficType(bundle)
             firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW, bundle)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to log standard screen_view for $screenName", e)

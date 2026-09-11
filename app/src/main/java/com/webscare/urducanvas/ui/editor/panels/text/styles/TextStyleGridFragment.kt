@@ -104,7 +104,13 @@ class TextStyleGridFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 mainViewModel.queryDebounced.collect { query ->
                     if (_binding == null) return@collect
-                    adapter.submitPresets(filterPresets(query))
+                    val filtered = filterPresets(query)
+                    adapter.submitPresets(filtered)
+                    // The shared search dialog has no list of its own to count. "None" is
+                    // always kept by filterPresets and is not a result, so it comes off here.
+                    if (query.isNotBlank()) {
+                        mainViewModel.setSearchResultCount((filtered.size - 1).coerceAtLeast(0))
+                    }
                 }
             }
         }

@@ -2765,6 +2765,14 @@ class CanvasViewModel @Inject constructor(
 
     fun applyTextStylePreset(preset: com.webscare.urducanvas.data.model.TextStylePreset) {
         selectedStylePresetId.value = preset.id
+        // Applying a style rewrites every selected text element, so it lands on the undo
+        // stack as UpdateCanvasElementsOrder and was being reported as "layers / reorder" —
+        // the style catalogue had no telemetry of its own at all. The preset id cannot be
+        // recovered from that action, so it is handed over here; 317 duplicate styles were
+        // just removed from the catalogue and there is no other way to see what the
+        // remainder are worth.
+        pendingActionLabel = "text" to "style_preset"
+        pendingActionDetail = preset.id
         updateSelectedTextElements { element ->
             val hasStrokeVal = preset.strokeColor != null && preset.strokeWidth > 0f
             val hasShadowVal = preset.shadowColor != null && (preset.shadowRadius > 0f || preset.shadowDx != 0f || preset.shadowDy != 0f)
@@ -3266,6 +3274,11 @@ class CanvasViewModel @Inject constructor(
             }
         }
         _redoStack.clear()
+        // Duplicating is its own gesture, not an add: the actions pushed above are adds
+        // because that is what undo has to reverse, but counting them as adds put every
+        // duplicate into whichever panel's add bucket the element type suggested, and the
+        // duplicate control itself had no telemetry at all.
+        pendingActionLabel = "canvas" to "duplicate"
         notifyUndoRedoChanged()
     }
 
@@ -4336,6 +4349,11 @@ class CanvasViewModel @Inject constructor(
         _canvasActions.push(CanvasAction.AddSticker(element.copy(context = null, bitmap = null)))
         _redoStack.clear()
         _canvasElements.value = currentList + element
+        // Reported as a background rather than an image add. The element is a full-canvas
+        // IMAGE layer so that undo can remove it like any other element, but from the user's
+        // side this is "I put a photo behind my design" — the same intent as picking a
+        // background colour or gradient, and the mapping those two already use.
+        pendingActionLabel = "background" to "image"
         notifyUndoRedoChanged()
     }
 
@@ -4797,6 +4815,10 @@ class CanvasViewModel @Inject constructor(
         _redoStack.clear()
         _canvasElements.value = currentList + element
         selectedElement = element
+        // Adding text *from* a style preset — the id is the only record of which one, and
+        // AddText cannot carry it. Reported as an add rather than a style change because
+        // that is what happened; the detail says which preset it came from.
+        pendingActionDetail = stylePreset.id
         notifyUndoRedoChanged()
     }
 
@@ -5965,16 +5987,58 @@ class CanvasViewModel @Inject constructor(
      */
     private var lastReportedAction: CanvasAction? = null
 
+    /**
+     * One-shot override for the next action's attribution, consumed by
+     * [notifyUndoRedoChanged].
+     *
+     * Some callers push an action whose *type* is right for undo but wrong for reporting.
+     * Duplicating an element pushes [CanvasAction.AddSticker] because the element really is
+     * added, and the background-image entry point does the same; mapping either by the
+     * action type alone reported both as a sticker add. Changing which action is pushed
+     * would change undo semantics, so the attribution is overridden here instead — set it
+     * immediately before calling [notifyUndoRedoChanged].
+     */
+    private var pendingActionLabel: Pair<String, String>? = null
+
+    /**
+     * One-shot detail for the next action, consumed alongside [pendingActionLabel].
+     *
+     * For the callers whose identifier the action itself cannot carry — a text style preset
+     * ends up as a bulk element update, so the preset id is gone by the time the action is
+     * built. Where the action *does* carry it, [getActionDetailForAction] reads it off
+     * instead and nothing needs setting here.
+     */
+    private var pendingActionDetail: String? = null
+
     private fun notifyUndoRedoChanged() {
         _canUndo.value = _canvasActions.isNotEmpty()
         _canRedo.value = _redoStack.isNotEmpty()
         refreshSelectedElements()
-        if (isReplayingHistory) return
+        if (isReplayingHistory) {
+            pendingActionLabel = null
+            pendingActionDetail = null
+            return
+        }
         val latestAction = _canvasActions.lastOrNull()
+        val label = pendingActionLabel
+        val detail = pendingActionDetail
+        pendingActionLabel = null
+        pendingActionDetail = null
         if (latestAction != null && latestAction !== lastReportedAction) {
             lastReportedAction = latestAction
-            val (tool, subFeature) = getToolAndSubFeatureForAction(latestAction)
-            analyticsTracker.logToolActionPerformed(tool, subFeature)
+            // A pinch-zoom is not "the user made something". TransformCanvas goes on the
+            // undo stack so the gesture can be undone, but reporting it emitted a tool
+            // action for looking at the canvas and — worse — tripped notifyCanvasComposed,
+            // whose whole job is separating people who put something on the canvas from
+            // people who did not. It is still adopted as lastReportedAction so the identity
+            // guard keeps working on whatever is pushed next.
+            if (latestAction is CanvasAction.TransformCanvas) return
+            val (tool, subFeature) = label ?: getToolAndSubFeatureForAction(latestAction)
+            analyticsTracker.logToolActionPerformed(
+                tool,
+                subFeature,
+                detail ?: getActionDetailForAction(latestAction)
+            )
             // First committed action in a design workflow is what turns "opened a canvas"
             // into "made something". The tracker ignores every call after the first.
             analyticsTracker.notifyCanvasComposed()
@@ -5991,7 +6055,28 @@ class CanvasViewModel @Inject constructor(
             is CanvasAction.SetTextAlignment -> "text" to "alignment"
             is CanvasAction.AddShape -> "shapes" to "add_shape"
             is CanvasAction.AddTable -> "tables" to "add_table"
-            is CanvasAction.AddSticker -> "stickers" to "add_sticker"
+            // Every table cell edit and every table style change goes through this one
+            // action, and it was missing here — so the whole table feature fell to the
+            // else branch and reported as an anonymous "canvas / edit".
+            is CanvasAction.UpdateTableData -> "tables" to "edit_table"
+            // Never reported: notifyUndoRedoChanged drops TransformCanvas before it gets
+            // here, because a pinch-zoom is not an edit. Mapped anyway so the next person
+            // reading this list can see that the omission is deliberate rather than another
+            // subtype that was forgotten.
+            is CanvasAction.TransformCanvas -> "canvas" to "zoom_pan"
+            // AddSticker is pushed for anything that lands on the canvas as an element, not
+            // only stickers: the images panel, the background-image entry point and the
+            // duplicate gesture all use it, because undo has to remove an element in every
+            // case. Attributing it by the action type alone reported images and backgrounds
+            // as sticker adds and left the images panel with no telemetry of its own, so the
+            // element decides instead. (The two callers whose intent the element cannot
+            // express — duplicate, and the full-canvas background — set pendingActionLabel.)
+            is CanvasAction.AddSticker -> when (action.sticker.type) {
+                ElementType.IMAGE -> "images" to "add_image"
+                ElementType.SHAPE -> "shapes" to "add_shape"
+                ElementType.DRAW -> "draw" to "brush_stroke"
+                else -> "stickers" to "add_sticker"
+            }
             is CanvasAction.AddDrawStroke, is CanvasAction.DrawSessionStroke -> "draw" to "brush_stroke"
             is CanvasAction.ApplyImageFilter -> "filters" to "apply_filter"
             is CanvasAction.SetBackgroundImage -> "background" to "image"

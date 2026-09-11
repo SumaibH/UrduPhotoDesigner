@@ -4,19 +4,25 @@ package com.webscare.urducanvas.analytics
  * Event, parameter and value taxonomy for GA4.
  *
  * **Declared but never emitted yet.** Nothing below fires unless something calls it, and
- * a name sitting in this file is not evidence that it does. These two are deliberately
- * unbuilt rather than overlooked — do not build a report on them until they are wired:
+ * a name sitting in this file is not evidence that it does. One name is deliberately
+ * unbuilt rather than overlooked — do not build a report on it until it is wired:
  *
- * - [Events.WORKFLOW_STEP] and the `startWorkflow`/`updateWorkflowStep`/`endWorkflow`
- *   API on SessionStateManager — needs a product decision about what counts as a
- *   workflow before it means anything.
  * - [Events.SESSION_TERMINATED_ABNORMALLY] — needs the persisted snapshot to be read back
  *   and reconciled on the next launch.
  *
- * Everything else here is emitted. [Events.TEMPLATE_IMPRESSION] comes from
- * `TemplateImpressionTracker` on real viewport visibility rather than on bind, and all six
- * [UserProperties] are set — the four lifetime ones from counters `SessionStateManager`
- * keeps in SharedPreferences so they survive process death.
+ * Everything else here is emitted.
+ *
+ * [Events.WORKFLOW_STEP] and the `startWorkflow`/`updateWorkflowStep`/`endWorkflow` API on
+ * SessionStateManager used to be listed above as unbuilt; they are not. The design funnel
+ * is driven entirely from inside `AnalyticsTracker` — started by `logTemplateOpened`,
+ * `logProjectOpened` and `logCanvasCreated`, advanced by `notifyCanvasComposed` on the
+ * first committed canvas action, and closed by `NavigationAnalyticsListener` when the user
+ * leaves the editing flow. The gap between `opened` and `composed` is the reason it exists.
+ *
+ * [Events.TEMPLATE_IMPRESSION] comes from `TemplateImpressionTracker` on real viewport
+ * visibility rather than on bind, and all six [UserProperties] are set — the four lifetime
+ * ones from counters `SessionStateManager` keeps in SharedPreferences so they survive
+ * process death.
  *
  * Every custom parameter here is also invisible in GA4 reports until it is registered as
  * a custom dimension in the Firebase console. That is console work, not code.
@@ -130,6 +136,18 @@ object AnalyticsConstants {
         const val PLAN_ID = "plan_id"
         const val USER_TIER = "user_tier"
         const val PLACEMENT = "placement"
+
+        /**
+         * GA4's own built-in parameter, not a custom one — the internal-traffic data
+         * filter in the console matches on exactly this key and value, so it needs no
+         * custom-dimension registration and must not be renamed.
+         *
+         * Stamped on every event from a non-production build. All three flavours share
+         * one `applicationId` (google-services.json has a single client, and a suffix
+         * breaks AdMob and Play billing), so without this the dev and debug builds
+         * report into the production stream and are indistinguishable from real users.
+         */
+        const val TRAFFIC_TYPE = "traffic_type"
         const val LATENCY_SECONDS = "latency_seconds"
         const val FILE_SIZE_MB = "file_size_mb"
         const val REWARD_EARNED = "reward_earned"
@@ -169,6 +187,9 @@ object AnalyticsConstants {
     object Values {
         const val TIER_FREE = "free"
         const val TIER_SUBSCRIBED = "subscribed"
+
+        /** The value GA4's built-in internal-traffic filter looks for. Do not translate. */
+        const val TRAFFIC_INTERNAL = "internal"
 
         const val EXIT_BACK = "back"
         const val EXIT_FORWARD = "forward"

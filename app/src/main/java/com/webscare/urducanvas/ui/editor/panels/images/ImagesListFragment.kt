@@ -40,6 +40,9 @@ import kotlin.math.roundToInt
 @AndroidEntryPoint
 class ImagesListFragment : Fragment() {
 
+    @javax.inject.Inject
+    lateinit var analyticsTracker: com.webscare.urducanvas.analytics.AnalyticsTracker
+
     private var _binding: FragmentImagesListBinding? = null
     private val binding get() = _binding!!
 
@@ -627,10 +630,37 @@ class ImagesListFragment : Fragment() {
                     binding.noEmojis.visibility = if (results.isEmpty()) View.VISIBLE else View.GONE
                     imagesAdapter?.submitList(results.toList())
                     onFilterResult?.invoke(category, results.size)
+                    reportSearch(results.size)
                 }
             }
         }
     }
+
+    /**
+     * Reports the committed Pexels query and what it found.
+     *
+     * The results flow is the commit point, the same one SearchFragment reports from: the
+     * query itself is debounced upstream by PexelsViewModel, and by the time results arrive
+     * the user has settled on a term. [lastReportedQuery] keeps one search to one event —
+     * this flow re-emits as pages are appended, and every page would otherwise be a search.
+     *
+     * Only the tab that owns the search reports, which the caller has already checked; all
+     * twenty fragment instances share the results flow, so without that guard one search
+     * would be reported twenty times.
+     */
+    private fun reportSearch(resultCount: Int) {
+        val term = pexelsViewModel.searchQuery.value.trim()
+        if (term.isBlank() || term == lastReportedQuery) return
+        lastReportedQuery = term
+        if (PERSONAL_DATA.containsMatchIn(term)) return
+        analyticsTracker.logSearch(
+            term = term.take(100),
+            resultCount = resultCount,
+            placement = "images_panel"
+        )
+    }
+
+    private var lastReportedQuery: String? = null
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -641,6 +671,15 @@ class ImagesListFragment : Fragment() {
     companion object {
         private const val ARG_CATEGORY = "arg_category"
         private const val ARG_FILTER   = "arg_filter"
+
+        /**
+         * Anything email- or phone-shaped in a search box is not a search term. Same guard
+         * SearchFragment uses — GA4 refuses events carrying personal data anyway.
+         */
+        private val PERSONAL_DATA = Regex(
+            "[\\w.+-]+@[\\w-]+\\.[\\w.]+" +
+            "|\\+?\\d[\\d\\s().-]{7,}"
+        )
 
         fun newInstance(category: String, initialFilter: String = "") =
             ImagesListFragment().apply {

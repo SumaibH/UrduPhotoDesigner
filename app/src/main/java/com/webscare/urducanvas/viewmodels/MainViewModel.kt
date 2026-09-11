@@ -426,6 +426,22 @@ class MainViewModel @Inject constructor(
     // Debounced, distinct stream for UI filtering
     val queryDebounced = rawQuery.map { it.trim() }.distinctUntilChanged()
 
+    /**
+     * How many rows the currently filtered panel list shows for [searchQuery].
+     *
+     * A zero-result search is the interesting one — it is a content request written by a
+     * user — but the search dialog is shared by four panels and never sees a list, so the
+     * lists report their own count here and the dialog reads it when the query is committed.
+     * -1 means nothing has reported yet, which is deliberately not zero: an unknown count
+     * must not be indistinguishable from "found nothing".
+     */
+    private val _searchResultCount = MutableStateFlow(-1)
+    val searchResultCount: StateFlow<Int> = _searchResultCount.asStateFlow()
+
+    fun setSearchResultCount(count: Int) {
+        _searchResultCount.value = count
+    }
+
     fun setQuery(q: String) {
         _rawQuery.value = q
     }
