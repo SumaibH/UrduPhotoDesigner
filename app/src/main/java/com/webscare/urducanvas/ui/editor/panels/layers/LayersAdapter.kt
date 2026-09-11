@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.webscare.urducanvas.R
 import com.webscare.urducanvas.common.canvas.enums.ElementType
@@ -54,7 +55,7 @@ class LayersAdapter(
         set(value) {
             if (field == value) return
             field = value
-            notifyDataSetChanged()
+            rebindAll()
         }
 
     var slideOffset: Float = 0f
@@ -64,14 +65,73 @@ class LayersAdapter(
     fun setSelectionMode(enabled: Boolean) {
         if (inSelectionMode != enabled) {
             inSelectionMode = enabled
-            notifyDataSetChanged()
+            rebindAll()
         }
     }
 
+    /**
+     * Rebinds every row without telling the RecyclerView the list changed.
+     *
+     * notifyDataSetChanged() invalidates the structure, which sends the layout manager
+     * back to the top — see [submitList].
+     */
+    private fun rebindAll() {
+        if (itemCount > 0) notifyItemRangeChanged(0, itemCount)
+    }
+
+    /**
+     * Diffs against what is on screen instead of invalidating everything.
+     *
+     * Every touch of a layer — selecting one, locking it, renaming it — publishes a whole
+     * new element list, and this used to answer with notifyDataSetChanged(). That discards
+     * the layout manager's anchor, so the list jumped back to the top on every tap: picking
+     * a second layer for a multi-selection meant scrolling back down to find it each time.
+     * A diff keyed on element id leaves the untouched rows, and the scroll position, alone.
+     */
     fun submitList(newItems: List<DisplayItem>) {
+        val old = items.toList()
+        val diff = DiffUtil.calculateDiff(LayersDiff(old, newItems), false)
         items.clear()
         items.addAll(newItems)
-        notifyDataSetChanged()
+        diff.dispatchUpdatesTo(this)
+    }
+
+    /**
+     * Rows render the element's name, lock, selection, collapse state and type; a group
+     * header also renders how many children it has, which changes when a *different* row
+     * moves in or out of the group, so it is part of the comparison too.
+     */
+    private class LayersDiff(
+        private val old: List<DisplayItem>,
+        private val new: List<DisplayItem>
+    ) : DiffUtil.Callback() {
+
+        override fun getOldListSize() = old.size
+        override fun getNewListSize() = new.size
+
+        override fun areItemsTheSame(oldPos: Int, newPos: Int): Boolean {
+            val a = old[oldPos]
+            val b = new[newPos]
+            return a::class == b::class && a.element.id == b.element.id
+        }
+
+        override fun areContentsTheSame(oldPos: Int, newPos: Int): Boolean {
+            val a = old[oldPos].element
+            val b = new[newPos].element
+            if (a.customName != b.customName) return false
+            if (a.groupId != b.groupId) return false
+            if (a.isSelected != b.isSelected) return false
+            if (a.isLocked != b.isLocked) return false
+            if (a.isGroupCollapsed != b.isGroupCollapsed) return false
+            if (a.type != b.type) return false
+            if (old[oldPos] is DisplayItem.GroupHeader) {
+                if (childCount(old, a.id) != childCount(new, b.id)) return false
+            }
+            return true
+        }
+
+        private fun childCount(list: List<DisplayItem>, groupId: String) =
+            list.count { it is DisplayItem.Child && it.element.groupId == groupId }
     }
 
     fun currentList(): List<CanvasElement> = items.map { it.element }
