@@ -924,6 +924,13 @@ class CanvasView @JvmOverloads constructor(
     private var calligraphyTouchStartScale = 1f
     private var calligraphyTouchStartRotation = 0f
 
+    /**
+     * Where the grabbed token's baseline sits in its own frame, captured once at
+     * ACTION_DOWN so the scale gesture can hold it still. Neither the typeface
+     * nor the text size changes mid-gesture, so it cannot go stale.
+     */
+    private var calligraphyTouchStartBaselineY = 0f
+
     private fun mapCanvasPointToElementLocal(canvasX: Float, canvasY: Float, element: CanvasElement): FloatArray {
         val matrix = Matrix().apply {
             postScale(
@@ -7177,6 +7184,7 @@ class CanvasView @JvmOverloads constructor(
                             calligraphyTouchStartLocalY = localPt[1]
                             calligraphyTouchStartScale = hitToken.scale
                             calligraphyTouchStartRotation = hitToken.rotation
+                            calligraphyTouchStartBaselineY = calElement.tokenBaselineY(hitToken)
                             calligraphyGesture = handle ?: CalligraphyGesture.MOVE
                             // The gesture mutates the token in place, so the "before"
                             // has to be captured now. Ending at ACTION_UP with a single
@@ -7780,9 +7788,9 @@ class CanvasView @JvmOverloads constructor(
                     val activeToken = cData?.getActiveToken()
                     if (calElement != null && activeToken != null) {
                         val localPt = mapCanvasPointToElementLocal(x, y, calElement)
-                        // Both transforms pivot on the token's own origin, so a
-                        // letter grows and turns where it sits instead of
-                        // wandering off its baseline.
+                        // The pivot stays on the offset the gesture started from,
+                        // so the drag reads as one continuous stretch however far
+                        // the letter has already been re-anchored beneath it.
                         val cx = calligraphyTouchStartOffsetX
                         val cy = calligraphyTouchStartOffsetY
 
@@ -7794,9 +7802,14 @@ class CanvasView @JvmOverloads constructor(
                                 )
                                 if (startDist > 1f) {
                                     val dist = hypot(localPt[0] - cx, localPt[1] - cy)
-                                    activeToken.scale =
-                                        (calligraphyTouchStartScale * dist / startDist)
-                                            .coerceIn(TOKEN_MIN_SCALE, TOKEN_MAX_SCALE)
+                                    val target = (calligraphyTouchStartScale * dist / startDist)
+                                        .coerceIn(TOKEN_MIN_SCALE, TOKEN_MAX_SCALE)
+                                    // Grow the letter off its baseline, not off its
+                                    // middle, so its foot stays on the line with its
+                                    // neighbours and needs no nudge afterwards.
+                                    activeToken.setScaleKeepingBaseline(
+                                        target, calligraphyTouchStartBaselineY
+                                    )
                                 }
                             }
 

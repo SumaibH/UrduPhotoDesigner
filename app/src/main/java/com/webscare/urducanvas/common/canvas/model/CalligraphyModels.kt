@@ -200,6 +200,36 @@ data class TextToken(
     fun canTakeKashida(): Boolean =
         shapedText.endsWith(ZWJ) || shapedText.startsWith(ZWJ)
 
+    /**
+     * Sets [scale], holding the letter's baseline where it already is.
+     *
+     * A token is drawn about the vertical *centre* of its line box, not its
+     * baseline, so scaling on the token's own origin walks the baseline down as
+     * the letter grows: enlarge an alif and its foot sinks below the seat of the
+     * line, and every resize has to be followed by a nudge back up. A
+     * calligrapher sets the letters on the line and sizes them afterwards, so
+     * the line is the thing that must not move.
+     *
+     * [baselineY] is the token-frame y the renderer passes to drawText,
+     * `-(fm.descent + fm.ascent) / 2`. The correction is a shift along the
+     * token's own down-axis, so it has to be rotated into the parent's frame
+     * before it lands on the offsets — otherwise a tilted letter would slide
+     * sideways off the line instead of staying on it.
+     */
+    fun setScaleKeepingBaseline(newScale: Float, baselineY: Float) {
+        val shift = (scale - newScale) * baselineY
+        if (shift != 0f) {
+            if (rotation == 0f) {
+                offsetY += shift
+            } else {
+                val r = Math.toRadians(rotation.toDouble())
+                offsetX += (-kotlin.math.sin(r) * shift).toFloat()
+                offsetY += (kotlin.math.cos(r) * shift).toFloat()
+            }
+        }
+        scale = newScale
+    }
+
     companion object {
         private const val ZWJ = '‍'
         private const val TATWEEL = "ـ"

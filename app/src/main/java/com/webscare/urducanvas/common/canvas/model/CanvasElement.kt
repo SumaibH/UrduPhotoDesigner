@@ -695,6 +695,24 @@ data class CanvasElement(
         return maxWordW.coerceAtLeast(40f)
     }
 
+    /**
+     * The y the renderer puts [token]'s baseline on, in the token's own
+     * untransformed frame.
+     *
+     * Tokens are drawn about the vertical centre of their line box, so this is
+     * the distance from a token's origin down to the line its letters sit on.
+     * Anything that resizes a token needs it to keep that line still — see
+     * [TextToken.setScaleKeepingBaseline].
+     */
+    fun tokenBaselineY(token: TextToken): Float {
+        if (!::paint.isInitialized) updatePaintProperties()
+        val p = TextPaint(paint).apply {
+            token.resolveTypeface()?.let { typeface = it }
+        }
+        val fm = try { p.fontMetrics } catch (e: Exception) { return 0f }
+        return -(fm.descent + fm.ascent) / 2f
+    }
+
     fun autoFitTextSize(canvasWidth: Float, canvasHeight: Float) {
         if (type != ElementType.TEXT || text.isEmpty()) return
         if (!::paint.isInitialized) updatePaintProperties()

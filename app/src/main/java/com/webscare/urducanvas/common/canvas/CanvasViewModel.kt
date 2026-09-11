@@ -2834,10 +2834,20 @@ class CanvasViewModel @Inject constructor(
 
     fun setTextSizeForAllSelected(size: Float) {
         // A token has no absolute size of its own — it scales against the layer.
-        val baseSize = _canvasElements.value
+        // This picks the element the same way routeToCalligraphyTokens does, so the
+        // two are looking at the same one.
+        val textElement = _canvasElements.value
             ?.firstOrNull { it.isSelected && it.type == ElementType.TEXT }
-            ?.paintTextSize ?: 0f
-        if (baseSize > 0f && routeToCalligraphyTokens { it.scale = size / baseSize }) return
+        val baseSize = textElement?.paintTextSize ?: 0f
+        if (textElement != null && baseSize > 0f && routeToCalligraphyTokens { token ->
+                // Off the baseline, not the middle. A letter enlarged from the
+                // slider has to stay seated on the line, exactly as one stretched
+                // by its own handle does.
+                token.setScaleKeepingBaseline(
+                    size / baseSize, textElement.tokenBaselineY(token)
+                )
+            }
+        ) return
 
         val currentList = _canvasElements.value ?: return
         val selectedElements = currentList.filter { it.isSelected }
