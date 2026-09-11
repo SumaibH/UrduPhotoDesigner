@@ -19,6 +19,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.webscare.urducanvas.R
 import com.webscare.urducanvas.common.canvas.enums.ExportViewType
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
+import com.webscare.urducanvas.common.utils.Utils.keepBelowStatusBar
 import com.webscare.urducanvas.databinding.FragmentExportOptionsBinding
 
 class ExportOptionsFragment : com.google.android.material.bottomsheet.BottomSheetDialogFragment() {
@@ -175,9 +176,7 @@ class ExportOptionsFragment : com.google.android.material.bottomsheet.BottomShee
         bottomSheet.background = ContextCompat.getDrawable(requireContext(), R.drawable.bottom_sheet_bg)
         bottomSheet.setBackgroundResource(android.R.color.transparent)
 
-        ViewCompat.setOnApplyWindowInsetsListener(bottomSheet) { v, insets ->
-            WindowInsetsCompat.CONSUMED
-        }
+        bottomSheet.keepBelowStatusBar()
 
         bottomSheet.layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT
 

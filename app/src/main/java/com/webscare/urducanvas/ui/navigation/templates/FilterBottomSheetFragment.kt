@@ -13,6 +13,7 @@ import com.google.android.material.chip.Chip
 import com.webscare.urducanvas.R
 import com.webscare.urducanvas.common.canvas.model.CanvasSize
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
+import com.webscare.urducanvas.common.utils.Utils.keepBelowStatusBar
 import com.webscare.urducanvas.databinding.FragmentFilterBottomSheetBinding
 import com.webscare.urducanvas.ui.creation.CanvasSizeAdapter
 import com.webscare.urducanvas.viewmodels.MainViewModel
@@ -187,6 +188,8 @@ class FilterBottomSheetFragment : BottomSheetDialogFragment() {
             state = BottomSheetBehavior.STATE_EXPANDED
             skipCollapsed = true
         }
+
+        bottomSheet.keepBelowStatusBar()
     }
 
     override fun onDestroyView() {

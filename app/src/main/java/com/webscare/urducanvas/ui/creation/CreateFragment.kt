@@ -31,6 +31,7 @@ import com.webscare.urducanvas.common.canvas.enums.UnitType
 import com.webscare.urducanvas.common.canvas.model.CanvasSize
 import com.webscare.urducanvas.common.utils.Converter
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
+import com.webscare.urducanvas.common.utils.Utils.keepBelowStatusBar
 import com.webscare.urducanvas.databinding.FragmentCreateBinding
 import com.webscare.urducanvas.databinding.PopupUnitSelectorBinding
 import com.webscare.urducanvas.viewmodels.MainViewModel
@@ -471,20 +472,19 @@ class CreateFragment : BottomSheetDialogFragment() {
             ContextCompat.getDrawable(requireContext(), R.drawable.bottom_sheet_bg)
         bottomSheet.setBackgroundResource(android.R.color.transparent)
 
-        ViewCompat.setOnApplyWindowInsetsListener(bottomSheet) { v, insets ->
-            WindowInsetsCompat.CONSUMED
-        }
-
         bottomSheet.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
 
         val behavior = BottomSheetBehavior.from(bottomSheet)
         behavior.apply {
             isFitToContents = false
-            expandedOffset = 0
             state = BottomSheetBehavior.STATE_HALF_EXPANDED
             halfExpandedRatio = 0.75f
             skipCollapsed = true
         }
+
+        // Owns expandedOffset — this sheet is full height, so without it the top
+        // of the sheet sat behind the clock and the status icons.
+        bottomSheet.keepBelowStatusBar()
 
         forceImmersiveMode()
     }

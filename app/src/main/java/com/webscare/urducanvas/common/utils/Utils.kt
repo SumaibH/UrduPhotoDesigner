@@ -1,9 +1,11 @@
 package com.webscare.urducanvas.common.utils
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.ContextWrapper
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -14,6 +16,9 @@ import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.webscare.urducanvas.R
 import com.google.android.gms.tasks.Task
 import com.google.android.material.snackbar.Snackbar
@@ -304,6 +309,72 @@ object Utils {
             }
             false
         }
+    }
+
+    /**
+     * Stops a bottom sheet's top edge at the bottom of the status bar.
+     *
+     * The sheets run edge to edge inside a window with FLAG_LAYOUT_NO_LIMITS, so an
+     * expanded one drew its own header behind the clock and the status icons. The
+     * inset is not known until the view is attached, so it is read in the listener
+     * rather than up front.
+     *
+     * Both levers are needed. expandedOffset is what a full-height sheet
+     * (isFitToContents = false) settles against; maxHeight is what caps one that
+     * sizes itself to its content, where expandedOffset is ignored. maxHeight costs
+     * nothing on a sheet whose content is already shorter than the cap.
+     *
+     * Insets are still consumed afterwards: the sheet now sits below them, and
+     * letting them through would inset its content a second time.
+     */
+    fun View.keepBelowStatusBar() {
+        val behavior = try {
+            BottomSheetBehavior.from(this)
+        } catch (e: IllegalArgumentException) {
+            return   // not laid out as a bottom sheet — nothing to cap
+        }
+
+        fun capAt(top: Int) {
+            if (top <= 0) return
+            behavior.expandedOffset = top
+            val parentHeight = (parent as? View)?.height ?: 0
+            if (parentHeight > top) behavior.maxHeight = parentHeight - top
+        }
+
+        ViewCompat.setOnApplyWindowInsetsListener(this) { v, insets ->
+            capAt(statusBarTop(v, insets))
+            WindowInsetsCompat.CONSUMED
+        }
+        ViewCompat.requestApplyInsets(this)
+        // The listener is not guaranteed to see a usable value — see statusBarTop —
+        // so settle it once the sheet is laid out as well.
+        post { capAt(statusBarTop(this, null)) }
+    }
+
+    /**
+     * The status bar inset, from whichever source actually reports one.
+     *
+     * The sheets' dialogs set FLAG_LAYOUT_NO_LIMITS, and a window carrying that flag
+     * is laid out ignoring the system bars — it is routinely handed zeroes for them,
+     * so the sheet's own insets cannot be relied on. The host activity's window has
+     * no such flag and its root insets still carry the real value. The framework
+     * resource is the last resort for anything that reports neither.
+     */
+    @SuppressLint("DiscouragedApi", "InternalInsetResource")
+    private fun statusBarTop(view: View, insets: WindowInsetsCompat?): Int {
+        insets?.getInsets(WindowInsetsCompat.Type.statusBars())?.top
+            ?.takeIf { it > 0 }?.let { return it }
+
+        generateSequence(view.context) { (it as? ContextWrapper)?.baseContext }
+            .filterIsInstance<Activity>()
+            .firstOrNull()
+            ?.window?.decorView
+            ?.let { ViewCompat.getRootWindowInsets(it) }
+            ?.getInsets(WindowInsetsCompat.Type.statusBars())?.top
+            ?.takeIf { it > 0 }?.let { return it }
+
+        val id = view.resources.getIdentifier("status_bar_height", "dimen", "android")
+        return if (id > 0) view.resources.getDimensionPixelSize(id) else 0
     }
 }
 

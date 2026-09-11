@@ -25,6 +25,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.webscare.urducanvas.R
 import com.webscare.urducanvas.common.canvas.CanvasViewModel
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
+import com.webscare.urducanvas.common.utils.Utils.keepBelowStatusBar
 import com.webscare.urducanvas.data.model.FontEntity
 import com.webscare.urducanvas.databinding.BottomSheetImportedFontsBinding
 import com.webscare.urducanvas.viewmodels.MainViewModel
@@ -291,19 +292,17 @@ class ImportedFontsBottomSheet : BottomSheetDialogFragment() {
             ContextCompat.getDrawable(requireContext(), R.drawable.bottom_sheet_bg)
         bottomSheet.setBackgroundResource(android.R.color.transparent)
 
-        ViewCompat.setOnApplyWindowInsetsListener(bottomSheet) { _, _ ->
-            WindowInsetsCompat.CONSUMED
-        }
-
         bottomSheet.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
 
         BottomSheetBehavior.from(bottomSheet).apply {
             isFitToContents = false
-            expandedOffset = 0
             state = BottomSheetBehavior.STATE_HALF_EXPANDED
             halfExpandedRatio = 0.45f
             skipCollapsed = true
         }
+
+        // Owns expandedOffset — this sheet is full height.
+        bottomSheet.keepBelowStatusBar()
 
         bottomSheet.post {
             bottomSheet.post {
