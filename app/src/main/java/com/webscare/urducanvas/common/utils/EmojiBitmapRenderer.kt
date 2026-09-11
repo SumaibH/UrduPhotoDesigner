@@ -45,6 +45,12 @@ object EmojiBitmapRenderer {
     /** Comfortably above NotoColorEmoji's native strike size, well inside safe territory. */
     private const val SHAPE_TEXT_SIZE_PX = 160f
 
+    /** Breathing room kept around the ink, as a fraction of its longer side, per edge. */
+    private const val INK_MARGIN_RATIO = 0.08f
+
+    /** Alpha at or above which a pixel counts as ink. Low, so antialiased edges survive. */
+    private const val INK_ALPHA_FLOOR = 8
+
     /**
      * @param context    Used to load the same font the picker tile previews with.
      * @param emojiChar  Emoji string (may be multi-codepoint sequence)
@@ -57,14 +63,14 @@ object EmojiBitmapRenderer {
 
         val shaped = shape(emojiChar, typeface)
         if (shaped != null && !isBlank(shaped)) {
-            return scaleToSquare(shaped, side)
+            return scaleToSquare(trimToInk(shaped), side)
         }
 
         // Fallback: the same path the picker cell renders through. If StaticLayout
         // produced nothing, a plain drawText on a software canvas usually still does.
         Log.w(TAG, "StaticLayout produced a blank glyph for \"$emojiChar\" — falling back to drawText")
         val drawn = drawDirect(emojiChar, typeface)
-        if (drawn != null) return scaleToSquare(drawn, side)
+        if (drawn != null) return scaleToSquare(trimToInk(drawn), side)
 
         Log.e(TAG, "Unable to render emoji \"$emojiChar\"; returning empty bitmap")
         return Bitmap.createBitmap(side, side, Bitmap.Config.ARGB_8888)
@@ -142,7 +148,10 @@ object EmojiBitmapRenderer {
         val glyphH = layout.height
         if (glyphW <= 0 || glyphH <= 0) return null
 
-        val box = maxOf(glyphW, glyphH)
+        // Draw with room to spare on every side. Ink routinely falls outside the advance
+        // width, and anything clipped here is gone before trimToInk can frame it.
+        val pad = (SHAPE_TEXT_SIZE_PX / 2f).toInt()
+        val box = maxOf(glyphW, glyphH) + pad * 2
         return try {
             val bmp = Bitmap.createBitmap(box, box, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bmp)
@@ -206,6 +215,69 @@ object EmojiBitmapRenderer {
             y += step
         }
         return true
+    }
+
+    /**
+     * Crops a rendered glyph to its ink and re-centres it in a square with a small margin.
+     *
+     * Everything the layout reports is typographic rather than visual: the line height
+     * carries ascent and descent sized for glyphs this string does not contain, and the
+     * advance carries side bearings. Squaring off the larger of those two left the mark
+     * adrift in a box much bigger than itself, which is the dead space that showed up
+     * around an arrow dropped on the canvas — and the same around shapes and emoji, since
+     * they all come through here.
+     *
+     * Alpha is the measure, so it works for colour emoji as well as monochrome marks.
+     *
+     * The margin is deliberate and stays: a sticker cropped hard against its ink has no
+     * breathing room and butts into whatever it is placed beside. The result is still
+     * square, so the artboard it creates is 1:1 as before.
+     */
+    private fun trimToInk(source: Bitmap): Bitmap {
+        val w = source.width
+        val h = source.height
+        if (w <= 0 || h <= 0) return source
+
+        // One bulk read — a per-pixel getPixel over a few hundred rows is far slower.
+        val px = IntArray(w * h)
+        source.getPixels(px, 0, w, 0, 0, w, h)
+
+        var top = h; var bottom = -1; var left = w; var right = -1
+        for (y in 0 until h) {
+            val row = y * w
+            for (x in 0 until w) {
+                if ((px[row + x] ushr 24) >= INK_ALPHA_FLOOR) {
+                    if (y < top) top = y
+                    if (y > bottom) bottom = y
+                    if (x < left) left = x
+                    if (x > right) right = x
+                }
+            }
+        }
+        if (bottom < top || right < left) return source   // nothing inked — leave it alone
+
+        val inkW = right - left + 1
+        val inkH = bottom - top + 1
+        val margin = (maxOf(inkW, inkH) * INK_MARGIN_RATIO).toInt()
+        val box = maxOf(inkW, inkH) + margin * 2
+
+        return try {
+            val out = Bitmap.createBitmap(box, box, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(out)
+            val dstLeft = (box - inkW) / 2
+            val dstTop = (box - inkH) / 2
+            canvas.drawBitmap(
+                source,
+                Rect(left, top, right + 1, bottom + 1),
+                Rect(dstLeft, dstTop, dstLeft + inkW, dstTop + inkH),
+                Paint(Paint.ANTI_ALIAS_FLAG).apply { isFilterBitmap = true }
+            )
+            source.recycle()
+            out
+        } catch (e: Throwable) {
+            Log.w(TAG, "ink trim failed", e)
+            source
+        }
     }
 
     private fun scaleToSquare(source: Bitmap, side: Int): Bitmap {
