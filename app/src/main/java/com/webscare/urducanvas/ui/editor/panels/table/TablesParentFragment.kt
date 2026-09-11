@@ -49,6 +49,16 @@ class TablesParentFragment : Fragment() {
     private val fragmentCache = LinkedHashMap<String, Fragment>()
     private val styleCategories = mutableListOf<String>()
     private var currentStylesTabIndex = 0
+
+    /**
+     * The tab actually on screen, as opposed to the one most recently tapped.
+     *
+     * [showStylesTab] used to read the slide direction off [currentStylesTabIndex], but the
+     * tab listener sets that before posting the call -- so "previous" and "next" were always
+     * the same number and every switch animated as though moving right, including when
+     * going back to an earlier tab.
+     */
+    private var shownStylesTabIndex = 0
     private var currentQuery = ""
     private var tabListenerAttached = false
     private var isCustomGridMode = false
@@ -271,18 +281,25 @@ class TablesParentFragment : Fragment() {
         if (_binding == null) return
         if (position < 0 || position >= styleCategories.size) return
 
-        val prevPos = currentStylesTabIndex
         currentStylesTabIndex = position
         val category = styleCategories[position]
         mainViewModel.lastTablesTabCategory = category
         mainViewModel.isLastTablesGridMode = false
 
+        // findFragmentByTag first: after the activity is recreated -- a dark-mode switch or a
+        // restore from process death, both of which survive the portrait lock -- the child
+        // manager has already rebuilt these fragments, while fragmentCache starts empty. Going
+        // straight to newInstance() added a second fragment under a tag that was already taken,
+        // once per recreation.
         val target: Fragment = fragmentCache.getOrPut(category) {
-            TablesListFragment.newInstance(category, currentQuery)
+            childFragmentManager.findFragmentByTag(category)
+                ?: TablesListFragment.newInstance(category, currentQuery)
         }
 
-        val animEnter = if (position >= prevPos) R.anim.slide_in_right else R.anim.slide_in_left
-        val animExit  = if (position >= prevPos) R.anim.slide_out_left else R.anim.slide_out_right
+        val forward = position >= shownStylesTabIndex
+        shownStylesTabIndex = position
+        val animEnter = if (forward) R.anim.slide_in_right else R.anim.slide_in_left
+        val animExit  = if (forward) R.anim.slide_out_left else R.anim.slide_out_right
 
         childFragmentManager.beginTransaction()
             .setCustomAnimations(animEnter, animExit)
@@ -303,7 +320,7 @@ class TablesParentFragment : Fragment() {
         mainViewModel.isLastTablesGridMode = true
 
         val target: Fragment = fragmentCache.getOrPut(GRID_TAB_KEY) {
-            TablesTabFragment()
+            childFragmentManager.findFragmentByTag(GRID_TAB_KEY) ?: TablesTabFragment()
         }
 
         childFragmentManager.beginTransaction()
