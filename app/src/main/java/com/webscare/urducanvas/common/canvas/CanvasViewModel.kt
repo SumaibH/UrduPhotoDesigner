@@ -2771,9 +2771,15 @@ class CanvasViewModel @Inject constructor(
         // recovered from that action, so it is handed over here; 317 duplicate styles were
         // just removed from the catalogue and there is no other way to see what the
         // remainder are worth.
-        pendingActionLabel = "text" to "style_preset"
-        pendingActionDetail = preset.id
-        updateSelectedTextElements { element ->
+        //
+        // Handed to the helper rather than set on the way in: with nothing selected, or with
+        // a selection holding no text, updateSelectedTextElements pushes no action and never
+        // reaches notifyUndoRedoChanged, and the label sat waiting to be consumed by whatever
+        // the user did next — which was then reported as this preset.
+        updateSelectedTextElements(
+            actionLabel = "text" to "style_preset",
+            actionDetail = preset.id
+        ) { element ->
             val hasStrokeVal = preset.strokeColor != null && preset.strokeWidth > 0f
             val hasShadowVal = preset.shadowColor != null && (preset.shadowRadius > 0f || preset.shadowDx != 0f || preset.shadowDy != 0f)
             element.copy(
@@ -3064,7 +3070,17 @@ class CanvasViewModel @Inject constructor(
         return touched
     }
 
-    private fun updateSelectedTextElements(transform: (CanvasElement) -> CanvasElement) {
+    /**
+     * [actionLabel] and [actionDetail] attribute the action this pushes, for the callers whose
+     * intent the action type cannot express — see [pendingActionLabel]. They are handed in
+     * rather than set by the caller because this can return without pushing anything, and a
+     * one-shot set on a path that never pushes is still set when the *next* action arrives.
+     */
+    private fun updateSelectedTextElements(
+        actionLabel: Pair<String, String>? = null,
+        actionDetail: String? = null,
+        transform: (CanvasElement) -> CanvasElement
+    ) {
         val currentList = _canvasElements.value?.toMutableList() ?: return
         val context = currentList.firstOrNull()?.context
         val selectedGroupIds = currentList.filter { it.isSelected && it.type == ElementType.GROUP }.map { it.id }.toSet()
@@ -3103,6 +3119,9 @@ class CanvasViewModel @Inject constructor(
                 )
             )
             _redoStack.clear()
+            // Set inside the push, so the one-shot cannot outlive a call that pushed nothing.
+            if (actionLabel != null) pendingActionLabel = actionLabel
+            if (actionDetail != null) pendingActionDetail = actionDetail
             notifyUndoRedoChanged()
             markChanged()
         }
@@ -6001,6 +6020,12 @@ class CanvasViewModel @Inject constructor(
      * action type alone reported both as a sticker add. Changing which action is pushed
      * would change undo semantics, so the attribution is overridden here instead — set it
      * immediately before calling [notifyUndoRedoChanged].
+     *
+     * Only ever set on a path that is certain to push an action and call
+     * [notifyUndoRedoChanged], which is the only thing that clears it. Set before a helper
+     * that may decide there is nothing to do, it survives to mislabel whatever the user
+     * does next: that is what `applyTextStylePreset` used to do, and why
+     * [updateSelectedTextElements] takes the attribution as a parameter now.
      */
     private var pendingActionLabel: Pair<String, String>? = null
 
