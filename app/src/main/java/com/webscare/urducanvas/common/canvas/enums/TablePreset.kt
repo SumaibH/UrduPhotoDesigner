@@ -42,11 +42,18 @@ enum class TablePreset(
                     isBold = true,
                     bgColor = Color.parseColor("#E4F3E9")
                 )
-                // Alternating row background fills
+                // Alternating row background fills. autoStripe marks these as generated, so
+                // that when a row is deleted and a stripe slides onto the footer row it
+                // yields to footerStyle instead of overriding it -- the same contract
+                // TablePresetRepository follows. A stripe written without the marker reads
+                // as deliberate per-row styling and keeps beating the footer.
                 for (r in 0 until data.rows) {
                     if (r > 0) {
                         val rowBg = if (r % 2 == 1) Color.WHITE else Color.parseColor("#F4F6F8")
-                        data.rowStyles.getOrPut(r) { TableTextStyle() }.bgColor = rowBg
+                        data.rowStyles.getOrPut(r) { TableTextStyle() }.apply {
+                            autoStripe = true
+                            bgColor = rowBg
+                        }
                     }
                 }
             }
