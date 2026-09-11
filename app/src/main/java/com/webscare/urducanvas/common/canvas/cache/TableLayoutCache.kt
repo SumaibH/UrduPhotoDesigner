@@ -214,11 +214,21 @@ class TableLayoutCache(
                 s.lineSpacing?.let { res.lineSpacing = it }
                 s.letterSpacing?.let { res.letterSpacing = it }
             }
+            val isHeaderRow = data.hasHeader && r == 0
+            val isFooterRow = data.hasFooter && r == data.rows - 1 && data.rows > 1
+
             applyStyle(data.base)
-            if (data.hasHeader && r == 0) applyStyle(data.headerStyle)
-            if (data.hasFooter && r == data.rows - 1 && data.rows > 1) applyStyle(data.footerStyle)
+            if (isHeaderRow) applyStyle(data.headerStyle)
+            if (isFooterRow) applyStyle(data.footerStyle)
             if (data.hasHeaderCol && c == 0) applyStyle(data.headerColStyle)
-            applyStyle(data.rowStyles[r])
+            // Row styles are applied after the header and footer because a style set on one
+            // specific row is the more specific instruction of the two -- but a generated
+            // stripe is not. Deleting a row slid a body stripe onto the new last row, where
+            // it overrode footerStyle and the footer stopped looking like a footer. A stripe
+            // yields to those roles; a row the user styled themselves still wins.
+            data.rowStyles[r]?.let { rowStyle ->
+                if (!(rowStyle.autoStripe && (isHeaderRow || isFooterRow))) applyStyle(rowStyle)
+            }
             applyStyle(data.colStyles[c])
             applyStyle(override)
             return res

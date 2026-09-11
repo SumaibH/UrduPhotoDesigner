@@ -753,6 +753,7 @@ object TablePresetRepository {
         for (r in startRow until endRow) {
             val bodyRowIndex = r - startRow
             val rowStyle = tableData.rowStyles.getOrPut(r) { TableTextStyle() }
+            rowStyle.autoStripe = true
             rowStyle.bgColor = if (bodyRowIndex % 2 == 1) preset.row2BgColor else preset.row1BgColor
             rowStyle.textColor = preset.bodyTextColor
             rowStyle.hAlign = TextAlignment.RIGHT

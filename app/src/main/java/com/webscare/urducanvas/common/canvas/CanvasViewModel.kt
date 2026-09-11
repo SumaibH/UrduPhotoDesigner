@@ -2877,7 +2877,13 @@ class CanvasViewModel @Inject constructor(
                     com.webscare.urducanvas.common.canvas.enums.TableScope.HEADER_ROW -> updatedData.headerStyle.textSize = size
                     com.webscare.urducanvas.common.canvas.enums.TableScope.FOOTER_ROW -> updatedData.footerStyle.textSize = size
                     com.webscare.urducanvas.common.canvas.enums.TableScope.HEADER_COL -> updatedData.headerColStyle.textSize = size
-                    com.webscare.urducanvas.common.canvas.enums.TableScope.ROW -> updatedData.rowStyles.getOrPut(r) { com.webscare.urducanvas.common.canvas.model.TableTextStyle() }.textSize = size
+                    com.webscare.urducanvas.common.canvas.enums.TableScope.ROW -> {
+                        // Styling a row on purpose promotes it out of being a generated
+                        // stripe, so it keeps beating the header and footer styles.
+                        val rowStyle = updatedData.rowStyles.getOrPut(r) { com.webscare.urducanvas.common.canvas.model.TableTextStyle() }
+                        rowStyle.autoStripe = false
+                        rowStyle.textSize = size
+                    }
                     com.webscare.urducanvas.common.canvas.enums.TableScope.COLUMN -> updatedData.colStyles.getOrPut(c) { com.webscare.urducanvas.common.canvas.model.TableTextStyle() }.textSize = size
                     com.webscare.urducanvas.common.canvas.enums.TableScope.CELL -> {
                         if (r in 0 until updatedData.rows && c in 0 until updatedData.cols) {

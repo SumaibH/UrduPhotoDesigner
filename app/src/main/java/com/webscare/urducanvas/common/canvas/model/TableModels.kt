@@ -19,7 +19,19 @@ data class TableTextStyle(
     @SerializedName("hAlign") var hAlign: TextAlignment? = null,
     @SerializedName("vAlign") var vAlign: VAlign? = null,
     @SerializedName("lineSpacing") var lineSpacing: Float? = null,
-    @SerializedName("letterSpacing") var letterSpacing: Float? = null
+    @SerializedName("letterSpacing") var letterSpacing: Float? = null,
+    /**
+     * True when this row's style is the alternating stripe a preset generated, rather than
+     * something the user set on that row.
+     *
+     * The two have to be told apart because [TableData.rowStyles] is keyed by absolute row
+     * index while the stripe pattern is defined relative to the body -- the preset writes a
+     * stripe for every row between the header and the footer. Delete a row and those two
+     * definitions disagree: a body stripe slides onto the new last row. Nothing in the
+     * stored data says whether the entry sitting there was meant for a body row or put
+     * there deliberately, so the origin has to be recorded when it is written.
+     */
+    @SerializedName("autoStripe") var autoStripe: Boolean = false
 ) {
     fun deepCopy(): TableTextStyle = copy(
         bgGradient = bgGradient?.copy(),
