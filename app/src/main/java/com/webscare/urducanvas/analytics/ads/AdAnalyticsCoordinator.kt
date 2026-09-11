@@ -59,6 +59,27 @@ class AdAnalyticsCoordinator @Inject constructor(
     /** True between requesting an ad and learning whether it actually rendered. */
     private var impressionPending = false
 
+    /**
+     * Armed by the banner slot attaching, consumed by the first real impression that follows.
+     *
+     * The banner's `ad_opportunity` and its `ad_impression` were not countable against each
+     * other in any direction. There is one banner in the app, attached once for the life of
+     * the activity, so one opportunity is reported — but AdMob re-renders that same AdView on
+     * its own refresh schedule (a console setting, invisible from here) and `BannerAdHandler`
+     * forwards `onAdImpression` from the AdView listener on every one of those renders, as
+     * well as on any reload `WebsCareBannerView.onAttachedToWindow` triggers. Impressions
+     * therefore grew without bound against a fixed denominator, and a banner left on screen
+     * looked like a fill rate of several hundred percent.
+     *
+     * Only the first render after an attach is counted, so the pair answers the question the
+     * ratio is for: did the slot we opened get filled. The later refresh impressions are real
+     * and are deliberately dropped — they are a function of how long the screen stayed open,
+     * not of anything the user or the app did, and no denominator here can be divided by
+     * them. Making them countable needs a per-view callback WebsCareAds does not expose;
+     * counting them anyway is what produced a ratio nobody could read.
+     */
+    private var bannerImpressionArmed = false
+
     init {
         sessionStateManager.setActionListener { action ->
             // "view_x" is arriving somewhere, not doing something — and the very first
@@ -112,6 +133,8 @@ class AdAnalyticsCoordinator @Inject constructor(
         // opportunity. Reporting one would put phantom ad inventory into the funnel.
         if (adUnitId.isBlank()) return
         placementNamesByUnitId[adUnitId] = adUnitName
+        // One attach, one countable impression — see [bannerImpressionArmed].
+        if (adFormat == FORMAT_BANNER) bannerImpressionArmed = true
         analyticsTracker.logAdOpportunity(adUnitName, adFormat, triggerFeature, null)
     }
 
@@ -135,6 +158,13 @@ class AdAnalyticsCoordinator @Inject constructor(
      */
     fun onSdkAdImpression(adType: String, resolvedAdUnitId: String) {
         if (adType != FORMAT_NATIVE && adType != FORMAT_BANNER) return
+        // The banner re-renders on AdMob's own refresh schedule and reports each render
+        // here. Only the first one after the slot attached is counted, or the impression
+        // count has nothing it can be divided by — see [bannerImpressionArmed].
+        if (adType == FORMAT_BANNER) {
+            if (!bannerImpressionArmed) return
+            bannerImpressionArmed = false
+        }
         analyticsTracker.logAdImpression(
             adUnitName = placementNamesByUnitId[resolvedAdUnitId] ?: "${adType}_unmapped",
             adFormat = adType,

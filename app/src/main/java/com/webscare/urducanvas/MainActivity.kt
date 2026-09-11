@@ -264,9 +264,13 @@ class MainActivity : AppCompatActivity() {
         if (isTopLevel && !bannerAdInitialised) {
             bannerAdInitialised = true
             binding.mainBannerAd.setAdUnitId(BuildConfig.AD_BANNER_MAIN)
-            // Once per process, which is what this guard already enforces. The banner had no
-            // telemetry at all; the impression side comes from AdConfig.onAdImpression, a real
-            // AdMob callback wired in MyApplication.
+            // Once per activity — bannerAdInitialised is an instance field, so a recreated
+            // activity attaches the slot again and reports again, which is correct: the load
+            // above happens again too. The impression side comes from AdConfig.onAdImpression,
+            // a real AdMob callback wired in MyApplication, and the coordinator counts only
+            // the first render after this attach. AdMob refreshes the same AdView on its own
+            // schedule and reports every refresh as an impression, so without that the two
+            // numbers could not be divided by one another at all.
             adAnalyticsCoordinator.onAdSlotAttached(
                 adUnitName = "banner_main",
                 adUnitId = BuildConfig.AD_BANNER_MAIN,
