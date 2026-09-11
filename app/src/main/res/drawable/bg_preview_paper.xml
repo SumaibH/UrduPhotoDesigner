@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The white card the asset is drawn on, so it reads the way it will sit on the
+    canvas rather than floating on panel chrome. The shadow is a drawn hairline
+    rather than elevation: the preview lives inside the panel's own clipping.
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:top="1dp">
+        <shape>
+            <solid android:color="#14000000" />
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+    <item android:bottom="1dp">
+        <shape>
+            <solid android:color="@color/white" />
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+</layer-list>

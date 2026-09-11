@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The in-panel asset preview. Not a dialog and not a second sheet — the panel
+    pushes this over its own grid, the way the [← Language] breadcrumb tab already
+    works in TextFragment. Back is the breadcrumb chip; the panel's own drag and
+    close still work behind it.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical">
+
+    <!-- ── Header ─────────────────────────────────────────────────────────── -->
+
+    <LinearLayout
+        android:id="@+id/previewHeader"
+        android:layout_width="match_parent"
+        android:layout_height="42dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="8dp"
+        android:paddingEnd="12dp">
+
+        <LinearLayout
+            android:id="@+id/breadcrumbChip"
+            android:layout_width="wrap_content"
+            android:layout_height="26dp"
+            android:background="@drawable/bg_breadcrumb_chip"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="8dp"
+            android:paddingEnd="10dp">
+
+            <ImageView
+                android:layout_width="6dp"
+                android:layout_height="10dp"
+                android:layout_marginEnd="5dp"
+                android:contentDescription="@string/back"
+                android:src="@drawable/ic_back"
+                app:tint="@color/appColor" />
+
+            <TextView
+                android:id="@+id/breadcrumbLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/bold"
+                android:includeFontPadding="false"
+                android:singleLine="true"
+                android:textColor="@color/appColor"
+                android:textSize="12sp"
+                tools:text="Fonts" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/previewTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:fontFamily="@font/bold"
+            android:singleLine="true"
+            android:textColor="@color/black"
+            android:textSize="14sp"
+            tools:text="Jameel Noori Nastaleeq" />
+
+        <TextView
+            android:id="@+id/proPill"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:background="@drawable/ic_button_gradient_wrap"
+            android:fontFamily="@font/bold"
+            android:includeFontPadding="false"
+            android:letterSpacing="0.06"
+            android:paddingHorizontal="7dp"
+            android:paddingVertical="3dp"
+            android:text="@string/pro"
+            android:textColor="@color/whiteText"
+            android:textSize="8.5sp"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/tab_divider" />
+
+    <!-- ── Body ───────────────────────────────────────────────────────────── -->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:paddingStart="12dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="12dp">
+
+        <!-- Well + paper: the asset shown the way it sits on the canvas -->
+        <FrameLayout
+            android:id="@+id/previewWell"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_preview_well"
+            android:padding="10dp">
+
+            <LinearLayout
+                android:id="@+id/previewPaper"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_preview_paper"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="8dp">
+
+                <TextView
+                    android:id="@+id/fontSample"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:maxLines="2"
+                    android:ellipsize="end"
+                    android:textColor="@color/black"
+                    android:textDirection="rtl"
+                    android:textSize="32sp"
+                    android:visibility="gone"
+                    tools:text="اردو کینوس"
+                    tools:visibility="visible" />
+
+                <View
+                    android:id="@+id/sampleDivider"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="8dp"
+                    android:background="@color/tab_divider"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/alphabetRow"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:lineSpacingExtra="2dp"
+                    android:textColor="@color/gray"
+                    android:textDirection="rtl"
+                    android:textSize="15sp"
+                    android:visibility="gone"
+                    tools:text="ا ب پ ت ٹ ث ج چ ح خ" />
+
+                <TextView
+                    android:id="@+id/numeralRow"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center"
+                    android:textColor="@color/gray"
+                    android:textDirection="rtl"
+                    android:textSize="15sp"
+                    android:visibility="gone"
+                    tools:text="۰ ۱ ۲ ۳ ۴ ۵ ۶ ۷ ۸ ۹" />
+
+                <ImageView
+                    android:id="@+id/assetImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="130dp"
+                    android:adjustViewBounds="true"
+                    android:contentDescription="@string/preview"
+                    android:scaleType="fitCenter"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
+        </FrameLayout>
+
+        <!-- Details. ChipGroup is used for its flow layout, not its chips. -->
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            app:chipSpacingHorizontal="6dp"
+            app:chipSpacingVertical="6dp"
+            app:singleLine="false" />
+
+        <!-- Fonts only: try the face on your own words -->
+        <EditText
+            android:id="@+id/sampleInput"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_search_pill"
+            android:fontFamily="@font/regular"
+            android:hint="@string/preview_type_your_words"
+            android:imeOptions="actionDone"
+            android:inputType="text"
+            android:maxLines="1"
+            android:paddingHorizontal="14dp"
+            android:textColor="@color/black"
+            android:textColorHint="@color/gray"
+            android:textDirection="rtl"
+            android:textSize="13sp"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
+        <!-- Actions -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginTop="10dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/primaryAction"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/ic_button_gradient_wrap"
+                android:fontFamily="@font/bold"
+                android:gravity="center"
+                android:textColor="@color/whiteText"
+                android:textSize="14sp"
+                tools:text="Use on canvas" />
+
+            <ImageView
+                android:id="@+id/shareAction"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="10dp"
+                android:background="@drawable/bg_preview_action_round"
+                android:contentDescription="@string/share"
+                android:padding="12dp"
+                android:src="@drawable/ic_share"
+                app:tint="@color/black" />
+
+            <FrameLayout
+                android:id="@+id/downloadAction"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="10dp"
+                android:background="@drawable/bg_preview_action_round">
+
+                <ImageView
+                    android:id="@+id/downloadIcon"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:contentDescription="@string/download"
+                    android:padding="12dp"
+                    android:src="@drawable/ic_download"
+                    app:tint="@color/black" />
+
+                <com.airbnb.lottie.LottieAnimationView
+                    android:id="@+id/downloadSpinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="12dp"
+                    android:visibility="gone"
+                    app:lottie_autoPlay="true"
+                    app:lottie_loop="true"
+                    app:lottie_rawRes="@raw/loading_gray" />
+
+            </FrameLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>
