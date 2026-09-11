@@ -14,6 +14,7 @@ import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
 import android.graphics.RectF
+import android.graphics.Region
 import android.util.AttributeSet
 import android.view.GestureDetector
 import android.view.MotionEvent
@@ -54,8 +55,52 @@ class BgRemovalCanvas @JvmOverloads constructor(
     private var previewEnabled = false
     private var isApplyingMask = false
 
-    /** Returns true when a non-empty selection mask exists on the canvas. */
-    fun hasMask(): Boolean = selectionPath != null && !selectionPath!!.isEmpty
+    /**
+     * Returns true when a selection mask exists that actually encloses something.
+     *
+     * Deliberately asks about area rather than `Path.isEmpty`, which only reports whether
+     * the path has verbs. A `moveTo` + `lineTo` polyline has verbs and no area, so the
+     * empty-check answered "yes, there is a mask" for a selection that masks nothing --
+     * which is how Preview came to light up over an empty selection and Done came to
+     * erase the image. Preview and Done both lean on this, so it has to mean
+     * "something is selected", not "someone drew something".
+     */
+    fun hasMask(): Boolean = selectionPath?.let { enclosesArea(it) } == true
+
+    /**
+     * Whether [path] encloses any fillable area.
+     *
+     * `Region.setPath` rasterises the path's interior against a clip and reports whether
+     * anything survived, so it answers the question a bounds check only approximates: a
+     * diagonal hairline has a healthy bounding box and no interior at all.
+     */
+    private fun enclosesArea(path: Path): Boolean = toRegion(path)?.isEmpty == false
+
+    /**
+     * Rasterises [path]'s interior against a clip of its own bounds. The one-pixel margin
+     * keeps the clip from shaving the edge, so two paths covering the same area produce
+     * equal regions regardless of where they sit.
+     */
+    private fun toRegion(path: Path): Region? {
+        if (path.isEmpty) return null
+        val bounds = RectF()
+        path.computeBounds(bounds, true)
+        val clip = Region(
+            kotlin.math.floor(bounds.left).toInt() - 1,
+            kotlin.math.floor(bounds.top).toInt() - 1,
+            kotlin.math.ceil(bounds.right).toInt() + 1,
+            kotlin.math.ceil(bounds.bottom).toInt() + 1
+        )
+        return Region().also { it.setPath(path, clip) }
+    }
+
+    /** True when two paths cover the same pixels, which `Path` itself cannot answer. */
+    private fun sameArea(a: Path, b: Path): Boolean {
+        val ra = toRegion(a)
+        val rb = toRegion(b)
+        if (ra == null || rb == null) return ra == null && rb == null
+        return ra == rb
+    }
 
     private fun notifyMaskState() {
         onMaskStateChanged?.invoke(hasMask())
@@ -146,6 +191,60 @@ class BgRemovalCanvas @JvmOverloads constructor(
         isAntiAlias = true
         isDither = true
         xfermode = null
+    }
+
+    /**
+     * Brush diameter, in the same space the selection paths live in (the image's on-screen
+     * rect before [drawMatrix]), so a stroke covers the same part of the picture however
+     * far the canvas is zoomed. Defaulted from the image's short side in
+     * [calculateImageRect] and settable from the panel.
+     */
+    private var brushWidth = DEFAULT_BRUSH_WIDTH
+
+    /** True once the panel has set a width, so the image default stops overriding it. */
+    private var brushWidthChosen = false
+
+    /** Sets the brush diameter in image space, clamped to something usable. */
+    fun setBrushWidth(width: Float) {
+        brushWidth = width.coerceIn(MIN_BRUSH_WIDTH, MAX_BRUSH_WIDTH)
+        brushWidthChosen = true
+        invalidate()
+    }
+
+    fun getBrushWidth(): Float = brushWidth
+
+    /**
+     * Sets the brush from a 0..1 slider position, as a fraction of the image's short side.
+     *
+     * The panel works in slider positions and the canvas works in image space, and the
+     * conversion needs the image rect -- which only this view has. Keeping it here means a
+     * given slider position covers the same proportion of the picture whether it is a
+     * 1000px photo or a 4000px one, instead of being a trim on one and a roller on the
+     * other.
+     */
+    fun setBrushScale(scale: Float) {
+        val fraction = MIN_BRUSH_FRACTION +
+                (MAX_BRUSH_FRACTION - MIN_BRUSH_FRACTION) * scale.coerceIn(0f, 1f)
+        val shortSide = imageRect?.let { minOf(it.width(), it.height()) } ?: 0f
+        val width = if (shortSide > 0f) shortSide * fraction else DEFAULT_BRUSH_WIDTH
+        setBrushWidth(width)
+    }
+
+    /**
+     * Converts a brush stroke into the region it covers. Only the width matters, so the
+     * colour is never set; [Paint.getFillPath] reads style, width, cap and join alone.
+     */
+    private val brushFillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE
+        strokeJoin = Paint.Join.ROUND
+        strokeCap = Paint.Cap.ROUND
+    }
+
+    /** Live brush preview, drawn at the real brush width so the stroke is what you get. */
+    private val brushPreviewPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE
+        strokeJoin = Paint.Join.ROUND
+        strokeCap = Paint.Cap.ROUND
     }
 
     private val antsBackPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -282,7 +381,9 @@ class BgRemovalCanvas @JvmOverloads constructor(
             }
             withContext(Dispatchers.Main) {
                 selectionPath = null
-                commitPath(subjectPath)
+                // The detected subject replaces the selection outright, so it must land
+                // even when the user's last action mode was Remove.
+                commitPath(subjectPath, replace = true)
                 isApplyingMask = false
                 onProcessingChanged?.invoke(false)
                 invalidate()
@@ -323,18 +424,50 @@ class BgRemovalCanvas @JvmOverloads constructor(
         }
     }
 
-    private fun commitPath(newPath: Path) {
+    /**
+     * Widens a brush stroke into the region it actually covers.
+     *
+     * The brush used to hand its raw polyline to [commitPath], and a polyline encloses no
+     * area. `Path.Op` is a set operation on enclosed area, so unioning or subtracting one
+     * is the identity -- the stroke rendered while the finger was down and then vanished,
+     * having changed nothing. Stroking it to a fill first is what gives the op something
+     * to work with.
+     */
+    private fun strokeToFill(stroke: Path): Path {
+        val filled = Path()
+        brushFillPaint.strokeWidth = brushWidth
+        brushFillPaint.getFillPath(stroke, filled)
+        return filled
+    }
+
+    private fun commitPath(newPath: Path, replace: Boolean = false) {
         val finalPath = Path(newPath)
 
+        // A path enclosing no area cannot change a mask, and must not be allowed to look
+        // as though it did: the ops below would be no-ops while the snapshot push still
+        // cost the user an undo press that appears to do nothing when it comes back off
+        // the stack.
+        if (!enclosesArea(finalPath)) return
+
         if (selectionPath == null) {
+            // Subtracting from nothing leaves nothing. Assigning here instead -- which is
+            // what used to happen -- turned an erase gesture into a selection, and on a
+            // clean canvas that is how a single stroke came to select an area that
+            // enclosed nothing and let Done erase the picture.
+            if (!replace && actionMode == ActionMode.REMOVE) return
             selectionPath = Path(finalPath)
         } else {
+            val previous = selectionPath!!
             val result = Path()
             if (actionMode == ActionMode.ADD) {
-                result.op(selectionPath!!, finalPath, Path.Op.UNION)
+                result.op(previous, finalPath, Path.Op.UNION)
             } else if (actionMode == ActionMode.REMOVE) {
-                result.op(selectionPath!!, finalPath, Path.Op.DIFFERENCE)
+                result.op(previous, finalPath, Path.Op.DIFFERENCE)
             }
+            // An op can legitimately land on the selection we already had -- adding inside
+            // the mask, or erasing entirely outside it. That is a no-op for the user, so
+            // it must not cost them an undo press either.
+            if (sameArea(previous, result)) return
             selectionPath = result
         }
 
@@ -381,6 +514,17 @@ class BgRemovalCanvas @JvmOverloads constructor(
             } else {
                 val scaledWidth = height.toFloat() * imgRatio
                 RectF((width - scaledWidth) / 2f, 0f, (width + scaledWidth) / 2f, height.toFloat())
+            }
+
+            // Size the brush to the picture unless the panel has already chosen for us.
+            if (!brushWidthChosen) {
+                imageRect?.let { rect ->
+                    val shortSide = minOf(rect.width(), rect.height())
+                    if (shortSide > 0f) {
+                        brushWidth = (shortSide * BRUSH_WIDTH_FRACTION)
+                            .coerceIn(MIN_BRUSH_WIDTH, MAX_BRUSH_WIDTH)
+                    }
+                }
             }
         }
     }
@@ -443,7 +587,14 @@ class BgRemovalCanvas @JvmOverloads constructor(
                     if (actionMode == ActionMode.ADD) strokePaintAdd else strokePaintRemove
                 canvas.withMatrix(drawMatrix) {
                     when (toolMode) {
-                        ToolMode.BRUSH -> drawPath(it, paintStroke)
+                        // Preview the brush at the width it will actually commit at, so the
+                        // band the user sees is the band they get.
+                        ToolMode.BRUSH -> {
+                            brushPreviewPaint.color = paintStroke.color
+                            brushPreviewPaint.alpha = BRUSH_PREVIEW_ALPHA
+                            brushPreviewPaint.strokeWidth = brushWidth
+                            drawPath(it, brushPreviewPaint)
+                        }
                         ToolMode.RECTANGLE -> drawRect(startX, startY, endX, endY, paintStroke)
                         ToolMode.ELLIPSE -> drawOval(RectF(startX, startY, endX, endY), paintStroke)
                         else -> {}
@@ -950,7 +1101,12 @@ class BgRemovalCanvas @JvmOverloads constructor(
 
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
-                currentPath = Path().apply { moveTo(x, y) }
+                // lineTo the same point so a tap is a round dab rather than a bare moveTo,
+                // which getFillPath would turn into nothing at all.
+                currentPath = Path().apply {
+                    moveTo(x, y)
+                    lineTo(x, y)
+                }
                 invalidate()
             }
 
@@ -960,7 +1116,7 @@ class BgRemovalCanvas @JvmOverloads constructor(
             }
 
             MotionEvent.ACTION_UP -> {
-                currentPath?.let { commitPath(it) }
+                currentPath?.let { commitPath(strokeToFill(it)) }
                 currentPath = null
                 invalidate()
             }
@@ -1142,5 +1298,27 @@ class BgRemovalCanvas @JvmOverloads constructor(
         magnifierAnimator?.removeAllUpdateListeners()
         magnifierAnimator?.cancel()
         magnifierAnimator = null
+    }
+
+    companion object {
+        /**
+         * Brush widths in image space. The default is replaced with a fraction of the
+         * image's short side as soon as one is laid out -- a fixed number of pixels is
+         * either a hairline on a large photo or a roller on a small one -- and these bound
+         * whatever the panel asks for.
+         */
+        private const val DEFAULT_BRUSH_WIDTH = 40f
+        private const val MIN_BRUSH_WIDTH = 2f
+        private const val MAX_BRUSH_WIDTH = 400f
+
+        /** Default brush diameter as a fraction of the image's short side. */
+        private const val BRUSH_WIDTH_FRACTION = 0.06f
+
+        /** Range the size slider spans, also as a fraction of the short side. */
+        private const val MIN_BRUSH_FRACTION = 0.01f
+        private const val MAX_BRUSH_FRACTION = 0.25f
+
+        /** The live brush band is translucent so the picture stays readable under it. */
+        private const val BRUSH_PREVIEW_ALPHA = 120
     }
 }

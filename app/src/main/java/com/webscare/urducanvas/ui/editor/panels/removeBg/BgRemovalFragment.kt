@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.LinearInterpolator
+import android.widget.SeekBar
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.createBitmap
 import androidx.core.view.isVisible
@@ -255,6 +256,22 @@ class BgRemovalFragment : Fragment() {
             binding.imageCanvas.setToolMode(BgRemovalCanvas.ToolMode.BRUSH)
         }
 
+        binding.brushSize.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(bar: SeekBar, progress: Int, fromUser: Boolean) {
+                // The canvas owns the conversion, because a slider position means a
+                // fraction of the picture and only the canvas knows how big that is.
+                binding.imageCanvas.setBrushScale(progress / bar.max.toFloat())
+                binding.brushSizeValue.text = progress.toString()
+            }
+
+            override fun onStartTrackingTouch(bar: SeekBar) = Unit
+            override fun onStopTrackingTouch(bar: SeekBar) = Unit
+        })
+        binding.imageCanvas.setBrushScale(
+            binding.brushSize.progress / binding.brushSize.max.toFloat()
+        )
+        binding.brushSizeValue.text = binding.brushSize.progress.toString()
+
         binding.btnRect.addPressEffect {
             updateSelectionToolUI(R.id.btnRect)
             binding.imageCanvas.setToolMode(BgRemovalCanvas.ToolMode.RECTANGLE)
@@ -465,6 +482,11 @@ class BgRemovalFragment : Fragment() {
         val toolIds = listOf(
             R.id.btnAiSubject, R.id.btnBrush, R.id.btnRect, R.id.btnEllipse, R.id.btnMagicWand
         )
+
+        // Brush size only means anything while the brush is the tool in hand. Hung off the
+        // one place the active tool is set, so the restore path at onResume agrees with a
+        // tap without either having to remember.
+        binding.brushSizeCard.isVisible = selectedId == R.id.btnBrush
 
         tools.forEachIndexed { index, (container, icon, label) ->
             if (toolIds[index] == selectedId) {

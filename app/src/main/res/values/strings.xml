@@ -626,4 +626,5 @@
     </plurals>
     <string name="share_usage_data">Share usage data</string>
     <string name="share_usage_data_desc">Helps us see which features get used so we know what to improve. Never includes your designs or personal information.</string>
+    <string name="brush_size">Brush Size</string>
 </resources>

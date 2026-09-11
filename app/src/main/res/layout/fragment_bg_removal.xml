@@ -135,7 +135,7 @@
         app:cardCornerRadius="16dp"
         app:cardElevation="1dp"
         android:outlineSpotShadowColor="@color/shadowColor"
-        app:layout_constraintBottom_toTopOf="@id/selectionToolCard"
+        app:layout_constraintBottom_toTopOf="@id/brushSizeCard"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
@@ -289,6 +289,63 @@
                     app:tint="@color/gray" />
 
             </LinearLayout>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- 3b. BRUSH SIZE — only while the Brush tool is the active one -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/brushSizeCard"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="12dp"
+        android:layout_marginBottom="8dp"
+        android:outlineSpotShadowColor="@color/shadowColor"
+        android:visibility="gone"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="1dp"
+        app:layout_constraintBottom_toTopOf="@id/selectionToolCard"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:visibility="visible">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/brush_size"
+                android:textColor="@color/black"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <SeekBar
+                android:id="@+id/brushSize"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:max="100"
+                android:progress="30"
+                android:progressBackgroundTint="@color/light_gray"
+                android:progressTint="@color/appColor"
+                android:splitTrack="false"
+                android:thumb="@drawable/seekbar_thumb_custom" />
+
+            <TextView
+                android:id="@+id/brushSizeValue"
+                android:layout_width="34dp"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:text="30"
+                android:textColor="@color/black"
+                android:textSize="12sp" />
+
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
