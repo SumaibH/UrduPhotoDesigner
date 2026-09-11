@@ -567,7 +567,6 @@ class TextFragment : Fragment() {
             val customView = tab.customView ?: continue
             val titleView = customView.findViewById<TextView>(R.id.tabTitle) ?: continue
             val indicatorView = customView.findViewById<View>(R.id.tabIndicator)
-            val chevronView = customView.findViewById<android.widget.ImageView>(R.id.tabChevron)
             val isSelected = i == selectedIdx
 
             val textColor = when {
@@ -581,8 +580,6 @@ class TextFragment : Fragment() {
             titleView.typeface = if (isCatMode && i == 0 || isSelected) boldFont else regularFont
             indicatorView?.visibility =
                 if (isSelected && !(isCatMode && i == 0)) View.VISIBLE else View.GONE
-            // The chevron belongs to the label, so it follows the label's colour.
-            chevronView?.imageTintList = android.content.res.ColorStateList.valueOf(textColor)
         }
     }
 
@@ -1379,11 +1376,6 @@ class TextFragment : Fragment() {
                     val tab = tl.newTab()
                     val tabView = LayoutInflater.from(context).inflate(R.layout.view_panel_tab, tl, false)
                     tabView.findViewById<TextView>(R.id.tabTitle).text = grp
-                    // "Styles" is the one group that drills into categories, so it is the
-                    // one that gets the chevron. Without it nothing tells you the tab does
-                    // more than switch lists.
-                    tabView.findViewById<View>(R.id.tabChevron).visibility =
-                        if (grp == "Styles") View.VISIBLE else View.GONE
                     tab.customView = tabView
                     tl.addTab(tab, false)
                 }

@@ -17,26 +17,6 @@
         android:textColor="@color/tab_unselected_text"
         android:textSize="13sp" />
 
-    <!-- Drill-in affordance. Hidden unless a panel opts a tab into a category list —
-         today only the brush panel's Style tab.
-
-         Kept as a bare chevron rather than a tinted disc: the disc read as a badge stuck
-         to the label, and forcing the 13x7 glyph into a square stretched it. Centred on
-         the same axis as the title and tinted with the title's own colour, it reads as
-         part of the label instead of an ornament beside it. -->
-    <ImageView
-        android:id="@+id/tabChevron"
-        android:layout_width="11dp"
-        android:layout_height="7dp"
-        android:layout_centerVertical="true"
-        android:layout_marginStart="5dp"
-        android:layout_toEndOf="@id/tabTitle"
-        android:importantForAccessibility="no"
-        android:scaleType="fitCenter"
-        android:src="@drawable/ic_dropdown"
-        android:visibility="gone"
-        app:tint="@color/tab_selected_text" />
-
     <View
         android:id="@+id/tabDot"
         android:layout_width="5dp"

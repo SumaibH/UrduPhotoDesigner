@@ -111,9 +111,9 @@ class DrawFragment : Fragment() {
     /**
      * Normal tab row: Style · Settings · Color.
      *
-     * The Style tab carries a chevron; tapping it while it is already selected drills into
-     * the brush shelves, the same gesture the text panel uses to get from its preset groups
-     * into preset categories.
+     * Tapping the Style tab while it is already selected drills into the brush shelves,
+     * the same gesture the text panel uses to get from its preset groups into preset
+     * categories.
      */
     private fun showPanelTabs() {
         val b = _binding ?: return
@@ -131,7 +131,6 @@ class DrawFragment : Fragment() {
             if (position != 0) mainViewModel.setQuery("")
         }
 
-        b.tabLayout.post { markStyleTabChevron() }
 
         b.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) = Unit
@@ -142,15 +141,6 @@ class DrawFragment : Fragment() {
                 if (tab.position == STYLE_TAB) b.tabLayout.post { showCategoryTabs() }
             }
         })
-    }
-
-    private fun markStyleTabChevron() {
-        val b = _binding ?: return
-        for (i in 0 until b.tabLayout.tabCount) {
-            b.tabLayout.getTabAt(i)?.customView
-                ?.findViewById<View>(R.id.tabChevron)
-                ?.isVisible = (i == STYLE_TAB)
-        }
     }
 
     /**

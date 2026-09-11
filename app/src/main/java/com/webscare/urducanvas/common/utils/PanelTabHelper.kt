@@ -98,7 +98,6 @@ object PanelTabHelper {
         val customView = tab?.customView ?: return
         val titleView = customView.findViewById<TextView>(R.id.tabTitle) ?: return
         val indicatorView = customView.findViewById<View>(R.id.tabIndicator)
-        val chevronView = customView.findViewById<ImageView>(R.id.tabChevron)
         val context = customView.context
         val bold = boldFont ?: (ResourcesCompat.getFont(context, R.font.bold) ?: Typeface.DEFAULT_BOLD)
         val regular = regularFont ?: (ResourcesCompat.getFont(context, R.font.regular) ?: Typeface.DEFAULT)
@@ -110,8 +109,6 @@ object PanelTabHelper {
         titleView.setTextColor(textColor)
         titleView.typeface = if (isSelected) bold else regular
         indicatorView?.visibility = if (isSelected) View.VISIBLE else View.GONE
-        // The chevron belongs to the label, so it follows the label's colour.
-        chevronView?.imageTintList = ColorStateList.valueOf(textColor)
     }
 
     /**
