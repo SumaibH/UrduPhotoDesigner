@@ -627,7 +627,9 @@ class LayersFragment : Fragment() {
         popupBinding.visibility.apply {
             text = if (element.isVisible) getString(R.string.hide) else getString(R.string.show)
             addPressEffect {
-                viewModel.toggleVisibility(element)
+                // A group's row has to hide the children; the sentinel itself is never drawn.
+                if (element.type == ElementType.GROUP) viewModel.toggleGroupVisibility(element.id)
+                else viewModel.toggleVisibility(element)
                 popupWindow.dismiss()
             }
         }

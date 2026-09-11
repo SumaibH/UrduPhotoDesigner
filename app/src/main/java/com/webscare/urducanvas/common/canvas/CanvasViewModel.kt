@@ -5776,6 +5776,41 @@ class CanvasViewModel @Inject constructor(
         notifyUndoRedoChanged()
     }
 
+    /**
+     * Hides or shows a whole group.
+     *
+     * A GROUP element is a sentinel with no geometry and is never drawn, so toggling only
+     * its own isVisible changed nothing on the canvas or in the export while the layer row
+     * flipped to "Show" — the children stayed visible. Covers the sentinel and its children,
+     * the way [toggleGroupLock] already does.
+     */
+    fun toggleGroupVisibility(groupId: String) {
+        val currentList = _canvasElements.value ?: return
+        val sentinel = currentList.firstOrNull { it.id == groupId && it.type == ElementType.GROUP }
+            ?: return
+        val newVisible = !sentinel.isVisible
+
+        val oldList = currentList.map { it.copy(context = null) }
+
+        val updated = currentList.map { element ->
+            if (element.id == groupId || element.groupId == groupId) {
+                element.copy(isVisible = newVisible).apply {
+                    updatePaintProperties()
+                    if (type == ElementType.TEXT) paint.typeface = applyTypefaceFromFontList()
+                }
+            } else element
+        }
+
+        _canvasElements.value = updated
+        refreshSelectedElements()
+
+        _canvasActions.push(
+            CanvasAction.UpdateCanvasElementsOrder(oldList, updated.map { it.copy(context = null) })
+        )
+        _redoStack.clear()
+        notifyUndoRedoChanged()
+    }
+
     fun toggleVisibilityOnSelected() {
         val currentList = _canvasElements.value ?: return
         // Gather selected IDs
