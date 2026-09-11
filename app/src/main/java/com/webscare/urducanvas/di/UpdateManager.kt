@@ -13,7 +13,7 @@ import com.google.android.play.core.install.model.UpdateAvailability
 import com.webscare.urducanvas.common.datastore.PreferenceDataStoreAPI
 import com.webscare.urducanvas.common.datastore.PreferenceDataStoreKeysConstants.REMIND_LATER_TIMESTAMP
 import com.webscare.urducanvas.common.utils.GlobalSnackbar
-import com.webscare.urducanvas.common.utils.UpdateDialog
+import com.webscare.urducanvas.ui.update.UpdateSheet
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,8 +28,6 @@ class UpdateManager @Inject constructor(
     @ApplicationContext private val context: Context,
     private val dataStore: PreferenceDataStoreAPI
 ) {
-
-    private var updateDialog: UpdateDialog? = null
 
     companion object {
         const val REQUEST_CODE_UPDATE = 1001
@@ -61,35 +59,42 @@ class UpdateManager @Inject constructor(
                 when {
                     appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
                             && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE) -> {
-                        showUpdateDialog(activity, appUpdateInfo, isForced = false)
+                        showUpdateSheet(activity, appUpdateInfo, isForced = false)
                     }
 
                     appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
                             && (appUpdateInfo.clientVersionStalenessDays() ?: 0) >= 7
                             && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE) -> {
-                        showUpdateDialog(activity, appUpdateInfo, isForced = true)
+                        showUpdateSheet(activity, appUpdateInfo, isForced = true)
                     }
                 }
             }
             .addOnFailureListener { it.printStackTrace() }
     }
 
-    private fun showUpdateDialog(
+    /**
+     * A forced update passes no remind-later, which is what makes the sheet refuse to
+     * be dismissed — the one screen in the app the user cannot walk away from.
+     */
+    private fun showUpdateSheet(
         activity: AppCompatActivity,
         appUpdateInfo: AppUpdateInfo,
         isForced: Boolean
     ) {
-        updateDialog = UpdateDialog(
-            context = activity,
+        val manager = activity.supportFragmentManager
+        // Two checks can land together on a cold start, and a saved state means the
+        // activity is on its way out — showing into either would crash or double up.
+        if (manager.isStateSaved) return
+        if (manager.findFragmentByTag(UpdateSheet.TAG) != null) return
+
+        UpdateSheet.newInstance(
             onUpdateNow = { startUpdate(activity, appUpdateInfo, isForced) },
             onRemindLater = if (isForced) null else ({
                 CoroutineScope(Dispatchers.IO).launch {
                     dataStore.putPreference(REMIND_LATER_TIMESTAMP, System.currentTimeMillis())
                 }
-            }),
-            isCancelable = !isForced
-        )
-        updateDialog?.show()
+            })
+        ).show(manager, UpdateSheet.TAG)
     }
 
     private fun startUpdate(
@@ -151,8 +156,6 @@ class UpdateManager @Inject constructor(
     }
 
     fun onDestroy() {
-        updateDialog?.dismiss()
-        updateDialog = null
         currentActivity = null
         appUpdateManager.unregisterListener(installStateListener)
     }

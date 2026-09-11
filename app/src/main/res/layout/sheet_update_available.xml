@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The update sheet. The app has no dialogs anywhere, so an update asks for itself
+    the same way everything else does — from the bottom, on the house sheet.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bottom_sheet_bg"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.webscare.urducanvas.ui.update.UpdateHeaderView
+            android:id="@+id/updateHeader"
+            android:layout_width="match_parent"
+            android:layout_height="172dp"
+            android:importantForAccessibility="no" />
+
+        <View
+            android:layout_width="40dp"
+            android:layout_height="4dp"
+            android:layout_gravity="top|center_horizontal"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_sheet_handle_light"
+            android:importantForAccessibility="no" />
+
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:fontFamily="@font/bold"
+        android:gravity="center"
+        android:paddingHorizontal="24dp"
+        android:text="@string/update_available"
+        android:textColor="@color/black"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/subTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:fontFamily="@font/regular"
+        android:gravity="center"
+        android:lineSpacingExtra="3dp"
+        android:paddingHorizontal="28dp"
+        android:text="@string/enjoy_a_smoother_improved_urdu_canvas_experience_with_better_performance"
+        android:textColor="@color/gray"
+        android:textSize="13sp" />
+
+    <TextView
+        android:id="@+id/continueBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginTop="22dp"
+        android:background="@drawable/ic_button_gradient_wrap"
+        android:fontFamily="@font/bold"
+        android:gravity="center"
+        android:paddingVertical="14dp"
+        android:text="@string/update_now"
+        android:textColor="@color/whiteText"
+        android:textSize="15sp"
+        tools:ignore="TextContrastCheck" />
+
+    <TextView
+        android:id="@+id/subOptionBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/medium"
+        android:gravity="center"
+        android:paddingVertical="16dp"
+        android:text="@string/remind_me_later"
+        android:textColor="@color/gray"
+        android:textSize="13sp" />
+
+    <!-- Clears the gesture bar, which the sheet draws under. -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="10dp" />
+
+</LinearLayout>
