@@ -296,6 +296,13 @@ class TablesParentFragment : Fragment() {
                 ?: TablesListFragment.newInstance(category, currentQuery)
         }
 
+        // These two transactions run from a posted callback -- the tab listener does
+        // `binding.root.post { showStylesTab(pos) }` -- so they can land after the activity
+        // has saved its state, and commit() throws IllegalStateException there. Tapping a
+        // tab and immediately backgrounding the app is enough. Nothing is lost by allowing
+        // state loss: which tab is showing is rebuilt from mainViewModel.lastTablesTabCategory
+        // in onViewCreated, so the worst case is the panel reopening on the tab it already
+        // would have, against a crash that costs the user the design they were editing.
         val forward = position >= shownStylesTabIndex
         shownStylesTabIndex = position
         val animEnter = if (forward) R.anim.slide_in_right else R.anim.slide_in_left
@@ -309,7 +316,7 @@ class TablesParentFragment : Fragment() {
                 }
                 if (!target.isAdded) add(R.id.fragmentContainer, target, category)
                 else if (target.isHidden) show(target)
-            }.commit()
+            }.commitAllowingStateLoss()
 
         val isExpanded = mainViewModel.isPanelExpanded(PanelType.TABLES)
         (target as? TablesListFragment)?.onPanelExpanded(isExpanded)
@@ -331,7 +338,7 @@ class TablesParentFragment : Fragment() {
                 }
                 if (!target.isAdded) add(R.id.fragmentContainer, target, GRID_TAB_KEY)
                 else if (target.isHidden) show(target)
-            }.commit()
+            }.commitAllowingStateLoss()
 
         val isExpanded = mainViewModel.isPanelExpanded(PanelType.TABLES)
         (target as? TablesTabFragment)?.onPanelSlide(if (isExpanded) 1f else 0f)
