@@ -26,8 +26,15 @@ sealed class PreviewAsset {
     /** Pills under the paper, in order. Blank entries are dropped by the view. */
     abstract val details: List<String>
 
-    /** False for assets that cannot be downloaded or shared as a file. */
-    open val hasFile: Boolean get() = true
+    /** False for assets with no file to hand to another app. */
+    open val canShare: Boolean get() = true
+
+    /**
+     * False for assets the app never fetches on demand. Also gates the
+     * Downloaded / Not downloaded chip, which only means anything when there is
+     * something to fetch.
+     */
+    open val canDownload: Boolean get() = true
 
     data class Font(
         override val breadcrumb: String,
@@ -49,8 +56,10 @@ sealed class PreviewAsset {
                 ?: entity.file_name.substringBeforeLast('.')
         override val isPremium get() = entity.is_premium && !entity.is_subscribed
         // Images are streamed and cached by Glide rather than recorded as downloaded,
-        // so there is no per-item flag on the entity to read.
+        // so there is no per-item flag on the entity to read — and nothing for a
+        // download button to do that opening the picture hasn't already done.
         override val isDownloaded get() = true
+        override val canDownload get() = false
         override val details
             get() = listOf(
                 entity.category,
@@ -72,7 +81,8 @@ sealed class PreviewAsset {
     ) : PreviewAsset() {
         override val isPremium get() = false
         override val isDownloaded get() = true
-        override val hasFile get() = false
+        override val canShare get() = false
+        override val canDownload get() = false
     }
 
     companion object {

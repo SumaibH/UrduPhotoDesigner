@@ -18,6 +18,7 @@ import com.webscare.urducanvas.common.canvas.enums.PanelType
 import com.webscare.urducanvas.common.canvas.enums.ShapeType
 import com.webscare.urducanvas.common.utils.MorphGridLayoutManager
 import com.webscare.urducanvas.databinding.FragmentObjectsListBinding
+import com.webscare.urducanvas.ui.editor.panels.preview.showShapePreview
 import com.webscare.urducanvas.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -67,7 +68,18 @@ class VectorsTabFragment : Fragment() {
         setupSwipeRefresh()
 
         if (shapesAdapter == null) {
-            shapesAdapter = ShapeAdapter(requireContext(), ShapeType.entries) { shape ->
+            shapesAdapter = ShapeAdapter(
+                requireContext(),
+                ShapeType.entries,
+                onPreviewRequested = { shape ->
+                    showShapePreview(
+                        adapter = shapesAdapter,
+                        shape = shape,
+                        breadcrumb = getString(R.string.shapes),
+                        expanded = isPanelExpanded
+                    )
+                }
+            ) { shape ->
                 handleShapeTap(shape)
             }
         }

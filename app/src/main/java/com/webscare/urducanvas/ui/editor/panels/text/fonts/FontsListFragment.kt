@@ -21,7 +21,10 @@ import com.webscare.urducanvas.common.utils.MorphGridLayoutManager
 import com.webscare.urducanvas.databinding.FragmentFontsListBinding
 import com.webscare.urducanvas.ui.editor.EditorFragment
 import com.webscare.urducanvas.ui.editor.PanelSheetBehavior
+import com.webscare.urducanvas.R
 import com.webscare.urducanvas.data.model.FontEntity
+import com.webscare.urducanvas.ui.editor.panels.preview.FontPreviewController
+import com.webscare.urducanvas.ui.editor.panels.preview.findPreviewHost
 import com.webscare.urducanvas.data.model.orderWithUrduFirst
 import com.webscare.urducanvas.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -296,7 +299,9 @@ class FontsListFragment : androidx.fragment.app.Fragment() {
     // ── Setup ─────────────────────────────────────────────────────────────────
 
     private fun setupRecyclerView() {
-        fontsAdapter = FontsAdapter { font, isDownloaded ->
+        fontsAdapter = FontsAdapter(
+            onPreviewRequested = { font -> fontPreview.open(font) }
+        ) { font, isDownloaded ->
             handleFontSelection(font, isDownloaded)
         }
         val isExpanded = mainViewModel.isPanelExpanded(PanelType.FONTS)
@@ -311,6 +316,28 @@ class FontsListFragment : androidx.fragment.app.Fragment() {
         }
         fontsAdapter.isExpanded = isExpanded
         rv.adapter = fontsAdapter
+    }
+
+    // ── Asset preview ─────────────────────────────────────────────────────────
+
+    private val fontPreview by lazy {
+        FontPreviewController(
+            fragment = this,
+            host = { findPreviewHost() },
+            // The rail is what you came from here, so name the shelf it has open.
+            breadcrumb = {
+                currentCategory?.takeIf { it.isNotBlank() }
+                    ?: currentLanguage?.takeIf { it.isNotBlank() }
+                    ?: getString(R.string.fonts)
+            },
+            expanded = { mainViewModel.isPanelExpanded(PanelType.FONTS) },
+            primaryLabel = FontPreviewController.USE,
+            download = { font ->
+                fontsAdapter.addDownloadingId(font.id)
+                mainViewModel.downloadFont(font)
+            },
+            onUse = { font -> handleFontSelection(font, font.is_downloaded) }
+        )
     }
 
     private fun handleFontSelection(
@@ -364,6 +391,9 @@ class FontsListFragment : androidx.fragment.app.Fragment() {
                                 Log.d("FONT_DEBUG", "SUCCESS id=${completedFont.id} lastRequested=$lastRequestedFontId")
                                 isDownloadingFont = false
                                 fontsAdapter.clearDownloadingId(completedFont.id)
+                                if (fontPreview.owns(completedFont.id)) {
+                                    fontPreview.onDownloaded(completedFont)
+                                }
                                 val wasRequestedHere = completedFont.id == lastRequestedFontId
                                 if (wasRequestedHere) {
                                     fontEntity                  = completedFont
@@ -391,6 +421,7 @@ class FontsListFragment : androidx.fragment.app.Fragment() {
                             is FontDownloadState.Error -> {
                                 val failedFont = state.fontEntity
                                 Log.d("FONT_DEBUG", "ERROR observed")
+                                if (fontPreview.owns(failedFont.id)) fontPreview.onFailed()
                                 isDownloadingFont = false
                                 fontsAdapter.clearDownloadingId(failedFont.id)
                                 view?.let {

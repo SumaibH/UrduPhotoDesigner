@@ -41,6 +41,8 @@ import com.webscare.urducanvas.common.utils.SvgLoader
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
 import com.webscare.urducanvas.data.model.ImagesData
 import com.webscare.urducanvas.databinding.FragmentImagesBinding
+import com.webscare.urducanvas.ui.editor.panels.preview.PanelPreviewHost
+import com.webscare.urducanvas.ui.editor.panels.preview.PreviewHostOwner
 import com.webscare.urducanvas.ui.editor.EditorFragment
 import com.webscare.urducanvas.ui.editor.panels.text.fonts.imported.ImportedFontsBottomSheet.Companion.TAG
 import com.webscare.urducanvas.viewmodels.MainViewModel
@@ -52,10 +54,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
-class ImagesFragment : Fragment() {
+class ImagesFragment : Fragment(), PreviewHostOwner {
 
     private var _binding: FragmentImagesBinding? = null
     private val binding get() = _binding!!
+
+    override var previewHost: PanelPreviewHost? = null
+        private set
 
     private val mainViewModel: MainViewModel by activityViewModels()
     private val viewModel: CanvasViewModel by activityViewModels()
@@ -86,6 +91,10 @@ class ImagesFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // The tiles live two fragments down, so the preview is hosted up here where
+        // it can cover the tab rows as well as the grid. The drag handle is left
+        // out of it, so the panel still drags and closes with a preview open.
+        previewHost = PanelPreviewHost(this, binding.root, topAnchorId = R.id.dragHandle)
         setEvents()
         attachDragHandleSwipe()
         setupThumbnailStrip()
@@ -111,6 +120,8 @@ class ImagesFragment : Fragment() {
 
     override fun onDestroyView() {
         tabListenerAttached = false
+        previewHost?.release()
+        previewHost = null
         _binding?.selectedThumbnails?.adapter = null
         thumbnailAdapter = null
         fragmentCache.clear()
@@ -174,6 +185,7 @@ class ImagesFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 mainViewModel.expandedPanel.map { it == PanelType.IMAGES }.collect { expanded ->
                     applyExpandedUi(expanded)
+                    previewHost?.onPanelExpandedChanged(expanded)
                     for ((_, fragment) in fragmentCache) fragment.onPanelExpanded(expanded)
                 }
             }

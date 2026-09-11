@@ -19,7 +19,10 @@ import com.webscare.urducanvas.common.utils.EmojiBitmapRenderer
 import com.webscare.urducanvas.common.utils.ImageProcessor.trimTransparentEdges
 import com.webscare.urducanvas.data.model.ImageEntity
 import com.webscare.urducanvas.data.model.ObjectsData
+import com.webscare.urducanvas.R
 import com.webscare.urducanvas.databinding.FragmentObjectsListBinding
+import com.webscare.urducanvas.ui.editor.panels.preview.showEmojiPreview
+import com.webscare.urducanvas.ui.editor.panels.preview.showPicturePreview
 import com.webscare.urducanvas.common.utils.MorphGridLayoutManager
 import com.webscare.urducanvas.common.utils.HorizontalSpringEdgeEffectFactory
 import com.webscare.urducanvas.ui.editor.panels.images.ImagesAdapter
@@ -244,6 +247,14 @@ class ObjectsListFragment : androidx.fragment.app.Fragment() {
                 },
                 onEmojiLongPress = { emoji ->
                     mainViewModel.toggleEmojiSelection(emoji.char)
+                },
+                onPreviewRequested = { emoji ->
+                    showEmojiPreview(
+                        adapter = emojiAdapter,
+                        meta = emoji,
+                        breadcrumb = category.ifBlank { getString(R.string.objects) },
+                        expanded = isPanelExpanded
+                    )
                 }
             )
         }
@@ -309,6 +320,14 @@ class ObjectsListFragment : androidx.fragment.app.Fragment() {
                     if (mainViewModel.isPanelExpanded(PanelType.OBJECTS)) {
                         mainViewModel.toggleImageSelection(entity.id)
                     }
+                },
+                onPreviewRequested = { entity ->
+                    showPicturePreview(
+                        adapter = imagesAdapter,
+                        entity = entity,
+                        breadcrumb = category.ifBlank { getString(R.string.objects) },
+                        expanded = isPanelExpanded
+                    )
                 }
             )
         }

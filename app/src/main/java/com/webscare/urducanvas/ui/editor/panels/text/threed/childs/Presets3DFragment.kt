@@ -16,6 +16,7 @@ import com.webscare.urducanvas.common.canvas.model.Text3DData
 import com.webscare.urducanvas.common.canvas.model.Text3DPreset
 import com.webscare.urducanvas.data.model.PresetCategory
 import com.webscare.urducanvas.data.model.TextStylePreset
+import com.webscare.urducanvas.ui.editor.panels.preview.showPresetPreview
 import com.webscare.urducanvas.data.repository.TextStylesRepository
 import com.webscare.urducanvas.databinding.Fragment3dPresetsBinding
 import com.webscare.urducanvas.ui.editor.panels.text.styles.TextStylesGridAdapter
@@ -55,7 +56,7 @@ class Presets3DFragment : Fragment() {
             PresetCategory.THREE_D, requireContext()
         ).filterNot { it.id == com.webscare.urducanvas.data.model.TextStylePreset.NONE_ID }
 
-        adapter = TextStylesGridAdapter(builtIns + library) { preset ->
+        fun apply(preset: TextStylePreset) {
             val builtInId = preset.id.removePrefix(BUILT_IN_PREFIX)
             if (builtInId != preset.id) {
                 viewModel.apply3DPreset(builtInId)
@@ -64,6 +65,21 @@ class Presets3DFragment : Fragment() {
                 viewModel.apply3DStylePreset(preset)
             }
         }
+
+        adapter = TextStylesGridAdapter(
+            builtIns + library,
+            onPreviewRequested = { preset ->
+                showPresetPreview(
+                    preset = preset,
+                    breadcrumb = getString(R.string.presets),
+                    // This grid is only ever drawn in an open adjustments panel.
+                    expanded = true,
+                    typeface = adapter.currentTypeface,
+                    fontKey = adapter.currentFontKey,
+                    primaryLabel = getString(R.string.preview_use_on_canvas)
+                ) { picked -> apply(picked) }
+            }
+        ) { preset -> apply(preset) }
         adapter.selectedPresetId = viewModel.selectedStylePresetId.value
 
         binding.rvPresets.layoutManager =

@@ -40,6 +40,11 @@ import com.webscare.urducanvas.common.utils.MorphGridLayoutManager
 import com.webscare.urducanvas.common.utils.HorizontalSpringEdgeEffectFactory
 import androidx.recyclerview.widget.RecyclerView
 import com.webscare.urducanvas.databinding.FragmentTextBinding
+import com.webscare.urducanvas.ui.editor.panels.preview.PanelPreviewHost
+import com.webscare.urducanvas.ui.editor.panels.preview.FontPreviewController
+import com.webscare.urducanvas.ui.editor.panels.preview.PreviewHostOwner
+import com.webscare.urducanvas.ui.editor.panels.preview.showPresetPreview
+
 import com.webscare.urducanvas.ui.editor.EditorFragment
 import com.webscare.urducanvas.ui.editor.panels.text.fonts.FontsAdapter
 import com.webscare.urducanvas.ui.editor.panels.text.fonts.imported.ImportedFontsBottomSheet
@@ -57,9 +62,13 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class TextFragment : Fragment() {
+class TextFragment : Fragment(), PreviewHostOwner {
 
     private var _binding: FragmentTextBinding? = null
+
+    override var previewHost: PanelPreviewHost? = null
+        private set
+
     private val binding get() = _binding!!
 
     @Inject
@@ -125,6 +134,9 @@ class TextFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // The drag handle is left out of the preview, so the panel still drags and
+        // closes with one open.
+        previewHost = PanelPreviewHost(this, binding.root, topAnchorId = R.id.dragHandle)
         setupRecyclerView()
         restoreTabState()
         setupSwipeRefresh()
@@ -152,6 +164,8 @@ class TextFragment : Fragment() {
 
     override fun onDestroyView() {
         tabListenerAttached = false
+        previewHost?.release()
+        previewHost = null
         clearTabListeners()
         _binding?.fontsRV?.adapter = null
         super.onDestroyView()
@@ -163,15 +177,21 @@ class TextFragment : Fragment() {
     // ─────────────────────────────────────────────────────────────────────────
 
     private fun setupRecyclerView() {
-        fontsAdapter = FontsAdapter { font, isDownloaded ->
+        fontsAdapter = FontsAdapter(
+            onPreviewRequested = { font -> fontPreview.open(font) }
+        ) { font, isDownloaded ->
             handleFontSelection(font, isDownloaded)
         }
-        stylesAdapter = TextStylesMainAdapter { preset ->
-            viewModel.addTextWithStyle(
-                requireActivity().getString(R.string.dummyText),
-                preset,
-                requireActivity()
-            )
+        stylesAdapter = TextStylesMainAdapter(
+            onPreviewRequested = { preset ->
+                showPresetPreview(
+                    preset = preset,
+                    breadcrumb = getString(R.string.presets),
+                    expanded = isPanelExpanded
+                ) { picked -> applyPresetToCanvas(picked) }
+            }
+        ) { preset ->
+            applyPresetToCanvas(preset)
         }
 
         binding.fontsRV.apply {
@@ -186,6 +206,14 @@ class TextFragment : Fragment() {
         }
         fontsAdapter.isExpanded = isPanelExpanded
         stylesAdapter.isExpanded = isPanelExpanded
+    }
+
+    private fun applyPresetToCanvas(preset: TextStylePreset) {
+        viewModel.addTextWithStyle(
+            requireActivity().getString(R.string.dummyText),
+            preset,
+            requireActivity()
+        )
     }
 
     private fun setupSwipeRefresh() {
@@ -691,6 +719,27 @@ class TextFragment : Fragment() {
     // Font selection / download  (mirrors FontsListFragment exactly)
     // ─────────────────────────────────────────────────────────────────────────
 
+    // ── Asset preview ─────────────────────────────────────────────────────────
+
+    private val fontPreview by lazy {
+        FontPreviewController(
+            fragment = this,
+            host = { previewHost },
+            // The tab you came from: the language shelf, or the category inside it.
+            breadcrumb = {
+                (if (inCategoryMode) selectedCategory else selectedLanguage)
+                    ?.takeIf { it.isNotBlank() } ?: getString(R.string.fonts)
+            },
+            expanded = { isPanelExpanded },
+            primaryLabel = FontPreviewController.USE,
+            download = { font ->
+                fontsAdapter.addDownloadingId(font.id)
+                mainViewModel.downloadFont(font)
+            },
+            onUse = { font -> handleFontSelection(font, font.is_downloaded) }
+        )
+    }
+
     private fun handleFontSelection(font: FontEntity, isDownloaded: Boolean) {
         if (isDownloaded) {
             // justDownloaded separates "used the font they came here for" from "reached
@@ -795,6 +844,10 @@ class TextFragment : Fragment() {
                     when (state) {
                         is FontDownloadState.SuccessWithTypeface -> {
                             val done = state.fontEntity
+                            if (fontPreview.owns(done.id)) {
+                                fontsAdapter.clearDownloadingId(done.id)
+                                fontPreview.onDownloaded(done)
+                            }
                             if (done.id == lastRequestedFontId) {
                                 isDownloadingFont = false
                                 fontsAdapter.clearDownloadingId(done.id)
@@ -819,6 +872,7 @@ class TextFragment : Fragment() {
 
                         is FontDownloadState.Error -> {
                             val failedFont = state.fontEntity
+                            if (fontPreview.owns(failedFont.id)) fontPreview.onFailed()
                             isDownloadingFont = false
                             fontsAdapter.clearDownloadingId(failedFont.id)
                             view?.let {
@@ -856,7 +910,10 @@ class TextFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 mainViewModel.expandedPanel.map { it == PanelType.FONTS }
-                    .collect { expanded -> applyExpandedUi(expanded) }
+                    .collect { expanded ->
+                        applyExpandedUi(expanded)
+                        previewHost?.onPanelExpandedChanged(expanded)
+                    }
             }
         }
 

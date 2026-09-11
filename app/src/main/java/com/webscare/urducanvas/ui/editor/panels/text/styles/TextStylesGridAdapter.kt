@@ -8,6 +8,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.view.doOnNextLayout
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
@@ -17,6 +18,13 @@ import com.webscare.urducanvas.data.model.TextStylePreset
 
 class TextStylesGridAdapter(
     private var presets: List<TextStylePreset>,
+    /**
+     * Asked to open the preview for a tile. This grid only ever draws expanded,
+     * so the eye button carries it here and there is no long-press variant.
+     * Declared before [onPresetClick] so that stays the last parameter and the
+     * existing trailing-lambda call sites keep binding to it.
+     */
+    private val onPreviewRequested: (TextStylePreset) -> Unit = {},
     private val onPresetClick: (TextStylePreset) -> Unit
 ) : RecyclerView.Adapter<TextStylesGridAdapter.PresetViewHolder>() {
 
@@ -130,6 +138,12 @@ class TextStylesGridAdapter(
             selectedPresetId = preset.id
             onPresetClick(preset)
         }
+
+        // "None" is the absence of a style — there is nothing to look at closer.
+        holder.previewEye.apply {
+            isVisible = !isNone
+            addPressEffect { onPreviewRequested(preset) }
+        }
     }
 
     override fun getItemCount(): Int = presets.size
@@ -141,6 +155,7 @@ class TextStylesGridAdapter(
     }
 
     class PresetViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val previewEye: ImageView = view.findViewById(R.id.previewEye)
         val previewImg: ImageView = view.findViewById(R.id.presetPreviewImage)
         val titleTxt: TextView = view.findViewById(R.id.presetTitleText)
 

@@ -20,6 +20,9 @@ import kotlin.math.min
 
 object TextStyleThumbnailRenderer {
 
+    /** The box every thumbnail is drawn in, and the unit the drawing code is written in. */
+    private const val THUMB_PX = 180
+
     private val thumbnailCache = LruCache<String, Bitmap>(200)
 
     fun clearCache() {
@@ -40,15 +43,36 @@ object TextStyleThumbnailRenderer {
         return bmp
     }
 
+    /**
+     * A one-off render for the in-panel asset preview, which shows a preset several
+     * times the size of a tile. Not cached: it is one bitmap at a time, and putting
+     * something this big in the tile cache would evict most of the grid.
+     */
+    fun renderForPreview(
+        context: Context,
+        preset: TextStylePreset,
+        sizePx: Int,
+        customTypeface: Typeface? = null
+    ): Bitmap = generatePresetThumbnail(context, preset, customTypeface, sizePx)
+
     private fun generatePresetThumbnail(
         context: Context,
         preset: TextStylePreset,
-        customTypeface: Typeface? = null
+        customTypeface: Typeface? = null,
+        sizePx: Int = THUMB_PX
     ): Bitmap {
-        val width = 180
-        val height = 180
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val width = THUMB_PX
+        val height = THUMB_PX
+        val bitmap = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
+        // Everything below is written against the 180pt box the tiles use. Drawing
+        // through a scale keeps one set of numbers and still comes out sharp when
+        // the preview asks for a bitmap several times that size — text and paths
+        // are re-rasterised at the larger size rather than stretched.
+        if (sizePx != THUMB_PX) {
+            val s = sizePx / THUMB_PX.toFloat()
+            canvas.scale(s, s)
+        }
 
         // Authentic font (use selected custom typeface or fallback to default canvas font)
         val urduTypeface = customTypeface ?: try {

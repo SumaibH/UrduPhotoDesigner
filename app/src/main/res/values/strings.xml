@@ -185,6 +185,7 @@
     <string name="estimating_size">Estimating size...</string>
     <string name="tap_to_edit">Tap to Edit</string>
     <string name="preview">Preview</string>
+    <string name="preview_share_failed">Couldn\'t get that file ready to share</string>
     <string name="preview_add_to_canvas">Add to canvas</string>
     <string name="preview_use_on_canvas">Use on canvas</string>
     <string name="preview_not_downloaded">Not downloaded</string>

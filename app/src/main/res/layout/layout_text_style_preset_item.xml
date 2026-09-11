@@ -37,6 +37,25 @@
             android:textColor="@color/black"
             android:textSize="12sp"
             android:visibility="gone" />
+
+        <!--
+            Opens the preview while the panel is expanded. Collapsed, the tile is
+            44dp and this would cover it, so long-press does the same job there.
+        -->
+        <ImageView
+            android:id="@+id/previewEye"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="6dp"
+            android:alpha="0.75"
+            android:background="@drawable/bg_preview_eye"
+            android:clickable="true"
+            android:contentDescription="@string/preview"
+            android:focusable="true"
+            android:padding="4dp"
+            android:src="@drawable/ic_eye"
+            android:visibility="gone" />
     </FrameLayout>
 
 </com.google.android.material.card.MaterialCardView>

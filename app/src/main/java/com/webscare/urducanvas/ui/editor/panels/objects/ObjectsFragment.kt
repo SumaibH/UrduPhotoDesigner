@@ -42,6 +42,8 @@ import com.webscare.urducanvas.common.utils.isDarkModeEnabled
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
 import com.webscare.urducanvas.data.model.ObjectsData
 import com.webscare.urducanvas.databinding.FragmentObjectsBinding
+import com.webscare.urducanvas.ui.editor.panels.preview.PanelPreviewHost
+import com.webscare.urducanvas.ui.editor.panels.preview.PreviewHostOwner
 import com.webscare.urducanvas.viewmodels.MainViewModel
 import com.google.android.material.tabs.TabLayout
 import com.webscare.urducanvas.common.canvas.enums.PanelType
@@ -56,9 +58,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
-class ObjectsFragment : Fragment() {
+class ObjectsFragment : Fragment(), PreviewHostOwner {
 
     private var _binding: FragmentObjectsBinding? = null
+
+    override var previewHost: PanelPreviewHost? = null
+        private set
+
     private val binding get() = _binding!!
 
     private val mainViewModel: MainViewModel by activityViewModels()
@@ -89,6 +95,10 @@ class ObjectsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // The tiles live two fragments down, so the preview is hosted up here where
+        // it can cover the tab rows as well as the grid. The drag handle is left out
+        // of it, so the panel still drags and closes with a preview open.
+        previewHost = PanelPreviewHost(this, binding.root, topAnchorId = R.id.dragHandle)
         setEvents()
         attachDragHandleSwipe()
         setupThumbnailStrip()
@@ -115,6 +125,8 @@ class ObjectsFragment : Fragment() {
 
     override fun onDestroyView() {
         tabListenerAttached = false
+        previewHost?.release()
+        previewHost = null
         _binding?.selectedThumbnails?.adapter = null
         thumbnailAdapter = null
         fragmentCache.clear()
@@ -181,6 +193,7 @@ class ObjectsFragment : Fragment() {
                     .map { it == PanelType.OBJECTS }
                     .collect { expanded ->
                         applyExpandedUi(expanded)
+                        previewHost?.onPanelExpandedChanged(expanded)
                         for (fragment in fragmentCache.values.toList()) fragment.onPanelExpanded(expanded)
                     }
             }

@@ -13,7 +13,10 @@ import androidx.viewpager2.widget.ViewPager2
 import com.webscare.urducanvas.common.canvas.enums.PanelType
 import com.webscare.urducanvas.data.model.FontCategory
 import com.webscare.urducanvas.data.model.FontLanguages
+import com.webscare.urducanvas.R
 import com.webscare.urducanvas.databinding.FragmentFontsBinding
+import com.webscare.urducanvas.ui.editor.panels.preview.PanelPreviewHost
+import com.webscare.urducanvas.ui.editor.panels.preview.PreviewHostOwner
 import com.webscare.urducanvas.ui.editor.views.RailCategoryItem
 import com.webscare.urducanvas.ui.editor.views.RailSubCategoryItem
 import com.webscare.urducanvas.viewmodels.MainViewModel
@@ -21,9 +24,13 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class FontsFragment : Fragment() {
+class FontsFragment : Fragment(), PreviewHostOwner {
 
     private var _binding: FragmentFontsBinding? = null
+
+    override var previewHost: PanelPreviewHost? = null
+        private set
+
     private val binding get() = _binding!!
 
     private val mainViewModel: MainViewModel by activityViewModels()
@@ -51,6 +58,9 @@ class FontsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // The rail is how you get between shelves, so the preview covers the grid
+        // beside it rather than the whole panel.
+        previewHost = PanelPreviewHost(this, binding.root, startAnchorId = R.id.collapsibleRail)
         setupRailView()
         setupViewPager()
         observeLocalFontsForLanguages()
@@ -281,6 +291,8 @@ class FontsFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        previewHost?.release()
+        previewHost = null
         _binding?.viewPager?.adapter = null
         super.onDestroyView()
         _binding = null

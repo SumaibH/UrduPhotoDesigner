@@ -11,14 +11,20 @@ import com.webscare.urducanvas.R
 import com.webscare.urducanvas.common.canvas.CanvasViewModel
 import com.webscare.urducanvas.data.model.PanelTabs
 import com.webscare.urducanvas.databinding.FragmentText3dBinding
+import com.webscare.urducanvas.ui.editor.panels.preview.PanelPreviewHost
+import com.webscare.urducanvas.ui.editor.panels.preview.PreviewHostOwner
 import com.webscare.urducanvas.ui.editor.panels.text.threed.adapters.Text3DPagerAdapter
 import com.webscare.urducanvas.ui.editor.views.RailCategoryItem
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class Text3DFragment : Fragment() {
+class Text3DFragment : Fragment(), PreviewHostOwner {
 
     private var _binding: FragmentText3dBinding? = null
+
+    override var previewHost: PanelPreviewHost? = null
+        private set
+
     private val binding get() = _binding!!
 
     private val viewModel: CanvasViewModel by activityViewModels()
@@ -48,6 +54,9 @@ class Text3DFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // The rail is how you get between preset groups, so the preview covers the
+        // grid beside it rather than the whole panel.
+        previewHost = PanelPreviewHost(this, binding.root, startAnchorId = R.id.collapsibleRail)
         setupRailAndPager()
         initObservers()
     }
@@ -116,6 +125,8 @@ class Text3DFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        previewHost?.release()
+        previewHost = null
         _binding?.viewPager?.adapter = null
         _binding = null
         super.onDestroyView()

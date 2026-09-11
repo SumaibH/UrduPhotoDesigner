@@ -23,11 +23,20 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
 import com.webscare.urducanvas.R
 import com.webscare.urducanvas.common.canvas.enums.LabelShape
+import androidx.core.view.isVisible
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
+import com.webscare.urducanvas.common.utils.Utils.addPressEffectWithLongClick
 import com.webscare.urducanvas.data.model.TextStylePreset
 import com.webscare.urducanvas.databinding.LayoutTextStylePresetItemBinding
 
 class TextStylesMainAdapter(
+    /**
+     * Asked to open the preview for a tile. Long-press while the panel is
+     * collapsed, the eye button while it is expanded — the same rule every other
+     * asset grid follows. Declared before [onPresetClick] so that stays the last
+     * parameter and the existing trailing-lambda call sites keep binding to it.
+     */
+    private val onPreviewRequested: (TextStylePreset) -> Unit = {},
     private val onPresetClick: (TextStylePreset) -> Unit
 ) : ListAdapter<TextStylePreset, TextStylesMainAdapter.PresetViewHolder>(DiffCallback()) {
 
@@ -70,7 +79,7 @@ class TextStylesMainAdapter(
         val binding = LayoutTextStylePresetItemBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
-        return PresetViewHolder(binding, this, onPresetClick)
+        return PresetViewHolder(binding, this, onPreviewRequested, onPresetClick)
     }
 
     override fun onBindViewHolder(holder: PresetViewHolder, position: Int) {
@@ -81,6 +90,7 @@ class TextStylesMainAdapter(
     class PresetViewHolder(
         private val binding: LayoutTextStylePresetItemBinding,
         private val adapter: TextStylesMainAdapter,
+        private val onPreviewRequested: (TextStylePreset) -> Unit,
         private val onPresetClick: (TextStylePreset) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
 
@@ -108,9 +118,26 @@ class TextStylesMainAdapter(
 
             updateSize(slideOffset, rvWidth, rvPadding)
 
-            cardRoot.addPressEffect {
-                adapter.selectedPresetId = preset.id
-                onPresetClick(preset)
+            // One rule everywhere: long-press opens the preview only while collapsed,
+            // and the eye button is what does it once there is room to draw one.
+            if (adapter.isExpanded) {
+                cardRoot.addPressEffect {
+                    adapter.selectedPresetId = preset.id
+                    onPresetClick(preset)
+                }
+            } else {
+                cardRoot.addPressEffectWithLongClick(
+                    onLongClick = { onPreviewRequested(preset) },
+                    onClick = {
+                        adapter.selectedPresetId = preset.id
+                        onPresetClick(preset)
+                    }
+                )
+            }
+
+            binding.previewEye.apply {
+                isVisible = adapter.isExpanded
+                addPressEffect { onPreviewRequested(preset) }
             }
         }
 

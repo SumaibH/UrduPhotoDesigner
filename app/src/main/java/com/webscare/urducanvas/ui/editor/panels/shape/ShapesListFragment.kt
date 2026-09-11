@@ -20,7 +20,9 @@ import com.webscare.urducanvas.common.canvas.enums.PanelType
 import com.webscare.urducanvas.common.utils.ImageProcessor.trimTransparentEdges
 import com.webscare.urducanvas.data.model.ImageEntity
 import com.webscare.urducanvas.data.model.ShapesData
+import com.webscare.urducanvas.R
 import com.webscare.urducanvas.databinding.FragmentObjectsListBinding
+import com.webscare.urducanvas.ui.editor.panels.preview.showPicturePreview
 import com.webscare.urducanvas.ui.editor.panels.images.ImagesAdapter
 import com.webscare.urducanvas.common.utils.isDarkModeEnabled
 import com.webscare.urducanvas.common.utils.MorphGridLayoutManager
@@ -200,6 +202,14 @@ class ShapesListFragment : Fragment() {
                     if (mainViewModel.isPanelExpanded(PanelType.SHAPES)) {
                         mainViewModel.toggleShapesSelection(entity.id)
                     }
+                },
+                onPreviewRequested = { entity ->
+                    showPicturePreview(
+                        adapter = imagesAdapter,
+                        entity = entity,
+                        breadcrumb = category.ifBlank { getString(R.string.shapes) },
+                        expanded = isPanelExpanded
+                    )
                 }
             )
         }

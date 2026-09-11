@@ -303,6 +303,40 @@ class PanelSheetBehavior(
 
     fun isCurrentlyExpanded() = isExpanded
 
+    // ── Content-driven third stop ─────────────────────────────────────────────
+
+    /** Where [holdAtHeight] found the sheet, so [releaseHeight] can put it back. */
+    private var heldRestingGuideBegin: Int? = null
+
+    /**
+     * Raises the sheet until the panel is [heightPx] tall, if it isn't already.
+     *
+     * The in-panel asset preview needs more room than a collapsed panel gives but
+     * has no business taking the screen, so it asks for a height rather than
+     * asking to expand. This only ever grows the sheet — from expanded, or from
+     * anything already taller, nothing moves. Returns whether the sheet moved.
+     */
+    fun holdAtHeight(heightPx: Int): Boolean {
+        if (isExpanded) return false
+        val target = (panelSpaceHeight - heightPx).coerceIn(expandedPx, collapsedPx)
+        val resting = currentGuideBegin
+        if (target >= resting) return false
+        heldRestingGuideBegin = resting
+        springTo(target)
+        return true
+    }
+
+    /**
+     * Puts the sheet back where [holdAtHeight] found it — unless the user has
+     * expanded the panel in the meantime, in which case they now own its height.
+     */
+    fun releaseHeight() {
+        val resting = heldRestingGuideBegin ?: return
+        heldRestingGuideBegin = null
+        if (isExpanded) return
+        springTo(resting)
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private fun acquireVelocityTracker(event: MotionEvent) {

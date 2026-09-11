@@ -143,6 +143,12 @@ class ShapeAdapter(
      *  handleShapeClick — it only forwards. */
     private fun handlePreviewRequest(shape: ShapeType) = onPreviewRequested(shape)
 
+    /** The mark already drawn for the grid, for the preview to show big. */
+    fun renderedBitmap(shape: ShapeType): Bitmap? = bitmaps[shape]
+
+    /** The tile's own tap path, so the preview's primary action is the same act. */
+    fun selectShape(shape: ShapeType) = handleShapeClick(shape)
+
     private fun handleShapeClick(shape: ShapeType) {
         val oldPos = shapes.indexOf(selectedShape)
         val newPos = shapes.indexOf(shape)

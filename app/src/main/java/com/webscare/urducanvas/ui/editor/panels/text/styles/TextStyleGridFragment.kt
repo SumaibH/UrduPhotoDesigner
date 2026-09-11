@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.webscare.urducanvas.common.canvas.CanvasViewModel
 import com.webscare.urducanvas.data.model.PresetCategory
 import com.webscare.urducanvas.data.model.TextStylePreset
+import com.webscare.urducanvas.ui.editor.panels.preview.showPresetPreview
 import com.webscare.urducanvas.data.repository.TextStylesRepository
 import com.webscare.urducanvas.databinding.FragmentTextStyleGridBinding
 import com.webscare.urducanvas.viewmodels.MainViewModel
@@ -55,13 +56,32 @@ class TextStyleGridFragment : Fragment() {
         val category = PresetCategory.values().firstOrNull { it.name == categoryName } ?: PresetCategory.THREE_D
         val presets = TextStylesRepository.getPresetsByCategory(category, requireContext())
         allPresets = presets
-        val adapter = TextStylesGridAdapter(presets) { preset ->
+        fun apply(preset: TextStylePreset) {
             if (isAddMode) {
                 viewModel.addTextWithStyle("Your Text", preset, requireContext())
             } else {
                 viewModel.applyTextStylePreset(preset)
             }
         }
+
+        lateinit var adapter: TextStylesGridAdapter
+        adapter = TextStylesGridAdapter(
+            presets,
+            onPreviewRequested = { preset ->
+                showPresetPreview(
+                    preset = preset,
+                    breadcrumb = categoryName,
+                    // This grid is only ever drawn in an open adjustments panel.
+                    expanded = true,
+                    typeface = adapter.currentTypeface,
+                    fontKey = adapter.currentFontKey,
+                    primaryLabel = getString(
+                        if (isAddMode) R.string.preview_add_to_canvas
+                        else R.string.preview_use_on_canvas
+                    )
+                ) { picked -> apply(picked) }
+            }
+        ) { preset -> apply(preset) }
         adapter.selectedPresetId = viewModel.selectedStylePresetId.value
 
         viewModel.selectedStylePresetId.observe(viewLifecycleOwner) { selectedId ->

@@ -36,6 +36,9 @@ class EmojiAdapter(
         const val TYPE_COLLAPSED    = 0
         const val TYPE_EXPANDED     = 1
         const val PAYLOAD_SELECTION = "emoji_selection_changed"
+
+        /** What a tap renders at — big enough to scale up on the canvas. */
+        const val PREVIEW_RENDER_PX = 512
     }
 
     private val emojis = initialEmojis.toMutableList()
@@ -109,6 +112,18 @@ class EmojiAdapter(
     }
 
     fun getCurrentEmojis(): List<EmojiMeta> = emojis.toList()
+
+    /**
+     * Renders [meta] and hands it to the panel — the tile's own tap path, lifted
+     * out of the view holder so the asset preview's "Add to canvas" runs the same
+     * code rather than a second copy of it.
+     */
+    suspend fun selectEmoji(meta: EmojiMeta) {
+        val bitmap = withContext(Dispatchers.IO) {
+            EmojiBitmapRenderer.render(context, meta.char, sizePx = PREVIEW_RENDER_PX)
+        }
+        onEmojiClicked(bitmap)
+    }
 
     // getPaint() is no longer used — EmojiBitmapRenderer handles rendering
     fun getPaint(): android.graphics.Paint? = null

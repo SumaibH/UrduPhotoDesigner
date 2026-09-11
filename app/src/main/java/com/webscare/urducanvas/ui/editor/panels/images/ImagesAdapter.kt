@@ -154,12 +154,12 @@ class ImagesAdapter(
         return if (viewType == TYPE_EXPANDED) {
             ImageViewHolder.Expanded(
                 LayoutImagesItemExpandedBinding.inflate(inflater, parent, false),
-                this, onImageSelected, onLongPress, onPreviewRequested
+                this, onLongPress, onPreviewRequested
             )
         } else {
             ImageViewHolder.Collapsed(
                 LayoutImagesItemBinding.inflate(inflater, parent, false),
-                this, onImageSelected, onLongPress, onPreviewRequested
+                this, onLongPress, onPreviewRequested
             )
         }
     }
@@ -209,12 +209,42 @@ class ImagesAdapter(
         }
     }
 
+    /**
+     * Resolves [image] the way a tap on its tile does — SVGs through [SvgLoader],
+     * everything else through Glide — and hands it to the panel.
+     *
+     * The asset preview's "Add to canvas" is the same act as tapping the tile, so
+     * it runs the same code rather than a second copy of it that would drift. The
+     * caller supplies the scope because the view holder that would normally own it
+     * may well be recycled by now.
+     */
+    suspend fun selectImage(image: ImageEntity) {
+        val url = resolveUrl(image)
+        if (image.file_name.endsWith(".svg", ignoreCase = true)) {
+            val resolved = withContext(Dispatchers.IO) {
+                SvgLoader.resolve(url, image.bitmapData, applyWhiteTint)
+            } ?: return
+            onImageSelected(null, resolved.first, resolved.second, image)
+        } else {
+            val tapUrl = if (image.id >= Constants.PEXELS_ID_OFFSET && image.bitmapData != null) {
+                image.bitmapData!!
+            } else url
+            val bitmap = withContext(Dispatchers.IO) {
+                runCatching {
+                    Glide.with(context).asBitmap()
+                        .load(tapUrl)
+                        .diskCacheStrategy(DiskCacheStrategy.ALL).submit().get()
+                }.getOrNull()
+            } ?: return
+            onImageSelected(bitmap, null, null, image)
+        }
+    }
+
     // ── ViewHolder ────────────────────────────────────────────────────────────
 
     sealed class ImageViewHolder(
         itemView: android.view.View,
         private val adapter: ImagesAdapter,
-        private val onImageSelected: (Bitmap?, PictureDrawable?, String?, ImageEntity) -> Unit,
         private val onLongPress: (ImageEntity) -> Unit,
         private val onPreviewRequested: (ImageEntity) -> Unit
     ) : RecyclerView.ViewHolder(itemView) {
@@ -338,10 +368,9 @@ class ImagesAdapter(
                     if (adapter.isInMultiSelectMode) {
                         onLongPress(currentImage)
                     } else {
-                        val url   = resolveUrl(currentImage)
                         val isSvg = currentImage.file_name.endsWith(".svg", ignoreCase = true)
                         tapJob?.cancel()
-                        tapJob = scope.launch { handleTap(currentImage, url, isSvg) }
+                        tapJob = scope.launch { handleTap(currentImage, isSvg) }
                     }
                 },
                 onLongClick = {
@@ -405,36 +434,26 @@ class ImagesAdapter(
             }
         }
 
-        private suspend fun handleTap(image: ImageEntity, url: String, isSvg: Boolean) {
-            if (isSvg) {
-                loadingAnim.isVisible = true
-                val result = withContext(Dispatchers.IO) { SvgLoader.resolve(url, image.bitmapData, adapter.applyWhiteTint) }
+        /**
+         * Only the spinner is the tile's business — resolving the image is the
+         * adapter's, so the preview's "Add to canvas" can run the same path.
+         * SVGs are the slow case and the only one worth spinning for.
+         */
+        private suspend fun handleTap(image: ImageEntity, isSvg: Boolean) {
+            if (isSvg) loadingAnim.isVisible = true
+            try {
+                adapter.selectImage(image)
+            } finally {
                 loadingAnim.isVisible = false
-                result?.let { (d, xml) -> onImageSelected(null, d, xml, image) }
-            } else {
-                val tapUrl = if (image.id >= Constants.PEXELS_ID_OFFSET && image.bitmapData != null) {
-                    image.bitmapData!!
-                } else {
-                    url
-                }
-                val bitmap = withContext(Dispatchers.IO) {
-                    runCatching {
-                        Glide.with(itemView.context).asBitmap()
-                            .load(tapUrl)
-                            .diskCacheStrategy(DiskCacheStrategy.ALL).submit().get()
-                    }.getOrNull()
-                }
-                bitmap?.let { onImageSelected(it, null, null, image) }
             }
         }
 
         class Collapsed(
             private val binding: LayoutImagesItemBinding,
             adapter: ImagesAdapter,
-            onImageSelected: (Bitmap?, PictureDrawable?, String?, ImageEntity) -> Unit,
             onLongPress: (ImageEntity) -> Unit,
             onPreviewRequested: (ImageEntity) -> Unit
-        ) : ImageViewHolder(binding.root, adapter, onImageSelected, onLongPress, onPreviewRequested) {
+        ) : ImageViewHolder(binding.root, adapter, onLongPress, onPreviewRequested) {
             override val imageView    get() = binding.image
             override val shimmer      get() = binding.shimmerLayout
             override val premiumBadge get() = binding.isPremium
@@ -445,10 +464,9 @@ class ImagesAdapter(
         class Expanded(
             private val binding: LayoutImagesItemExpandedBinding,
             adapter: ImagesAdapter,
-            onImageSelected: (Bitmap?, PictureDrawable?, String?, ImageEntity) -> Unit,
             onLongPress: (ImageEntity) -> Unit,
             onPreviewRequested: (ImageEntity) -> Unit
-        ) : ImageViewHolder(binding.root, adapter, onImageSelected, onLongPress, onPreviewRequested) {
+        ) : ImageViewHolder(binding.root, adapter, onLongPress, onPreviewRequested) {
             override val imageView     get() = binding.image
             override val shimmer       get() = binding.shimmerLayout
             override val premiumBadge  get() = binding.isPremium

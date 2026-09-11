@@ -68,8 +68,8 @@ class AssetPreviewView @JvmOverloads constructor(
         binding.primaryAction.text = primaryLabel
 
         // Nothing to fetch or hand to another app for a rendered mark.
-        binding.shareAction.isVisible = asset.hasFile
-        binding.downloadAction.isVisible = asset.hasFile
+        binding.shareAction.isVisible = asset.canShare
+        binding.downloadAction.isVisible = asset.canDownload
 
         renderDetails(asset)
         renderBody(asset)
@@ -198,7 +198,7 @@ class AssetPreviewView @JvmOverloads constructor(
     private fun renderDetails(asset: PreviewAsset) {
         binding.chipRow.removeAllViews()
         asset.details.filter { it.isNotBlank() }.forEach { binding.chipRow.addView(pill(it, false)) }
-        if (asset.hasFile) {
+        if (asset.canDownload) {
             binding.chipRow.addView(
                 pill(
                     context.getString(

@@ -16,15 +16,22 @@ import com.webscare.urducanvas.data.model.PanelTabs
 import com.webscare.urducanvas.data.model.PresetCategory
 import com.webscare.urducanvas.data.model.TextStylePreset
 import com.webscare.urducanvas.data.repository.TextStylesRepository
+import com.webscare.urducanvas.R
 import com.webscare.urducanvas.databinding.FragmentTextStylesBinding
+import com.webscare.urducanvas.ui.editor.panels.preview.PanelPreviewHost
+import com.webscare.urducanvas.ui.editor.panels.preview.PreviewHostOwner
 import com.webscare.urducanvas.ui.editor.views.RailCategoryItem
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class TextStylesFragment : Fragment() {
+class TextStylesFragment : Fragment(), PreviewHostOwner {
 
     private var _binding: FragmentTextStylesBinding? = null
+
+    override var previewHost: PanelPreviewHost? = null
+        private set
+
     private val binding get() = _binding!!
 
     private val viewModel: CanvasViewModel by activityViewModels()
@@ -41,6 +48,9 @@ class TextStylesFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // The rail is how you get between preset groups, so the preview covers the
+        // grid beside it rather than the whole panel.
+        previewHost = PanelPreviewHost(this, binding.root, startAnchorId = R.id.collapsibleRail)
         setupViews()
         initObservers()
     }
@@ -233,6 +243,8 @@ class TextStylesFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        previewHost?.release()
+        previewHost = null
         _binding?.viewPager?.adapter = null
         super.onDestroyView()
         _binding = null

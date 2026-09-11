@@ -37,6 +37,8 @@ import com.webscare.urducanvas.common.utils.isDarkModeEnabled
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
 import com.webscare.urducanvas.data.model.ShapesData
 import com.webscare.urducanvas.databinding.FragmentShapesParentBinding
+import com.webscare.urducanvas.ui.editor.panels.preview.PanelPreviewHost
+import com.webscare.urducanvas.ui.editor.panels.preview.PreviewHostOwner
 import com.webscare.urducanvas.ui.editor.EditorFragment
 import com.webscare.urducanvas.ui.editor.panels.images.SelectedItem
 import com.webscare.urducanvas.ui.editor.panels.images.ThumbnailAdapter
@@ -47,13 +49,17 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
-class ShapesParentFragment : Fragment() {
+class ShapesParentFragment : Fragment(), PreviewHostOwner {
 
     companion object {
         const val TABLES_TAB = "Tables"
     }
 
     private var _binding: FragmentShapesParentBinding? = null
+
+    override var previewHost: PanelPreviewHost? = null
+        private set
+
     private val binding get() = _binding!!
 
     private val mainViewModel: MainViewModel by activityViewModels()
@@ -81,6 +87,10 @@ class ShapesParentFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
 
+        // The tiles live two fragments down, so the preview is hosted up here where
+        // it can cover the tab rows as well as the grid. The drag handle is left out
+        // of it, so the panel still drags and closes with a preview open.
+        previewHost = PanelPreviewHost(this, binding.root, topAnchorId = R.id.dragHandle)
         setEvents()
         attachDragHandleSwipe()
         setupThumbnailStrip()
@@ -108,6 +118,8 @@ class ShapesParentFragment : Fragment() {
     override fun onDestroyView() {
         tabListenerAttached = false
         lastSlideExpanded = null
+        previewHost?.release()
+        previewHost = null
         _binding?.selectedThumbnails?.adapter = null
         thumbnailAdapter = null
         fragmentCache.clear()
@@ -167,6 +179,7 @@ class ShapesParentFragment : Fragment() {
                 mainViewModel.expandedPanel.collect { panel ->
                     val expanded = panel == PanelType.SHAPES
                     applyExpandedUi(expanded)
+                    previewHost?.onPanelExpandedChanged(expanded)
                     for ((_, fragment) in fragmentCache) {
                         when (fragment) {
                             is ShapesListFragment -> fragment.onPanelExpanded(expanded)

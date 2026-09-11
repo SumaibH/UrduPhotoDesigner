@@ -22,7 +22,9 @@ import com.webscare.urducanvas.common.utils.ImageProcessor.trimTransparentEdges
 import com.webscare.urducanvas.common.utils.MorphGridLayoutManager
 import com.webscare.urducanvas.data.model.ImageEntity
 import com.webscare.urducanvas.data.model.ImagesData
+import com.webscare.urducanvas.R
 import com.webscare.urducanvas.databinding.FragmentImagesListBinding
+import com.webscare.urducanvas.ui.editor.panels.preview.showPicturePreview
 import com.webscare.urducanvas.viewmodels.MainViewModel
 import com.webscare.urducanvas.viewmodels.PexelsViewModel
 import com.webscare.urducanvas.common.utils.Constants
@@ -236,6 +238,14 @@ class ImagesListFragment : Fragment() {
                     if (mainViewModel.isPanelExpanded(PanelType.IMAGES)) {
                         mainViewModel.toggleImagesSelection(entity.id)
                     }
+                },
+                onPreviewRequested = { entity ->
+                    showPicturePreview(
+                        adapter = imagesAdapter,
+                        entity = entity,
+                        breadcrumb = category.ifBlank { getString(R.string.media) },
+                        expanded = isPanelExpanded
+                    )
                 }
             )
         }
