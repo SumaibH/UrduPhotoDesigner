@@ -33,6 +33,10 @@ import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
 class PopularFontsListFragment : androidx.fragment.app.Fragment() {
+
+    @javax.inject.Inject
+    lateinit var analyticsTracker: com.webscare.urducanvas.analytics.AnalyticsTracker
+
     private var _binding: FragmentPopularFontsListBinding? = null
     private val binding get() = _binding
     private var shuffleAfterRefresh = false
@@ -80,11 +84,39 @@ class PopularFontsListFragment : androidx.fragment.app.Fragment() {
         observeData()
     }
 
+    /**
+     * Both halves of "open a font in the editor", for this screen's two routes into it.
+     *
+     * Same pair Home's fonts row reports: `canvas_created`, without which
+     * AnalyticsTracker.startDesignWorkflow never runs and the design attempt is missing from
+     * the funnel entirely, and `font_applied`, whose only other call sites are TextFragment
+     * and the rows that were fixed alongside this one.
+     */
+    private fun reportFontCanvas(font: FontEntity, justDownloaded: Boolean) {
+        analyticsTracker.logCanvasCreated(
+            presetName = "font_preview",
+            canvasSize = "2000x2000",
+            isCustom = false,
+            sourceType = com.webscare.urducanvas.analytics.AnalyticsConstants.Values.SOURCE_BLANK
+        )
+        analyticsTracker.logFontApplied(
+            fontId = font.id.toString(),
+            fontName = font.font_name,
+            language = font.font_language,
+            justDownloaded = justDownloaded
+        )
+    }
+
     private fun setupRecycler() {
         adapter = PopularFontsAdapter({ font, isInstalled ->
             if (!isInstalled) {
                 mainViewModel.downloadFont(font)
             } else {
+                // The same editor entry point Home's fonts row has, and it reported neither
+                // half: canvas_created so the design workflow starts, and font_applied so a
+                // font tried from this screen does not look unused. justDownloaded is false
+                // by definition here — the download path is the branch above.
+                reportFontCanvas(font, justDownloaded = false)
                 viewModel.setCanvasSize(
                     CanvasSize(
                         id = 0,"", 2000f, 2000f
@@ -256,6 +288,10 @@ class PopularFontsListFragment : androidx.fragment.app.Fragment() {
 
                                 showGlobalSuccessSnack("Font downloaded") {
                                     viewLifecycleOwner.lifecycleScope.launch {
+                                        // The post-download half of the same row. Left out,
+                                        // the numbers would only ever have described fonts
+                                        // the user already had.
+                                        reportFontCanvas(font, justDownloaded = true)
                                         viewModel.setCanvasSize(
                                             CanvasSize(
                                                 id = 0,"", 2000f, 2000f

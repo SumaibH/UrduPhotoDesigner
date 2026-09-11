@@ -156,6 +156,12 @@ class SearchFragment : Fragment() {
             if (!isDownloaded) {
                 mainViewModel.downloadFont(font)
             } else {
+                // Same editor entry point as Home's fonts row, and it was reporting nothing:
+                // canvas_created so the design workflow starts at all — without it the whole
+                // attempt is missing from the funnel — and font_applied because a font tried
+                // from search looked unused. justDownloaded is false by definition in this
+                // branch: the download path is the one above.
+                reportFontCanvas(font, justDownloaded = false)
                 canvasViewModel.setCanvasSize(
                     CanvasSize(
                         id = 0,"", 2000f, 2000f
@@ -194,7 +200,15 @@ class SearchFragment : Fragment() {
     private fun openItem(item: Any) {
         when (item) {
             is ExportResult -> {
-                canvasViewModel.loadTemplateFromJsonFile(item, requireContext()) { success ->
+                // The files half of these results is the user's own saved projects — they
+                // come from MainViewModel.exportResults. Without the origin the shared loader
+                // reports template_opened, which is the same mis-attribution that was fixed
+                // for Home's Recents row and the Files list and missed here.
+                canvasViewModel.loadTemplateFromJsonFile(
+                    item,
+                    requireContext(),
+                    origin = com.webscare.urducanvas.analytics.AnalyticsConstants.Values.SOURCE_PROJECT
+                ) { success ->
                     if (success && isAdded) {
                         findNavController().navigate(R.id.editorFragment, bundle, navOptions)
                     }
@@ -202,6 +216,9 @@ class SearchFragment : Fragment() {
             }
 
             is FontEntity -> {
+                // A font opened straight from the results list — the same blank 2000x2000
+                // canvas the fonts row builds, and it reported neither half.
+                reportFontCanvas(item, justDownloaded = false)
                 canvasViewModel.setCanvasSize(
                     CanvasSize(
                         id = 0,
@@ -432,6 +449,10 @@ class SearchFragment : Fragment() {
                                 )
                                 mainViewModel.clearFontDownloadState(font.id.toString())
                                 showGlobalSuccessSnack("Font downloaded") {
+                                    // The post-download half. Reporting only the branch above
+                                    // would have described only fonts the user already had,
+                                    // which is the opposite of the fonts they searched for.
+                                    reportFontCanvas(font, justDownloaded = true)
                                     canvasViewModel.setCanvasSize(
                                         CanvasSize(id = 0, "", 2000f, 2000f)
                                     )
@@ -602,6 +623,29 @@ class SearchFragment : Fragment() {
      * upstream change, so the last reported query is held to keep one search to one
      * event.
      */
+    /**
+     * Both halves of "open a font in the editor", for all three of this screen's routes into
+     * it — the fonts row, the results list and the post-download snackbar.
+     *
+     * Same pair Home's fonts row reports: `canvas_created`, without which
+     * AnalyticsTracker.startDesignWorkflow never runs and the whole design attempt is absent
+     * from the funnel, and `font_applied`, whose only other call site is TextFragment.
+     */
+    private fun reportFontCanvas(font: FontEntity, justDownloaded: Boolean) {
+        analyticsTracker.logCanvasCreated(
+            presetName = "font_preview",
+            canvasSize = "2000x2000",
+            isCustom = false,
+            sourceType = com.webscare.urducanvas.analytics.AnalyticsConstants.Values.SOURCE_BLANK
+        )
+        analyticsTracker.logFontApplied(
+            fontId = font.id.toString(),
+            fontName = font.font_name,
+            language = font.font_language,
+            justDownloaded = justDownloaded
+        )
+    }
+
     private fun reportSearch(result: SearchResults) {
         val term = result.query.trim()
         if (term.isBlank() || term == lastReportedQuery) return

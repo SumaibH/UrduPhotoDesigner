@@ -522,6 +522,23 @@ class FilesListFragment : Fragment() {
                 }
             }
             is FontEntity -> {
+                // The Fonts tab of this screen is a third way into the editor that reported
+                // nothing — same gap as Home's fonts row and the search screen's. The canvas
+                // has to be reported or the design workflow never starts for it, and the font
+                // has to be, or it looks unused. It is already on the device to be listed
+                // here, so justDownloaded is false.
+                analyticsTracker.logCanvasCreated(
+                    presetName = "font_preview",
+                    canvasSize = "2000x2000",
+                    isCustom = false,
+                    sourceType = AnalyticsConstants.Values.SOURCE_BLANK
+                )
+                analyticsTracker.logFontApplied(
+                    fontId = item.id.toString(),
+                    fontName = item.font_name,
+                    language = item.font_language,
+                    justDownloaded = false
+                )
                 canvasViewModel.setCanvasSize(CanvasSize(id = 0, "", 2000f, 2000f))
                 canvasViewModel.addTextWithFont(requireActivity().getString(R.string.dummyText), item, requireActivity())
                 view?.post { findNavController().navigate(R.id.editorFragment, bundle, navOptions) }
