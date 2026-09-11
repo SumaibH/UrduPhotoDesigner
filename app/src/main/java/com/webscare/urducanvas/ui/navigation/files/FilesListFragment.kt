@@ -117,20 +117,12 @@ class FilesListFragment : Fragment() {
     /**
      * How long a project sat before its owner came back to it, in days.
      *
-     * -1 when the stored date cannot be read: projects saved before the date column was
-     * populated carry an empty string, and a wrong number is worse than a missing one in
-     * a retention metric.
+     * The implementation lives in [AnalyticsTracker.daysSinceEdit] now: this was one of two
+     * copies, and neither handled the raw millis string a duplicated project is saved with,
+     * so every duplicate reported -1 here. Kept as a name because the two delete call sites
+     * read better with it.
      */
-    private fun daysSince(dateText: String?): Int {
-        if (dateText.isNullOrBlank()) return -1
-        return try {
-            val then = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(dateText)
-                ?: return -1
-            ((System.currentTimeMillis() - then.time) / 86_400_000L).toInt().coerceAtLeast(0)
-        } catch (e: Exception) {
-            -1
-        }
-    }
+    private fun daysSince(dateText: String?): Int = AnalyticsTracker.daysSinceEdit(dateText)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

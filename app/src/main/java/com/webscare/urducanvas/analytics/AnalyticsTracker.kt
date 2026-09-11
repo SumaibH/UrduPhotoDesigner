@@ -26,6 +26,42 @@ class AnalyticsTracker @Inject constructor(
 
     companion object {
         private const val TAG = "AnalyticsTracker"
+
+        /** Milliseconds in a day. */
+        private const val DAY_MS = 86_400_000L
+
+        /**
+         * How long a saved project sat before its owner came back to it, in days, for the
+         * `days_since_edit` parameter of `project_opened` and `project_deleted`.
+         *
+         * One implementation, because there were two: the editor's loader and the Files list
+         * each had their own copy and neither read every timestamp the app writes. Both
+         * parsed with `"yyyy-MM-dd"`, which happens to work on the `"yyyy-MM-dd_HH-mm-ss"`
+         * that exports, imports and templates store only because SimpleDateFormat ignores
+         * whatever trails the pattern — and which fails outright on the raw millis string a
+         * duplicated project gets, so every duplicate reported -1.
+         *
+         * Both shapes are read deliberately here rather than by accident: an all-digit value
+         * is epoch millis, anything else is parsed from its leading `yyyy-MM-dd`. -1 for a
+         * value that is neither, which is the documented "unknown" — a wrong number is worse
+         * than a missing one in a retention metric, and 0 would read as "edited today".
+         */
+        fun daysSinceEdit(dateText: String?): Int {
+            val raw = dateText?.trim()
+            if (raw.isNullOrEmpty()) return -1
+            val editedAt = if (raw.all { it.isDigit() }) {
+                raw.toLongOrNull() ?: return -1
+            } else {
+                try {
+                    java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                        .parse(raw.take(10))?.time ?: return -1
+                } catch (e: Exception) {
+                    return -1
+                }
+            }
+            if (editedAt <= 0L) return -1
+            return ((System.currentTimeMillis() - editedAt) / DAY_MS).toInt().coerceAtLeast(0)
+        }
     }
 
     fun logRawEvent(eventName: String, params: Map<String, Any?> = emptyMap()) {

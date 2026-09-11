@@ -6155,24 +6155,6 @@ class CanvasViewModel @Inject constructor(
         analyticsTracker.logToolActionPerformed(toolName, subFeature, actionDetail)
     }
 
-    /**
-     * How long a saved project sat before its owner came back to it — the whole point of
-     * `project_opened`. -1 when the file has no usable timestamp, as the event's KDoc says.
-     *
-     * Computed here rather than at each call site so that every entry point into the loader
-     * reports it the same way; the Files list used to be the only place that knew how.
-     */
-    private fun daysSinceEdit(dateText: String?): Int {
-        if (dateText.isNullOrBlank()) return -1
-        return try {
-            val then = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
-                .parse(dateText) ?: return -1
-            ((System.currentTimeMillis() - then.time) / 86_400_000L).toInt().coerceAtLeast(0)
-        } catch (e: Exception) {
-            -1
-        }
-    }
-
     private fun CanvasElement.restoreWithContext(context: Context?): CanvasElement {
         // Copy and set context
         val restored = this.copy(context = context).apply {
@@ -6770,6 +6752,10 @@ class CanvasViewModel @Inject constructor(
         _loadingStage.value = initialTitle to 10
         viewModelScope.launch(Dispatchers.Default) {
 
+            // -1 until the file has been parsed; the open is reported at the end, from the
+            // same success check onComplete gets, and needs the count from the middle.
+            var openedElementCount = -1
+
             try {
                 val jsonFilePath = exportResult.jsonPath
                 val sourceFile = File(jsonFilePath)
@@ -6803,22 +6789,15 @@ class CanvasViewModel @Inject constructor(
                 // Clean up the temp file if we created one (jsonFile == sourceFile for plain JSON).
                 if (jsonFile.absolutePath == tempJson.absolutePath) tempJson.delete()
 
-                if (origin == Values.SOURCE_PROJECT) {
-                    analyticsTracker.logProjectOpened(
-                        elementCount = elements.size,
-                        canvasSize = "${exportResult.canvasSize.width.toInt()}x${exportResult.canvasSize.height.toInt()}",
-                        daysSinceEdit = daysSinceEdit(exportResult.updatedDate)
-                    )
-                } else {
-                    val templateId = exportResult.sourceTemplateId ?: exportResult.id.toInt()
-                    analyticsTracker.logTemplateOpened(
-                        templateId = templateId,
-                        name = exportResult.fileName,
-                        category = projectSourceName,
-                        isPremium = exportResult.isFromPremiumTemplate,
-                        elementCount = elements.size
-                    )
-                }
+                // Counted, not reported — the open is only an open once the canvas is up.
+                // Everything below this line can still fail: fonts, hydration, the bitmap
+                // decodes, the main-thread apply. Reporting here meant a project that never
+                // opened emitted project_opened and started a design workflow, whose
+                // opened -> composed gap is the one number the funnel exists for; the
+                // FilesList call site this replaced fired inside `if (success)` for exactly
+                // that reason. template_opened has always been reported from here and had
+                // the same hole — it starts the same workflow, so it gets the same rule.
+                openedElementCount = elements.size
 
                 val requiredFontIds =
                     elements.filter { it.type == ElementType.TEXT }.mapNotNull { it.fontId }
@@ -6957,6 +6936,31 @@ class CanvasViewModel @Inject constructor(
                     _loadingStage.value = "Done" to 100
                     _isLoadingTemplate.value = false
                     val loaded = _canvasSize.value != null
+                    // Success only, and on the same signal the caller navigates on: a load
+                    // that failed is not a return visit or a template use, it is a bug, and
+                    // feature_error already carries it. openedElementCount is only set once
+                    // the parse has succeeded, so a file that never parsed reports nothing
+                    // either.
+                    if (loaded && openedElementCount >= 0) {
+                        val canvasSize = "${exportResult.canvasSize.width.toInt()}x" +
+                                "${exportResult.canvasSize.height.toInt()}"
+                        if (origin == Values.SOURCE_PROJECT) {
+                            analyticsTracker.logProjectOpened(
+                                elementCount = openedElementCount,
+                                canvasSize = canvasSize,
+                                daysSinceEdit = com.webscare.urducanvas.analytics.AnalyticsTracker
+                                    .daysSinceEdit(exportResult.updatedDate)
+                            )
+                        } else {
+                            analyticsTracker.logTemplateOpened(
+                                templateId = exportResult.sourceTemplateId ?: exportResult.id.toInt(),
+                                name = exportResult.fileName,
+                                category = projectSourceName,
+                                isPremium = exportResult.isFromPremiumTemplate,
+                                elementCount = openedElementCount
+                            )
+                        }
+                    }
                     onComplete?.invoke(loaded)
                     _isLoadingTemplate.value = null
                 }
