@@ -1,5 +1,6 @@
 package com.webscare.urducanvas.ui.editor.panels.text.styles
 
+import com.webscare.urducanvas.R
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -74,7 +75,7 @@ class TextStyleGridFragment : Fragment() {
             adapter.updateTypeface(customTypeface, fontKey)
         }
 
-        binding.presetsGrid.layoutManager = GridLayoutManager(requireContext(), 3, RecyclerView.HORIZONTAL, false)
+        binding.presetsGrid.layoutManager = GridLayoutManager(requireContext(), resources.getInteger(R.integer.panel_preset_grid_rows), RecyclerView.HORIZONTAL, false)
         binding.presetsGrid.adapter = adapter
 
         // The header's search box applies to whichever tab is open, so the

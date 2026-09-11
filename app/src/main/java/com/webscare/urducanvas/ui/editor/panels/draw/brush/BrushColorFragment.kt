@@ -159,13 +159,13 @@ class BrushColorFragment : Fragment() {
         )
 
         binding.colors.apply {
-            layoutManager = GridLayoutManager(requireContext(), 4, GridLayoutManager.HORIZONTAL, false)
+            layoutManager = GridLayoutManager(requireContext(), resources.getInteger(R.integer.panel_color_grid_rows), GridLayoutManager.HORIZONTAL, false)
             setHasFixedSize(true)
             adapter = colorsAdapter
         }
 
         binding.gradients.apply {
-            layoutManager = GridLayoutManager(requireContext(), 4, GridLayoutManager.HORIZONTAL, false)
+            layoutManager = GridLayoutManager(requireContext(), resources.getInteger(R.integer.panel_color_grid_rows), GridLayoutManager.HORIZONTAL, false)
             setHasFixedSize(true)
             adapter = gradientsAdapter
         }

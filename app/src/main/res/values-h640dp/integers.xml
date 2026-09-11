@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Panel grid rows, full tier: 640dp of available height and up — tall phones and
+    tablets. These are the counts the panels were drawn at; the shorter tiers step down
+    from here. See values/integers.xml for the reasoning.
+-->
+<resources>
+    <integer name="panel_color_grid_rows">4</integer>
+    <integer name="panel_preset_grid_rows">3</integer>
+</resources>

@@ -1,5 +1,6 @@
 package com.webscare.urducanvas.ui.editor.panels.text.threed.childs
 
+import com.webscare.urducanvas.R
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -66,7 +67,7 @@ class Presets3DFragment : Fragment() {
         adapter.selectedPresetId = viewModel.selectedStylePresetId.value
 
         binding.rvPresets.layoutManager =
-            GridLayoutManager(requireContext(), 3, RecyclerView.HORIZONTAL, false)
+            GridLayoutManager(requireContext(), resources.getInteger(R.integer.panel_preset_grid_rows), RecyclerView.HORIZONTAL, false)
         binding.rvPresets.adapter = adapter
 
         initObservers()

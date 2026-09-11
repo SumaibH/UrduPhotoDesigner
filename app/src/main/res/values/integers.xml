@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        How many rows the horizontal grids in the editor's panels lay out, bucketed by
+        available height on the same three tiers as dimens.xml:
+
+            values/          under 520dp   compact   — landscape, split screen, tiny phones
+            values-h520dp/   520 – 639dp   medium    — short and older phones
+            values-h640dp/   640dp and up  full      — tall phones and tablets
+
+        These grids scroll sideways, so a row costs height and buys nothing but a shorter
+        sideways scroll. On a short screen the panel has barely a hundred dp for its page,
+        and four rows of swatches fill that on their own — the border width slider under
+        them ends up off the bottom. Fewer rows keeps the whole control visible without
+        taking the height out of the canvas.
+    -->
+    <integer name="panel_color_grid_rows">1</integer>
+    <integer name="panel_preset_grid_rows">1</integer>
+</resources>

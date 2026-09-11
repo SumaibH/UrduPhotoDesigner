@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Panel grid rows, medium tier: 520dp to 639dp of available height — short and older
+    phones. See values/integers.xml for what these are and why they are bucketed.
+-->
+<resources>
+    <integer name="panel_color_grid_rows">2</integer>
+    <integer name="panel_preset_grid_rows">2</integer>
+</resources>

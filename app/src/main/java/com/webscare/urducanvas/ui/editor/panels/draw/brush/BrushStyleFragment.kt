@@ -58,7 +58,7 @@ class BrushStyleFragment : Fragment() {
         }
 
         binding.brushStylesRV.apply {
-            layoutManager = GridLayoutManager(requireContext(), 3, GridLayoutManager.HORIZONTAL, false)
+            layoutManager = GridLayoutManager(requireContext(), resources.getInteger(R.integer.panel_preset_grid_rows), GridLayoutManager.HORIZONTAL, false)
             adapter = styleAdapter
         }
 

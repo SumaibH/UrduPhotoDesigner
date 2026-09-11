@@ -1,5 +1,6 @@
 package com.webscare.urducanvas.ui.editor.panels.table
 
+import com.webscare.urducanvas.R
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -45,7 +46,7 @@ class TableStyleGridFragment : Fragment() {
             }
         }
 
-        binding.presetsGrid.layoutManager = GridLayoutManager(requireContext(), 3, RecyclerView.HORIZONTAL, false)
+        binding.presetsGrid.layoutManager = GridLayoutManager(requireContext(), resources.getInteger(R.integer.panel_preset_grid_rows), RecyclerView.HORIZONTAL, false)
         binding.presetsGrid.adapter = adapter
         adapter.submitList(presets)
 
