@@ -591,6 +591,11 @@ class CanvasView @JvmOverloads constructor(
     /** Resolves a table cell's font id to a typeface, loading each file at most once. */
     private fun tableTypeface(fontId: String?): Typeface? {
         if (fontId == null) return null
+        // containsKey rather than getOrPut alone: getOrPut recomputes whenever the stored
+        // value is null, so a font id that fails to resolve -- a row whose file has been
+        // deleted underneath it -- was retried once per cell per frame, which is the disk
+        // thrashing this cache exists to stop.
+        if (tableTypefaceCache.containsKey(fontId)) return tableTypefaceCache[fontId]
         return tableTypefaceCache.getOrPut(fontId) {
             val path = localFonts.find { it.id.toString() == fontId }
                 ?.file_path?.takeIf { it.isNotBlank() }
