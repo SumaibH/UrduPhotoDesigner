@@ -7,8 +7,10 @@ import androidx.activity.OnBackPressedCallback
 import androidx.constraintlayout.widget.ConstraintHelper
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.Guideline
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import com.webscare.urducanvas.R
 import com.webscare.urducanvas.ui.editor.EditorFragment
 
 /**
@@ -30,13 +32,27 @@ class PanelPreviewHost(
     private val fragment: Fragment,
     private val panelRoot: ConstraintLayout,
     private val topAnchorId: Int = ConstraintLayout.LayoutParams.PARENT_ID,
-    private val startAnchorId: Int = ConstraintLayout.LayoutParams.PARENT_ID
+    private val startAnchorId: Int = ConstraintLayout.LayoutParams.PARENT_ID,
+    /**
+     * Puts the panel's own rows back the way this panel wants them.
+     *
+     * Called on the way out instead of restoring whatever visibilities were
+     * stashed on the way in, because those go stale: the panels drive these same
+     * views themselves — the collapsed/expanded header morph runs on every frame
+     * of a slide, and opening a preview slides the sheet. Asking the panel to
+     * re-assert is the only answer that cannot desync.
+     */
+    private val onRestore: (() -> Unit)? = null
 ) {
 
     private var view: AssetPreviewView? = null
 
-    /** Panel views taken out of the accessibility tree while the preview is up. */
-    private val muted = mutableListOf<View>()
+    /** Panel views hidden while the preview is up. */
+    private val hidden = mutableListOf<View>()
+
+    /** The panel's own surface, put back when the preview closes. */
+    private var panelBackground: android.graphics.drawable.Drawable? = null
+    private var panelBackgroundTaken = false
 
     private var showing = false
     private var holdingSheet = false
@@ -84,11 +100,19 @@ class PanelPreviewHost(
         val preview = view ?: AssetPreviewView(panelRoot.context).also { created ->
             created.id = View.generateViewId()
             // The panels' own selection toolbar sits at 8dp, so clear it.
-            created.elevation = 10f * panelRoot.resources.displayMetrics.density
-            // Opaque and on top is what hides the grid; clickable is what stops a
-            // tap landing on the tile still sitting underneath it.
+            created.elevation = ELEVATION_DP * panelRoot.resources.displayMetrics.density
+            // Clickable is what stops a tap landing on the tile underneath.
             created.isClickable = true
             created.isFocusable = true
+            if (floating) {
+                created.setBackgroundResource(R.drawable.bg_preview_sheet)
+                // Rounds what the children draw, not just the surface under them.
+                created.clipToOutline = true
+            } else {
+                created.setBackgroundColor(
+                    ContextCompat.getColor(panelRoot.context, R.color.white)
+                )
+            }
             panelRoot.addView(created, layoutParams())
             view = created
         }
@@ -109,7 +133,7 @@ class PanelPreviewHost(
         if (showing) return
         showing = true
         canvasViewModel.logToolAction(TOOL_PREVIEW, "open", kindOf(asset))
-        mute()
+        hidePanel()
         backCallback.isEnabled = true
         if (!expanded) {
             // How short this panel is right now, measured rather than assumed: how
@@ -134,7 +158,7 @@ class PanelPreviewHost(
         showing = false
         backCallback.isEnabled = false
 
-        unmute()
+        showPanel()
         releaseSheet()
 
         val preview = view ?: return
@@ -166,7 +190,7 @@ class PanelPreviewHost(
     fun release() {
         backCallback.isEnabled = false
         releaseSheet()
-        unmute()
+        showPanel()
         view?.let {
             it.animate().cancel()
             panelRoot.removeView(it)
@@ -177,15 +201,32 @@ class PanelPreviewHost(
 
     // ── Panel plumbing ────────────────────────────────────────────────────────
 
+    /**
+     * A main panel is a sheet of its own, so its preview floats: inset on every
+     * side, rounded all round, clear of the bottom navigation rather than resting
+     * on it. An adjustments panel is a rail plus a grid with no sheet of its own,
+     * so its preview simply takes the grid's place beside the rail.
+     */
+    private val floating: Boolean
+        get() = topAnchorId != ConstraintLayout.LayoutParams.PARENT_ID
+
     private fun layoutParams() = ConstraintLayout.LayoutParams(0, 0).apply {
         topToTop = ConstraintLayout.LayoutParams.PARENT_ID
         startToStart = ConstraintLayout.LayoutParams.PARENT_ID
         endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
         bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
-        if (topAnchorId != ConstraintLayout.LayoutParams.PARENT_ID) {
-            topToTop = ConstraintLayout.LayoutParams.UNSET
-            topToBottom = topAnchorId
+
+        if (floating) {
+            val d = panelRoot.resources.displayMetrics.density
+            marginStart = (SIDE_INSET_DP * d).toInt()
+            marginEnd = (SIDE_INSET_DP * d).toInt()
+            topMargin = (TOP_INSET_DP * d).toInt()
+            // The gap that makes it read as resting above the navigation rather
+            // than being part of it.
+            bottomMargin = (BOTTOM_INSET_DP * d).toInt()
+            return@apply
         }
+
         if (startAnchorId != ConstraintLayout.LayoutParams.PARENT_ID) {
             startToStart = ConstraintLayout.LayoutParams.UNSET
             startToEnd = startAnchorId
@@ -193,29 +234,54 @@ class PanelPreviewHost(
     }
 
     /**
-     * Takes the covered rows out of the accessibility tree.
+     * Steps the panel back so the preview is the only surface on screen.
      *
-     * Their visibility is deliberately left alone. The panels drive it themselves —
-     * the collapsed/expanded header morph flips these same views, every frame of a
-     * slide — so anything this stashed to restore later would be stale by the time
-     * the preview closed. An opaque view on top already hides them and eats their
-     * touches; this is only about what a screen reader walks into behind it.
+     * The panel's own background goes with the rows: it is square-cornered and
+     * flush to the bottom navigation, so leaving it would put a white wall behind
+     * the floating card and there would be no gap to see. With it gone the
+     * editor's own ground shows through, and the card reads as a sheet resting
+     * above the navigation rather than as a page attached to it.
+     *
+     * INVISIBLE rather than GONE: barriers and the header morph are built around
+     * these rows, and taking them out of the layout would move everything that
+     * depends on them, twice per preview.
      */
-    private fun mute() {
-        muted.clear()
+    private fun hidePanel() {
+        if (floating) {
+            if (!panelBackgroundTaken) {
+                panelBackground = panelRoot.background
+                panelBackgroundTaken = true
+            }
+            panelRoot.background = null
+        }
+
+        hidden.clear()
         for (i in 0 until panelRoot.childCount) {
             val child = panelRoot.getChildAt(i)
             if (child === view) continue
-            if (child.id != View.NO_ID && (child.id == topAnchorId || child.id == startAnchorId)) continue
             if (child is Guideline || child is ConstraintHelper) continue
-            muted += child
+            // The rail is how you get around an adjustments panel; the preview
+            // opens beside it, not over it.
+            if (!floating && child.id != View.NO_ID && child.id == startAnchorId) continue
+            hidden += child
+            child.visibility = View.INVISIBLE
             child.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
         }
     }
 
-    private fun unmute() {
-        muted.forEach { it.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_AUTO }
-        muted.clear()
+    private fun showPanel() {
+        if (panelBackgroundTaken) {
+            panelRoot.background = panelBackground
+            panelBackgroundTaken = false
+        }
+        hidden.forEach {
+            it.visibility = View.VISIBLE
+            it.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
+        }
+        hidden.clear()
+        // Everything is visible again, which is wrong for whichever of the two
+        // headers this panel is not currently showing. Only the panel knows which.
+        onRestore?.invoke()
     }
 
     private fun releaseSheet() {
@@ -250,6 +316,14 @@ class PanelPreviewHost(
 
     companion object {
         private const val SLIDE_MS = 220L
+
+        /** Above the panels own selection toolbar, which sits at 8dp. */
+        private const val ELEVATION_DP = 12f
+
+        /** How far the floating card is held off the panel edges. */
+        private const val SIDE_INSET_DP = 10f
+        private const val TOP_INSET_DP = 8f
+        private const val BOTTOM_INSET_DP = 12f
 
         /**
          * One tool name for every panel's preview. Which panel it was is already on

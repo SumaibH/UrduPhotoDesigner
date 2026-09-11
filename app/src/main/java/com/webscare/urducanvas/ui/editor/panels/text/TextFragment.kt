@@ -134,9 +134,10 @@ class TextFragment : Fragment(), PreviewHostOwner {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        // The drag handle is left out of the preview, so the panel still drags and
-        // closes with one open.
-        previewHost = PanelPreviewHost(this, binding.root, topAnchorId = R.id.dragHandle)
+        previewHost = PanelPreviewHost(
+            this, binding.root, topAnchorId = R.id.dragHandle,
+            onRestore = { applyExpandedUi(isPanelExpanded) }
+        )
         setupRecyclerView()
         restoreTabState()
         setupSwipeRefresh()

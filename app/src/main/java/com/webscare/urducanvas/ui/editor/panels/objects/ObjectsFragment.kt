@@ -96,9 +96,12 @@ class ObjectsFragment : Fragment(), PreviewHostOwner {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         // The tiles live two fragments down, so the preview is hosted up here where
-        // it can cover the tab rows as well as the grid. The drag handle is left out
-        // of it, so the panel still drags and closes with a preview open.
-        previewHost = PanelPreviewHost(this, binding.root, topAnchorId = R.id.dragHandle)
+        // it can cover the tab rows as well as the grid.
+        previewHost = PanelPreviewHost(
+            this, binding.root, topAnchorId = R.id.dragHandle,
+            onRestore = { applyExpandedUi(mainViewModel.isPanelExpanded(PanelType.OBJECTS)) }
+        )
+        
         setEvents()
         attachDragHandleSwipe()
         setupThumbnailStrip()

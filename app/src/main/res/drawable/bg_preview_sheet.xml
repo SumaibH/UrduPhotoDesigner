@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The asset preview's own surface. Rounded on all four corners, unlike the
+    panel's own background: while a preview is open the panel steps back and this
+    is the only surface, floating clear of the bottom navigation rather than
+    sitting on it.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/white" />
+    <corners android:radius="24dp" />
+</shape>
