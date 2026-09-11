@@ -5,7 +5,15 @@ import com.webscare.urducanvas.common.canvas.enums.GradientType
 import com.webscare.urducanvas.common.canvas.model.GradientItem
 
 object GradientPresets {
-    /** 100 designer-grade linear gradients — mixed colors, grouped by mood */
+    /**
+     * The gradient catalogue.
+     *
+     * The first thirteen groups are the original mood ramps. Everything after them was
+     * added because the catalogue was all one thing: every entry was LINEAR and every
+     * entry ran at 135°, while the renderer has supported radial and sweep, any angle and
+     * any number of stops all along. Metals in particular cannot be done with two stops —
+     * what reads as metal is the tight highlight band around the middle of the ramp.
+     */
     val defaultList: List<GradientItem> = listOf(
 
         // ── Pitch Black & Deep Dark ───────────────────────────────────────────
@@ -135,5 +143,68 @@ object GradientPresets {
         GradientItem(colors = listOf("#E0F7FA".toColorInt(), "#B2EBF2".toColorInt()), positions = listOf(0f, 1f), angle = 135f, type = GradientType.LINEAR),
         GradientItem(colors = listOf("#FAD0C4".toColorInt(), "#FFD1FF".toColorInt()), positions = listOf(0f, 1f), angle = 135f, type = GradientType.LINEAR),
         GradientItem(colors = listOf("#A1FFCE".toColorInt(), "#FAFFD1".toColorInt()), positions = listOf(0f, 1f), angle = 135f, type = GradientType.LINEAR),
+
+        // ── Metals — 6-stop ramps with a highlight band ───────────────────────
+        GradientItem(colors = listOf("#613F00".toColorInt(), "#FFD86B".toColorInt(), "#FFF0C7".toColorInt(), "#FFD86B".toColorInt(), "#8A5A00".toColorInt(), "#AB8847".toColorInt()), positions = listOf(0f, 0.3f, 0.47f, 0.56f, 0.8f, 1f), angle = 90f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#6D402B".toColorInt(), "#F8C9B4".toColorInt(), "#FCEAE3".toColorInt(), "#F8C9B4".toColorInt(), "#9B5B3E".toColorInt(), "#B78974".toColorInt()), positions = listOf(0f, 0.3f, 0.47f, 0.56f, 0.8f, 1f), angle = 90f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#625B45".toColorInt(), "#F4F0E2".toColorInt(), "#FBF9F4".toColorInt(), "#F4F0E2".toColorInt(), "#8C8262".toColorInt(), "#ACA58E".toColorInt()), positions = listOf(0f, 0.3f, 0.47f, 0.56f, 0.8f, 1f), angle = 90f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#42300F".toColorInt(), "#D9B44A".toColorInt(), "#F1E3BA".toColorInt(), "#D9B44A".toColorInt(), "#5E4415".toColorInt(), "#8B7857".toColorInt()), positions = listOf(0f, 0.3f, 0.47f, 0.56f, 0.8f, 1f), angle = 90f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#766235".toColorInt(), "#F7E6BC".toColorInt(), "#FCF6E6".toColorInt(), "#F7E6BC".toColorInt(), "#A98C4B".toColorInt(), "#C1AC7D".toColorInt()), positions = listOf(0f, 0.3f, 0.47f, 0.56f, 0.8f, 1f), angle = 90f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#4B240D".toColorInt(), "#E8944F".toColorInt(), "#F6D6BC".toColorInt(), "#E8944F".toColorInt(), "#6B3312".toColorInt(), "#946C54".toColorInt()), positions = listOf(0f, 0.3f, 0.47f, 0.56f, 0.8f, 1f), angle = 90f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#341D08".toColorInt(), "#C58A3E".toColorInt(), "#E9D3B6".toColorInt(), "#C58A3E".toColorInt(), "#4A2A0C".toColorInt(), "#7D6650".toColorInt()), positions = listOf(0f, 0.3f, 0.47f, 0.56f, 0.8f, 1f), angle = 90f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#4D555B".toColorInt(), "#EDF1F4".toColorInt(), "#F8FAFB".toColorInt(), "#EDF1F4".toColorInt(), "#6E7A82".toColorInt(), "#979FA5".toColorInt()), positions = listOf(0f, 0.3f, 0.47f, 0.56f, 0.8f, 1f), angle = 90f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#181D20".toColorInt(), "#9AA5AD".toColorInt(), "#D9DDE0".toColorInt(), "#9AA5AD".toColorInt(), "#22292E".toColorInt(), "#606569".toColorInt()), positions = listOf(0f, 0.3f, 0.47f, 0.56f, 0.8f, 1f), angle = 90f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#6C7276".toColorInt(), "#F2F4F5".toColorInt(), "#FAFBFB".toColorInt(), "#F2F4F5".toColorInt(), "#9AA3A8".toColorInt(), "#B6BDC0".toColorInt()), positions = listOf(0f, 0.3f, 0.47f, 0.56f, 0.8f, 1f), angle = 90f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#613F00".toColorInt(), "#FFD86B".toColorInt(), "#FFF0C7".toColorInt(), "#FFD86B".toColorInt(), "#8A5A00".toColorInt(), "#AB8847".toColorInt()), positions = listOf(0f, 0.3f, 0.47f, 0.56f, 0.8f, 1f), angle = 0f, type = GradientType.SWEEP, sweepStartAngle = 200f),
+        GradientItem(colors = listOf("#6D402B".toColorInt(), "#F8C9B4".toColorInt(), "#FCEAE3".toColorInt(), "#F8C9B4".toColorInt(), "#9B5B3E".toColorInt(), "#B78974".toColorInt()), positions = listOf(0f, 0.3f, 0.47f, 0.56f, 0.8f, 1f), angle = 0f, type = GradientType.SWEEP, sweepStartAngle = 200f),
+        GradientItem(colors = listOf("#625B45".toColorInt(), "#F4F0E2".toColorInt(), "#FBF9F4".toColorInt(), "#F4F0E2".toColorInt(), "#8C8262".toColorInt(), "#ACA58E".toColorInt()), positions = listOf(0f, 0.3f, 0.47f, 0.56f, 0.8f, 1f), angle = 0f, type = GradientType.SWEEP, sweepStartAngle = 200f),
+        GradientItem(colors = listOf("#42300F".toColorInt(), "#D9B44A".toColorInt(), "#F1E3BA".toColorInt(), "#D9B44A".toColorInt(), "#5E4415".toColorInt(), "#8B7857".toColorInt()), positions = listOf(0f, 0.3f, 0.47f, 0.56f, 0.8f, 1f), angle = 0f, type = GradientType.SWEEP, sweepStartAngle = 200f),
+        GradientItem(colors = listOf("#766235".toColorInt(), "#F7E6BC".toColorInt(), "#FCF6E6".toColorInt(), "#F7E6BC".toColorInt(), "#A98C4B".toColorInt(), "#C1AC7D".toColorInt()), positions = listOf(0f, 0.3f, 0.47f, 0.56f, 0.8f, 1f), angle = 0f, type = GradientType.SWEEP, sweepStartAngle = 200f),
+        GradientItem(colors = listOf("#4B240D".toColorInt(), "#E8944F".toColorInt(), "#F6D6BC".toColorInt(), "#E8944F".toColorInt(), "#6B3312".toColorInt(), "#946C54".toColorInt()), positions = listOf(0f, 0.3f, 0.47f, 0.56f, 0.8f, 1f), angle = 0f, type = GradientType.SWEEP, sweepStartAngle = 200f),
+
+        // ── Radial glows — light coming from inside the letter ────────────────
+        GradientItem(colors = listOf("#FFF3C4".toColorInt(), "#F2C765".toColorInt(), "#E8A317".toColorInt()), positions = listOf(0f, 0.55f, 1f), angle = 0f, type = GradientType.RADIAL, radialRadiusFactor = 0.62f),
+        GradientItem(colors = listOf("#FFFFFF".toColorInt(), "#73CEF5".toColorInt(), "#00A6ED".toColorInt()), positions = listOf(0f, 0.55f, 1f), angle = 0f, type = GradientType.RADIAL, radialRadiusFactor = 0.62f),
+        GradientItem(colors = listOf("#FFE3F1".toColorInt(), "#EE78B8".toColorInt(), "#E0218A".toColorInt()), positions = listOf(0f, 0.55f, 1f), angle = 0f, type = GradientType.RADIAL, radialRadiusFactor = 0.62f),
+        GradientItem(colors = listOf("#EAFFD0".toColorInt(), "#8BC86D".toColorInt(), "#3E9B1C".toColorInt()), positions = listOf(0f, 0.55f, 1f), angle = 0f, type = GradientType.RADIAL, radialRadiusFactor = 0.62f),
+        GradientItem(colors = listOf("#FFE9D6".toColorInt(), "#EF9971".toColorInt(), "#E2571E".toColorInt()), positions = listOf(0f, 0.55f, 1f), angle = 0f, type = GradientType.RADIAL, radialRadiusFactor = 0.62f),
+        GradientItem(colors = listOf("#E6F7FF".toColorInt(), "#6EA1CE".toColorInt(), "#0B5AA6".toColorInt()), positions = listOf(0f, 0.55f, 1f), angle = 0f, type = GradientType.RADIAL, radialRadiusFactor = 0.62f),
+        GradientItem(colors = listOf("#FFF0F0".toColorInt(), "#D46C7E".toColorInt(), "#B00020".toColorInt()), positions = listOf(0f, 0.55f, 1f), angle = 0f, type = GradientType.RADIAL, radialRadiusFactor = 0.62f),
+        GradientItem(colors = listOf("#F3E9FF".toColorInt(), "#A883D6".toColorInt(), "#6A2FB5".toColorInt()), positions = listOf(0f, 0.55f, 1f), angle = 0f, type = GradientType.RADIAL, radialRadiusFactor = 0.62f),
+
+        // ── Occasion — Ramadan, Eid, Pakistan, weddings ───────────────────────
+        GradientItem(colors = listOf("#03301C".toColorInt(), "#0B6B3A".toColorInt(), "#1FA463".toColorInt()), positions = listOf(0f, 0.5f, 1f), angle = 135f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#0B3B2E".toColorInt(), "#14795A".toColorInt(), "#E4C36A".toColorInt()), positions = listOf(0f, 0.5f, 1f), angle = 135f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#0A2E1B".toColorInt(), "#E4C36A".toColorInt(), "#FFF3C4".toColorInt()), positions = listOf(0f, 0.5f, 1f), angle = 135f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#F7E9C9".toColorInt(), "#E8C877".toColorInt(), "#B98A2E".toColorInt()), positions = listOf(0f, 0.5f, 1f), angle = 135f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#FFE6EE".toColorInt(), "#F7B8CE".toColorInt(), "#C86B8E".toColorInt()), positions = listOf(0f, 0.5f, 1f), angle = 135f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#E8F6EF".toColorInt(), "#B9E3D0".toColorInt(), "#6FBF9B".toColorInt()), positions = listOf(0f, 0.5f, 1f), angle = 135f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#01411C".toColorInt(), "#0B6B3A".toColorInt(), "#FFFFFF".toColorInt()), positions = listOf(0f, 0.5f, 1f), angle = 135f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#FFFFFF".toColorInt(), "#D8EADF".toColorInt(), "#01411C".toColorInt()), positions = listOf(0f, 0.5f, 1f), angle = 135f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#4A0E1C".toColorInt(), "#8C1C2E".toColorInt(), "#D4A03C".toColorInt()), positions = listOf(0f, 0.5f, 1f), angle = 135f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#5B1230".toColorInt(), "#9B2352".toColorInt(), "#F0C1D4".toColorInt()), positions = listOf(0f, 0.5f, 1f), angle = 135f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#2A1B4A".toColorInt(), "#5B3FA0".toColorInt(), "#C9B6F5".toColorInt()), positions = listOf(0f, 0.5f, 1f), angle = 135f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#123D2A".toColorInt(), "#2E7D52".toColorInt(), "#CDE8B5".toColorInt()), positions = listOf(0f, 0.5f, 1f), angle = 135f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#03301C".toColorInt(), "#0B6B3A".toColorInt(), "#1FA463".toColorInt()), positions = listOf(0f, 0.5f, 1f), angle = 45f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#0B3B2E".toColorInt(), "#14795A".toColorInt(), "#E4C36A".toColorInt()), positions = listOf(0f, 0.5f, 1f), angle = 45f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#0A2E1B".toColorInt(), "#E4C36A".toColorInt(), "#FFF3C4".toColorInt()), positions = listOf(0f, 0.5f, 1f), angle = 45f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#F7E9C9".toColorInt(), "#E8C877".toColorInt(), "#B98A2E".toColorInt()), positions = listOf(0f, 0.5f, 1f), angle = 45f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#FFE6EE".toColorInt(), "#F7B8CE".toColorInt(), "#C86B8E".toColorInt()), positions = listOf(0f, 0.5f, 1f), angle = 45f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#E8F6EF".toColorInt(), "#B9E3D0".toColorInt(), "#6FBF9B".toColorInt()), positions = listOf(0f, 0.5f, 1f), angle = 45f, type = GradientType.LINEAR),
+
+        // ── Duotone — the same pair read differently by angle ─────────────────
+        GradientItem(colors = listOf("#FF4D2E".toColorInt(), "#FF953C".toColorInt(), "#FFB400".toColorInt()), positions = listOf(0f, 0.52f, 1f), angle = 0f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#1B6DF0".toColorInt(), "#69B8F9".toColorInt(), "#7CE7FF".toColorInt()), positions = listOf(0f, 0.52f, 1f), angle = 45f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#12B886".toColorInt(), "#8BDFA2".toColorInt(), "#D8F999".toColorInt()), positions = listOf(0f, 0.52f, 1f), angle = 90f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#7A3FF2".toColorInt(), "#C872E2".toColorInt(), "#FF6EC7".toColorInt()), positions = listOf(0f, 0.52f, 1f), angle = 180f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#FF5A7A".toColorInt(), "#FFA197".toColorInt(), "#FFC48C".toColorInt()), positions = listOf(0f, 0.52f, 1f), angle = 270f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#0E7490".toColorInt(), "#75C0BD".toColorInt(), "#A7F3D0".toColorInt()), positions = listOf(0f, 0.52f, 1f), angle = 315f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#8E24AA".toColorInt(), "#D0729B".toColorInt(), "#FF8A65".toColorInt()), positions = listOf(0f, 0.52f, 1f), angle = 0f, type = GradientType.LINEAR),
+        GradientItem(colors = listOf("#00695C".toColorInt(), "#74B3AC".toColorInt(), "#B2DFDB".toColorInt()), positions = listOf(0f, 0.52f, 1f), angle = 45f, type = GradientType.LINEAR),
+
+        // ── Sweep — for chrome and holographic fills ──────────────────────────
+        GradientItem(colors = listOf("#FF0080".toColorInt(), "#FFB300".toColorInt(), "#00E676".toColorInt(), "#00B0FF".toColorInt(), "#7C4DFF".toColorInt(), "#FF0080".toColorInt()), positions = listOf(0f, 0.2f, 0.4f, 0.6f, 0.8f, 1f), angle = 0f, type = GradientType.SWEEP),
+        GradientItem(colors = listOf("#EDF1F4".toColorInt(), "#8E9BA5".toColorInt(), "#FFFFFF".toColorInt(), "#5A6670".toColorInt(), "#DCE3E8".toColorInt(), "#EDF1F4".toColorInt()), positions = listOf(0f, 0.2f, 0.42f, 0.66f, 0.85f, 1f), angle = 0f, type = GradientType.SWEEP),
+        GradientItem(colors = listOf("#2B2B2B".toColorInt(), "#9E9E9E".toColorInt(), "#FFFFFF".toColorInt(), "#6E6E6E".toColorInt(), "#141414".toColorInt(), "#2B2B2B".toColorInt()), positions = listOf(0f, 0.22f, 0.45f, 0.68f, 0.88f, 1f), angle = 0f, type = GradientType.SWEEP),
     )
 }
