@@ -464,10 +464,11 @@ class ObjectsListFragment : androidx.fragment.app.Fragment() {
         val selectedChars = mainViewModel.selectedEmojiChars.value
         if (selectedChars.isEmpty()) return
 
+        val ctx = requireContext().applicationContext
         selectedChars.forEach { char ->
             viewLifecycleOwner.lifecycleScope.launch {
                 val bmp = withContext(Dispatchers.IO) {
-                    EmojiBitmapRenderer.render(char, sizePx = 512)
+                    EmojiBitmapRenderer.render(ctx, char, sizePx = 512)
                 }
                 viewModel.addSticker(bmp, requireActivity(), ElementType.STICKER, customName = "Emoji")
             }

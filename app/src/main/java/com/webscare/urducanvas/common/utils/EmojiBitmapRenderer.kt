@@ -1,14 +1,18 @@
 package com.webscare.urducanvas.common.utils
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.RectF
+import android.graphics.Typeface
 import android.text.StaticLayout
 import android.text.TextPaint
 import android.util.Log
+import androidx.core.content.res.ResourcesCompat
+import com.webscare.urducanvas.R
 
 /**
  * Renders an emoji string to a square Bitmap using Android's full text
@@ -42,14 +46,16 @@ object EmojiBitmapRenderer {
     private const val SHAPE_TEXT_SIZE_PX = 160f
 
     /**
+     * @param context    Used to load the same font the picker tile previews with.
      * @param emojiChar  Emoji string (may be multi-codepoint sequence)
      * @param sizePx     Side length of the square bitmap returned. Independent of the
      *                   size the glyph is actually shaped at.
      */
-    fun render(emojiChar: String, sizePx: Int = 512): Bitmap {
+    fun render(context: Context, emojiChar: String, sizePx: Int = 512): Bitmap {
         val side = sizePx.coerceAtLeast(1)
+        val typeface = typefaceFor(context, emojiChar)
 
-        val shaped = shape(emojiChar)
+        val shaped = shape(emojiChar, typeface)
         if (shaped != null && !isBlank(shaped)) {
             return scaleToSquare(shaped, side)
         }
@@ -57,23 +63,66 @@ object EmojiBitmapRenderer {
         // Fallback: the same path the picker cell renders through. If StaticLayout
         // produced nothing, a plain drawText on a software canvas usually still does.
         Log.w(TAG, "StaticLayout produced a blank glyph for \"$emojiChar\" — falling back to drawText")
-        val drawn = drawDirect(emojiChar)
+        val drawn = drawDirect(emojiChar, typeface)
         if (drawn != null) return scaleToSquare(drawn, side)
 
         Log.e(TAG, "Unable to render emoji \"$emojiChar\"; returning empty bitmap")
         return Bitmap.createBitmap(side, side, Bitmap.Config.ARGB_8888)
     }
 
+    // ── Typeface ──────────────────────────────────────────────────────────────
+
+    @Volatile private var symbolsTypeface: Typeface? = null
+    @Volatile private var symbolsLoaded = false
+
+    /** @font/symbols, loaded once off the application context so nothing is pinned. */
+    private fun symbols(context: Context): Typeface? {
+        if (symbolsLoaded) return symbolsTypeface
+        synchronized(this) {
+            if (!symbolsLoaded) {
+                symbolsTypeface = try {
+                    ResourcesCompat.getFont(context.applicationContext, R.font.symbols)
+                } catch (e: Throwable) {
+                    Log.w(TAG, "could not load @font/symbols", e)
+                    null
+                }
+                symbolsLoaded = true
+            }
+        }
+        return symbolsTypeface
+    }
+
+    /**
+     * The font to draw [ch] with, or null to keep the platform default.
+     *
+     * The picker tiles declare `@font/symbols` (item_emoji.xml), and this renderer
+     * used a bare TextPaint — so the two drew the same character from two different
+     * fonts. Supplemental Arrows-C (U+1F800..U+1F8FF), the whole Arrows tab, is in
+     * the bundled font and in no system font on most devices: the tile looked right
+     * and the sticker landed on the canvas as tofu.
+     *
+     * Anything the default can already draw is left alone. Colour emoji are exactly
+     * that case — they come from NotoColorEmoji through the default fallback chain,
+     * which the symbols font has none of, and that path already works.
+     */
+    private fun typefaceFor(context: Context, ch: String): Typeface? {
+        if (ch.isEmpty()) return null
+        if (Paint().hasGlyph(ch)) return null
+        val symbols = symbols(context) ?: return null
+        return if (Paint().apply { typeface = symbols }.hasGlyph(ch)) symbols else null
+    }
+
     // ── Shaping ───────────────────────────────────────────────────────────────
 
     /** Lays the string out with the full shaping engine and crops to the real glyph box. */
-    private fun shape(emojiChar: String): Bitmap? {
+    private fun shape(emojiChar: String, face: Typeface?): Bitmap? {
         if (emojiChar.isEmpty()) return null
 
         val paint = TextPaint().apply {
             textSize = SHAPE_TEXT_SIZE_PX
             isAntiAlias = true
             color = Color.BLACK      // only relevant for monochrome glyphs
+            face?.let { typeface = it }
         }
 
         @Suppress("DEPRECATION")
@@ -107,12 +156,13 @@ object EmojiBitmapRenderer {
     }
 
     /** Last resort — measure with Paint and draw the glyph straight onto a software canvas. */
-    private fun drawDirect(emojiChar: String): Bitmap? {
+    private fun drawDirect(emojiChar: String, face: Typeface?): Bitmap? {
         if (emojiChar.isEmpty()) return null
 
         val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             textSize = SHAPE_TEXT_SIZE_PX
             color = Color.BLACK
+            face?.let { typeface = it }
         }
 
         val bounds = Rect()

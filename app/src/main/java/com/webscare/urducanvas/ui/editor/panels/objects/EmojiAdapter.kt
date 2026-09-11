@@ -273,8 +273,9 @@ class EmojiAdapter(
             loadingAnim.isVisible = true
             kotlinx.coroutines.yield()
 
+            val ctx = itemView.context
             val bmp = withContext(Dispatchers.IO) {
-                EmojiBitmapRenderer.render(emoji.char, sizePx = 512)
+                EmojiBitmapRenderer.render(ctx, emoji.char, sizePx = 512)
             }
 
             loadingAnim.isVisible = false
