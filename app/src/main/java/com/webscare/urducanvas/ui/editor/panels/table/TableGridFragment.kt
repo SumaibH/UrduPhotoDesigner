@@ -37,6 +37,7 @@ class TableGridFragment : Fragment() {
                 if (data.rows < 15) {
                     data.rows += 1
                     data.cells.add(MutableList(data.cols) { com.webscare.urducanvas.common.canvas.model.TableCell() })
+                    data.onGridResized()
                 }
                 binding.tvRowsCount.text = "${data.rows}"
             }
@@ -49,6 +50,7 @@ class TableGridFragment : Fragment() {
                     if (data.cells.size > data.rows) {
                         data.cells.removeAt(data.cells.size - 1)
                     }
+                    data.onGridResized()
                 }
                 binding.tvRowsCount.text = "${data.rows}"
             }
@@ -61,6 +63,7 @@ class TableGridFragment : Fragment() {
                     data.cells.forEach { row ->
                         row.add(com.webscare.urducanvas.common.canvas.model.TableCell())
                     }
+                    data.onGridResized()
                 }
                 binding.tvColsCount.text = "${data.cols}"
             }
@@ -75,6 +78,7 @@ class TableGridFragment : Fragment() {
                             row.removeAt(row.size - 1)
                         }
                     }
+                    data.onGridResized()
                 }
                 binding.tvColsCount.text = "${data.cols}"
             }

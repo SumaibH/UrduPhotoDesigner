@@ -61,8 +61,41 @@ data class TableData(
     @SerializedName("colWidthRatios") var colWidthRatios: MutableList<Float>? = null,
     @SerializedName("rowHeightRatios") var rowHeightRatios: MutableList<Float>? = null,
     @SerializedName("cells") var cells: MutableList<MutableList<TableCell>> = mutableListOf(),
-    @SerializedName("selectedCells") var selectedCells: MutableSet<Pair<Int, Int>> = mutableSetOf()
+    // Which cells the user currently has picked. Editor state, not document state: it used
+    // to be written into the saved design, so reopening a file came back with cells still
+    // highlighted from whenever it was last saved.
+    @field:Transient var selectedCells: MutableSet<Pair<Int, Int>> = mutableSetOf()
 ) {
+
+    /**
+     * Brings the stored column/row tracks back in step with [cols] and [rows].
+     *
+     * The layout builder ignores a ratio list whose length does not match the grid, so
+     * adding or deleting a row or column used to silently throw away every width the user
+     * had dragged, and leave a wrong-length list behind for good. A new track gets an even
+     * share, a removed one is dropped from the tail, and the list is renormalised either
+     * way. Any selection that now points outside the grid is dropped at the same time.
+     */
+    fun onGridResized() {
+        colWidthRatios = colWidthRatios?.let { fitTracks(it, cols) }
+        rowHeightRatios = rowHeightRatios?.let { fitTracks(it, rows) }
+        selectedCells.retainAll { it.first in 0 until rows && it.second in 0 until cols }
+        // Styles are keyed by absolute index, so shrinking the grid strands the entries for
+        // the rows and columns that are gone. They are not harmless: grow the table again and
+        // the new, blank row comes back wearing the deleted row's styling.
+        rowStyles.keys.retainAll { it in 0 until rows }
+        colStyles.keys.retainAll { it in 0 until cols }
+    }
+
+    private fun fitTracks(src: MutableList<Float>, target: Int): MutableList<Float> {
+        if (target <= 0) return src
+        val out = src.toMutableList()
+        while (out.size > target) out.removeAt(out.size - 1)
+        while (out.size < target) out.add(1f / target)
+        val sum = out.sum()
+        return if (sum > 0f) out.map { it / sum }.toMutableList()
+        else MutableList(target) { 1f / target }
+    }
     fun deepCopy(): TableData {
         return TableData(
             rows = rows,
