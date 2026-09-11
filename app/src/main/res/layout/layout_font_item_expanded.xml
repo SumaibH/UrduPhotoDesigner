@@ -118,6 +118,24 @@
                 android:visibility="gone"
                 app:tint="@color/download_tint" />
 
+            <!--
+                Opens the preview. Only the expanded tile carries it: collapsed opens
+                the same preview on long-press, which is free there but taken here by
+                multi-select. clickable/focusable so the tap stops at the button and
+                does not also select the font.
+            -->
+            <ImageView
+                android:id="@+id/previewEye"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:background="@drawable/bg_preview_eye"
+                android:clickable="true"
+                android:focusable="true"
+                android:contentDescription="@string/preview"
+                android:padding="4dp"
+                android:src="@drawable/ic_eye"
+                android:alpha="0.75" />
+
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The preview button's disc. Near-white rather than pure white so it stays
+    readable on a white sticker, with a hairline instead of an elevation shadow —
+    the tiles sit inside a RecyclerView where elevation would clip.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+
+    <solid android:color="#EBFFFFFF" />
+
+    <stroke
+        android:width="1dp"
+        android:color="@color/surface_stroke" />
+</shape>

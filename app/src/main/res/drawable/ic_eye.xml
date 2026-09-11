@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Stroke eye, for the "preview this tile" button on expanded asset tiles.
+    Drawn as outlines rather than fills so it reads at 22dp on a light tile.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <path
+        android:pathData="M2.5,12C2.5,12 6.2,5.75 12,5.75C17.8,5.75 21.5,12 21.5,12C21.5,12 17.8,18.25 12,18.25C6.2,18.25 2.5,12 2.5,12Z"
+        android:strokeColor="#2B2B2B"
+        android:strokeWidth="1.7"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+
+    <path
+        android:pathData="M12,9.25C13.5188,9.25 14.75,10.4812 14.75,12C14.75,13.5188 13.5188,14.75 12,14.75C10.4812,14.75 9.25,13.5188 9.25,12C9.25,10.4812 10.4812,9.25 12,9.25Z"
+        android:strokeColor="#2B2B2B"
+        android:strokeWidth="1.7"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+
+</vector>

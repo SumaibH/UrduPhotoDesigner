@@ -19,6 +19,7 @@ import com.bumptech.glide.request.target.Target
 import com.webscare.urducanvas.R
 import com.webscare.urducanvas.common.utils.Constants
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
+import com.webscare.urducanvas.common.utils.Utils.addPressEffectWithLongClick
 import com.webscare.urducanvas.common.utils.startShimmerSoft
 import com.webscare.urducanvas.common.utils.isDarkModeEnabled
 import com.webscare.urducanvas.data.model.FontEntity
@@ -27,6 +28,15 @@ import com.webscare.urducanvas.databinding.LayoutFontItemBinding
 import com.webscare.urducanvas.databinding.LayoutFontItemExpandedBinding
 
 class FontsAdapter(
+    /**
+     * Asked to open the preview for a tile. Long-press while the panel is collapsed,
+     * the eye button while it is expanded — one rule, two states, because long-press
+     * is free in the collapsed strip and taken by multi-select in the expanded grid.
+     *
+     * Declared before [onFontSelected] so that stays the last parameter and the
+     * existing trailing-lambda call sites keep binding to it.
+     */
+    private val onPreviewRequested: (FontEntity) -> Unit = {},
     private val onFontSelected: (FontEntity, Boolean) -> Unit
 ) : ListAdapter<FontEntity, FontsAdapter.FontViewHolder>(DiffCallback()) {
 
@@ -102,13 +112,15 @@ class FontsAdapter(
             Expanded(
                 LayoutFontItemExpandedBinding.inflate(inflater, parent, false),
                 this,
-                onFontSelected
+                onFontSelected,
+                onPreviewRequested
             )
         } else {
             Collapsed(
                 LayoutFontItemBinding.inflate(inflater, parent, false),
                 this,
-                onFontSelected
+                onFontSelected,
+                onPreviewRequested
             )
         }
     }
@@ -124,7 +136,8 @@ class FontsAdapter(
     sealed class FontViewHolder(
         itemView: View,
         private val adapter: FontsAdapter,
-        private val onFontSelected: (FontEntity, Boolean) -> Unit
+        private val onFontSelected: (FontEntity, Boolean) -> Unit,
+        private val onPreviewRequested: (FontEntity) -> Unit
     ) : RecyclerView.ViewHolder(itemView) {
 
         abstract val cardRoot: com.google.android.material.card.MaterialCardView
@@ -134,6 +147,9 @@ class FontsAdapter(
         abstract val premiumBadge: android.widget.ImageView
         abstract val downloadIcon: android.widget.ImageView
         open val fontNameTextView: android.widget.TextView? get() = null
+
+        /** Only the expanded tile carries one; the collapsed tile opens on long-press. */
+        open val previewEye: android.widget.ImageView? get() = null
 
         fun bind(
             font: FontEntity,
@@ -159,12 +175,22 @@ class FontsAdapter(
             loadingAnim.visibility =
                 if (isDownloading) View.VISIBLE else View.GONE
 
-            itemView.addPressEffect {
-                if (font.is_downloaded) {
-                    onFontSelected(font, true)
-                } else {
-                    onFontSelected(font, false)
-                }
+            // Tap is unchanged in both states, and carries no added delay: the
+            // long-press helper below starts its timer on ACTION_DOWN and fires the
+            // click immediately on a short ACTION_UP.
+            val select = { onFontSelected(font, font.is_downloaded) }
+            if (adapter.isExpanded) {
+                itemView.addPressEffect { select() }
+            } else {
+                itemView.addPressEffectWithLongClick(
+                    onLongClick = { onPreviewRequested(font) },
+                    onClick = { select() }
+                )
+            }
+
+            previewEye?.apply {
+                isVisible = true
+                addPressEffect { onPreviewRequested(font) }
             }
 
             updateSize(slideOffset, rvWidth, rvPadding)
@@ -303,8 +329,9 @@ class FontsAdapter(
     class Collapsed(
         private val binding: LayoutFontItemBinding,
         adapter: FontsAdapter,
-        onFontSelected: (FontEntity, Boolean) -> Unit
-    ) : FontViewHolder(binding.root, adapter, onFontSelected) {
+        onFontSelected: (FontEntity, Boolean) -> Unit,
+        onPreviewRequested: (FontEntity) -> Unit
+    ) : FontViewHolder(binding.root, adapter, onFontSelected, onPreviewRequested) {
         override val cardRoot     get() = binding.root
         override val fontImage    get() = binding.font
         override val shimmer      get() = binding.shimmerLayout
@@ -316,8 +343,9 @@ class FontsAdapter(
     class Expanded(
         private val binding: LayoutFontItemExpandedBinding,
         adapter: FontsAdapter,
-        onFontSelected: (FontEntity, Boolean) -> Unit
-    ) : FontViewHolder(binding.root, adapter, onFontSelected) {
+        onFontSelected: (FontEntity, Boolean) -> Unit,
+        onPreviewRequested: (FontEntity) -> Unit
+    ) : FontViewHolder(binding.root, adapter, onFontSelected, onPreviewRequested) {
         override val cardRoot     get() = binding.root
         override val fontImage    get() = binding.font
         override val shimmer      get() = binding.shimmerLayout
@@ -325,6 +353,7 @@ class FontsAdapter(
         override val premiumBadge get() = binding.isPremium
         override val downloadIcon get() = binding.download
         override val fontNameTextView get() = binding.fontName
+        override val previewEye get() = binding.previewEye
     }
 
     class DiffCallback : DiffUtil.ItemCallback<FontEntity>() {

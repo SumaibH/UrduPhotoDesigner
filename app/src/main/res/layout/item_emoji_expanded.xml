@@ -61,6 +61,21 @@
             app:lottie_loop="true"
             app:lottie_rawRes="@raw/loading_gray" />
 
+        <!-- Opens the preview; the collapsed tile opens the same thing on long-press. -->
+        <ImageView
+            android:id="@+id/previewEye"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="8dp"
+            android:background="@drawable/bg_preview_eye"
+            android:clickable="true"
+            android:focusable="true"
+            android:contentDescription="@string/preview"
+            android:padding="5dp"
+            android:src="@drawable/ic_eye"
+            android:alpha="0.75" />
+
     </com.webscare.urducanvas.common.views.SquareFrameLayout>
 
 </com.google.android.material.card.MaterialCardView>

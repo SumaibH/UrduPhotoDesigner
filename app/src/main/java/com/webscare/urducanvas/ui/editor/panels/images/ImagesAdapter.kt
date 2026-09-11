@@ -24,6 +24,7 @@ import com.webscare.urducanvas.common.utils.Constants
 import com.webscare.urducanvas.common.utils.SvgLoader
 import com.webscare.urducanvas.common.utils.startShimmerSoft
 import com.webscare.urducanvas.common.utils.isDarkModeEnabled
+import com.webscare.urducanvas.common.utils.Utils.addPressEffect
 import com.webscare.urducanvas.common.utils.Utils.addPressEffectWithLongClick
 import com.webscare.urducanvas.data.model.ImageEntity
 import com.webscare.urducanvas.databinding.LayoutImagesItemBinding
@@ -50,7 +51,9 @@ fun resolveUrl(image: ImageEntity): String {
 class ImagesAdapter(
     private val context: Context,
     private val onImageSelected: (Bitmap?, PictureDrawable?, svgXml: String?, ImageEntity) -> Unit,
-    private val onLongPress: (ImageEntity) -> Unit = {}
+    private val onLongPress: (ImageEntity) -> Unit = {},
+    /** Long-press while collapsed, eye button while expanded. See FontsAdapter. */
+    private val onPreviewRequested: (ImageEntity) -> Unit = {}
 ) : RecyclerView.Adapter<ImagesAdapter.ImageViewHolder>() {
 
     companion object {
@@ -151,12 +154,12 @@ class ImagesAdapter(
         return if (viewType == TYPE_EXPANDED) {
             ImageViewHolder.Expanded(
                 LayoutImagesItemExpandedBinding.inflate(inflater, parent, false),
-                this, onImageSelected, onLongPress
+                this, onImageSelected, onLongPress, onPreviewRequested
             )
         } else {
             ImageViewHolder.Collapsed(
                 LayoutImagesItemBinding.inflate(inflater, parent, false),
-                this, onImageSelected, onLongPress
+                this, onImageSelected, onLongPress, onPreviewRequested
             )
         }
     }
@@ -212,7 +215,8 @@ class ImagesAdapter(
         itemView: android.view.View,
         private val adapter: ImagesAdapter,
         private val onImageSelected: (Bitmap?, PictureDrawable?, String?, ImageEntity) -> Unit,
-        private val onLongPress: (ImageEntity) -> Unit
+        private val onLongPress: (ImageEntity) -> Unit,
+        private val onPreviewRequested: (ImageEntity) -> Unit
     ) : RecyclerView.ViewHolder(itemView) {
 
         abstract val imageView: android.widget.ImageView
@@ -221,6 +225,9 @@ class ImagesAdapter(
         abstract val loadingAnim: com.airbnb.lottie.LottieAnimationView
         abstract val cardRoot: com.google.android.material.card.MaterialCardView
         open val selectionIcon: android.widget.ImageView? get() = null
+
+        /** Only the expanded tile carries one; collapsed opens on long-press. */
+        open val previewEye: android.widget.ImageView? get() = null
 
         private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
         private var displayJob: Job? = null
@@ -339,9 +346,19 @@ class ImagesAdapter(
                 },
                 onLongClick = {
                     val currentImage = boundImage ?: image
-                    onLongPress(currentImage)
+                    // Expanded keeps multi-select, which owns long-press there. Collapsed
+                    // has nothing on long-press today — ImagesListFragment.onLongPress only
+                    // acts while the panel is expanded — so the preview takes it.
+                    if (adapter.isExpanded) onLongPress(currentImage)
+                    else onPreviewRequested(currentImage)
                 }
             )
+
+            previewEye?.apply {
+                // Shares the corner with the download spinner — give way while it runs.
+                isVisible = !loadingAnim.isVisible
+                addPressEffect { onPreviewRequested(boundImage ?: image) }
+            }
         }
 
         private fun loadForDisplay(image: ImageEntity) {
@@ -415,8 +432,9 @@ class ImagesAdapter(
             private val binding: LayoutImagesItemBinding,
             adapter: ImagesAdapter,
             onImageSelected: (Bitmap?, PictureDrawable?, String?, ImageEntity) -> Unit,
-            onLongPress: (ImageEntity) -> Unit
-        ) : ImageViewHolder(binding.root, adapter, onImageSelected, onLongPress) {
+            onLongPress: (ImageEntity) -> Unit,
+            onPreviewRequested: (ImageEntity) -> Unit
+        ) : ImageViewHolder(binding.root, adapter, onImageSelected, onLongPress, onPreviewRequested) {
             override val imageView    get() = binding.image
             override val shimmer      get() = binding.shimmerLayout
             override val premiumBadge get() = binding.isPremium
@@ -428,14 +446,16 @@ class ImagesAdapter(
             private val binding: LayoutImagesItemExpandedBinding,
             adapter: ImagesAdapter,
             onImageSelected: (Bitmap?, PictureDrawable?, String?, ImageEntity) -> Unit,
-            onLongPress: (ImageEntity) -> Unit
-        ) : ImageViewHolder(binding.root, adapter, onImageSelected, onLongPress) {
+            onLongPress: (ImageEntity) -> Unit,
+            onPreviewRequested: (ImageEntity) -> Unit
+        ) : ImageViewHolder(binding.root, adapter, onImageSelected, onLongPress, onPreviewRequested) {
             override val imageView     get() = binding.image
             override val shimmer       get() = binding.shimmerLayout
             override val premiumBadge  get() = binding.isPremium
             override val loadingAnim   get() = binding.loading
             override val cardRoot      get() = binding.root
             override val selectionIcon get() = binding.checkIcon
+            override val previewEye    get() = binding.previewEye
         }
     }
 }

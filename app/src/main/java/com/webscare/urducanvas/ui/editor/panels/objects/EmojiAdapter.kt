@@ -27,7 +27,9 @@ class EmojiAdapter(
     private val context: Context,
     initialEmojis: List<EmojiMeta>,
     private val onEmojiClicked: (Bitmap) -> Unit,
-    private val onEmojiLongPress: ((EmojiMeta) -> Unit)? = null
+    private val onEmojiLongPress: ((EmojiMeta) -> Unit)? = null,
+    /** Long-press while collapsed, eye button while expanded. See FontsAdapter. */
+    private val onPreviewRequested: (EmojiMeta) -> Unit = {}
 ) : RecyclerView.Adapter<EmojiAdapter.EmojiViewHolder>() {
 
     companion object {
@@ -122,7 +124,8 @@ class EmojiAdapter(
                 ),
                 adapter        = this,
                 onEmojiClicked = onEmojiClicked,
-                onLongPress    = onEmojiLongPress
+                onLongPress    = onEmojiLongPress,
+                onPreviewRequested = onPreviewRequested
             )
         } else {
             EmojiViewHolder.Collapsed(
@@ -131,7 +134,8 @@ class EmojiAdapter(
                 ),
                 adapter        = this,
                 onEmojiClicked = onEmojiClicked,
-                onLongPress    = null   // no selection in collapsed
+                onLongPress    = null,   // no selection in collapsed
+                onPreviewRequested = onPreviewRequested
             )
         }
 
@@ -159,7 +163,8 @@ class EmojiAdapter(
         itemView: View,
         private val adapter: EmojiAdapter,
         private val onEmojiClicked: (Bitmap) -> Unit,
-        private val onLongPress: ((EmojiMeta) -> Unit)?
+        private val onLongPress: ((EmojiMeta) -> Unit)?,
+        private val onPreviewRequested: (EmojiMeta) -> Unit
     ) : RecyclerView.ViewHolder(itemView) {
 
         protected abstract val emojiText: android.widget.TextView
@@ -169,6 +174,9 @@ class EmojiAdapter(
 
         protected open val selectionIcon: android.widget.ImageView? get() = null
         protected open val cardRoot: com.google.android.material.card.MaterialCardView? get() = null
+
+        /** Only the expanded tile carries one; collapsed opens on long-press. */
+        protected open val previewEye: android.widget.ImageView? get() = null
 
         private var renderJob: Job? = null
         private var boundEmoji: EmojiMeta? = null
@@ -200,7 +208,7 @@ class EmojiAdapter(
         }
 
         private fun wireClicks(emoji: EmojiMeta) {
-            itemView.addPressEffect {
+            val tap = {
                 val current = boundEmoji ?: emoji
                 if (adapter.isInMultiSelectMode) {
                     onLongPress?.invoke(current)
@@ -210,10 +218,18 @@ class EmojiAdapter(
                         ?.lifecycleScope?.launch { renderAndDeliver(current) }
                 }
             }
+            itemView.addPressEffect { tap() }
             itemView.setOnLongClickListener {
                 val current = boundEmoji ?: emoji
-                onLongPress?.invoke(current)
+                // Expanded keeps multi-select on long-press; collapsed passes null for
+                // onLongPress, so the gesture is free there and opens the preview.
+                if (adapter.isExpanded) onLongPress?.invoke(current)
+                else onPreviewRequested(current)
                 true
+            }
+            previewEye?.apply {
+                isVisible = true
+                addPressEffect { onPreviewRequested(boundEmoji ?: emoji) }
             }
         }
 
@@ -288,8 +304,9 @@ class EmojiAdapter(
             private val binding: ItemEmojiBinding,
             adapter: EmojiAdapter,
             onEmojiClicked: (Bitmap) -> Unit,
-            onLongPress: ((EmojiMeta) -> Unit)?
-        ) : EmojiViewHolder(binding.root, adapter, onEmojiClicked, onLongPress) {
+            onLongPress: ((EmojiMeta) -> Unit)?,
+            onPreviewRequested: (EmojiMeta) -> Unit
+        ) : EmojiViewHolder(binding.root, adapter, onEmojiClicked, onLongPress, onPreviewRequested) {
             override val emojiText   get() = binding.emojiText
             // Now has loadingAnim from updated item_emoji.xml layout
             override val loadingAnim get() = binding.loading
@@ -300,12 +317,14 @@ class EmojiAdapter(
             private val binding: ItemEmojiExpandedBinding,
             adapter: EmojiAdapter,
             onEmojiClicked: (Bitmap) -> Unit,
-            onLongPress: ((EmojiMeta) -> Unit)?
-        ) : EmojiViewHolder(binding.root, adapter, onEmojiClicked, onLongPress) {
+            onLongPress: ((EmojiMeta) -> Unit)?,
+            onPreviewRequested: (EmojiMeta) -> Unit
+        ) : EmojiViewHolder(binding.root, adapter, onEmojiClicked, onLongPress, onPreviewRequested) {
             override val emojiText     get() = binding.emojiText
             override val loadingAnim   get() = binding.loading
             override val selectionIcon get() = binding.selection
             override val cardRoot      get() = binding.root
+            override val previewEye    get() = binding.previewEye
         }
     }
 }

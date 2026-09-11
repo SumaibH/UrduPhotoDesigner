@@ -8,6 +8,7 @@ import android.graphics.RectF
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.core.graphics.createBitmap
 import androidx.core.view.doOnNextLayout
 import androidx.recyclerview.widget.RecyclerView
@@ -15,6 +16,7 @@ import com.webscare.urducanvas.R
 import com.webscare.urducanvas.common.canvas.enums.ShapeType
 import com.webscare.urducanvas.common.utils.ShapeRenderUtils.drawShape
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
+import com.webscare.urducanvas.common.utils.Utils.addPressEffectWithLongClick
 import com.webscare.urducanvas.databinding.LayoutImagesItemBinding
 import com.webscare.urducanvas.databinding.LayoutImagesItemExpandedBinding
 import kotlinx.coroutines.CoroutineScope
@@ -26,6 +28,12 @@ import kotlinx.coroutines.withContext
 class ShapeAdapter(
     private val context: Context,
     shapes: List<ShapeType>,
+    /**
+     * Long-press while collapsed, eye button while expanded. See FontsAdapter.
+     * Declared before [onShapeSelected] so that stays last and the existing
+     * trailing-lambda call sites keep binding to it.
+     */
+    private val onPreviewRequested: (ShapeType) -> Unit = {},
     private val onShapeSelected: (ShapeType) -> Unit
 ) : RecyclerView.Adapter<ShapeAdapter.ShapeViewHolder>() {
 
@@ -118,16 +126,22 @@ class ShapeAdapter(
             ShapeViewHolder.Expanded(
                 LayoutImagesItemExpandedBinding.inflate(inflater, parent, false),
                 this,
-                ::handleShapeClick
+                ::handleShapeClick,
+                ::handlePreviewRequest
             )
         } else {
             ShapeViewHolder.Collapsed(
                 LayoutImagesItemBinding.inflate(inflater, parent, false),
                 this,
-                ::handleShapeClick
+                ::handleShapeClick,
+                ::handlePreviewRequest
             )
         }
     }
+
+    /** Opening a preview must not also select the shape, so this does not go through
+     *  handleShapeClick — it only forwards. */
+    private fun handlePreviewRequest(shape: ShapeType) = onPreviewRequested(shape)
 
     private fun handleShapeClick(shape: ShapeType) {
         val oldPos = shapes.indexOf(selectedShape)
@@ -165,11 +179,15 @@ class ShapeAdapter(
     sealed class ShapeViewHolder(
         itemView: android.view.View,
         private val adapter: ShapeAdapter,
-        private val onShapeSelected: (ShapeType) -> Unit
+        private val onShapeSelected: (ShapeType) -> Unit,
+        private val onPreviewRequested: (ShapeType) -> Unit
     ) : RecyclerView.ViewHolder(itemView) {
 
         abstract val imageView: android.widget.ImageView
         abstract val cardRoot: com.google.android.material.card.MaterialCardView
+
+        /** Only the expanded tile carries one; collapsed opens on long-press. */
+        open val previewEye: android.widget.ImageView? get() = null
 
         private var boundShape: ShapeType? = null
 
@@ -187,7 +205,22 @@ class ShapeAdapter(
             bitmap?.let { imageView.setImageBitmap(it) }
             updateSelectionOnly(isSelected)
             updateSize(slideOffset, rvWidth, rvPadding)
-            itemView.addPressEffect { boundShape?.let { onShapeSelected(it) } }
+            // Shapes have no multi-select, so long-press is free in both states — but the
+            // rule stays one rule: long-press opens the preview only while collapsed, and
+            // the eye button is what does it once expanded.
+            if (adapter.isExpanded) {
+                itemView.addPressEffect { boundShape?.let { onShapeSelected(it) } }
+            } else {
+                itemView.addPressEffectWithLongClick(
+                    onLongClick = { boundShape?.let { onPreviewRequested(it) } },
+                    onClick = { boundShape?.let { onShapeSelected(it) } }
+                )
+            }
+
+            previewEye?.apply {
+                isVisible = true
+                addPressEffect { boundShape?.let { s -> onPreviewRequested(s) } }
+            }
         }
 
         fun updateSelectionOnly(isSelected: Boolean) {
@@ -260,8 +293,9 @@ class ShapeAdapter(
         class Collapsed(
             private val binding: LayoutImagesItemBinding,
             adapter: ShapeAdapter,
-            onShapeSelected: (ShapeType) -> Unit
-        ) : ShapeViewHolder(binding.root, adapter, onShapeSelected) {
+            onShapeSelected: (ShapeType) -> Unit,
+            onPreviewRequested: (ShapeType) -> Unit
+        ) : ShapeViewHolder(binding.root, adapter, onShapeSelected, onPreviewRequested) {
             override val imageView get() = binding.image
             override val cardRoot  get() = binding.root
             init {
@@ -275,10 +309,12 @@ class ShapeAdapter(
         class Expanded(
             private val binding: LayoutImagesItemExpandedBinding,
             adapter: ShapeAdapter,
-            onShapeSelected: (ShapeType) -> Unit
-        ) : ShapeViewHolder(binding.root, adapter, onShapeSelected) {
-            override val imageView get() = binding.image
-            override val cardRoot  get() = binding.root
+            onShapeSelected: (ShapeType) -> Unit,
+            onPreviewRequested: (ShapeType) -> Unit
+        ) : ShapeViewHolder(binding.root, adapter, onShapeSelected, onPreviewRequested) {
+            override val imageView  get() = binding.image
+            override val cardRoot   get() = binding.root
+            override val previewEye get() = binding.previewEye
             init {
                 binding.isPremium.visibility = android.view.View.GONE
                 binding.loading.visibility   = android.view.View.GONE
