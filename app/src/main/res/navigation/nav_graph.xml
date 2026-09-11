@@ -83,6 +83,11 @@
         android:label="fragment_popular_fonts"
         tools:layout="@layout/fragment_popular_fonts" />
     <fragment
+        android:id="@+id/canvasSizesFragment"
+        android:name="com.webscare.urducanvas.ui.navigation.sizes.CanvasSizesFragment"
+        android:label="fragment_canvas_sizes"
+        tools:layout="@layout/fragment_canvas_sizes" />
+    <fragment
         android:id="@+id/previewExportFragment"
         android:name="com.webscare.urducanvas.ui.editor.export.PreviewExportFragment"
         android:label="fragment_preview_export"

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/screen_bg"
+    tools:context=".ui.navigation.sizes.CanvasSizesFragment">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/topGuide"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.02" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/bottomGuide"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.95" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/startGuide"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.05" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/endGuide"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.95" />
+
+    <ImageView
+        android:id="@+id/back"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/button_bg_round"
+        android:backgroundTint="@color/surface_1"
+        android:contentDescription="@string/back"
+        android:padding="10dp"
+        android:src="@drawable/ic_back"
+        app:layout_constraintStart_toEndOf="@id/startGuide"
+        app:layout_constraintTop_toBottomOf="@id/topGuide"
+        app:tint="@color/black" />
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
+        android:fontFamily="@font/bold"
+        android:text="@string/canvas_sizes"
+        android:textColor="@color/black"
+        android:textSize="19sp"
+        app:layout_constraintBottom_toBottomOf="@id/back"
+        app:layout_constraintStart_toEndOf="@id/back"
+        app:layout_constraintTop_toTopOf="@id/back" />
+
+    <EditText
+        android:id="@+id/searchBar"
+        style="@style/Widget.UrduCanvas.SearchBar"
+        android:layout_width="0dp"
+        android:layout_marginTop="12dp"
+        android:hint="@string/search_canvas_sizes"
+        app:layout_constraintEnd_toStartOf="@id/endGuide"
+        app:layout_constraintStart_toEndOf="@id/startGuide"
+        app:layout_constraintTop_toBottomOf="@id/title" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/sizesRV"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="12dp"
+        android:clipToPadding="false"
+        android:paddingBottom="16dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintBottom_toTopOf="@id/bottomGuide"
+        app:layout_constraintEnd_toStartOf="@id/endGuide"
+        app:layout_constraintStart_toEndOf="@id/startGuide"
+        app:layout_constraintTop_toBottomOf="@id/searchBar"
+        tools:listitem="@layout/layout_sizes_item" />
+
+    <TextView
+        android:id="@+id/emptyState"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/regular"
+        android:text="@string/no_sizes_found"
+        android:textColor="@color/gray"
+        android:textSize="15sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/sizesRV"
+        app:layout_constraintEnd_toEndOf="@id/sizesRV"
+        app:layout_constraintStart_toStartOf="@id/sizesRV"
+        app:layout_constraintTop_toTopOf="@id/sizesRV"
+        tools:visibility="visible" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

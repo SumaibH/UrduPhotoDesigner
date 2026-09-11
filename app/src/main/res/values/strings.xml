@@ -226,6 +226,8 @@
     <string name="layer_name_hint">Layer name</string>
     <string name="browse_by_size">Browse by Size</string>
     <string name="canvas_sizes">Canvas Sizes</string>
+    <string name="search_canvas_sizes">Search canvas sizes ...</string>
+    <string name="no_sizes_found">No canvas sizes match that search</string>
     <string name="my_files">Assets</string>
     <string name="search_projects_files_and_assets">Search projects, files and assets</string>
     <string name="social_media_post">Social Media Post</string>

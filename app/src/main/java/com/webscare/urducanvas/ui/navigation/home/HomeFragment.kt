@@ -709,10 +709,13 @@ class HomeFragment : androidx.fragment.app.Fragment(), SplashLanding {
             view?.post { findNavController().navigate(R.id.popularFontsFragment) }
         }
 
-        // "See all" under Canvas Sizes shows the rest of the canvas sizes, which is exactly
-        // what the New Canvas sheet lists. It used to open the template categories screen —
-        // a different section's destination entirely.
-        binding.sizesSection.sectionSeeAllBtn.addPressEffect { openNewCanvasSheet() }
+        // "See all" under Canvas Sizes opens the size list as a screen, the way Popular
+        // Fonts does. It used to reopen the New Canvas sheet, which carries a Custom
+        // width/height block and a Create button — controls for building a size, when all
+        // this entry point is for is picking one that is already listed.
+        binding.sizesSection.sectionSeeAllBtn.addPressEffect {
+            view?.post { findNavController().navigate(R.id.canvasSizesFragment) }
+        }
 
     }
 
