@@ -23,6 +23,9 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class FilterBottomSheetFragment : BottomSheetDialogFragment() {
 
+    @javax.inject.Inject
+    lateinit var analyticsTracker: com.webscare.urducanvas.analytics.AnalyticsTracker
+
     private var _binding: FragmentFilterBottomSheetBinding? = null
     private val binding get() = _binding!!
 
@@ -138,6 +141,7 @@ class FilterBottomSheetFragment : BottomSheetDialogFragment() {
                 }
             }
 
+            analyticsTracker.logToolActionPerformed(TOOL_TEMPLATES_FILTER, "clear")
             onFilterCleared?.invoke()
         }
 
@@ -146,6 +150,15 @@ class FilterBottomSheetFragment : BottomSheetDialogFragment() {
             val finalSize = selectedSize?.name?.let { name ->
                 availableSizes.firstOrNull { it.name.equals(name, true) } ?: selectedSize
             }
+            // Apply is the commit — the chips only move local state, so reporting them would
+            // count a filter nobody applied. The detail carries *what* was filtered on: a
+            // filter sheet with no record of the choices made in it says only that people
+            // open it, which is the one thing that was never in question.
+            analyticsTracker.logToolActionPerformed(
+                TOOL_TEMPLATES_FILTER,
+                "apply",
+                "size=${finalSize?.name ?: "any"}|chip=$selectedChip"
+            )
             onFilterApplied?.invoke(finalSize, selectedChip)
             dismiss()
         }
@@ -200,6 +213,10 @@ class FilterBottomSheetFragment : BottomSheetDialogFragment() {
 
     companion object {
         const val TAG = "FilterBottomSheet"
+
+        /** One name for the sheet across all three screens that open it. */
+        private const val TOOL_TEMPLATES_FILTER = "templates_filter"
+
         private const val ARG_CHIP_TITLE = "chip_title"
         private const val ARG_CHIPS = "chips"
         private const val ARG_SELECTED_CHIP = "selected_chip"

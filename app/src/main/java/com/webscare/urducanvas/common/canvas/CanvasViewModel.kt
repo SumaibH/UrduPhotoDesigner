@@ -32,6 +32,7 @@ import com.webscare.urducanvas.common.canvas.enums.LabelShape
 import com.webscare.urducanvas.common.canvas.enums.LetterCasing
 import com.webscare.urducanvas.common.canvas.enums.ListStyle
 import com.webscare.urducanvas.common.canvas.enums.PickerTarget
+import com.webscare.urducanvas.analytics.AnalyticsConstants.Values
 import com.webscare.urducanvas.common.canvas.enums.ShapeType
 import com.webscare.urducanvas.common.canvas.enums.TextAlignment
 import com.webscare.urducanvas.common.canvas.enums.TextDecoration
@@ -6008,8 +6009,79 @@ class CanvasViewModel @Inject constructor(
         }
     }
 
+    /**
+     * *Which* preset the user chose, for the third argument of `logToolActionPerformed`.
+     *
+     * `tool_action_performed` already said a colour changed; it never said to what. The
+     * colour palette was rewritten to 123 curated swatches and the gradient catalogue to
+     * 155 presets, and neither change could be evaluated — there was no way to tell which
+     * of them anyone picks, or whether the eighteen occasion ramps earn their place. The
+     * action already carries the answer in every one of these cases, so it is read off here
+     * rather than plumbed through the twenty-two adapters that make the choice.
+     *
+     * Kept short and stable on purpose: this goes into a 100-char string parameter, and a
+     * value that changes shape between releases breaks every report built on it.
+     */
+    private fun getActionDetailForAction(action: CanvasAction): String? = when (action) {
+        is CanvasAction.SetTextColor -> hexOf(action.color)
+        is CanvasAction.SetBackgroundColor -> hexOf(action.color)
+        is CanvasAction.SetOverlay -> hexOf(action.newColor)
+        is CanvasAction.SetImageShadow -> hexOf(action.newColor)
+        is CanvasAction.SetBackgroundGradient -> gradientSignature(action.gradientItem)
+        is CanvasAction.SetOverlayGradient -> action.newGradient?.let { gradientSignature(it) }
+        // The font is the reason a lot of people install an Urdu design app, so which one
+        // is worth more than the fact that the font tool was used.
+        is CanvasAction.SetFont -> action.newFontEntity.id.toString()
+        is CanvasAction.AddShape -> action.element.shapeType?.name?.lowercase()
+        is CanvasAction.ApplyImageFilter -> action.newFilter?.name?.lowercase()
+        is CanvasAction.SetTextAlignment -> action.alignment.name.lowercase()
+        is CanvasAction.SetCanvasSize -> "${action.newSize.width.toInt()}x${action.newSize.height.toInt()}"
+        else -> null
+    }
+
+    // hexOf(color) — `#RRGGBB`, alpha dropped — already exists above; reused here.
+
+    /**
+     * A gradient has no name and no id that survives a reseed — `GradientPresets.defaultList`
+     * leaves every id at 0 and Room assigns them on insert, so the id means nothing across
+     * installs. Type, angle and the end stops are what distinguishes one preset from another
+     * and they travel with the item, so they are the identifier.
+     */
+    private fun gradientSignature(gradient: GradientItem): String {
+        val first = gradient.colors.firstOrNull()?.let { hexOf(it) } ?: "none"
+        val last = gradient.colors.lastOrNull()?.let { hexOf(it) } ?: "none"
+        return "${gradient.type.name.lowercase()}_${gradient.angle.toInt()}_${first}_$last"
+    }
+
     fun logFeatureError(featureName: String, errorType: String, errorMessage: String) {
         analyticsTracker.logFeatureError(featureName, errorType, errorMessage)
+    }
+
+    /**
+     * Passthrough for editor UI that has no injected tracker of its own — helpers and views
+     * rather than fragments, which Hilt cannot inject into. Every panel already holds this
+     * view model, so routing through it beats threading a tracker through their constructors.
+     */
+    fun logToolAction(toolName: String, subFeature: String, actionDetail: String? = null) {
+        analyticsTracker.logToolActionPerformed(toolName, subFeature, actionDetail)
+    }
+
+    /**
+     * How long a saved project sat before its owner came back to it — the whole point of
+     * `project_opened`. -1 when the file has no usable timestamp, as the event's KDoc says.
+     *
+     * Computed here rather than at each call site so that every entry point into the loader
+     * reports it the same way; the Files list used to be the only place that knew how.
+     */
+    private fun daysSinceEdit(dateText: String?): Int {
+        if (dateText.isNullOrBlank()) return -1
+        return try {
+            val then = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                .parse(dateText) ?: return -1
+            ((System.currentTimeMillis() - then.time) / 86_400_000L).toInt().coerceAtLeast(0)
+        } catch (e: Exception) {
+            -1
+        }
     }
 
     private fun CanvasElement.restoreWithContext(context: Context?): CanvasElement {
@@ -6584,10 +6656,22 @@ class CanvasViewModel @Inject constructor(
         _canvasView.value = null
     }
 
+    /**
+     * [origin] says what the user thinks they just opened, and it decides which event this
+     * reports — [Values.SOURCE_TEMPLATE] for the catalogue, [Values.SOURCE_PROJECT] for one
+     * of their own saved files.
+     *
+     * It has to be the caller's business, because both go through this one loader. It used
+     * to report `template_opened` unconditionally: reopening a saved project from Home's
+     * Recents row was counted as template usage, and the Files list — the only place that
+     * called `logProjectOpened` — emitted *both* events and started the design workflow
+     * twice for a single open. The default keeps every catalogue call site unchanged.
+     */
     fun loadTemplateFromJsonFile(
         exportResult: ExportResult,
         context: Context,
         titleHint: String? = null,
+        origin: String = Values.SOURCE_TEMPLATE,
         onComplete: ((Boolean) -> Unit)? = null
     ) {
         resetCanvasState()
@@ -6630,14 +6714,22 @@ class CanvasViewModel @Inject constructor(
                 // Clean up the temp file if we created one (jsonFile == sourceFile for plain JSON).
                 if (jsonFile.absolutePath == tempJson.absolutePath) tempJson.delete()
 
-                val templateId = exportResult.sourceTemplateId ?: exportResult.id.toInt()
-                analyticsTracker.logTemplateOpened(
-                    templateId = templateId,
-                    name = exportResult.fileName,
-                    category = projectSourceName,
-                    isPremium = exportResult.isFromPremiumTemplate,
-                    elementCount = elements.size
-                )
+                if (origin == Values.SOURCE_PROJECT) {
+                    analyticsTracker.logProjectOpened(
+                        elementCount = elements.size,
+                        canvasSize = "${exportResult.canvasSize.width.toInt()}x${exportResult.canvasSize.height.toInt()}",
+                        daysSinceEdit = daysSinceEdit(exportResult.updatedDate)
+                    )
+                } else {
+                    val templateId = exportResult.sourceTemplateId ?: exportResult.id.toInt()
+                    analyticsTracker.logTemplateOpened(
+                        templateId = templateId,
+                        name = exportResult.fileName,
+                        category = projectSourceName,
+                        isPremium = exportResult.isFromPremiumTemplate,
+                        elementCount = elements.size
+                    )
+                }
 
                 val requiredFontIds =
                     elements.filter { it.type == ElementType.TEXT }.mapNotNull { it.fontId }

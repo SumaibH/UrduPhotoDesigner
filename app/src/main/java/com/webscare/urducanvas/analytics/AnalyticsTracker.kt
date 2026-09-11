@@ -234,9 +234,27 @@ class AnalyticsTracker @Inject constructor(
         ))
     }
 
-    fun logAdImpression(adUnitName: String, adFormat: String, screenName: String, triggerFeature: String, rewardTarget: String? = null) {
-        sessionStateManager.recordAdShown(adUnitName, triggerFeature)
-        syncUserProfile(sessionStateManager.recordAdWatched())
+    /**
+     * [countsAsWatched] is false for the passive display formats — an in-layout native or
+     * a banner the SDK fills by itself. Those are ads that appeared next to something the
+     * user came for, not ads the user sat through, and the lifetime `ads_watched` user
+     * property is built to band people by the latter. A Home banner firing on every visit
+     * would push most of the userbase into the top bucket within a week and the audiences
+     * that filter on it would stop separating anyone. The event still goes out; only the
+     * lifetime counter and the post-ad outcome window are left alone.
+     */
+    fun logAdImpression(
+        adUnitName: String,
+        adFormat: String,
+        screenName: String,
+        triggerFeature: String,
+        rewardTarget: String? = null,
+        countsAsWatched: Boolean = true
+    ) {
+        if (countsAsWatched) {
+            sessionStateManager.recordAdShown(adUnitName, triggerFeature)
+            syncUserProfile(sessionStateManager.recordAdWatched())
+        }
         logRawEvent(Events.AD_IMPRESSION_CUSTOM, mapOf(
             Params.AD_UNIT_NAME to adUnitName,
             Params.AD_FORMAT to adFormat,

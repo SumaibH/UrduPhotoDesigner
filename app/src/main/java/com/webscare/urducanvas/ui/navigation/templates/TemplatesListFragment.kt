@@ -42,6 +42,9 @@ class TemplatesListFragment : androidx.fragment.app.Fragment() {
     @javax.inject.Inject
     lateinit var analyticsTracker: com.webscare.urducanvas.analytics.AnalyticsTracker
 
+    @javax.inject.Inject
+    lateinit var adAnalyticsCoordinator: com.webscare.urducanvas.analytics.ads.AdAnalyticsCoordinator
+
     /** Reports template_impression for cards that actually come into view on this screen. */
     private val impressionTracker by lazy {
         com.webscare.urducanvas.analytics.impressions.TemplateImpressionTracker(analyticsTracker, "templates_list")
@@ -266,6 +269,14 @@ class TemplatesListFragment : androidx.fragment.app.Fragment() {
             interval = 6,
             startOffset = 3,
             nativeSize = com.webscare.ads.NativeSize.SMALL
+        )
+        // ad_opportunity only — see AdAnalyticsCoordinator.onSdkAdImpression for why an
+        // in-feed native cannot honestly report an impression from this side.
+        adAnalyticsCoordinator.onAdSlotAttached(
+            adUnitName = "native_templates",
+            adUnitId = BuildConfig.AD_NATIVE_TEMPLATES,
+            adFormat = "native",
+            triggerFeature = "templates_list"
         )
 
         binding.templatesRV.apply {

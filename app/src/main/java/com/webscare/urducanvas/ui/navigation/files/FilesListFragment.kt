@@ -49,6 +49,7 @@ import com.webscare.urducanvas.databinding.DialogLoadingProgressBinding
 import com.webscare.urducanvas.databinding.FragmentFilesListBinding
 import com.webscare.urducanvas.databinding.LayoutFilesPopupBinding
 import com.webscare.urducanvas.viewmodels.FiltersViewModel
+import com.webscare.urducanvas.analytics.AnalyticsConstants
 import com.webscare.urducanvas.analytics.AnalyticsTracker
 import com.webscare.urducanvas.viewmodels.MainViewModel
 import android.content.Intent
@@ -512,15 +513,18 @@ class FilesListFragment : Fragment() {
     private fun openItem(item: Any) {
         when (item) {
             is ExportResult -> {
-                canvasViewModel.loadTemplateFromJsonFile(item, requireContext(), titleHint = "Loading Project") { success ->
+                // project_opened now comes from inside the loader, which is also where
+                // template_opened comes from — the two are alternatives, and reporting one
+                // of them here meant a Files reopen emitted both and started the design
+                // workflow twice. The loader also has the real element count, which this
+                // call site never did (it passed 0).
+                canvasViewModel.loadTemplateFromJsonFile(
+                    item,
+                    requireContext(),
+                    titleHint = "Loading Project",
+                    origin = AnalyticsConstants.Values.SOURCE_PROJECT
+                ) { success ->
                     if (success && isAdded) {
-                        // Reported on success only: a project that failed to load is not
-                        // a return visit, it is a bug, and feature_error already has it.
-                        analyticsTracker.logProjectOpened(
-                            elementCount = 0,
-                            canvasSize = "${item.canvasSize.width.toInt()}x${item.canvasSize.height.toInt()}",
-                            daysSinceEdit = daysSince(item.updatedDate)
-                        )
                         findNavController().navigate(R.id.editorFragment, bundle, navOptions)
                     }
                 }

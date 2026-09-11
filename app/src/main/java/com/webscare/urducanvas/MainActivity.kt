@@ -49,6 +49,9 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var navigationAnalyticsListener: NavigationAnalyticsListener
 
+    @Inject
+    lateinit var adAnalyticsCoordinator: com.webscare.urducanvas.analytics.ads.AdAnalyticsCoordinator
+
     private var _binding: ActivityMainBinding? = null
     private val binding get() = _binding!!
 
@@ -261,6 +264,15 @@ class MainActivity : AppCompatActivity() {
         if (isTopLevel && !bannerAdInitialised) {
             bannerAdInitialised = true
             binding.mainBannerAd.setAdUnitId(BuildConfig.AD_BANNER_MAIN)
+            // Once per process, which is what this guard already enforces. The banner had no
+            // telemetry at all; the impression side comes from AdConfig.onAdImpression, a real
+            // AdMob callback wired in MyApplication.
+            adAnalyticsCoordinator.onAdSlotAttached(
+                adUnitName = "banner_main",
+                adUnitId = BuildConfig.AD_BANNER_MAIN,
+                adFormat = "banner",
+                triggerFeature = "app_chrome"
+            )
         }
         binding.mainBannerAd.visibility = if (isTopLevel) View.VISIBLE else View.GONE
         binding.bannerAdDivider.visibility = if (isTopLevel) View.VISIBLE else View.GONE

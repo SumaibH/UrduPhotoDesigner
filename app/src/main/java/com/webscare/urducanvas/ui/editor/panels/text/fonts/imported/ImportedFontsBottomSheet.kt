@@ -165,7 +165,7 @@ class ImportedFontsBottomSheet : BottomSheetDialogFragment() {
 
                 // 2. Apply to canvas + navigate to Imported tab + show snackbar + dismiss
                 withContext(Dispatchers.Main) {
-                    applyFont(fontEntity)
+                    applyFont(fontEntity, justImported = true)
                     (parentFragment as? com.webscare.urducanvas.ui.editor.panels.text.TextFragment)?.selectImportedTab()
                     com.webscare.urducanvas.common.utils.GlobalSnackbar.showSuccess(
                         requireActivity(),
@@ -184,7 +184,21 @@ class ImportedFontsBottomSheet : BottomSheetDialogFragment() {
 
     // ── Apply font to canvas ─────────────────────────────────────────────────
 
-    private fun applyFont(font: FontEntity) {
+    /**
+     * [justImported] separates the two ways into this sheet: bringing a new file in off the
+     * device, and reaching for one already imported. The whole point of the feature is the
+     * fonts this app does not ship, so how often an import is reused rather than repeated is
+     * the question — and neither half had any telemetry.
+     *
+     * `font_applied` is not reused here: this font has no catalogue id and no language, so
+     * it would land in the font reports as a row nothing else can be joined to.
+     */
+    private fun applyFont(font: FontEntity, justImported: Boolean = false) {
+        canvasViewModel.logToolAction(
+            "text",
+            "imported_font",
+            if (justImported) "import_file" else "reuse_existing"
+        )
         canvasViewModel.setFont(font)
         adapter.selectedFontId = font.id.toString()
     }

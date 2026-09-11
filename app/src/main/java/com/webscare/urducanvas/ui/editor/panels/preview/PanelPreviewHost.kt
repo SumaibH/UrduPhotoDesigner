@@ -41,6 +41,16 @@ class PanelPreviewHost(
     private var showing = false
     private var holdingSheet = false
 
+    /**
+     * Reached through the view model because this is a helper, not a fragment, so Hilt has
+     * nothing to inject into. Activity-scoped, which is the same instance every panel holds.
+     */
+    private val canvasViewModel by lazy {
+        androidx.lifecycle.ViewModelProvider(
+            fragment.requireActivity()
+        )[com.webscare.urducanvas.common.canvas.CanvasViewModel::class.java]
+    }
+
     private val backCallback = object : OnBackPressedCallback(false) {
         override fun handleOnBackPressed() = hide()
     }
@@ -84,13 +94,21 @@ class PanelPreviewHost(
         }
 
         preview.onBack = { hide() }
-        preview.onPrimaryAction = { picked -> onPrimary(picked); hide() }
+        preview.onPrimaryAction = { picked ->
+            // The commit. Separate from the open above so the pair answers the question the
+            // preview was built for: how often looking closer leads to using the asset
+            // rather than backing out. Both go through this one place, so all seven panels
+            // that own a preview are covered without any of them knowing about analytics.
+            canvasViewModel.logToolAction(TOOL_PREVIEW, "use_asset", kindOf(picked))
+            onPrimary(picked); hide()
+        }
         preview.onShare = onShare
         preview.onDownload = onDownload
         preview.show(asset, expanded, primaryLabel)
 
         if (showing) return
         showing = true
+        canvasViewModel.logToolAction(TOOL_PREVIEW, "open", kindOf(asset))
         mute()
         backCallback.isEnabled = true
         if (!expanded) {
@@ -209,8 +227,30 @@ class PanelPreviewHost(
     private fun previewHeightPx() =
         (PREVIEW_PANEL_DP * panelRoot.resources.displayMetrics.density).toInt()
 
+    /**
+     * Short, stable and locale-independent. The asset's breadcrumb would name the category,
+     * but it is a translated string and would split one value across every language the app
+     * ships in.
+     *
+     * `Rendered` covers emoji, shapes and style presets, so all three land in one bucket.
+     * Which of them it was is already answerable: `tool_panel_opened` names the panel the
+     * preview was opened from. Splitting them properly means carrying the kind on
+     * [PreviewAsset.Rendered] itself, which is not this change's file to alter.
+     */
+    private fun kindOf(asset: PreviewAsset): String = when (asset) {
+        is PreviewAsset.Font -> "font"
+        is PreviewAsset.Picture -> "picture"
+        is PreviewAsset.Rendered -> "rendered"
+    }
+
     companion object {
         private const val SLIDE_MS = 220L
+
+        /**
+         * One tool name for every panel's preview. Which panel it was is already on
+         * `tool_panel_opened`, and the preview is the same feature wherever it appears.
+         */
+        private const val TOOL_PREVIEW = "asset_preview"
 
         /**
          * How tall a panel has to be for the preview to read: the well and paper

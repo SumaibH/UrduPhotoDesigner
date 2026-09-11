@@ -120,6 +120,10 @@ class NavigationAnalyticsListener @Inject constructor(
             R.id.splashFragment -> "splash"
             R.id.homeFragment -> "home"
             R.id.createFragment -> "create_canvas"
+            // Missing since the screen was added, so it fell to the else branch below and
+            // reported "destination_<resource id>" — an integer that changes between builds,
+            // which splits one screen across as many rows as there have been releases.
+            R.id.canvasSizesFragment -> "canvas_sizes"
             R.id.filesFragment -> "files"
             R.id.templatesFragment -> "templates_category"
             R.id.templatesListFragment -> "templates_list"

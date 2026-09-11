@@ -44,6 +44,16 @@ class AdAnalyticsCoordinator @Inject constructor(
          * a number the whole ad funnel divides by.
          */
         private const val MIN_RENDER_MS = 700L
+
+        /** The `adType` strings WebsCareAds passes to its analytics callbacks. */
+        private const val FORMAT_NATIVE = "native"
+        private const val FORMAT_BANNER = "banner"
+
+        /**
+         * Trigger for a slot the user did not ask for. A passive native or banner is filled
+         * because a screen was opened, not because a feature needed unlocking.
+         */
+        private const val TRIGGER_SCREEN_LOAD = "screen_load"
     }
 
     /** True between requesting an ad and learning whether it actually rendered. */
@@ -63,6 +73,93 @@ class AdAnalyticsCoordinator @Inject constructor(
         impressionPending = true
         opportunityElapsedMs = SystemClock.elapsedRealtime()
         analyticsTracker.logAdOpportunity(adUnitName, adFormat, triggerFeature, rewardTarget)
+    }
+
+    /**
+     * Friendly placement name for each configured ad unit id.
+     *
+     * The SDK's impression callback identifies the ad by its *resolved* unit id, and the
+     * only thing the app can map that back to is the id it configured. Registered from the
+     * attach points rather than hard-coded so a new placement cannot be added without also
+     * naming itself here.
+     *
+     * Two known holes, both harmless and both reported honestly rather than guessed:
+     * a debug build has `testMode` on and the SDK substitutes Google's test unit ids, so the
+     * lookup misses and the format is used as the name; and the non-production flavours
+     * point several placements at the same test id, so in those builds one name wins for
+     * all of them. Release builds have eleven distinct ids and map cleanly.
+     */
+    private val placementNamesByUnitId = mutableMapOf<String, String>()
+
+    /**
+     * An ad slot handed to the SDK to fill whenever it likes — an in-layout native, an
+     * in-feed native, a banner. There is no "show" call to hang an opportunity off, so the
+     * attach *is* the opportunity.
+     *
+     * Deliberately does not set `impressionPending`. That flag belongs to the full-screen
+     * heuristic in [onAdCompletionCallback], which infers an impression from how long a
+     * completion callback took; a passive slot attaching while a full-screen ad was in
+     * flight would hand that heuristic an opportunity timestamp belonging to something else
+     * and invent an impression from it.
+     */
+    fun onAdSlotAttached(
+        adUnitName: String,
+        adUnitId: String,
+        adFormat: String,
+        triggerFeature: String
+    ) {
+        // A blank unit id is the no-ads flavour: the slot does not exist, so there was no
+        // opportunity. Reporting one would put phantom ad inventory into the funnel.
+        if (adUnitId.isBlank()) return
+        placementNamesByUnitId[adUnitId] = adUnitName
+        analyticsTracker.logAdOpportunity(adUnitName, adFormat, triggerFeature, null)
+    }
+
+    /**
+     * A real AdMob impression, forwarded from `AdConfig.onAdImpression`.
+     *
+     * This is the callback the rest of this class has been working around: it fires from
+     * the SDK's own `onAdImpression()` / `onAdShowedFullScreenContent()`, so it is proof the
+     * ad rendered rather than an inference from elapsed time.
+     *
+     * Only the passive display formats are reported from here. The full-screen ones are
+     * already instrumented at their call sites, which know the feature that triggered them
+     * and the reward that was on offer — neither of which this callback carries — so
+     * handling them here as well would double-count every interstitial and rewarded ad.
+     *
+     * Not every passive placement can reach this. `WebsCareAds.wrapWithNativeAds` builds
+     * its own AdLoader inside the SDK and never invokes these config callbacks, so the six
+     * in-feed placements emit `ad_opportunity` at attach and nothing further. That is the
+     * same honest limitation the interstitial path has, and closing it needs a WebsCareAds
+     * release, not an app change.
+     */
+    fun onSdkAdImpression(adType: String, resolvedAdUnitId: String) {
+        if (adType != FORMAT_NATIVE && adType != FORMAT_BANNER) return
+        analyticsTracker.logAdImpression(
+            adUnitName = placementNamesByUnitId[resolvedAdUnitId] ?: "${adType}_unmapped",
+            adFormat = adType,
+            screenName = sessionStateManager.currentScreen,
+            triggerFeature = TRIGGER_SCREEN_LOAD,
+            rewardTarget = null,
+            // A banner the user scrolled past is not an ad they watched — see the KDoc on
+            // AnalyticsTracker.logAdImpression for why the lifetime bucket must not see it.
+            countsAsWatched = false
+        )
+    }
+
+    /**
+     * A load failure for a passive slot, forwarded from `AdConfig.onAdFailed`.
+     *
+     * Same format filter and for the same reason: the full-screen call sites report their
+     * own failures with the trigger context attached.
+     */
+    fun onSdkAdLoadFailed(adType: String, resolvedAdUnitId: String, errorCode: Int, errorMessage: String) {
+        if (adType != FORMAT_NATIVE && adType != FORMAT_BANNER) return
+        analyticsTracker.logAdFailedToShow(
+            adUnitName = placementNamesByUnitId[resolvedAdUnitId] ?: "${adType}_unmapped",
+            adFormat = adType,
+            reason = "load_failed_$errorCode: $errorMessage"
+        )
     }
 
     /**

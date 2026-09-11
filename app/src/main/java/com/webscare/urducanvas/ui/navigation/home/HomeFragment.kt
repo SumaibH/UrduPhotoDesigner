@@ -39,6 +39,7 @@ import com.webscare.ads.WebsCareAds
 import com.webscare.urducanvas.BuildConfig
 import com.webscare.urducanvas.MainActivity
 import com.webscare.urducanvas.R
+import com.webscare.urducanvas.analytics.AnalyticsConstants
 import com.webscare.urducanvas.common.canvas.enums.ErrorType
 import com.webscare.urducanvas.common.canvas.model.CanvasSize
 import com.webscare.urducanvas.common.canvas.sealed.FontDownloadState
@@ -71,6 +72,9 @@ import kotlinx.coroutines.withContext
 class HomeFragment : androidx.fragment.app.Fragment(), SplashLanding {
     @javax.inject.Inject
     lateinit var analyticsTracker: com.webscare.urducanvas.analytics.AnalyticsTracker
+
+    @javax.inject.Inject
+    lateinit var adAnalyticsCoordinator: com.webscare.urducanvas.analytics.ads.AdAnalyticsCoordinator
 
     /** Reports template_impression for cards that actually come into view on this screen. */
     private val impressionTracker by lazy {
@@ -128,6 +132,17 @@ class HomeFragment : androidx.fragment.app.Fragment(), SplashLanding {
 
                     withContext(Dispatchers.Main) {
                         val canvasSize = CanvasSize(id = 0, "From Image", widthVal, heightVal)
+                        // Starting from a photo is one of Home's three ways into the editor
+                        // and the only one nothing else reports. Without this the design
+                        // workflow never starts for it, so the whole attempt — composed,
+                        // exported, abandoned — is missing from the funnel, and SOURCE_PHOTO
+                        // had no call site at all.
+                        analyticsTracker.logCanvasCreated(
+                            presetName = "from_image",
+                            canvasSize = "${widthVal.toInt()}x${heightVal.toInt()}",
+                            isCustom = true,
+                            sourceType = AnalyticsConstants.Values.SOURCE_PHOTO
+                        )
                         viewModel.clearCanvas()
                         viewModel.setCanvasSize(canvasSize)
                         viewModel.setCanvasBackgroundImage(bitmap, requireActivity())
@@ -153,6 +168,15 @@ class HomeFragment : androidx.fragment.app.Fragment(), SplashLanding {
 
         if (BuildConfig.AD_NATIVE_HOME.isNotBlank()) {
             binding.homeNativeAd.setAdUnitIdAndSize(BuildConfig.AD_NATIVE_HOME, NativeSize.SMALL)
+            // The attach is the opportunity — there is no "show" call for a slot the SDK
+            // fills itself. The matching impression comes from AdConfig.onAdImpression,
+            // wired in MyApplication, so this placement gets both halves.
+            adAnalyticsCoordinator.onAdSlotAttached(
+                adUnitName = "native_home",
+                adUnitId = BuildConfig.AD_NATIVE_HOME,
+                adFormat = "native",
+                triggerFeature = "home"
+            )
         } else {
             binding.homeNativeAd.visibility = View.GONE
         }
@@ -589,7 +613,15 @@ class HomeFragment : androidx.fragment.app.Fragment(), SplashLanding {
 
         // ── Recents ──────────────────────────────────────────────────────────
         recentAdapter = RecentAdapter(onClick = { exportResult ->
-            viewModel.loadTemplateFromJsonFile(exportResult, requireContext(), titleHint = "Loading Project") { success ->
+            // A saved project, not a template. Without the origin the shared loader reported
+            // template_opened, so every reopen from this row was counted as template usage
+            // and the return-visit signal project_opened exists for went missing entirely.
+            viewModel.loadTemplateFromJsonFile(
+                exportResult,
+                requireContext(),
+                titleHint = "Loading Project",
+                origin = AnalyticsConstants.Values.SOURCE_PROJECT
+            ) { success ->
                 if (success && isAdded) {
                     findNavController().navigate(R.id.editorFragment)
                 }
@@ -630,6 +662,24 @@ class HomeFragment : androidx.fragment.app.Fragment(), SplashLanding {
             if (!isDownloaded) {
                 mainViewModel.downloadFont(font)
             } else {
+                // Third way into the editor from Home: it builds a blank 2000x2000 canvas and
+                // drops a sample of the font on it. Both halves needed reporting — the canvas
+                // so the workflow starts, and the font because TextFragment held the only
+                // font_applied call site, which made every font tried from Home look unused.
+                analyticsTracker.logCanvasCreated(
+                    presetName = "font_preview",
+                    canvasSize = "2000x2000",
+                    isCustom = false,
+                    sourceType = AnalyticsConstants.Values.SOURCE_BLANK
+                )
+                // justDownloaded is false by definition here: this branch only runs for a
+                // font already on the device — the download path is the branch above.
+                analyticsTracker.logFontApplied(
+                    fontId = font.id.toString(),
+                    fontName = font.font_name,
+                    language = font.font_language,
+                    justDownloaded = false
+                )
                 viewModel.setCanvasSize(CanvasSize(id = 0, "", 2000f, 2000f))
                 viewModel.addTextWithFont(
                     requireActivity().getString(R.string.dummyText), font, requireActivity()
@@ -648,6 +698,15 @@ class HomeFragment : androidx.fragment.app.Fragment(), SplashLanding {
         // templates; tapping a size is a request for a canvas, not a filter.
         canvasSizeAdapter = CanvasSizeAdapter(emptyList(), onClick = { selected ->
             canvasSizeAdapter.selectedSizeName = selected.name
+            // The sequence matched CreateFragment's except for this, which is the one step
+            // that matters to the funnel: CreateFragment reports canvas_created and this row
+            // did not, so blank canvases started from Home were invisible.
+            analyticsTracker.logCanvasCreated(
+                presetName = selected.name,
+                canvasSize = "${selected.width.toInt()}x${selected.height.toInt()}",
+                isCustom = false,
+                sourceType = AnalyticsConstants.Values.SOURCE_BLANK
+            )
             viewModel.clearCanvas()
             viewModel.setCanvasSize(selected)
             view?.post {
@@ -686,6 +745,17 @@ class HomeFragment : androidx.fragment.app.Fragment(), SplashLanding {
             interval = 5,
             startOffset = 3,
             nativeSize = NativeSize.SMALL
+        )
+        // ad_opportunity only, and deliberately nothing more. wrapWithNativeAds builds its own
+        // AdLoader inside the SDK and never invokes AdConfig's analytics callbacks, so nothing
+        // on this side can prove an in-feed ad rendered. Logging an impression here would
+        // repeat the mistake the rewarded path was repaired for — a "No fill" counted as an ad
+        // the user saw. Closing it needs a WebsCareAds release, not an app change.
+        adAnalyticsCoordinator.onAdSlotAttached(
+            adUnitName = "native_categories",
+            adUnitId = BuildConfig.AD_NATIVE_CATEGORIES,
+            adFormat = "native",
+            triggerFeature = "home_feed"
         )
         binding.categoriesRV.apply {
             adapter = wrappedCategoryAdapter
@@ -937,6 +1007,23 @@ class HomeFragment : androidx.fragment.app.Fragment(), SplashLanding {
 
                                 showGlobalSuccessSnack("Font downloaded") {
                                     lifecycleScope.launch {
+                                        // The post-download half of the same fonts row. Left
+                                        // unreported it would have biased the row's own
+                                        // numbers: only fonts the user already had would have
+                                        // shown up, which is the opposite of the fonts people
+                                        // came for. justDownloaded is true here by definition.
+                                        analyticsTracker.logCanvasCreated(
+                                            presetName = "font_preview",
+                                            canvasSize = "2000x2000",
+                                            isCustom = false,
+                                            sourceType = AnalyticsConstants.Values.SOURCE_BLANK
+                                        )
+                                        analyticsTracker.logFontApplied(
+                                            fontId = font.id.toString(),
+                                            fontName = font.font_name,
+                                            language = font.font_language,
+                                            justDownloaded = true
+                                        )
                                         viewModel.clearCanvas()
                                         viewModel.clearLoading()
                                         findNavController().popBackStack(R.id.editorFragment, true)

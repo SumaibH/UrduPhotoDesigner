@@ -227,6 +227,12 @@ class TextAdjustmentsFragment : androidx.fragment.app.Fragment() {
                 return@addPressEffect
             }
 
+            // Only the sheet being opened is reported here. Which of its three buttons was
+            // pressed already reaches GA4 as feature_completed with an "expand_words",
+            // "expand_characters" or "rejoin" detail from the view model, so logging the
+            // buttons too would count every calligraphy breakdown twice. What was missing is
+            // the denominator: how often the sheet is opened and abandoned.
+            viewModel.logToolAction("text", "calligraphy_breakdown", "sheet_opened")
             val sheet = CalligraphyBreakdownBottomSheet.newInstance(isAlreadyExpanded = false)
             sheet.onBreakWords = {
                 viewModel.expandSelectedTextToCalligraphy(ExpansionDepth.WORDS)

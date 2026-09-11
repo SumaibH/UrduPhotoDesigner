@@ -45,6 +45,9 @@ class FinishExportFragment : androidx.fragment.app.Fragment() {
     @Inject
     lateinit var sessionStateManager: SessionStateManager
 
+    @Inject
+    lateinit var adAnalyticsCoordinator: com.webscare.urducanvas.analytics.ads.AdAnalyticsCoordinator
+
     val viewModel: CanvasViewModel by activityViewModels()
 
     override fun onCreateView(
@@ -60,6 +63,15 @@ class FinishExportFragment : androidx.fragment.app.Fragment() {
         view.applyStatusBarTopPadding()
         
         binding.exportSuccessNativeAd.setAdUnitIdAndSize(BuildConfig.AD_NATIVE_EXPORT_SUCCESS, NativeSize.MEDIUM)
+        // The attach is the opportunity — an in-layout native has no "show" call. The matching
+        // impression comes from AdConfig.onAdImpression, wired in MyApplication, which is a
+        // real AdMob callback rather than an inference, so this placement gets both halves.
+        adAnalyticsCoordinator.onAdSlotAttached(
+            adUnitName = "native_export_success",
+            adUnitId = BuildConfig.AD_NATIVE_EXPORT_SUCCESS,
+            adFormat = "native",
+            triggerFeature = "export_success"
+        )
 
         view.alpha = 0f
         view.translationY = 80f

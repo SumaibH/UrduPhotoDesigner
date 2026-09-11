@@ -47,6 +47,10 @@ import com.webscare.urducanvas.common.views.NativeAdSpacingDecoration
 
 @AndroidEntryPoint
 class TemplateCategoriesFragment : androidx.fragment.app.Fragment() {
+
+    @javax.inject.Inject
+    lateinit var adAnalyticsCoordinator: com.webscare.urducanvas.analytics.ads.AdAnalyticsCoordinator
+
     private var _binding: FragmentTemplatesCategoriesBinding? = null
     private val binding get() = _binding!!
     private val mainViewModel: MainViewModel by activityViewModels()
@@ -220,6 +224,14 @@ class TemplateCategoriesFragment : androidx.fragment.app.Fragment() {
             startOffset = 2,
             nativeSize = com.webscare.ads.NativeSize.SMALL
         )
+        // ad_opportunity only — see AdAnalyticsCoordinator.onSdkAdImpression for why an
+        // in-feed native cannot honestly report an impression from this side.
+        adAnalyticsCoordinator.onAdSlotAttached(
+            adUnitName = "native_categories",
+            adUnitId = BuildConfig.AD_NATIVE_CATEGORIES,
+            adFormat = "native",
+            triggerFeature = "templates_all_categories"
+        )
         binding.categoriesRV.adapter = wrappedCategoryAdapter
         binding.categoriesRV.addItemDecoration(NativeAdSpacingDecoration(requireContext()))
 
@@ -243,6 +255,12 @@ class TemplateCategoriesFragment : androidx.fragment.app.Fragment() {
             interval = 6,
             startOffset = 3,
             nativeSize = com.webscare.ads.NativeSize.SMALL
+        )
+        adAnalyticsCoordinator.onAdSlotAttached(
+            adUnitName = "native_templates",
+            adUnitId = BuildConfig.AD_NATIVE_TEMPLATES,
+            adFormat = "native",
+            triggerFeature = "templates_all_categories"
         )
 
         binding.categoriesRV.edgeEffectFactory = SpringEdgeEffectFactory()

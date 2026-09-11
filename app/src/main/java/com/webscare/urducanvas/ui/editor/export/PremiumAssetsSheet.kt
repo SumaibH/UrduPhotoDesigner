@@ -22,7 +22,11 @@ import com.webscare.urducanvas.common.utils.Utils.keepBelowStatusBar
 import com.webscare.urducanvas.databinding.FragmentPremiumAssetsSheetBinding
 import com.webscare.urducanvas.viewmodels.MainViewModel
 
+@dagger.hilt.android.AndroidEntryPoint
 class PremiumAssetsSheet : BottomSheetDialogFragment() {
+
+    @javax.inject.Inject
+    lateinit var analyticsTracker: com.webscare.urducanvas.analytics.AnalyticsTracker
 
     private var _binding: FragmentPremiumAssetsSheetBinding? = null
     private val binding get() = _binding!!
@@ -36,6 +40,12 @@ class PremiumAssetsSheet : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val items = viewModel.getPremiumAssets()
+
+        // This is a paywall: it is what a free user is shown instead of their export, and
+        // it is the highest-intent moment in the app. paywall_viewed fired only from the
+        // subscriptions screen, so the whole upsell that leads there had no impressions to
+        // divide conversions by — and the export block is the reason most people reach it.
+        analyticsTracker.logPaywallViewed("export_premium_assets")
 
         binding.assets.adapter = PremiumAssetsAdapter(items, mainViewModel.localFonts.value)
 

@@ -54,6 +54,22 @@ class MyApplication : Application() {
             settingsBannerEnabled = adsEnabled
             rewardedBgRemovalEnabled = adsEnabled
             appOpenSplashEnabled = adsEnabled
+
+            // The only honest impression signal the SDK offers. These two hooks are fed
+            // straight from the real AdMob listeners — onAdImpression() for the display
+            // formats — so unlike the elapsed-time heuristic the full-screen call sites
+            // still have to use, this is proof the ad rendered rather than an inference.
+            //
+            // Declared here because AdConfig is global: there is no per-view callback on
+            // WebsCareNativeView or WebsCareBannerView to hang it off. The coordinator
+            // filters to the display formats, so the instrumented full-screen paths are
+            // not double-counted.
+            onAdImpression = { adType, adUnitId ->
+                adAnalyticsCoordinator.onSdkAdImpression(adType, adUnitId)
+            }
+            onAdFailed = { adType, adUnitId, errorCode, errorMessage ->
+                adAnalyticsCoordinator.onSdkAdLoadFailed(adType, adUnitId, errorCode, errorMessage)
+            }
         }
 
         // Enable process-lifecycle warm-starts for App Open ads if ads enabled

@@ -45,6 +45,9 @@ class TemplatesFragment : androidx.fragment.app.Fragment() {
     @javax.inject.Inject
     lateinit var analyticsTracker: com.webscare.urducanvas.analytics.AnalyticsTracker
 
+    @javax.inject.Inject
+    lateinit var adAnalyticsCoordinator: com.webscare.urducanvas.analytics.ads.AdAnalyticsCoordinator
+
     /** Reports template_impression for cards that actually come into view on this screen. */
     private val impressionTracker by lazy {
         com.webscare.urducanvas.analytics.impressions.TemplateImpressionTracker(analyticsTracker, "templates_category")
@@ -225,6 +228,15 @@ class TemplatesFragment : androidx.fragment.app.Fragment() {
             startOffset = 2,
             nativeSize = com.webscare.ads.NativeSize.SMALL
         )
+        // ad_opportunity only: wrapWithNativeAds loads in-feed ads through its own AdLoader
+        // inside the SDK and reports to nobody, so nothing here can prove one rendered. An
+        // optimistic impression is exactly the bug the rewarded path was repaired for.
+        adAnalyticsCoordinator.onAdSlotAttached(
+            adUnitName = "native_categories",
+            adUnitId = com.webscare.urducanvas.BuildConfig.AD_NATIVE_CATEGORIES,
+            adFormat = "native",
+            triggerFeature = "templates_category"
+        )
         binding.categoriesRV.adapter = wrappedSubcategoryAdapter
         binding.categoriesRV.addItemDecoration(NativeAdSpacingDecoration(requireContext()))
     }
@@ -256,6 +268,12 @@ class TemplatesFragment : androidx.fragment.app.Fragment() {
             interval = 6,
             startOffset = 3,
             nativeSize = com.webscare.ads.NativeSize.SMALL
+        )
+        adAnalyticsCoordinator.onAdSlotAttached(
+            adUnitName = "native_templates",
+            adUnitId = com.webscare.urducanvas.BuildConfig.AD_NATIVE_TEMPLATES,
+            adFormat = "native",
+            triggerFeature = "templates_category"
         )
     }
 
