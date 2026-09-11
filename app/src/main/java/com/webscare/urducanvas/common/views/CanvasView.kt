@@ -1111,11 +1111,38 @@ class CanvasView @JvmOverloads constructor(
     }
 
     /**
+     * Splits the selection into the things a user thinks they are aligning: a group counts
+     * once however many children it has, an ungrouped element counts for itself.
+     *
+     * [selectedElements] holds a group's *children* — the GROUP sentinel never enters it —
+     * so without this every alignment saw a group as N separate objects and SELECTION mode
+     * stacked its children on top of each other instead of moving the group.
+     *
+     * groupBy keeps first-encounter order, so the first unit is the one the rest align to.
+     */
+    private fun selectionUnits(): List<List<CanvasElement>> =
+        selectedElements.groupBy { it.groupId ?: it.id }.values.toList()
+
+    /** Combined axis-aligned bounds of one alignment unit. */
+    private fun unitBounds(unit: List<CanvasElement>): RectF {
+        var l = Float.MAX_VALUE; var t = Float.MAX_VALUE
+        var r = -Float.MAX_VALUE; var b = -Float.MAX_VALUE
+        unit.forEach { e ->
+            val bounds = getElementAxisAlignedBounds(e)
+            if (bounds.left < l) l = bounds.left
+            if (bounds.top < t) t = bounds.top
+            if (bounds.right > r) r = bounds.right
+            if (bounds.bottom > b) b = bounds.bottom
+        }
+        return RectF(l, t, r, b)
+    }
+
+    /**
      * Call this for your horizontal buttons:
      *  – if one element: snaps to canvas LEFT/CENTER/RIGHT
      *  – if many:
      *     • CANVAS: treat group as block and snap its LEFT/CENTER/RIGHT to the art board
-     *     • SELECTION: snap each element’s own LEFT/CENTER/RIGHT to the first element
+     *     • SELECTION: snap each unit’s own LEFT/CENTER/RIGHT to the first unit
      */
     fun alignHorizontal(
         align: HAlign, mode: MultiAlignMode = MultiAlignMode.CANVAS
@@ -1194,21 +1221,28 @@ class CanvasView @JvmOverloads constructor(
             }
 
             else -> {
-                val first = selectedElements.first()
-                val firstBounds = getElementAxisAlignedBounds(first)
-                val firstLeft = firstBounds.left
-                val firstCenter = firstBounds.centerX()
-                val firstRight = firstBounds.right
+                val units = selectionUnits()
+                if (units.size < 2) {
+                    // One group is one object: there is nothing in the selection to align
+                    // it against, and shifting its children one by one would pull it apart.
+                    // Align the whole thing to the art board instead, which is what a lone
+                    // element already does.
+                    alignHorizontal(align, MultiAlignMode.CANVAS)
+                    return
+                }
 
-                selectedElements.drop(1).forEach { e ->
-                    val bounds = getElementAxisAlignedBounds(e)
+                val firstBounds = unitBounds(units.first())
+                units.drop(1).forEach { unit ->
+                    val bounds = unitBounds(unit)
                     val dx = when (align) {
-                        HAlign.LEFT -> firstLeft - bounds.left
-                        HAlign.CENTER -> firstCenter - bounds.centerX()
-                        HAlign.RIGHT -> firstRight - bounds.right
+                        HAlign.LEFT -> firstBounds.left - bounds.left
+                        HAlign.CENTER -> firstBounds.centerX() - bounds.centerX()
+                        HAlign.RIGHT -> firstBounds.right - bounds.right
                     }
-                    e.x += dx
-                    onElementChanged?.invoke(e)
+                    unit.forEach { e ->
+                        e.x += dx
+                        onElementChanged?.invoke(e)
+                    }
                 }
             }
         }
@@ -1286,21 +1320,25 @@ class CanvasView @JvmOverloads constructor(
             }
 
             else -> {
-                val first = selectedElements.first()
-                val firstBounds = getElementAxisAlignedBounds(first)
-                val firstTop = firstBounds.top
-                val firstCenter = firstBounds.centerY()
-                val firstBottom = firstBounds.bottom
+                val units = selectionUnits()
+                if (units.size < 2) {
+                    // See alignHorizontal: a lone group has nothing to align against.
+                    alignVertical(align, MultiAlignMode.CANVAS)
+                    return
+                }
 
-                selectedElements.drop(1).forEach { e ->
-                    val bounds = getElementAxisAlignedBounds(e)
+                val firstBounds = unitBounds(units.first())
+                units.drop(1).forEach { unit ->
+                    val bounds = unitBounds(unit)
                     val dy = when (align) {
-                        VAlign.TOP -> firstTop - bounds.top
-                        VAlign.MIDDLE -> firstCenter - bounds.centerY()
-                        VAlign.BOTTOM -> firstBottom - bounds.bottom
+                        VAlign.TOP -> firstBounds.top - bounds.top
+                        VAlign.MIDDLE -> firstBounds.centerY() - bounds.centerY()
+                        VAlign.BOTTOM -> firstBounds.bottom - bounds.bottom
                     }
-                    e.y += dy
-                    onElementChanged?.invoke(e)
+                    unit.forEach { e ->
+                        e.y += dy
+                        onElementChanged?.invoke(e)
+                    }
                 }
             }
         }
