@@ -7721,6 +7721,38 @@ class CanvasView @JvmOverloads constructor(
                             onElementSelected?.invoke(selectedElements.toList())
                             invalidate()
                             return true
+                        } else if (inSelectionMode) {
+                            // Multi-select is live, so a group joins the selection whole,
+                            // the way a lone element does. This branch used to fall through
+                            // to the fresh-tap one below, which clears everything first —
+                            // so a second group always replaced the first and two groups
+                            // could never be picked together, which in turn left every
+                            // multi-group alignment unreachable.
+                            val groupMembers = canvasElements.filter { it.groupId == gid }
+                            val sentinel = canvasElements.firstOrNull {
+                                it.type == ElementType.GROUP && it.id == gid
+                            }
+                            if (groupMembers.isNotEmpty() && groupMembers.all { it.isSelected }) {
+                                // Already in the selection — let the drag take it, matching
+                                // what an ungrouped element does when tapped again.
+                                touchedDownElement = touchedElement
+                                isDragCandidate = true
+                                touchStartX = x
+                                touchStartY = y
+                                currentMode = Mode.NONE
+                            } else {
+                                groupMembers.forEach { element ->
+                                    if (!element.isSelected) {
+                                        element.isSelected = true
+                                        selectedElements.add(element)
+                                    }
+                                }
+                                sentinel?.isSelected = true
+                                onElementSelected?.invoke(selectedElements.toList())
+                                vibrateSoft()
+                                invalidate()
+                                return true
+                            }
                         } else {
                             // Fresh tap on a grouped child → select whole group as one unit
                             val groupMembers = canvasElements.filter { it.groupId == gid }
