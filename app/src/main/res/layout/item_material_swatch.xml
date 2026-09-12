@@ -14,9 +14,16 @@
     android:layout_height="wrap_content"
     android:layout_marginEnd="8dp"
     android:layout_marginBottom="6dp"
-    android:gravity="center_horizontal"
+    android:gravity="center"
     android:orientation="vertical">
 
+    <!--
+        44dp is the drawn size and the maximum. The grid is horizontal, so a row is the
+        RecyclerView's height over its row count and the item is measured to exactly that;
+        the adapter shrinks this box to whatever the row leaves once the caption below has
+        been paid for, and matches both corner radii to it. Centre gravity keeps the pair
+        in the middle of a row taller than they need.
+    -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardOuter"
         android:layout_width="44dp"

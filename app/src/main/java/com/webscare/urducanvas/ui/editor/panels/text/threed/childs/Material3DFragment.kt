@@ -304,9 +304,34 @@ class Material3DFragment : Fragment() {
             materialSwatchAdapter.setSelected(entry.label)
         }
         binding.materialsList.apply {
+            // Two rows, deliberately, and not panel_preset_grid_rows: a material is read
+            // by its finish, and these previews have to stay big enough to tell brushed
+            // from chrome. The shared bucket puts three rows on a tall phone, which shrinks
+            // the circle past the point where the swatch says anything.
             layoutManager = GridLayoutManager(requireContext(), 2, GridLayoutManager.HORIZONTAL, false)
             setHasFixedSize(true)
             adapter = materialSwatchAdapter
+
+            // A horizontal grid divides its own height by the row count and measures every
+            // item to exactly that, whatever the item asked for. This one asks for a 44dp
+            // circle over a caption — taller than the row it is given — so the caption was
+            // being sliced off at the bottom. Hand the adapter the row height and let it
+            // size the circle to what is left, the way item_material_surface was drawn to
+            // work. The span is read back from the layout manager rather than repeated
+            // here, so the two cannot drift apart.
+            addOnLayoutChangeListener { v, _, top, _, bottom, _, oldTop, _, oldBottom ->
+                if (bottom - top == oldBottom - oldTop) return@addOnLayoutChangeListener
+                val rv = v as RecyclerView
+                val span = (rv.layoutManager as? GridLayoutManager)?.spanCount ?: 1
+                val usable = rv.height - rv.paddingTop - rv.paddingBottom
+                if (usable <= 0) return@addOnLayoutChangeListener
+                // Posted, not called straight through: this fires from inside layout, and
+                // notifying the adapter there throws. setRowHeight no-ops when the height
+                // has not moved, so the post costs one frame the first time and nothing
+                // after that.
+                val rowPx = usable / span
+                rv.post { materialSwatchAdapter.setRowHeight(rowPx) }
+            }
         }
     }
 
@@ -440,6 +465,19 @@ class Material3DFragment : Fragment() {
         private var selectedLabel: String? = null
         private var baseColor: Int = Color.BLACK
 
+        /** Height of one grid row — the RecyclerView's height over its row count. */
+        private var rowHeightPx = 0
+
+        /** Measured once: every caption is one line of the same size in the same font. */
+        private var captionPx = 0
+
+        fun setRowHeight(px: Int) {
+            if (rowHeightPx != px) {
+                rowHeightPx = px
+                notifyDataSetChanged()
+            }
+        }
+
         fun setSelected(label: String?) {
             if (selectedLabel != label) {
                 selectedLabel = label
@@ -491,9 +529,48 @@ class Material3DFragment : Fragment() {
                     (if (isSelected) "#005D28" else "#5F6368").toColorInt()
                 )
 
-                // Selection ring, sized and inset exactly as ColorsAdapter does it.
+                // ── Fit the swatch into the row the grid actually gives it ──────────
+                // The caption is the fixed cost — it is the thing that was being clipped —
+                // so it is measured first and the circle takes whatever height is left,
+                // shrinking from its designed 44dp rather than pushing the label out of
+                // the row. Capped at 44dp so a one-row grid gets the drawn size, not a
+                // circle the height of the whole panel.
+                if (captionPx == 0) {
+                    val unspec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+                    itemBinding.swatchLabel.measure(unspec, unspec)
+                    captionPx = itemBinding.swatchLabel.measuredHeight
+                }
+                val gapPx = (3f * density + 0.5f).toInt()      // label's top margin
+                val bottomPx = (6f * density + 0.5f).toInt()   // item's bottom margin
+                val maxBoxPx = (44f * density + 0.5f).toInt()  // the size it is drawn at
+                // Only a sanity floor, and deliberately below any size worth looking at. At
+                // two rows this never engages on a panel with room — the circle lands near
+                // 37dp. It engages only where the grid container has already collapsed, and
+                // there a floor high enough to keep the preview readable would just push
+                // the item back over the row and start shaving the caption again.
+                val minBoxPx = (12f * density + 0.5f).toInt()
+                val boxPx = if (rowHeightPx > 0) {
+                    (rowHeightPx - captionPx - gapPx - bottomPx).coerceIn(minBoxPx, maxBoxPx)
+                } else {
+                    maxBoxPx
+                }
+
+                val outerLp = itemBinding.cardOuter.layoutParams
+                if (outerLp.width != boxPx || outerLp.height != boxPx) {
+                    outerLp.width = boxPx
+                    outerLp.height = boxPx
+                    itemBinding.cardOuter.layoutParams = outerLp
+                }
+                // Both cards carry the radius; a 22dp corner on a box smaller than 44dp
+                // stops being a circle.
+                itemBinding.cardOuter.radius = boxPx / 2f
+                itemBinding.cardInner.radius = boxPx / 2f
+
+                // Selection ring, sized and inset exactly as ColorsAdapter does it. The
+                // inset is kept proportional to the box so the ring reads the same at any
+                // size — at the drawn 44dp this is the same 3.5dp it has always been.
                 val strokePx = (2.0f * density + 0.5f).toInt()
-                val marginPx = (3.5f * density + 0.5f).toInt()
+                val marginPx = (boxPx * 3.5f / 44f + 0.5f).toInt()
                 val lp = itemBinding.cardInner.layoutParams as ViewGroup.MarginLayoutParams
                 if (isSelected) {
                     itemBinding.cardOuter.strokeWidth = strokePx
@@ -507,12 +584,11 @@ class Material3DFragment : Fragment() {
                 }
                 itemBinding.cardInner.layoutParams = lp
 
-                val chipPx = (44 * density).toInt()
                 itemBinding.swatchView.setImageDrawable(
                     BitmapDrawable(
                         resources,
                         Text3DSurfaceShading.previewBitmap(
-                            item.surface, item.color ?: baseColor, chipPx
+                            item.surface, item.color ?: baseColor, boxPx
                         )
                     )
                 )
