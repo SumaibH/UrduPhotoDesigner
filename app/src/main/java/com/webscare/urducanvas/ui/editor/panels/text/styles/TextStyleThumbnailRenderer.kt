@@ -16,6 +16,7 @@ import android.util.LruCache
 import androidx.core.content.res.ResourcesCompat
 import com.webscare.urducanvas.R
 import com.webscare.urducanvas.common.canvas.enums.LabelShape
+import com.webscare.urducanvas.common.utils.applyTextStrokeShape
 import com.webscare.urducanvas.data.model.PresetCategory
 import com.webscare.urducanvas.data.model.TextPreset
 import com.webscare.urducanvas.data.model.TextStylePreset
@@ -476,6 +477,7 @@ object TextStyleThumbnailRenderer {
                 color = effectiveUnderStrokeColor
                 shader = null
                 maskFilter = null
+                applyTextStrokeShape()
             }
             canvas.drawText(text, cx, cy, underStrokePaint)
         }
@@ -489,6 +491,7 @@ object TextStyleThumbnailRenderer {
                 color = preset.strokeColor
                 shader = null
                 maskFilter = null
+                applyTextStrokeShape()
             }
             canvas.drawText(text, cx, cy, strokePaint)
         } else if (preset.strokeColor != null && preset.strokeWidth > 0f && !preset.hasUnderStroke) {
@@ -498,6 +501,7 @@ object TextStyleThumbnailRenderer {
                 color = preset.strokeColor
                 shader = null
                 maskFilter = null
+                applyTextStrokeShape()
             }
             canvas.drawText(text, cx, cy, strokePaint)
         }

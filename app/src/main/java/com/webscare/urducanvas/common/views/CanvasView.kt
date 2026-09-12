@@ -79,6 +79,7 @@ import com.webscare.urducanvas.common.canvas.model.Text3DSurfaceShading
 import com.webscare.urducanvas.common.canvas.sealed.ImageFilter
 import com.webscare.urducanvas.common.utils.BrushRenderUtils
 import com.webscare.urducanvas.common.utils.BrushRenderUtils.createBackgroundGradientShader
+import com.webscare.urducanvas.common.utils.applyTextStrokeShape
 import com.webscare.urducanvas.common.utils.ImageAdjustmentHelper
 import com.webscare.urducanvas.common.utils.ImageProcessor
 import com.webscare.urducanvas.common.utils.ImageProcessor.trimTransparentEdges
@@ -5366,6 +5367,7 @@ class CanvasView @JvmOverloads constructor(
                     style = Paint.Style.STROKE
                     strokeWidth = element.underStrokeWidth
                     color = element.underStrokeColor
+                    applyTextStrokeShape()
                 }
                 canvas.drawText(displayText, xPos, yOffset, usp)
             }
@@ -5378,6 +5380,7 @@ class CanvasView @JvmOverloads constructor(
                     style = Paint.Style.STROKE
                     strokeWidth = tokenStrokeWidth
                     color = token.overrideStrokeColor ?: element.strokeColor
+                    applyTextStrokeShape()
                 }
                 canvas.drawText(displayText, xPos, yOffset, stp)
             }
@@ -6418,6 +6421,7 @@ class CanvasView @JvmOverloads constructor(
                     shader = null
                     maskFilter = null
                     xfermode = null
+                    applyTextStrokeShape()
                 }
                 canvas.drawText(displayText, xPos, yOffset, underStrokePaint)
             }
@@ -6428,6 +6432,7 @@ class CanvasView @JvmOverloads constructor(
                     style = Paint.Style.STROKE
                     strokeWidth = element.strokeWidth
                     maskFilter = null
+                    applyTextStrokeShape()
                 }
                 if (element.strokeGradient != null) {
                     val w = fillPaint.measureText(displayText)
@@ -6680,6 +6685,7 @@ class CanvasView @JvmOverloads constructor(
             TextPaint(fillPaint).apply {
                 style = Paint.Style.STROKE
                 strokeWidth = element.strokeWidth
+                applyTextStrokeShape()
                 element.strokeGradient?.let {
                     val w = element.getLocalContentWidth()
                     shader = createGradientShader(it, w, textSize)
