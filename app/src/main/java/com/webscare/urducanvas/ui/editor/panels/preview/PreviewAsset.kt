@@ -53,11 +53,16 @@ sealed class PreviewAsset {
     ) : PreviewAsset() {
         /**
          * Most stickers have no alt text and are filed under a numbered name, so
-         * the raw file name is as likely to be "9" as anything readable. Fall back
-         * to the set it came from rather than putting a bare digit in the header.
+         * the raw file name is as likely to be "9" as anything readable, and the alt
+         * text is the better label — when it actually is one. Some sets carry a line
+         * of description there instead ("Explore this intricate Islamic architecture
+         * …"), which fills the header, truncates, and names nothing, so anything
+         * longer than a name is passed over. Last resort is the set it came from,
+         * rather than a bare digit.
          */
         override val title
-            get() = entity.alt_text?.takeIf { it.isNotBlank() }
+            get() = entity.alt_text?.trim()
+                ?.takeIf { it.isNotEmpty() && it.length <= TITLE_MAX_CHARS }
                 ?: readableName(entity.file_name)
                 ?: entity.category
         override val isPremium get() = entity.is_premium && !entity.is_subscribed
@@ -94,6 +99,9 @@ sealed class PreviewAsset {
     }
 
     companion object {
+        /** Longer than this and the alt text is a description, not a name. */
+        private const val TITLE_MAX_CHARS = 32
+
         /**
          * A file name worth showing as a title, or null when there is nothing in it
          * — a bare number, or a name that was only ever an id.

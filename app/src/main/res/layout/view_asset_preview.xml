@@ -108,24 +108,25 @@
         <!--
             Well + paper: the asset shown the way it sits on the canvas.
 
-            The minimum lives here rather than on the card. Putting it on the card
-            padded the whole sheet out to a fixed height and left the slack as dead
-            white below the buttons; on the well it goes where it was meant to — into
-            the artwork.
+            Height is fixed here rather than left to the content, and set again from
+            code when the panel expands. A minimum could not hold: the shimmer that
+            covers the well is match_parent, and in a wrap_content parent that measures
+            to everything going spare — so while an asset loaded the well grew to the
+            whole screen and pushed the pills and the buttons off the bottom of the
+            sheet. The fixed page is also what gives the artwork the full area instead
+            of a short letterbox.
         -->
         <FrameLayout
             android:id="@+id/previewWell"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="200dp"
+            android:layout_height="210dp"
             android:background="@drawable/bg_preview_well"
             android:padding="10dp">
 
             <LinearLayout
                 android:id="@+id/previewPaper"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:minHeight="180dp"
+                android:layout_height="match_parent"
                 android:background="@drawable/bg_preview_paper"
                 android:clipChildren="true"
                 android:clipToPadding="true"
@@ -142,7 +143,7 @@
                 <LinearLayout
                     android:id="@+id/zoomLayer"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:gravity="center"
                     android:orientation="vertical">
 
@@ -194,11 +195,14 @@
                     android:visibility="gone"
                     tools:text="۰ ۱ ۲ ۳ ۴ ۵ ۶ ۷ ۸ ۹" />
 
+                <!--
+                    Fills the page: the artwork is the reason the preview was opened, and
+                    a fixed box left it small in the middle of a mostly empty sheet.
+                -->
                 <ImageView
                     android:id="@+id/assetImage"
                     android:layout_width="match_parent"
-                    android:layout_height="130dp"
-                    android:adjustViewBounds="true"
+                    android:layout_height="match_parent"
                     android:contentDescription="@string/preview"
                     android:scaleType="fitCenter"
                     android:visibility="gone" />

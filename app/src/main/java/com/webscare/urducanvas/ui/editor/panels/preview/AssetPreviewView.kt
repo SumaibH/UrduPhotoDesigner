@@ -13,8 +13,6 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
-import androidx.lifecycle.findViewTreeLifecycleOwner
-import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
@@ -27,7 +25,14 @@ import com.webscare.urducanvas.common.utils.Utils.addPressEffect
 import com.webscare.urducanvas.common.utils.isDarkModeEnabled
 import com.webscare.urducanvas.common.utils.startShimmerSoft
 import com.webscare.urducanvas.data.model.FontEntity
+import com.webscare.urducanvas.data.model.ImageEntity
 import com.webscare.urducanvas.databinding.ViewAssetPreviewBinding
+import com.webscare.urducanvas.ui.editor.panels.images.resolveUrl
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelChildren
 import java.io.File
 
 /**
@@ -57,6 +62,17 @@ class AssetPreviewView @JvmOverloads constructor(
 
     private val zoom = PreviewZoom(binding.previewPaper, binding.zoomLayer)
 
+    /**
+     * Drives the SVG loads.
+     *
+     * Deliberately not a lifecycle scope. The sheet calls [show] from inside its own
+     * onCreateView, and the fragment only attaches a ViewTreeLifecycleOwner to this view
+     * after that returns — so findViewTreeLifecycleOwner() was still null at exactly the
+     * moment it was asked for, and every SVG thumbnail gave up and left the page blank.
+     * Since most font thumbnails are SVGs, that was every font not yet on the device.
+     */
+    private val svgScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+
     init {
         zoom.attach()
         binding.breadcrumbChip.addPressEffect { onBack?.invoke() }
@@ -70,6 +86,11 @@ class AssetPreviewView @JvmOverloads constructor(
         }
     }
 
+    override fun onDetachedFromWindow() {
+        svgScope.coroutineContext.cancelChildren()
+        super.onDetachedFromWindow()
+    }
+
     /**
      * Shows [asset]. [primaryLabel] differs by host — the adjustments panels apply to
      * the selected element ("Use on canvas"), the main panels add a new one
@@ -81,9 +102,15 @@ class AssetPreviewView @JvmOverloads constructor(
         // A new asset always starts at life size; carrying the last one's zoom over
         // would open the preview already halfway into something else.
         zoom.reset()
+        applyWellHeight()
 
         binding.breadcrumbLabel.text = asset.breadcrumb
         binding.previewTitle.text = asset.title
+        // A picture with nothing readable in its file name falls back to the set it came
+        // from, which is the word already on the back chip — "‹ Islamic Architecture
+        // Islamic Architecture" says it twice and names nothing. Sooner have the chip
+        // alone than an echo of it.
+        binding.previewTitle.isVisible = !asset.title.equals(asset.breadcrumb, ignoreCase = true)
         binding.proPill.isVisible = asset.isPremium
         binding.primaryAction.text = primaryLabel
 
@@ -100,6 +127,7 @@ class AssetPreviewView @JvmOverloads constructor(
     fun setExpanded(expanded: Boolean) {
         if (this.expanded == expanded) return
         this.expanded = expanded
+        applyWellHeight()
         asset?.let { renderBody(it) }
     }
 
@@ -135,11 +163,7 @@ class AssetPreviewView @JvmOverloads constructor(
 
         is PreviewAsset.Picture -> {
             showImageOnly()
-            startLoading()
-            Glide.with(this)
-                .load(com.webscare.urducanvas.ui.editor.panels.images.resolveUrl(asset.entity))
-                .listener(shimmerStopper)
-                .into(binding.assetImage)
+            loadPicture(asset.entity)
         }
 
         is PreviewAsset.Rendered -> {
@@ -194,9 +218,6 @@ class AssetPreviewView @JvmOverloads constructor(
         binding.numeralRow.isVisible = false
         binding.sampleInput.isVisible = false
         binding.assetImage.isVisible = true
-        binding.assetImage.layoutParams = binding.assetImage.layoutParams.apply {
-            height = dp(if (expanded) IMAGE_EXPANDED_DP else IMAGE_COLLAPSED_DP)
-        }
     }
 
     /**
@@ -225,9 +246,6 @@ class AssetPreviewView @JvmOverloads constructor(
             binding.alphabetRow.isVisible = false
             binding.numeralRow.isVisible = false
             binding.assetImage.isVisible = true
-            binding.assetImage.layoutParams = binding.assetImage.layoutParams.apply {
-                height = dp(if (expanded) IMAGE_EXPANDED_DP else IMAGE_COLLAPSED_DP)
-            }
             loadFontThumbnail(font.entity)
             return
         }
@@ -278,17 +296,7 @@ class AssetPreviewView @JvmOverloads constructor(
             val url = Constants.BASE_URL_GLIDE + relative
             startLoading()
             if (relative.endsWith(".svg", ignoreCase = true)) {
-                val scope = findViewTreeLifecycleOwner()?.lifecycleScope ?: run {
-                    finishLoading(); return
-                }
-                SvgLoader.load(
-                    url = url,
-                    imageView = binding.assetImage,
-                    scope = scope,
-                    cachedXml = null,
-                    maxPx = 1024,
-                    applyWhiteTint = dark
-                ) { _, _ -> finishLoading() }
+                loadSvg(url, cachedXml = null, whiteTint = dark)
             } else {
                 Glide.with(this).load(url).listener(shimmerStopper).into(binding.assetImage)
             }
@@ -303,6 +311,59 @@ class AssetPreviewView @JvmOverloads constructor(
             binding.assetImage.setImageResource(R.drawable.ic_font_thumbnail)
             finishLoading()
         }
+    }
+
+    /**
+     * The picture, loaded the way its own tile loads it.
+     *
+     * Most stickers and every shape are SVGs, and Glide cannot decode one — handing it
+     * the url drew nothing at all, which is why a blob or an ornament opened onto an
+     * empty page. The entity's cached xml goes along so a picture the grid has already
+     * parsed is not fetched and parsed a second time.
+     */
+    private fun loadPicture(entity: ImageEntity) {
+        binding.assetImage.clearColorFilter()
+        startLoading()
+        val url = resolveUrl(entity)
+        if (entity.file_name.endsWith(".svg", ignoreCase = true)) {
+            loadSvg(url, cachedXml = entity.bitmapData, whiteTint = false)
+        } else {
+            Glide.with(this).load(url).listener(shimmerStopper).into(binding.assetImage)
+        }
+    }
+
+    /**
+     * SvgLoader announces success through its callback but returns silently when the file
+     * cannot be parsed, so the shimmer is stopped on the job ending as well — otherwise a
+     * picture that fails to load shimmers for as long as the preview is open.
+     */
+    private fun loadSvg(url: String, cachedXml: String?, whiteTint: Boolean) {
+        val job: Job = SvgLoader.load(
+            url = url,
+            imageView = binding.assetImage,
+            scope = svgScope,
+            cachedXml = cachedXml,
+            maxPx = SVG_MAX_PX,
+            applyWhiteTint = whiteTint
+        ) { _, _ -> finishLoading() }
+        job.invokeOnCompletion { post { finishLoading() } }
+    }
+
+    /**
+     * The artwork gets a fixed height rather than a minimum one.
+     *
+     * The shimmer covering the well while an asset loads is match_parent, and a
+     * match_parent child measures against everything going spare in a wrap_content
+     * parent: the well grew to the height of the screen, the sheet opened full height
+     * with the pills and the buttons pushed off the bottom of it, and it only settled
+     * once the asset arrived. Fixing the well also hands the picture the whole page
+     * instead of penning it into a short letterbox with dead paper underneath.
+     */
+    private fun applyWellHeight() {
+        binding.previewWell.layoutParams = binding.previewWell.layoutParams.apply {
+            height = dp(if (expanded) WELL_EXPANDED_DP else WELL_COLLAPSED_DP)
+        }
+        binding.previewWell.requestLayout()
     }
 
     // ── Detail pills ─────────────────────────────────────────────────────────
@@ -359,7 +420,8 @@ class AssetPreviewView @JvmOverloads constructor(
 
         private const val SAMPLE_COLLAPSED_SP = 32f
         private const val SAMPLE_EXPANDED_SP = 48f
-        private const val IMAGE_COLLAPSED_DP = 130
-        private const val IMAGE_EXPANDED_DP = 240
+        private const val WELL_COLLAPSED_DP = 210
+        private const val WELL_EXPANDED_DP = 320
+        private const val SVG_MAX_PX = 1024
     }
 }
