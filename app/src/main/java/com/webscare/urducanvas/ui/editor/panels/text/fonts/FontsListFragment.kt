@@ -311,7 +311,9 @@ class FontsListFragment : androidx.fragment.app.Fragment() {
         }
         val isExpanded = mainViewModel.isPanelExpanded(PanelType.FONTS)
         val rv = _binding!!.englishRV
-        val collapsedSpanCount = 3
+        // Rows the strip can actually show at this height, not a fixed 3 - see
+        // values/integers.xml: at 46dp of strip a second row overflows and clips.
+        val collapsedSpanCount = resources.getInteger(R.integer.panel_browse_grid_rows)
         rv.layoutManager = MorphGridLayoutManager(
             context = requireContext(),
             collapsedSpan = collapsedSpanCount,

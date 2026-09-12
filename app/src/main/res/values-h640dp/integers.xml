@@ -7,4 +7,11 @@
 <resources>
     <integer name="panel_color_grid_rows">4</integer>
     <integer name="panel_preset_grid_rows">3</integer>
+
+    <!--
+        Browse strips (MorphGridLayoutManager). Three, the count these panels were drawn
+        at: the strip is 185dp here, so three rows give a 166px / 55dp tile with the
+        preview clearly legible. Only the shorter tiers step down.
+    -->
+    <integer name="panel_browse_grid_rows">3</integer>
 </resources>

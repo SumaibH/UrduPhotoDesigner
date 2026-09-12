@@ -240,7 +240,6 @@ class TextFragment : Fragment(), PreviewHostOwner {
         binding.fontsRV.apply {
             layoutManager = MorphGridLayoutManager(
                 context = requireContext(),
-                collapsedSpan = 3,
                 expandedSpan = 3
             ).apply {
                 applyFraction(binding.fontsRV, if (isPanelExpanded) 1f else 0f)

@@ -3,6 +3,7 @@ package com.webscare.urducanvas.common.utils
 import android.content.Context
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.webscare.urducanvas.R
 import kotlin.math.roundToInt
 
 /**
@@ -23,7 +24,11 @@ import kotlin.math.roundToInt
  */
 class MorphGridLayoutManager(
     context: Context,
-    var collapsedSpan: Int = 3,   // rows in horizontal strip
+    // Rows in the horizontal strip. Defaults to panel_browse_grid_rows so a caller that
+    // says nothing gets the count the screen can actually show; it used to default to a
+    // literal 3, which on a short screen overflowed the strip and clipped every row but
+    // the first. Callers should leave this alone unless they have measured a reason.
+    var collapsedSpan: Int = context.resources.getInteger(R.integer.panel_browse_grid_rows),
     var expandedSpan: Int = 3,    // columns in vertical grid
     val orientationFlipThreshold: Float = DEFAULT_FLIP_THRESHOLD
 ) : GridLayoutManager(context, collapsedSpan, HORIZONTAL, false) {
