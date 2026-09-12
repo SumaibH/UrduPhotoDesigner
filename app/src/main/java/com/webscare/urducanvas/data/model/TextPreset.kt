@@ -38,6 +38,30 @@ data class TextPreset(
     val fontIds: List<String> get() = layers.mapNotNull { it.fontId }.distinct()
 
     /**
+     * How tall layer [index] may be drawn, as a fraction of the box height.
+     *
+     * A layer's size is solved from its width — measure the line, scale it to
+     * [PresetLayer.widthPct] of the box — and width alone says nothing about height. A
+     * short word given a wide target becomes enormous and lands on top of the line
+     * below it, which is what "ماہِ صیام / مبارک" did: two words, one of them brief, and
+     * the lockup rendered as a pile.
+     *
+     * Two limits, whichever is tighter. A line centred halfway between its neighbour
+     * may be at most as tall as the distance between their centres — each spends half
+     * its height reaching toward the other, so equal heights exactly meet. And it may
+     * not reach past the edge of the box, which is twice its distance to the nearer one.
+     */
+    fun verticalRoom(index: Int): Float {
+        val layer = layers.getOrNull(index) ?: return 1f
+        val toNeighbour = layers.asSequence()
+            .filterIndexed { i, _ -> i != index }
+            .map { kotlin.math.abs(it.yPct - layer.yPct) }
+            .minOrNull() ?: 1f
+        val toEdge = 2f * minOf(layer.yPct, 1f - layer.yPct)
+        return minOf(toNeighbour, toEdge).coerceIn(0.05f, 1f)
+    }
+
+    /**
      * Whether this preset needs a subscription: it does if any font or style it uses does.
      *
      * Computed from the current premium sets rather than stored in the JSON, so a preset

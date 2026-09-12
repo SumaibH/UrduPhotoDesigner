@@ -2,67 +2,1265 @@
   {
     "id": "ramadan_001",
     "name": "Ramadan Mubarak — Stacked Gold",
-    "aspect": 1.0,
+    "aspect": 1,
     "layers": [
-      { "text": "رمضان", "fontId": "Jameel Noori Nastaleeq .ttf", "styleId": "gold_001",
-        "xPct": 0.50, "yPct": 0.38, "widthPct": 0.72, "rotation": 0, "align": "CENTER" },
-      { "text": "مبارک", "fontId": "Jameel Noori Nastaleeq .ttf", "styleId": "gold_001",
-        "override": { "textGradientColors": ["#FFF3C4", "#E8C877", "#B98A2E"] },
-        "xPct": 0.50, "yPct": 0.64, "widthPct": 0.50, "rotation": 0, "align": "CENTER" }
+      {
+        "text": "رمضان",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "gold_001",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "gold_001",
+        "override": {
+          "textGradientColors": [
+            "#FFF3C4",
+            "#E8C877",
+            "#B98A2E"
+          ]
+        },
+        "xPct": 0.5,
+        "yPct": 0.64,
+        "widthPct": 0.5,
+        "rotation": 0,
+        "align": "CENTER"
+      }
     ]
   },
   {
     "id": "ramadan_002",
     "name": "Ramadan Kareem — Illuminated",
-    "aspect": 1.0,
+    "aspect": 1,
     "layers": [
-      { "text": "رمضان کریم", "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+      {
+        "text": "رمضان کریم",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
         "styleId": "calligraphy_001",
-        "xPct": 0.50, "yPct": 0.46, "widthPct": 0.84, "rotation": 0, "align": "CENTER" },
-      { "text": "خوش آمدید", "fontId": "Gulzar-Regular.ttf", "styleId": "minimal_001",
-        "xPct": 0.50, "yPct": 0.70, "widthPct": 0.42, "rotation": 0, "align": "CENTER" }
+        "xPct": 0.5,
+        "yPct": 0.46,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "خوش آمدید",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "calligraphy_001",
+        "xPct": 0.5,
+        "yPct": 0.7,
+        "widthPct": 0.42,
+        "rotation": 0,
+        "align": "CENTER",
+        "override": {
+          "textColor": "#FFFFFF"
+        }
+      }
     ]
   },
   {
     "id": "ramadan_003",
     "name": "Mah-e-Ramadan — Emerald Script",
-    "aspect": 1.0,
+    "aspect": 1,
     "layers": [
-      { "text": "ماہِ رمضان", "fontId": "Gulzar-Regular.ttf", "styleId": "calligraphy_004",
-        "xPct": 0.50, "yPct": 0.42, "widthPct": 0.78, "rotation": 0, "align": "CENTER" },
-      { "text": "المبارک", "fontId": "NotoNastaliqUrdu-Regular.ttf", "styleId": "gold_002",
-        "xPct": 0.50, "yPct": 0.66, "widthPct": 0.46, "rotation": 0, "align": "CENTER" }
+      {
+        "text": "ماہِ رمضان",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "calligraphy_004",
+        "xPct": 0.5,
+        "yPct": 0.42,
+        "widthPct": 0.78,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "المبارک",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "emboss_005",
+        "xPct": 0.5,
+        "yPct": 0.66,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
     ]
   },
   {
     "id": "ramadan_004",
     "name": "Shab-e-Qadr — Lapis Nastaliq",
-    "aspect": 1.0,
+    "aspect": 1,
     "layers": [
-      { "text": "شبِ قدر", "fontId": "Jameel Noori Nastaleeq .ttf", "styleId": "calligraphy_002",
-        "xPct": 0.50, "yPct": 0.50, "widthPct": 0.68, "rotation": 0, "align": "CENTER" }
+      {
+        "text": "شبِ قدر",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "calligraphy_002",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.68,
+        "rotation": 0,
+        "align": "CENTER"
+      }
     ]
   },
   {
     "id": "ramadan_005",
     "name": "Ramadan Mubarak — Small Over Big",
-    "aspect": 1.0,
+    "aspect": 1,
     "layers": [
-      { "text": "مبارک", "fontId": "Lateef-Regular.ttf", "styleId": "minimal_003",
-        "xPct": 0.50, "yPct": 0.32, "widthPct": 0.34, "rotation": 0, "align": "CENTER" },
-      { "text": "رمضان", "fontId": "Lateef-Regular.ttf", "styleId": "emboss_005",
-        "xPct": 0.50, "yPct": 0.58, "widthPct": 0.80, "rotation": 0, "align": "CENTER" }
+      {
+        "text": "مبارک",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "minimal_003",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "رمضان",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "emboss_005",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
     ]
   },
   {
     "id": "ramadan_006",
     "name": "Alvida Mah-e-Ramadan — Sepia",
-    "aspect": 1.0,
+    "aspect": 1,
     "layers": [
-      { "text": "الوداع", "fontId": "alqalam-tafseer-regular-1.ttf", "styleId": "calligraphy_006",
-        "xPct": 0.50, "yPct": 0.36, "widthPct": 0.52, "rotation": 0, "align": "CENTER" },
-      { "text": "ماہِ رمضان", "fontId": "Jameel Noori Nastaleeq .ttf", "styleId": "calligraphy_006",
-        "xPct": 0.50, "yPct": 0.62, "widthPct": 0.76, "rotation": 0, "align": "CENTER" }
+      {
+        "text": "الوداع",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "calligraphy_006",
+        "xPct": 0.5,
+        "yPct": 0.36,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "ماہِ رمضان",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "calligraphy_006",
+        "xPct": 0.5,
+        "yPct": 0.62,
+        "widthPct": 0.76,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_007",
+    "name": "رمضان مبارک — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "رمضان",
+        "fontId": "AA Sameer Rafiya Unicode Regular - [UrduFonts.com].ttf",
+        "styleId": "gold_001",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "AA Sameer Rafiya Unicode Regular - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_005",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_008",
+    "name": "رمضان کریم — big-over-small",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "رمضان",
+        "fontId": "AA Sameer Shamok - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_006",
+        "xPct": 0.5,
+        "yPct": 0.43,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "کریم",
+        "fontId": "AA Sameer Shamok - [UrduFonts.com].ttf",
+        "styleId": "minimal_011",
+        "xPct": 0.5,
+        "yPct": 0.67,
+        "widthPct": 0.38,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_009",
+    "name": "ماہِ رمضان مبارک — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ماہِ رمضان",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "emboss_012",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "calligraphy_018",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_010",
+    "name": "رمضان المبارک — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "رمضان المبارک",
+        "fontId": "AlQalam Quran.ttf",
+        "styleId": "gold_016",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_011",
+    "name": "خوش آمدید ماہِ رمضان — wide-with-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "خوش آمدید",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "calligraphy_021",
+        "xPct": 0.5,
+        "yPct": 0.45,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "ماہِ رمضان",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "gold_032",
+        "xPct": 0.5,
+        "yPct": 0.68,
+        "widthPct": 0.32,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_012",
+    "name": "شبِ قدر مبارک — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "شبِ قدر",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "emboss_027",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "calligraphy_039",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_013",
+    "name": "الوداع ماہِ رمضان — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "الوداع",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "gold_031",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "ماہِ رمضان",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "calligraphy_046",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_014",
+    "name": "رمضان مبارک — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "رمضان مبارک",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_036",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_015",
+    "name": "رمضان کریم — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "رمضان کریم",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "emboss_043",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_016",
+    "name": "ماہِ صیام مبارک — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ماہِ صیام",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "gold_049",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "calligraphy_019",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_017",
+    "name": "سحری و افطاری — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سحری و افطاری",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "calligraphy_001",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_018",
+    "name": "رحمتوں کا مہینہ — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "رحمتوں کا مہینہ",
+        "fontId": "MB Sarem Muhammad Bux Kaladi 1.0.ttf",
+        "styleId": "emboss_009",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_019",
+    "name": "مغفرت کا مہینہ — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "مغفرت کا مہینہ",
+        "fontId": "MB Sarem Rizwan Gul.ttf",
+        "styleId": "gold_011",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_020",
+    "name": "پہلا عشرہ رحمت — wide-with-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "پہلا عشرہ",
+        "fontId": "NooreHira.ttf",
+        "styleId": "calligraphy_016",
+        "xPct": 0.5,
+        "yPct": 0.45,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "رحمت",
+        "fontId": "NooreHira.ttf",
+        "styleId": "minimal_045",
+        "xPct": 0.5,
+        "yPct": 0.68,
+        "widthPct": 0.32,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_021",
+    "name": "دوسرا عشرہ مغفرت — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "دوسرا عشرہ",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "emboss_024",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مغفرت",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "gold_002",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_022",
+    "name": "تیسرا عشرہ نجات — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "تیسرا عشرہ",
+        "fontId": "Sarem-Murtaza-Naz-Regular.ttf",
+        "styleId": "gold_026",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "نجات",
+        "fontId": "Sarem-Murtaza-Naz-Regular.ttf",
+        "styleId": "calligraphy_019",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_023",
+    "name": "افطار مبارک — offset-diagonal",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "افطار",
+        "fontId": "Sarem-Naseer-Regular.ttf",
+        "styleId": "calligraphy_031",
+        "xPct": 0.38,
+        "yPct": 0.34,
+        "widthPct": 0.44,
+        "rotation": -6,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "Sarem-Naseer-Regular.ttf",
+        "styleId": "gold_016",
+        "xPct": 0.6,
+        "yPct": 0.63,
+        "widthPct": 0.56,
+        "rotation": -6,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_024",
+    "name": "روزہ مبارک — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "روزہ",
+        "fontId": "AA Sameer Rafiya Unicode Regular - [UrduFonts.com].ttf",
+        "styleId": "emboss_040",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "AA Sameer Rafiya Unicode Regular - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_035",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_025",
+    "name": "جمعۃ الوداع — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "جمعۃ الوداع",
+        "fontId": "AA Sameer Shamok - [UrduFonts.com].ttf",
+        "styleId": "gold_041",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_026",
+    "name": "اہلاً رمضان مبارک — three-arch",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "اہلاً",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "calligraphy_046",
+        "xPct": 0.5,
+        "yPct": 0.26,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "رمضان",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "gold_037",
+        "xPct": 0.5,
+        "yPct": 0.49,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "gold_037",
+        "xPct": 0.5,
+        "yPct": 0.73,
+        "widthPct": 0.5,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_027",
+    "name": "ماہِ رمضان المبارک — three-stack",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ماہِ",
+        "fontId": "AlQalam Quran.ttf",
+        "styleId": "emboss_006",
+        "xPct": 0.5,
+        "yPct": 0.28,
+        "widthPct": 0.44,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "رمضان",
+        "fontId": "AlQalam Quran.ttf",
+        "styleId": "calligraphy_002",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "المبارک",
+        "fontId": "AlQalam Quran.ttf",
+        "styleId": "calligraphy_002",
+        "xPct": 0.5,
+        "yPct": 0.72,
+        "widthPct": 0.36,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_028",
+    "name": "رمضان مبارک — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "رمضان",
+        "fontId": "AlQalam Quran.ttf",
+        "styleId": "calligraphy_012",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "AlQalam Quran.ttf",
+        "styleId": "minimal_017",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_029",
+    "name": "رمضان کریم — offset-diagonal",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "رمضان",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "emboss_018",
+        "xPct": 0.38,
+        "yPct": 0.34,
+        "widthPct": 0.44,
+        "rotation": -6,
+        "align": "CENTER"
+      },
+      {
+        "text": "کریم",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "gold_024",
+        "xPct": 0.6,
+        "yPct": 0.63,
+        "widthPct": 0.56,
+        "rotation": -6,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_030",
+    "name": "ماہِ رمضان مبارک — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ماہِ رمضان",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "gold_022",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "calligraphy_031",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_031",
+    "name": "رمضان المبارک — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "رمضان المبارک",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "calligraphy_027",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_032",
+    "name": "خوش آمدید ماہِ رمضان — big-over-small",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "خوش آمدید",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "emboss_033",
+        "xPct": 0.5,
+        "yPct": 0.43,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "ماہِ رمضان",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_002",
+        "xPct": 0.5,
+        "yPct": 0.67,
+        "widthPct": 0.38,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_033",
+    "name": "شبِ قدر مبارک — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "شبِ قدر",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "gold_037",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "calligraphy_005",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_034",
+    "name": "الوداع ماہِ رمضان — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "الوداع",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "calligraphy_042",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "ماہِ رمضان",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "minimal_009",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_035",
+    "name": "رمضان مبارک — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "رمضان مبارک",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "emboss_049",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_036",
+    "name": "رمضان کریم — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "رمضان کریم",
+        "fontId": "MB Sarem Muhammad Bux Kaladi 1.0.ttf",
+        "styleId": "gold_002",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_037",
+    "name": "ماہِ صیام مبارک — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ماہِ صیام",
+        "fontId": "MB Sarem Rizwan Gul.ttf",
+        "styleId": "calligraphy_007",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "MB Sarem Rizwan Gul.ttf",
+        "styleId": "minimal_030",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_038",
+    "name": "سحری و افطاری — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سحری و افطاری",
+        "fontId": "NooreHira.ttf",
+        "styleId": "emboss_015",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_039",
+    "name": "رحمتوں کا مہینہ — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "رحمتوں کا مہینہ",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "gold_017",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_040",
+    "name": "مغفرت کا مہینہ — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "مغفرت کا مہینہ",
+        "fontId": "Sarem-Murtaza-Naz-Regular.ttf",
+        "styleId": "calligraphy_022",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_041",
+    "name": "پہلا عشرہ رحمت — big-over-small",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "پہلا عشرہ",
+        "fontId": "Sarem-Naseer-Regular.ttf",
+        "styleId": "emboss_030",
+        "xPct": 0.5,
+        "yPct": 0.43,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "رحمت",
+        "fontId": "Sarem-Naseer-Regular.ttf",
+        "styleId": "calligraphy_008",
+        "xPct": 0.5,
+        "yPct": 0.67,
+        "widthPct": 0.38,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_042",
+    "name": "دوسرا عشرہ مغفرت — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "دوسرا عشرہ",
+        "fontId": "AA Sameer Rafiya Unicode Regular - [UrduFonts.com].ttf",
+        "styleId": "gold_032",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مغفرت",
+        "fontId": "AA Sameer Rafiya Unicode Regular - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_019",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_043",
+    "name": "تیسرا عشرہ نجات — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "تیسرا عشرہ",
+        "fontId": "AA Sameer Shamok - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_037",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "نجات",
+        "fontId": "AA Sameer Shamok - [UrduFonts.com].ttf",
+        "styleId": "minimal_022",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_044",
+    "name": "افطار مبارک — wide-with-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "افطار",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "emboss_046",
+        "xPct": 0.5,
+        "yPct": 0.45,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "calligraphy_035",
+        "xPct": 0.5,
+        "yPct": 0.68,
+        "widthPct": 0.32,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_045",
+    "name": "روزہ مبارک — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "روزہ",
+        "fontId": "AlQalam Quran.ttf",
+        "styleId": "gold_050",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "AlQalam Quran.ttf",
+        "styleId": "calligraphy_043",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_046",
+    "name": "جمعۃ الوداع — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "جمعۃ الوداع",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "calligraphy_002",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_047",
+    "name": "رمضان مبارک — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "رمضان",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "emboss_024",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "gold_030",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_048",
+    "name": "رمضان کریم — wide-with-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "رمضان",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "gold_028",
+        "xPct": 0.5,
+        "yPct": 0.45,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "کریم",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_043",
+        "xPct": 0.5,
+        "yPct": 0.68,
+        "widthPct": 0.32,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_049",
+    "name": "ماہِ رمضان مبارک — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ماہِ رمضان",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "calligraphy_033",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "gold_046",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "ramadan_050",
+    "name": "رمضان المبارک — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "رمضان المبارک",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "emboss_040",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
     ]
   }
 ]

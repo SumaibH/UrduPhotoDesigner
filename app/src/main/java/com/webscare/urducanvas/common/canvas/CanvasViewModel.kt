@@ -4759,6 +4759,9 @@ class CanvasViewModel @Inject constructor(
         /** Bounds on the solved size: unreadable below, and past the top of the range above. */
         const val MIN_PRESET_TEXT_SIZE = 8f
         const val MAX_PRESET_TEXT_SIZE = 400f
+
+        /** A little under the room a layer is owed, so lines have air rather than touch. */
+        const val PRESET_ROOM_SLACK = 0.88f
     }
 
     fun addTextPreset(
@@ -4799,7 +4802,7 @@ class CanvasViewModel @Inject constructor(
         var nextZ = (currentList.maxOfOrNull { it.zIndex } ?: 0) + 1
         val isSubscribed = billingManager.isSubscribed.value
 
-        val newElements = preset.layers.map { layer ->
+        val newElements = preset.layers.mapIndexed { index, layer ->
             // A style that no longer resolves leaves the layer unstyled rather than
             // failing the insertion — the words and the arrangement still arrive.
             val style = com.webscare.urducanvas.data.repository.TextPresetsRepository
@@ -4862,8 +4865,30 @@ class CanvasViewModel @Inject constructor(
             val target = boxW * layer.widthPct
             val measured = element.paint.measureText(element.getTextWithKashida())
             if (measured > 0f && target > 0f) {
-                element.paintTextSize = (PRESET_PROBE_TEXT_SIZE * (target / measured))
+                var solved = (PRESET_PROBE_TEXT_SIZE * (target / measured))
                     .coerceIn(MIN_PRESET_TEXT_SIZE, MAX_PRESET_TEXT_SIZE)
+
+                // Width alone does not decide a size. A short word given a wide target
+                // becomes enormous and lands on the line below it, so it is then held to
+                // the room the layout leaves — measured at the solved size, because how
+                // tall a face runs is the face's business and Nastaliq descends a long
+                // way. The same rule runs in the thumbnail renderer, so what the card
+                // shows and what the canvas gets are the same lockup.
+                element.paintTextSize = solved
+                element.updatePaintProperties()
+                element.paint.typeface = tf
+                // Ink, not font metrics: a face's ascent-to-descent covers every glyph it
+                // can draw, and for Nastaliq that reaches far below what most words use.
+                val drawn = element.getTextWithKashida()
+                val ink = android.graphics.Rect()
+                element.paint.getTextBounds(drawn, 0, drawn.length, ink)
+                val inkHeight = ink.height().toFloat()
+                val roomPx = preset.verticalRoom(index) * boxH * PRESET_ROOM_SLACK
+                if (inkHeight > roomPx && inkHeight > 0f) {
+                    solved = (solved * (roomPx / inkHeight)).coerceAtLeast(MIN_PRESET_TEXT_SIZE)
+                }
+
+                element.paintTextSize = solved
                 element.updatePaintProperties()
                 element.paint.typeface = tf
             }

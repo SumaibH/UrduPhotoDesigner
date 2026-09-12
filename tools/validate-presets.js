@@ -77,6 +77,47 @@ function unreadableOnAnyPlate(style) {
   return hi > LIGHT && lo > LIGHT && style.embossDepth > style.strokeWidth;
 }
 
+/** The plate a style needs behind it, matching TextStyleThumbnailRenderer.wantsDarkPanel. */
+function wantsDarkPlate(style) {
+  if (!style) return false;
+  if (style.hasOuterGlow && style.outerGlowRadius > 0) return true;
+  const mid = style.textGradientColors
+    ? style.textGradientColors[Math.floor(style.textGradientColors.length / 2)]
+    : null;
+  const fill = luminance(mid || style.textColor);
+  if (fill === null || fill <= LIGHT) return false;
+  const contour = style.strokeWidth > 0 ? luminance(style.strokeColor) : null;
+  return contour === null || contour > LIGHT;
+}
+
+const PLATE_LIGHT = luminance('#F2F3F0');
+const PLATE_DARK = luminance('#1E211F');
+
+/**
+ * How much a line stands out from the plate its card will get, 0..1.
+ *
+ * The card carries one plate for every line on it, so a lockup pairing a gold line
+ * with a charcoal one strands whichever of the two the plate is wrong for. Reported
+ * per layer, because that is the line the reader loses.
+ *
+ * Styles carrying their own label plate or an outer glow are skipped — they bring
+ * their own ground and are legible on either.
+ */
+function plateContrast(style, plateLum) {
+  if (!style || style.hasLabel) return null;
+  if (style.hasOuterGlow && style.outerGlowRadius > 0) return null;
+  const mid = style.textGradientColors
+    ? style.textGradientColors[Math.floor(style.textGradientColors.length / 2)]
+    : null;
+  const fill = luminance(mid || style.textColor);
+  if (fill === null) return null;
+  const contour = style.strokeWidth > 0 ? luminance(style.strokeColor) : null;
+  return Math.max(
+    Math.abs(fill - plateLum),
+    contour === null ? 0 : Math.abs(contour - plateLum)
+  );
+}
+
 // The gradient catalogue is Kotlin, not data, so it is counted rather than parsed —
 // a gradientId is an index into that list and all this check needs is its length.
 const gradientCount = (fs.readFileSync(GRADIENTS_KT, 'utf8').match(/GradientItem\(/g) || []).length;
@@ -97,8 +138,25 @@ if (!fs.existsSync(LOCKUPS_DIR)) {
 
 const files = fs.readdirSync(LOCKUPS_DIR).filter((f) => f.endsWith('.json') && f !== 'index.json');
 const seenIds = new Map();
+/*
+ * Lockups by what they actually are, ignoring id and name.
+ *
+ * This is the check the style catalogue did not have: 317 of its 650 entries were
+ * byte-identical to another one once you looked past the id, and nobody noticed until
+ * somebody counted. A generated catalogue can make that mistake far faster than a
+ * hand-written one, so it is checked on every run.
+ */
+const seenShapes = new Map();
 let presetCount = 0;
 let layerCount = 0;
+
+const shapeOf = (p) =>
+  JSON.stringify(
+    (p.layers || []).map((l) => [
+      l.text, l.fontId, l.styleId, l.xPct, l.yPct, l.widthPct, l.rotation || 0,
+      l.override ? JSON.stringify(l.override) : null,
+    ])
+  );
 
 for (const file of files) {
   const where = `lockups/${file}`;
@@ -141,6 +199,19 @@ for (const file of files) {
       return err(at, 'has no layers, so it would insert nothing');
     }
 
+    const shape = shapeOf(p);
+    if (seenShapes.has(shape)) {
+      err(at, `is identical to ${seenShapes.get(shape)} apart from its id and name`);
+    } else {
+      seenShapes.set(shape, p.id);
+    }
+
+    // Which plate this lockup's card will get, and therefore what every line on it
+    // has to stand out from.
+    const layerStyles = p.layers.map((l) => styleById.get(l.styleId)).filter(Boolean);
+    const plateLum =
+      layerStyles.length && layerStyles.every(wantsDarkPlate) ? PLATE_DARK : PLATE_LIGHT;
+
     p.layers.forEach((l, j) => {
       layerCount++;
       const la = `${at} layer[${j}]`;
@@ -153,6 +224,15 @@ for (const file of files) {
         err(la, `styleId "${l.styleId}" cannot be read on either card plate — pick another`);
       }
       if (!l.styleId) warn(la, 'names no style, so it renders unstyled');
+
+      const contrast = plateContrast(styleById.get(l.styleId), plateLum);
+      if (contrast !== null && contrast < 0.25) {
+        warn(
+          la,
+          `barely stands out from the ${plateLum > 0.5 ? 'light' : 'dark'} plate its card gets ` +
+            `(${contrast.toFixed(2)}) — pair it with a line that wants the same plate`
+        );
+      }
 
       if (l.fontId && fontIds && !fontIds.has(l.fontId)) {
         // A warning, not an error: the inventory is a snapshot of the fonts table

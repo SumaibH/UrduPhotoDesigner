@@ -1,0 +1,1032 @@
+[
+  {
+    "id": "islamic_001",
+    "name": "اللہ اکبر — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "اللہ اکبر",
+        "fontId": "AA Sameer Rafiya Unicode Regular - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_001",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_002",
+    "name": "بسم اللہ الرحمٰن الرحیم — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "بسم اللہ الرحمٰن الرحیم",
+        "fontId": "AA Sameer Shamok - [UrduFonts.com].ttf",
+        "styleId": "gold_006",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_003",
+    "name": "ماشاء اللہ — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ماشاء اللہ",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "emboss_012",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_004",
+    "name": "سبحان اللہ — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سبحان اللہ",
+        "fontId": "AlQalam Quran.ttf",
+        "styleId": "calligraphy_016",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_005",
+    "name": "الحمد للہ — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "الحمد للہ",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "gold_021",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_006",
+    "name": "جمعہ مبارک — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "جمعہ",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "emboss_027",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "calligraphy_039",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_007",
+    "name": "درود شریف — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "درود شریف",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "calligraphy_031",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_008",
+    "name": "میلادُ النبی ﷺ — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "میلادُ النبی ﷺ",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "gold_036",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_009",
+    "name": "محرم الحرام — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "محرم الحرام",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "emboss_043",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_010",
+    "name": "شبِ معراج — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "شبِ معراج",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "calligraphy_046",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_011",
+    "name": "شبِ برات — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "شبِ برات",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "gold_001",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_012",
+    "name": "لا الہ الا اللہ — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "لا الہ الا اللہ",
+        "fontId": "MB Sarem Muhammad Bux Kaladi 1.0.ttf",
+        "styleId": "emboss_009",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_013",
+    "name": "یا اللہ — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "یا اللہ",
+        "fontId": "MB Sarem Rizwan Gul.ttf",
+        "styleId": "calligraphy_011",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_014",
+    "name": "استغفر اللہ — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "استغفر اللہ",
+        "fontId": "NooreHira.ttf",
+        "styleId": "gold_016",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_015",
+    "name": "اسلام علیکم — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "اسلام علیکم",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "emboss_024",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_016",
+    "name": "نمازِ جمعہ مبارک — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "نمازِ جمعہ",
+        "fontId": "Sarem-Murtaza-Naz-Regular.ttf",
+        "styleId": "calligraphy_026",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "Sarem-Murtaza-Naz-Regular.ttf",
+        "styleId": "calligraphy_019",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_017",
+    "name": "ربیع الاول مبارک — offset-diagonal",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ربیع الاول",
+        "fontId": "Sarem-Naseer-Regular.ttf",
+        "styleId": "gold_031",
+        "xPct": 0.38,
+        "yPct": 0.34,
+        "widthPct": 0.44,
+        "rotation": -6,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "Sarem-Naseer-Regular.ttf",
+        "styleId": "gold_016",
+        "xPct": 0.6,
+        "yPct": 0.63,
+        "widthPct": 0.56,
+        "rotation": -6,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_018",
+    "name": "عاشورہ محرم — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عاشورہ",
+        "fontId": "AA Sameer Rafiya Unicode Regular - [UrduFonts.com].ttf",
+        "styleId": "emboss_040",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "محرم",
+        "fontId": "AA Sameer Rafiya Unicode Regular - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_035",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_019",
+    "name": "اللہ ہی کافی ہے — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "اللہ ہی کافی ہے",
+        "fontId": "AA Sameer Shamok - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_041",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_020",
+    "name": "یا رسول اللہ ﷺ — three-arch",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "یا",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "gold_049",
+        "xPct": 0.5,
+        "yPct": 0.26,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "رسول اللہ",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "gold_037",
+        "xPct": 0.5,
+        "yPct": 0.49,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "ﷺ",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "gold_037",
+        "xPct": 0.5,
+        "yPct": 0.73,
+        "widthPct": 0.5,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_021",
+    "name": "بسم اللہ الرحمٰن الرحیم — three-stack",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "بسم اللہ",
+        "fontId": "AlQalam Quran.ttf",
+        "styleId": "emboss_006",
+        "xPct": 0.5,
+        "yPct": 0.28,
+        "widthPct": 0.44,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "الرحمٰن",
+        "fontId": "AlQalam Quran.ttf",
+        "styleId": "calligraphy_002",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "الرحیم",
+        "fontId": "AlQalam Quran.ttf",
+        "styleId": "calligraphy_002",
+        "xPct": 0.5,
+        "yPct": 0.72,
+        "widthPct": 0.36,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_022",
+    "name": "اللہ اکبر — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "اللہ اکبر",
+        "fontId": "AlQalam Quran.ttf",
+        "styleId": "gold_012",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_023",
+    "name": "بسم اللہ الرحمٰن الرحیم — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "بسم اللہ الرحمٰن الرحیم",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "emboss_018",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_024",
+    "name": "ماشاء اللہ — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ماشاء اللہ",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "calligraphy_022",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_025",
+    "name": "سبحان اللہ — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سبحان اللہ",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "gold_027",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_026",
+    "name": "الحمد للہ — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "الحمد للہ",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "emboss_033",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_027",
+    "name": "جمعہ مبارک — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "جمعہ",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "calligraphy_037",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "minimal_002",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_028",
+    "name": "درود شریف — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "درود شریف",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "gold_043",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_029",
+    "name": "میلادُ النبی ﷺ — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "میلادُ النبی ﷺ",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "emboss_049",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_030",
+    "name": "محرم الحرام — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "محرم الحرام",
+        "fontId": "MB Sarem Muhammad Bux Kaladi 1.0.ttf",
+        "styleId": "calligraphy_002",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_031",
+    "name": "شبِ معراج — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "شبِ معراج",
+        "fontId": "MB Sarem Rizwan Gul.ttf",
+        "styleId": "gold_007",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_032",
+    "name": "شبِ برات — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "شبِ برات",
+        "fontId": "NooreHira.ttf",
+        "styleId": "emboss_015",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_033",
+    "name": "لا الہ الا اللہ — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "لا الہ الا اللہ",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "calligraphy_017",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_034",
+    "name": "یا اللہ — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "یا اللہ",
+        "fontId": "Sarem-Murtaza-Naz-Regular.ttf",
+        "styleId": "gold_022",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_035",
+    "name": "استغفر اللہ — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "استغفر اللہ",
+        "fontId": "Sarem-Naseer-Regular.ttf",
+        "styleId": "emboss_030",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_036",
+    "name": "اسلام علیکم — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "اسلام علیکم",
+        "fontId": "AA Sameer Rafiya Unicode Regular - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_032",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_037",
+    "name": "نمازِ جمعہ مبارک — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "نمازِ جمعہ",
+        "fontId": "AA Sameer Shamok - [UrduFonts.com].ttf",
+        "styleId": "gold_037",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "AA Sameer Shamok - [UrduFonts.com].ttf",
+        "styleId": "gold_022",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_038",
+    "name": "ربیع الاول مبارک — wide-with-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ربیع الاول",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "emboss_046",
+        "xPct": 0.5,
+        "yPct": 0.45,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "calligraphy_035",
+        "xPct": 0.5,
+        "yPct": 0.68,
+        "widthPct": 0.32,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_039",
+    "name": "عاشورہ محرم — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عاشورہ",
+        "fontId": "AlQalam Quran.ttf",
+        "styleId": "calligraphy_047",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "محرم",
+        "fontId": "AlQalam Quran.ttf",
+        "styleId": "calligraphy_043",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_040",
+    "name": "اللہ ہی کافی ہے — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "اللہ ہی کافی ہے",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "gold_002",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_041",
+    "name": "اللہ اکبر — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "اللہ اکبر",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "emboss_024",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_042",
+    "name": "بسم اللہ الرحمٰن الرحیم — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "بسم اللہ الرحمٰن الرحیم",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_028",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_043",
+    "name": "ماشاء اللہ — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ماشاء اللہ",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "gold_033",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_044",
+    "name": "سبحان اللہ — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سبحان اللہ",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "emboss_040",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_045",
+    "name": "الحمد للہ — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "الحمد للہ",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "calligraphy_043",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_046",
+    "name": "جمعہ مبارک — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "جمعہ",
+        "fontId": "MB Sarem Muhammad Bux Kaladi 1.0.ttf",
+        "styleId": "gold_051",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "MB Sarem Muhammad Bux Kaladi 1.0.ttf",
+        "styleId": "gold_015",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_047",
+    "name": "درود شریف — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "درود شریف",
+        "fontId": "MB Sarem Rizwan Gul.ttf",
+        "styleId": "emboss_006",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_048",
+    "name": "میلادُ النبی ﷺ — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "میلادُ النبی ﷺ",
+        "fontId": "NooreHira.ttf",
+        "styleId": "calligraphy_008",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_049",
+    "name": "محرم الحرام — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "محرم الحرام",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "gold_013",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "islamic_050",
+    "name": "شبِ معراج — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "شبِ معراج",
+        "fontId": "Sarem-Murtaza-Naz-Regular.ttf",
+        "styleId": "emboss_021",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  }
+]

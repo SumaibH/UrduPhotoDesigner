@@ -1,0 +1,582 @@
+[
+  {
+    "id": "business_001",
+    "name": "افتتاح — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "افتتاح",
+        "fontId": "AA Sameer Sagar.ttf",
+        "styleId": "modern_001",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "business_002",
+    "name": "خصوصی پیشکش — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "خصوصی پیشکش",
+        "fontId": "aa-sameer-almas-regular-1.ttf",
+        "styleId": "minimal_006",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "business_003",
+    "name": "نئی برانچ — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "نئی برانچ",
+        "fontId": "aa-sameer-bassam-bold-regular-1.ttf",
+        "styleId": "emboss_012",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "business_004",
+    "name": "رابطہ کریں — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "رابطہ کریں",
+        "fontId": "aa-sameer-divangiry-regular-1.ttf",
+        "styleId": "modern_019",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "business_005",
+    "name": "خدمت میں حاضر — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "خدمت میں حاضر",
+        "fontId": "aa-sameer-kelk-regular-1.ttf",
+        "styleId": "minimal_021",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "business_006",
+    "name": "گرینڈ اوپننگ — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "گرینڈ اوپننگ",
+        "fontId": "aadil-regular-1.ttf",
+        "styleId": "emboss_027",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "business_007",
+    "name": "ہماری خدمات — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ہماری خدمات",
+        "fontId": "Al Qalam Hassan.ttf",
+        "styleId": "modern_039",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "business_008",
+    "name": "آج ہی رابطہ کریں — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "آج ہی رابطہ کریں",
+        "fontId": "Al Qalam Naqsh.ttf",
+        "styleId": "minimal_036",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "business_009",
+    "name": "نیا کاروبار — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "نیا کاروبار",
+        "fontId": "Al Qalam Shahjahan.ttf",
+        "styleId": "emboss_043",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "business_010",
+    "name": "کھل گیا — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "کھل گیا",
+        "fontId": "Al Qalam Shahzaib.ttf",
+        "styleId": "modern_054",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "business_011",
+    "name": "افتتاح مبارک — big-over-small",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "افتتاح",
+        "fontId": "alfars-10-badriya-regular-1.ttf",
+        "styleId": "minimal_001",
+        "xPct": 0.5,
+        "yPct": 0.43,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "alfars-10-badriya-regular-1.ttf",
+        "styleId": "dark_041",
+        "xPct": 0.5,
+        "yPct": 0.67,
+        "widthPct": 0.38,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "business_012",
+    "name": "خصوصی پیشکش — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "خصوصی",
+        "fontId": "alfars-15-farnaz-regular-1.ttf",
+        "styleId": "emboss_009",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "پیشکش",
+        "fontId": "alfars-15-farnaz-regular-1.ttf",
+        "styleId": "modern_041",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "business_013",
+    "name": "افتتاح — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "افتتاح",
+        "fontId": "aa-sameer-divangiry-regular-1.ttf",
+        "styleId": "minimal_012",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "business_014",
+    "name": "خصوصی پیشکش — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "خصوصی پیشکش",
+        "fontId": "aa-sameer-kelk-regular-1.ttf",
+        "styleId": "emboss_018",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "business_015",
+    "name": "نئی برانچ — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "نئی برانچ",
+        "fontId": "aadil-regular-1.ttf",
+        "styleId": "modern_030",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "business_016",
+    "name": "رابطہ کریں — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "رابطہ کریں",
+        "fontId": "Al Qalam Hassan.ttf",
+        "styleId": "minimal_027",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "business_017",
+    "name": "خدمت میں حاضر — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "خدمت میں حاضر",
+        "fontId": "Al Qalam Naqsh.ttf",
+        "styleId": "emboss_033",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "business_018",
+    "name": "گرینڈ اوپننگ — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "گرینڈ اوپننگ",
+        "fontId": "Al Qalam Shahjahan.ttf",
+        "styleId": "modern_045",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "business_019",
+    "name": "ہماری خدمات — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ہماری خدمات",
+        "fontId": "Al Qalam Shahzaib.ttf",
+        "styleId": "minimal_042",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "business_020",
+    "name": "آج ہی رابطہ کریں — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "آج ہی رابطہ کریں",
+        "fontId": "alfars-10-badriya-regular-1.ttf",
+        "styleId": "emboss_049",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "business_021",
+    "name": "نیا کاروبار — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "نیا کاروبار",
+        "fontId": "alfars-15-farnaz-regular-1.ttf",
+        "styleId": "modern_002",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "business_022",
+    "name": "کھل گیا — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "کھل گیا",
+        "fontId": "alfars-19-abshar-regular-1.ttf",
+        "styleId": "minimal_007",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "business_023",
+    "name": "افتتاح مبارک — offset-diagonal",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "افتتاح",
+        "fontId": "alfont_com_ITC-Handel-Gothic-Arabic-Bold.ttf",
+        "styleId": "emboss_015",
+        "xPct": 0.38,
+        "yPct": 0.34,
+        "widthPct": 0.44,
+        "rotation": -6,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "alfont_com_ITC-Handel-Gothic-Arabic-Bold.ttf",
+        "styleId": "minimal_037",
+        "xPct": 0.6,
+        "yPct": 0.63,
+        "widthPct": 0.56,
+        "rotation": -6,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "business_024",
+    "name": "خصوصی پیشکش — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "خصوصی",
+        "fontId": "AlQalam Abuzar Regular.ttf",
+        "styleId": "modern_020",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "پیشکش",
+        "fontId": "AlQalam Abuzar Regular.ttf",
+        "styleId": "modern_052",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "business_025",
+    "name": "افتتاح — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "افتتاح",
+        "fontId": "Al Qalam Hassan.ttf",
+        "styleId": "emboss_024",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "business_026",
+    "name": "خصوصی پیشکش — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "خصوصی پیشکش",
+        "fontId": "Al Qalam Naqsh.ttf",
+        "styleId": "modern_036",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "business_027",
+    "name": "نئی برانچ — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "نئی برانچ",
+        "fontId": "Al Qalam Shahjahan.ttf",
+        "styleId": "minimal_033",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "business_028",
+    "name": "رابطہ کریں — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "رابطہ کریں",
+        "fontId": "Al Qalam Shahzaib.ttf",
+        "styleId": "emboss_040",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "business_029",
+    "name": "خدمت میں حاضر — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "خدمت میں حاضر",
+        "fontId": "alfars-10-badriya-regular-1.ttf",
+        "styleId": "modern_051",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "business_030",
+    "name": "گرینڈ اوپننگ — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "گرینڈ اوپننگ",
+        "fontId": "alfars-15-farnaz-regular-1.ttf",
+        "styleId": "minimal_048",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  }
+]

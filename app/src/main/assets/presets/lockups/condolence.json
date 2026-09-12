@@ -1,0 +1,362 @@
+[
+  {
+    "id": "condolence_001",
+    "name": "اِنّا لِلہ وَاِنّا اِلَیہِ رَاجِعُون — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "اِنّا لِلہ وَاِنّا اِلَیہِ رَاجِعُون",
+        "fontId": "aa-sameer-almas-regular-1.ttf",
+        "styleId": "minimal_001",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "condolence_002",
+    "name": "تعزیت — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "تعزیت",
+        "fontId": "aa-sameer-bassam-bold-regular-1.ttf",
+        "styleId": "emboss_007",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "condolence_003",
+    "name": "دعائے مغفرت — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "دعائے مغفرت",
+        "fontId": "aa-sameer-divangiry-regular-1.ttf",
+        "styleId": "dark_011",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "condolence_004",
+    "name": "ایصالِ ثواب — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ایصالِ ثواب",
+        "fontId": "aa-sameer-kelk-regular-1.ttf",
+        "styleId": "minimal_016",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "condolence_005",
+    "name": "قرآن خوانی — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "قرآن خوانی",
+        "fontId": "aadil-regular-1.ttf",
+        "styleId": "emboss_022",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "condolence_006",
+    "name": "رسمِ قل — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "رسمِ قل",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "dark_034",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "condolence_007",
+    "name": "چہلم — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "چہلم",
+        "fontId": "Al Qalam Hassan.ttf",
+        "styleId": "minimal_031",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "condolence_008",
+    "name": "اللہ مغفرت فرمائے — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "اللہ مغفرت فرمائے",
+        "fontId": "alfars-15-farnaz-regular-1.ttf",
+        "styleId": "emboss_038",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "condolence_009",
+    "name": "اِنّا لِلہ وَاِنّا اِلَیہِ رَاجِعُون — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "اِنّا لِلہ وَاِنّا اِلَیہِ رَاجِعُون",
+        "fontId": "aa-sameer-kelk-regular-1.ttf",
+        "styleId": "emboss_013",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "condolence_010",
+    "name": "تعزیت — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "تعزیت",
+        "fontId": "aadil-regular-1.ttf",
+        "styleId": "dark_020",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "condolence_011",
+    "name": "دعائے مغفرت — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "دعائے مغفرت",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "minimal_022",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "condolence_012",
+    "name": "ایصالِ ثواب — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ایصالِ ثواب",
+        "fontId": "Al Qalam Hassan.ttf",
+        "styleId": "emboss_028",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "condolence_013",
+    "name": "قرآن خوانی — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "قرآن خوانی",
+        "fontId": "alfars-15-farnaz-regular-1.ttf",
+        "styleId": "dark_040",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "condolence_014",
+    "name": "رسمِ قل — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "رسمِ قل",
+        "fontId": "alfars-19-abshar-regular-1.ttf",
+        "styleId": "minimal_037",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "condolence_015",
+    "name": "چہلم — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "چہلم",
+        "fontId": "AlQalam Abuzar Regular.ttf",
+        "styleId": "emboss_044",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "condolence_016",
+    "name": "اللہ مغفرت فرمائے — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "اللہ مغفرت فرمائے",
+        "fontId": "AlQalam Fahad Regular.ttf",
+        "styleId": "dark_055",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "condolence_017",
+    "name": "اِنّا لِلہ وَاِنّا اِلَیہِ رَاجِعُون — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "اِنّا لِلہ وَاِنّا اِلَیہِ رَاجِعُون",
+        "fontId": "Al Qalam Hassan.ttf",
+        "styleId": "dark_031",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "condolence_018",
+    "name": "تعزیت — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "تعزیت",
+        "fontId": "alfars-15-farnaz-regular-1.ttf",
+        "styleId": "minimal_028",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "condolence_019",
+    "name": "دعائے مغفرت — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "دعائے مغفرت",
+        "fontId": "alfars-19-abshar-regular-1.ttf",
+        "styleId": "emboss_035",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "condolence_020",
+    "name": "ایصالِ ثواب — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ایصالِ ثواب",
+        "fontId": "AlQalam Abuzar Regular.ttf",
+        "styleId": "dark_046",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  }
+]

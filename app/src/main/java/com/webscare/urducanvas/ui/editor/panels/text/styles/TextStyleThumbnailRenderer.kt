@@ -8,6 +8,7 @@ import android.graphics.Color
 import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Shader
 import android.graphics.Typeface
@@ -40,6 +41,9 @@ object TextStyleThumbnailRenderer {
 
     /** Below this a line is a smudge rather than a word, so it stops shrinking. */
     private const val MIN_LAYER_TEXT_PX = 9f
+
+    /** A little under the room a layer is owed, so neighbours have air rather than touch. */
+    private const val LAYER_ROOM_SLACK = 0.88f
 
     private val thumbnailCache = LruCache<String, Bitmap>(200)
 
@@ -183,9 +187,23 @@ object TextStyleThumbnailRenderer {
                 this.typeface = typeface
             }
             val measured = probe.measureText(layer.text)
-            val solvedSize = if (measured > 0f) {
+            var solvedSize = if (measured > 0f) {
                 (SAMPLE_TEXT_SIZE * (target / measured)).coerceIn(MIN_LAYER_TEXT_PX, boxH * 0.6f)
             } else SAMPLE_TEXT_SIZE
+
+            // Then held to the room the layout leaves it — but measured as ink, not as
+            // font metrics. A face's ascent-to-descent covers every glyph it can draw,
+            // and for Nastaliq that is a long way below the baseline that most words
+            // never reach; capping against it shrank every lockup to a timid little
+            // line in the middle of an empty card. What can actually collide is the ink.
+            probe.textSize = solvedSize
+            val ink = Rect()
+            probe.getTextBounds(layer.text, 0, layer.text.length, ink)
+            val inkHeight = ink.height().toFloat()
+            val roomPx = preset.verticalRoom(index) * boxH * LAYER_ROOM_SLACK
+            if (inkHeight > roomPx && inkHeight > 0f) {
+                solvedSize = (solvedSize * (roomPx / inkHeight)).coerceAtLeast(MIN_LAYER_TEXT_PX)
+            }
 
             canvas.withRotationAbout(layer.rotation, boxW * layer.xPct, boxH * layer.yPct) {
                 drawStyledText(
