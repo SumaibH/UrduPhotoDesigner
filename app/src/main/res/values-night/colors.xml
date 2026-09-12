@@ -93,4 +93,9 @@
     <color name="surface_stroke_subtle">#26262A</color>
     <color name="tile_frame">#565B64</color>
     <color name="screen_bg_transparent">#00121214</color>
+
+    <!-- Inactive-panel scrim, pushed harder at night: the same 54% black over an
+         already-dark panel barely moves it, and the grid would read as live.
+         Only the scrim flips — the chip is literally white in both themes. -->
+    <color name="panel_inactive_scrim">#A6000000</color>
 </resources>

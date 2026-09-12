@@ -123,4 +123,17 @@
     <!-- Splash: the loading line's track and the publisher line, white at low alpha on the green. -->
     <color name="splash_loader_track">#2EFFFFFF</color>
     <color name="splash_publisher_text">#8CFFFFFF</color>
+
+    <!-- ═══ Inactive-panel state ═══
+         A panel whose content needs a selection it does not have gets dimmed
+         behind this scrim and captions itself with a chip on top. The scrim is
+         deliberately short of opaque: the grid has to stay legible as *that*
+         grid, so the state reads as "not yet" rather than "empty".
+         The chip stays literally white in both themes — @color/white is the
+         themed surface and inverts to near-black at night, which would sink the
+         chip into its own scrim. -->
+    <color name="panel_inactive_scrim">#8A000000</color>
+    <color name="panel_state_chip_bg">#F2FFFFFF</color>
+    <color name="panel_state_chip_stroke">#33FFFFFF</color>
+    <color name="panel_state_chip_text">#2B2B2B</color>
 </resources>

@@ -26,6 +26,9 @@ class TextSymbolsFragment : Fragment() {
 
     private lateinit var pagerAdapter: TextSymbolsPagerAdapter
 
+    /** Latched scrim state. null until the first pass, which lands without a fade. */
+    private var isGridInactive: Boolean? = null
+
     // No iconRes on purpose: the rail then renders the label's first letter as a
     // monogram tile when collapsed, exactly like the Text Styles rail. There is
     // no icon in the set that reads as "diacritic above/below", and the nearest
@@ -51,6 +54,10 @@ class TextSymbolsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupRailAndPager()
         observeCanvasElements()
+        // Belt and braces: LiveData only replays to a new observer if it already
+        // holds a value. On a cold editor it does not, and without this the grid
+        // would sit at full strength with nothing selected — the exact bug.
+        refreshInactiveState()
     }
 
     override fun onResume() {
@@ -91,14 +98,53 @@ class TextSymbolsFragment : Fragment() {
     }
 
     private fun observeCanvasElements() {
-        viewModel.canvasElements.observe(viewLifecycleOwner) { refreshActionRow() }
-        viewModel.isCalligraphyEditMode.observe(viewLifecycleOwner) { refreshActionRow() }
+        viewModel.canvasElements.observe(viewLifecycleOwner) { refreshInactiveState() }
+        viewModel.isCalligraphyEditMode.observe(viewLifecycleOwner) { refreshInactiveState() }
     }
 
-    private fun refreshActionRow() {
+    private fun refreshInactiveState() {
         val b = _binding ?: return
-        val element = getSelectedTextElement()
-        b.tvEmptyState.visibility = if (element == null) View.VISIBLE else View.GONE
+        setGridInactive(getSelectedTextElement() == null, b)
+    }
+
+    /**
+     * Raises or drops the dim scrim over the symbol grid.
+     *
+     * [inactive] is recomputed on every canvasElements emission, and the canvas
+     * emits on drags, undo, colour changes — dozens of times for one gesture. So
+     * the state is latched and a no-op change returns before touching the view:
+     * re-running the animator on every emission is what makes an overlay strobe.
+     *
+     * The very first pass lands without an animation. There is nothing to fade
+     * from when the panel is still being laid out, and animating it there is
+     * what produces the flash of a fully-lit grid before the scrim arrives.
+     */
+    private fun setGridInactive(inactive: Boolean, b: FragmentTextSymbolsBinding) {
+        if (isGridInactive == inactive) return
+        val firstPass = isGridInactive == null
+        isGridInactive = inactive
+
+        val overlay = b.inactiveOverlay
+        overlay.animate().cancel()
+
+        if (firstPass) {
+            overlay.alpha = if (inactive) 1f else 0f
+            overlay.visibility = if (inactive) View.VISIBLE else View.GONE
+            return
+        }
+
+        if (inactive) {
+            // Start from wherever the interrupted fade left it, not from 0 — a
+            // reset to 0 mid-fade is itself a blink.
+            overlay.visibility = View.VISIBLE
+            overlay.animate().alpha(1f).setDuration(FADE_MS).start()
+        } else {
+            overlay.animate().alpha(0f).setDuration(FADE_MS).withEndAction {
+                // The scrim is clickable, so leaving it at alpha 0 would keep
+                // eating taps on a grid that looks perfectly live.
+                _binding?.inactiveOverlay?.visibility = View.GONE
+            }.start()
+        }
     }
 
     private fun getSelectedTextElement(): CanvasElement? {
@@ -134,7 +180,12 @@ class TextSymbolsFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        binding.inactiveOverlay.animate().cancel()
         binding.viewPager.adapter = null
+        // The fragment outlives its view in a ViewPager2, so the latch has to go
+        // with the view. Left set, the next onViewCreated would think the state
+        // was unchanged and never raise the scrim on a freshly inflated overlay.
+        isGridInactive = null
         super.onDestroyView()
         _binding = null
     }
@@ -142,6 +193,9 @@ class TextSymbolsFragment : Fragment() {
     companion object {
         /** Matches the SymbolItem id in SymbolsRepository. */
         private const val SYMBOL_KASHIDA = "kashida"
+
+        /** Short enough to feel like a state change, long enough not to snap. */
+        private const val FADE_MS = 160L
 
         fun newInstance(): TextSymbolsFragment {
             return TextSymbolsFragment()
