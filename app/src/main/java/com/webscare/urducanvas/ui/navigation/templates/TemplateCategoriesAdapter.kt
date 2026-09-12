@@ -8,9 +8,15 @@ import com.webscare.urducanvas.common.canvas.sealed.HomeRow
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
 import com.webscare.urducanvas.databinding.LayoutCategoryRowBinding
 
+/**
+ * The category rows on Home — Duaen and the rest — and the same rows on the Templates
+ * screen. Each is a [TemplatesMiniAdapter], so [onTemplateLongClick] is passed straight
+ * down to the tiles; nothing is drawn on them for it.
+ */
 class TemplateCategoriesAdapter(
     private val onSeeAll: (String) -> Unit,
-    private val onTemplateClick: (com.webscare.urducanvas.data.model.TemplateEntity, Boolean) -> Unit
+    private val onTemplateClick: (com.webscare.urducanvas.data.model.TemplateEntity, Boolean) -> Unit,
+    private val onTemplateLongClick: ((com.webscare.urducanvas.data.model.TemplateEntity) -> Unit)? = null
 ) : androidx.recyclerview.widget.ListAdapter<HomeRow, TemplateCategoriesAdapter.CategoryVH>(Diff()) {
 
     init {
@@ -59,7 +65,8 @@ class TemplateCategoriesAdapter(
         RecyclerView.ViewHolder(b.root) {
 
         private val miniAdapter = TemplatesMiniAdapter(
-            onClick = onTemplateClick
+            onClick = onTemplateClick,
+            onLongClick = onTemplateLongClick
         )
 
         /** Which category this holder is currently showing, for the scroll rewind. */

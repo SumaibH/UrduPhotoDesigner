@@ -16,14 +16,22 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.webscare.urducanvas.R
 import com.webscare.urducanvas.common.utils.Constants
-import com.webscare.urducanvas.common.utils.Utils.addPressEffect
+import com.webscare.urducanvas.common.utils.Utils.addPressEffectWithLongClick
 import com.webscare.urducanvas.data.model.ProgressUi
 import com.webscare.urducanvas.data.model.TemplateEntity
 import com.webscare.urducanvas.databinding.LayoutTemplateCategoryBinding
-import com.webscare.urducanvas.common.utils.Utils.addPressEffect
 
+/**
+ * The tile in every horizontal template row — Home's trend rows (Duaen and the rest) and
+ * the Templates screen's category rows.
+ *
+ * [onLongClick] opens the hold-to-peek preview. No eye button is drawn: the eye belongs to
+ * the editor's expanded panels, and neither of these screens has an expanded state, so both
+ * are permanently the collapsed case.
+ */
 class TemplatesMiniAdapter(
-    private val onClick: (com.webscare.urducanvas.data.model.TemplateEntity, Boolean) -> Unit
+    private val onClick: (com.webscare.urducanvas.data.model.TemplateEntity, Boolean) -> Unit,
+    private val onLongClick: ((com.webscare.urducanvas.data.model.TemplateEntity) -> Unit)? = null
 ) : androidx.recyclerview.widget.ListAdapter<com.webscare.urducanvas.data.model.TemplateEntity, TemplatesMiniAdapter.VH>(Diff()) {
 
     init {
@@ -44,14 +52,24 @@ class TemplatesMiniAdapter(
 
 
             binding.isPremium.isVisible = item.is_premium && !item.is_subscribed
-            // CLICK
-            binding.root.addPressEffect {
-                val pos = bindingAdapterPosition
-                if (pos != RecyclerView.NO_POSITION) {
-                    val freshItem = currentList[pos]
-                    onClick(freshItem, freshItem.is_downloaded)
+            // CLICK — unchanged; HOLD — peek. Both read the entity back off the list at
+            // the moment of the gesture rather than closing over the bound one, because
+            // a download can have flipped its flags since this holder was bound.
+            binding.root.addPressEffectWithLongClick(
+                onLongClick = {
+                    val pos = bindingAdapterPosition
+                    if (pos != RecyclerView.NO_POSITION) {
+                        onLongClick?.invoke(currentList[pos])
+                    }
+                },
+                onClick = {
+                    val pos = bindingAdapterPosition
+                    if (pos != RecyclerView.NO_POSITION) {
+                        val freshItem = currentList[pos]
+                        onClick(freshItem, freshItem.is_downloaded)
+                    }
                 }
-            }
+            )
 
             // PROGRESS UI FROM ENTITY (truth)
             val downloading = item.is_downloading && !item.is_downloaded

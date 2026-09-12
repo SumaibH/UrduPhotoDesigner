@@ -18,12 +18,18 @@ import com.webscare.urducanvas.common.utils.Constants
 import com.webscare.urducanvas.common.utils.startShimmerSoft
 import com.webscare.urducanvas.common.utils.isDarkModeEnabled
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
+import com.webscare.urducanvas.common.utils.Utils.addPressEffectWithLongClick
 import com.webscare.urducanvas.data.model.ProgressUi
 import com.webscare.urducanvas.data.model.TemplateEntity
 import com.webscare.urducanvas.databinding.LayoutTemplateItemBinding
 
+/**
+ * [onTemplateLongPressed] opens the hold-to-peek preview. No eye button is drawn — the eye
+ * belongs to the editor's expanded panels, and this screen has no expanded state.
+ */
 class TemplatesAdapter(
-    private val onTemplateSelected: (TemplateEntity, Boolean) -> Unit
+    private val onTemplateSelected: (TemplateEntity, Boolean) -> Unit,
+    private val onTemplateLongPressed: ((TemplateEntity) -> Unit)? = null
 ) : ListAdapter<TemplateEntity, TemplatesAdapter.VH>(Diff()) {
 
     init {
@@ -39,6 +45,7 @@ class TemplatesAdapter(
         return VH(
             binding = binding,
             onClick = ::onItemClick,
+            onLongClick = onTemplateLongPressed,
         )
     }
 
@@ -70,7 +77,8 @@ class TemplatesAdapter(
 
     class VH(
         private val binding: LayoutTemplateItemBinding,
-        private val onClick: (TemplateEntity) -> Unit
+        private val onClick: (TemplateEntity) -> Unit,
+        private val onLongClick: ((TemplateEntity) -> Unit)?
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: TemplateEntity) {
@@ -99,9 +107,12 @@ class TemplatesAdapter(
                 onClick(item)
             }
 
-            binding.fontCard.addPressEffect {
-                onClick(item)
-            }
+            // Tap unchanged; hold peeks. The download badge keeps a plain tap of its own —
+            // it is a small target and holding it is not a gesture anyone aims for.
+            binding.fontCard.addPressEffectWithLongClick(
+                onLongClick = { onLongClick?.invoke(item) },
+                onClick = { onClick(item) }
+            )
 
             // Download / progress state belongs to the item, not to the thumbnail request.
             // Setting it inside Glide's callback left a recycled holder showing the previous

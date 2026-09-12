@@ -24,6 +24,7 @@ import com.webscare.urducanvas.data.model.FontEntity
 import com.webscare.urducanvas.data.model.orderWithUrduFirst
 import com.webscare.urducanvas.data.model.shuffleWithUrduFirst
 import com.webscare.urducanvas.databinding.FragmentPopularFontsListBinding
+import com.webscare.urducanvas.ui.navigation.preview.showFontPreview
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -47,6 +48,12 @@ class PopularFontsListFragment : androidx.fragment.app.Fragment() {
 
     private lateinit var adapter: PopularFontsAdapter
     private lateinit var sglm: StaggeredGridLayoutManager
+
+    /**
+     * The hold-to-peek preview for this screen's font tiles. `tall` because there is no
+     * panel here holding the bottom of the screen and no canvas above to keep in view.
+     */
+    private var previewHost: com.webscare.urducanvas.ui.editor.panels.preview.PanelPreviewHost? = null
     private var filterJob: Job? = null
 
     private var baseFonts: List<com.webscare.urducanvas.data.model.FontEntity> = emptyList()
@@ -75,7 +82,32 @@ class PopularFontsListFragment : androidx.fragment.app.Fragment() {
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentPopularFontsListBinding.inflate(inflater, container, false)
+        previewHost = com.webscare.urducanvas.ui.editor.panels.preview.PanelPreviewHost(
+            this, tall = true
+        )
         return _binding!!.root
+    }
+
+    /**
+     * What a font tile does — fetch the font if it is not on the device, otherwise open the
+     * editor on a blank canvas with a sample of it. Shared with the preview's primary action
+     * so the two cannot drift apart.
+     */
+    private fun useFont(font: FontEntity, isInstalled: Boolean) {
+        if (!isInstalled) {
+            mainViewModel.downloadFont(font)
+            return
+        }
+        // The same editor entry point Home's fonts row has, and it reported neither
+        // half: canvas_created so the design workflow starts, and font_applied so a
+        // font tried from this screen does not look unused. justDownloaded is false
+        // by definition here — the download path is the branch above.
+        reportFontCanvas(font, justDownloaded = false)
+        viewModel.setCanvasSize(CanvasSize(id = 0, "", 2000f, 2000f))
+        viewModel.addTextWithFont(
+            requireActivity().getString(R.string.dummyText), font, requireActivity()
+        )
+        view?.post { findNavController().navigate(R.id.editorFragment, bundle, navOptions) }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -109,26 +141,19 @@ class PopularFontsListFragment : androidx.fragment.app.Fragment() {
 
     private fun setupRecycler() {
         adapter = PopularFontsAdapter({ font, isInstalled ->
-            if (!isInstalled) {
-                mainViewModel.downloadFont(font)
-            } else {
-                // The same editor entry point Home's fonts row has, and it reported neither
-                // half: canvas_created so the design workflow starts, and font_applied so a
-                // font tried from this screen does not look unused. justDownloaded is false
-                // by definition here — the download path is the branch above.
-                reportFontCanvas(font, justDownloaded = false)
-                viewModel.setCanvasSize(
-                    CanvasSize(
-                        id = 0,"", 2000f, 2000f
-                    )
-                )
-                viewModel.addTextWithFont(
-                    requireActivity().getString(R.string.dummyText), font, requireActivity()
-                )
-                view?.post { findNavController().navigate(R.id.editorFragment, bundle, navOptions) }
-            }
+            useFont(font, isInstalled)
         }, onDownload = {
             mainViewModel.downloadFont(it)
+        }, onLongClick = { font ->
+            // The editor's own font preview, reused whole. Only the verb differs: there is
+            // no canvas open here to add to, so the button says what the tile already does.
+            showFontPreview(
+                host = previewHost,
+                font = font,
+                breadcrumb = getString(R.string.popular_fonts),
+                onUse = { useFont(it, it.is_downloaded) },
+                onDownload = { mainViewModel.downloadFont(it) }
+            )
         })
 
         sglm = StaggeredGridLayoutManager(2, RecyclerView.VERTICAL).apply {
@@ -346,6 +371,8 @@ class PopularFontsListFragment : androidx.fragment.app.Fragment() {
     }
 
     override fun onDestroyView() {
+        previewHost?.release()
+        previewHost = null
         super.onDestroyView()
         _binding = null
         filtersViewModel.clearFilters()
