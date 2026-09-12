@@ -55,8 +55,14 @@ import com.webscare.urducanvas.data.model.TemplateEntity
 import com.webscare.urducanvas.data.model.toExportResultFinal
 import com.webscare.urducanvas.databinding.DialogLoadingProgressBinding
 import com.webscare.urducanvas.databinding.FragmentHomeBinding
+import com.webscare.urducanvas.data.model.ExportResult
+import com.webscare.urducanvas.data.model.FontEntity
 import com.webscare.urducanvas.ui.creation.CanvasSizeAdapter
 import com.webscare.urducanvas.ui.creation.CreateFragment
+import com.webscare.urducanvas.ui.editor.panels.preview.PanelPreviewHost
+import com.webscare.urducanvas.ui.navigation.preview.showFontPreview
+import com.webscare.urducanvas.ui.navigation.preview.showProjectPreview
+import com.webscare.urducanvas.ui.navigation.preview.showTemplatePreview
 import com.webscare.urducanvas.ui.navigation.templates.TemplateCategoriesAdapter
 import com.webscare.urducanvas.viewmodels.FiltersViewModel
 import androidx.dynamicanimation.animation.FloatValueHolder
@@ -97,6 +103,17 @@ class HomeFragment : androidx.fragment.app.Fragment(), SplashLanding {
     private lateinit var wrappedCategoryAdapter: RecyclerView.Adapter<*>
     private var downloadingTemplate: TemplateEntity? = null
     private var rotationAnimator: ObjectAnimator? = null
+
+    /**
+     * The hold-to-peek preview for every tile on this screen.
+     *
+     * `tall` because Home has no panel holding the bottom of the screen and no canvas above
+     * that has to stay visible, so the sheet is given more room than the editor's.
+     *
+     * Built in onCreateView and released in onDestroyView: the sheet is a child fragment,
+     * so it must not outlive this fragment's view.
+     */
+    private var previewHost: PanelPreviewHost? = null
 
     // ── Header state ────────────────────────────────────────────────────────
     private var expandedHeaderHeight = 0
@@ -159,6 +176,7 @@ class HomeFragment : androidx.fragment.app.Fragment(), SplashLanding {
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentHomeBinding.inflate(layoutInflater, container, false)
+        previewHost = PanelPreviewHost(this, tall = true)
         return binding.root
     }
 
@@ -564,6 +582,109 @@ class HomeFragment : androidx.fragment.app.Fragment(), SplashLanding {
         CreateFragment().show(parentFragmentManager, "CreateBottomSheet")
     }
 
+    /**
+     * Reopens a saved project. Pulled out of the Recents tile's click so the preview's
+     * "Open project" can run exactly the same path rather than a copy of it.
+     *
+     * A saved project, not a template. Without the origin the shared loader reported
+     * template_opened, so every reopen from this row was counted as template usage and the
+     * return-visit signal project_opened exists for went missing entirely.
+     */
+    private fun openRecentProject(exportResult: ExportResult) {
+        viewModel.loadTemplateFromJsonFile(
+            exportResult,
+            requireContext(),
+            titleHint = "Loading Project",
+            origin = AnalyticsConstants.Values.SOURCE_PROJECT
+        ) { success ->
+            if (success && isAdded) {
+                findNavController().navigate(R.id.editorFragment)
+            }
+        }
+    }
+
+    /**
+     * What a category row does with a tile. Same shape as [usePopularTemplate] but reports
+     * progress through the category adapter, which owns these tiles.
+     */
+    private fun useCategoryTemplate(template: TemplateEntity, isDownloaded: Boolean) {
+        analyticsTracker.logTemplateClick(
+            templateId = template.id,
+            name = template.template_name,
+            category = template.category,
+            isDownloaded = isDownloaded,
+            isPremium = template.is_premium
+        )
+        if (template.is_downloading) return
+        if (!isDownloaded) {
+            downloadingTemplate = template
+            categoryAdapter.updateTemplateProgress(template.id, 0, true, false)
+            mainViewModel.downloadTemplate(template)
+        } else {
+            openTemplate(template)
+        }
+    }
+
+    /**
+     * What the Popular Fonts row does with a tile — fetch the font if it is not on the
+     * device, otherwise open the editor on a blank canvas with a sample of it. Shared with
+     * the preview's primary action so the two cannot drift apart.
+     */
+    private fun usePopularFont(font: FontEntity, isDownloaded: Boolean) {
+        if (!isDownloaded) {
+            mainViewModel.downloadFont(font)
+            return
+        }
+        // Third way into the editor from Home: it builds a blank 2000x2000 canvas and
+        // drops a sample of the font on it. Both halves needed reporting — the canvas
+        // so the workflow starts, and the font because TextFragment held the only
+        // font_applied call site, which made every font tried from Home look unused.
+        analyticsTracker.logCanvasCreated(
+            presetName = "font_preview",
+            canvasSize = "2000x2000",
+            isCustom = false,
+            sourceType = AnalyticsConstants.Values.SOURCE_BLANK
+        )
+        // justDownloaded is false by definition here: this branch only runs for a
+        // font already on the device — the download path is the branch above.
+        analyticsTracker.logFontApplied(
+            fontId = font.id.toString(),
+            fontName = font.font_name,
+            language = font.font_language,
+            justDownloaded = false
+        )
+        viewModel.setCanvasSize(CanvasSize(id = 0, "", 2000f, 2000f))
+        viewModel.addTextWithFont(
+            requireActivity().getString(R.string.dummyText), font, requireActivity()
+        )
+        view?.post { findNavController().navigate(R.id.editorFragment, null, navOptions) }
+    }
+
+    /**
+     * What Popular Templates does with a tile — open it if it is on the device, fetch it if
+     * not. Shared with the preview's primary action so the two cannot drift apart.
+     */
+    private fun usePopularTemplate(template: TemplateEntity, isDownloaded: Boolean) {
+        analyticsTracker.logTemplateClick(
+            templateId = template.id,
+            name = template.template_name,
+            category = template.category,
+            isDownloaded = isDownloaded,
+            isPremium = template.is_premium
+        )
+        if (template.is_downloading) return
+
+        if (isDownloaded) {
+            if (!template.file_path.isNullOrBlank()) openTemplate(template)
+        } else {
+            downloadingTemplate = template
+            popularTemplatesAdapter.updateProgress(
+                template.id, ProgressUi(progress = 0, isDownloading = true, isDownloaded = false)
+            )
+            mainViewModel.downloadTemplate(template)
+        }
+    }
+
     private fun openTemplate(template: TemplateEntity) {
         viewModel.setProjectSourceName(template.category ?: template.subcategory)
         val exportResult = template.toExportResultFinal()
@@ -613,45 +734,23 @@ class HomeFragment : androidx.fragment.app.Fragment(), SplashLanding {
 
         // ── Recents ──────────────────────────────────────────────────────────
         recentAdapter = RecentAdapter(onClick = { exportResult ->
-            // A saved project, not a template. Without the origin the shared loader reported
-            // template_opened, so every reopen from this row was counted as template usage
-            // and the return-visit signal project_opened exists for went missing entirely.
-            viewModel.loadTemplateFromJsonFile(
-                exportResult,
-                requireContext(),
-                titleHint = "Loading Project",
-                origin = AnalyticsConstants.Values.SOURCE_PROJECT
-            ) { success ->
-                if (success && isAdded) {
-                    findNavController().navigate(R.id.editorFragment)
-                }
-            }
+            openRecentProject(exportResult)
+        }, onLongClick = { exportResult ->
+            // Hold to peek. The primary action runs the very same open, so the preview is a
+            // longer look at the tile rather than a second way to do something else.
+            showProjectPreview(previewHost, exportResult) { openRecentProject(it) }
         })
         binding.recentsRV.adapter = recentAdapter
 
         // ── Popular templates ────────────────────────────────────────────────
-        popularTemplatesAdapter = PopularTemplatesAdapter { template, isDownloaded ->
-            analyticsTracker.logTemplateClick(
-                templateId = template.id,
-                name = template.template_name,
-                category = template.category,
-                isDownloaded = isDownloaded,
-                isPremium = template.is_premium
-            )
-            if (template.is_downloading) return@PopularTemplatesAdapter
-
-            if (isDownloaded) {
-                if (!template.file_path.isNullOrBlank()) openTemplate(template)
-            } else {
-                downloadingTemplate = template
-                popularTemplatesAdapter.updateProgress(
-                    template.id, ProgressUi(
-                        progress = 0, isDownloading = true, isDownloaded = false
-                    )
-                )
-                mainViewModel.downloadTemplate(template)
+        popularTemplatesAdapter = PopularTemplatesAdapter(
+            onClick = { template, isDownloaded -> usePopularTemplate(template, isDownloaded) },
+            onLongClick = { template ->
+                showTemplatePreview(
+                    previewHost, template, getString(R.string.popular_templates)
+                ) { usePopularTemplate(it, it.is_downloaded) }
             }
-        }
+        )
         binding.popularTemplateRV.apply {
             adapter = popularTemplatesAdapter
             setHasFixedSize(true)
@@ -659,36 +758,20 @@ class HomeFragment : androidx.fragment.app.Fragment(), SplashLanding {
 
         // ── Fonts ────────────────────────────────────────────────────────────
         fontsAdapter = FontsAdapter(onFontClick = { font, isDownloaded ->
-            if (!isDownloaded) {
-                mainViewModel.downloadFont(font)
-            } else {
-                // Third way into the editor from Home: it builds a blank 2000x2000 canvas and
-                // drops a sample of the font on it. Both halves needed reporting — the canvas
-                // so the workflow starts, and the font because TextFragment held the only
-                // font_applied call site, which made every font tried from Home look unused.
-                analyticsTracker.logCanvasCreated(
-                    presetName = "font_preview",
-                    canvasSize = "2000x2000",
-                    isCustom = false,
-                    sourceType = AnalyticsConstants.Values.SOURCE_BLANK
-                )
-                // justDownloaded is false by definition here: this branch only runs for a
-                // font already on the device — the download path is the branch above.
-                analyticsTracker.logFontApplied(
-                    fontId = font.id.toString(),
-                    fontName = font.font_name,
-                    language = font.font_language,
-                    justDownloaded = false
-                )
-                viewModel.setCanvasSize(CanvasSize(id = 0, "", 2000f, 2000f))
-                viewModel.addTextWithFont(
-                    requireActivity().getString(R.string.dummyText), font, requireActivity()
-                )
-
-                view?.post { findNavController().navigate(R.id.editorFragment, null, navOptions) }
-            }
+            usePopularFont(font, isDownloaded)
         }, onDownload = {
             mainViewModel.downloadFont(it)
+        }, onLongClick = { font ->
+            // The editor's own font preview, reused whole: the real typeface once the file
+            // is local, the type-your-own-words field, the alphabet and numerals. Only the
+            // verb differs, because there is no canvas on Home to add to.
+            showFontPreview(
+                host = previewHost,
+                font = font,
+                breadcrumb = getString(R.string.popular_fonts),
+                onUse = { usePopularFont(it, it.is_downloaded) },
+                onDownload = { mainViewModel.downloadFont(it) }
+            )
         })
         binding.fontsRV.adapter = fontsAdapter
 
@@ -722,21 +805,16 @@ class HomeFragment : androidx.fragment.app.Fragment(), SplashLanding {
                 view?.post { findNavController().navigate(R.id.templatesFragment, args) }
             },
             onTemplateClick = { template, isDownloaded ->
-                analyticsTracker.logTemplateClick(
-                    templateId = template.id,
-                    name = template.template_name,
-                    category = template.category,
-                    isDownloaded = isDownloaded,
-                    isPremium = template.is_premium
-                )
-                if (template.is_downloading) return@TemplateCategoriesAdapter
-                if (!isDownloaded) {
-                    downloadingTemplate = template
-                    categoryAdapter.updateTemplateProgress(template.id, 0, true, false)
-                    mainViewModel.downloadTemplate(template)
-                } else {
-                    openTemplate(template)
-                }
+                useCategoryTemplate(template, isDownloaded)
+            },
+            // The Duaen row and every other category row. Same tile, same gesture rule as
+            // the rest of Home: hold to peek, nothing drawn on the tile.
+            onTemplateLongClick = { template ->
+                showTemplatePreview(
+                    previewHost,
+                    template,
+                    template.category ?: getString(R.string.templates)
+                ) { useCategoryTemplate(it, it.is_downloaded) }
             }
         )
         wrappedCategoryAdapter = WebsCareAds.wrapWithNativeAds(
@@ -1123,6 +1201,8 @@ class HomeFragment : androidx.fragment.app.Fragment(), SplashLanding {
 
     override fun onDestroyView() {
         impressionTracker.stop()
+        previewHost?.release()
+        previewHost = null
         _binding?.contentScroll?.removeCallbacks(headerSnapRunnable)
         headerSnapSpring?.cancel()
         headerSnapSpring = null

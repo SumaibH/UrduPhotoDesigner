@@ -16,14 +16,20 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.webscare.urducanvas.common.utils.Constants
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
+import com.webscare.urducanvas.common.utils.Utils.addPressEffectWithLongClick
 import com.webscare.urducanvas.common.utils.isDarkModeEnabled
 import com.webscare.urducanvas.data.model.FontEntity
 import com.webscare.urducanvas.data.model.ProgressUi
 import com.webscare.urducanvas.databinding.LayoutPopularFontItemBinding
 
+/**
+ * [onLongClick] opens the hold-to-peek preview. No eye button is drawn — Home has no
+ * expanded state, so this row is permanently the collapsed case.
+ */
 class FontsAdapter(
     private val onFontClick: (FontEntity, Boolean) -> Unit,
-    private val onDownload: (FontEntity) -> Unit
+    private val onDownload: (FontEntity) -> Unit,
+    private val onLongClick: ((FontEntity) -> Unit)? = null
 ) : androidx.recyclerview.widget.ListAdapter<FontEntity, FontsAdapter.VH>(
     Diff()
 ) {
@@ -42,7 +48,7 @@ class FontsAdapter(
         val binding = LayoutPopularFontItemBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
-        return VH(binding, onFontClick, onDownload)
+        return VH(binding, onFontClick, onDownload, onLongClick)
     }
 
     override fun onBindViewHolder(holder: VH, position: Int) {
@@ -69,7 +75,8 @@ class FontsAdapter(
     class VH(
         private val binding: LayoutPopularFontItemBinding,
         private val onFontClick: (FontEntity, Boolean) -> Unit,
-        private val onDownload: (FontEntity) -> Unit
+        private val onDownload: (FontEntity) -> Unit,
+        private val onLongClick: ((FontEntity) -> Unit)?
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(
@@ -144,10 +151,11 @@ class FontsAdapter(
                         }).into(binding.image)
                 }
             }
-            // Card click → use font (if downloaded)
-            binding.root.addPressEffect {
-                onFontClick(item, item.is_downloaded)
-            }
+            // Card click → use font (if downloaded). Hold → peek at it first.
+            binding.root.addPressEffectWithLongClick(
+                onLongClick = { onLongClick?.invoke(item) },
+                onClick = { onFontClick(item, item.is_downloaded) }
+            )
 
             // Download button → trigger font download
             binding.download.addPressEffect { onDownload(item) }
