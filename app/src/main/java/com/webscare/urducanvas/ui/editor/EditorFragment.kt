@@ -1286,8 +1286,20 @@ class EditorFragment : Fragment() {
             }
 
             resetPanelsOnSelectionChange()
-            val effectiveSelection = if (selectionFromUserInteraction) newSelection else emptyList()
-            updateToolbarVisibility(effectiveSelection, animate = !isSelectionSwitch && selectionFromUserInteraction)
+
+            // Picking a layer in the Layers panel is as deliberate as tapping the canvas,
+            // so it earns the same tools. Only the canvas callback sets
+            // selectionFromUserInteraction, which is why a Layers selection handed the
+            // toolbar an empty list and showed nothing at all -- no alignment kit, no
+            // opacity, no blend.
+            //
+            // This deliberately does not open the adjustments panel. The layersFragment
+            // branch a few lines down still returns before the navigation block, so the
+            // tools appear around the user and they stay in the list they are working in.
+            val fromLayersPanel = navController.currentDestination?.id == R.id.layersFragment
+            val userDrivenSelection = selectionFromUserInteraction || fromLayersPanel
+            val effectiveSelection = if (userDrivenSelection) newSelection else emptyList()
+            updateToolbarVisibility(effectiveSelection, animate = !isSelectionSwitch && userDrivenSelection)
 
             if (viewModel.inSelectionMode.value == true) {
                 selectionFromUserInteraction = false
