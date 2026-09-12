@@ -15,7 +15,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.webscare.urducanvas.R
-import com.webscare.urducanvas.common.utils.Utils.keepBelowStatusBar
+import com.webscare.urducanvas.ui.common.HouseSheetFrame
 
 /**
  * The asset preview, as a bottom sheet of its own.
@@ -58,8 +58,7 @@ class AssetPreviewSheet : BottomSheetDialogFragment() {
 
     private var preview: AssetPreviewView? = null
 
-    /** The sheet frame itself, so the slide can be measured against it. */
-    private var sheetFrame: View? = null
+    private val houseSheet = HouseSheetFrame(this)
 
     /**
      * Tracks the panel's own height while the sheet is up, so a preview opened over a
@@ -88,59 +87,17 @@ class AssetPreviewSheet : BottomSheetDialogFragment() {
     }
 
     /**
-     * The Create Canvas sheet's structure, and only its structure: a full-height frame
-     * that is not fit-to-contents, so there is somewhere above the opening height to
-     * drag to, and a half-expanded stop that decides how much of the screen it takes
-     * when it appears. The header, the title and the content are the preview's own.
+     * The house sheet frame — the Create Canvas sheet's structure and only its
+     * structure. The header, the title and the content are the preview's own.
      */
     override fun onStart() {
         super.onStart()
-
-        val sheet = dialog?.findViewById<View>(
-            com.google.android.material.R.id.design_bottom_sheet
-        ) ?: return
-        sheetFrame = sheet
-
-        // The preview paints bottom_sheet_bg itself. A second surface behind it would
-        // square the rounded top back off.
-        sheet.setBackgroundResource(android.R.color.transparent)
-        sheet.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
-
-        BottomSheetBehavior.from(sheet).apply {
-            isFitToContents = false
-            skipCollapsed = true
-            isDraggable = true
-            // The ratio goes on before the state, not after. Settling against the old
-            // stop and then moving it leaves the sheet parked at a height nothing
-            // asked for, until something else happens to make it settle again.
-            halfExpandedRatio = openRatio()
-            state = BottomSheetBehavior.STATE_HALF_EXPANDED
-            removeBottomSheetCallback(slideCallback)
-            addBottomSheetCallback(slideCallback)
-        }
-
-        // Owns expandedOffset — this sheet is full height, so without it the top of the
-        // sheet sits behind the clock.
-        sheet.keepBelowStatusBar()
-
-        // The sheet is moved with offsetTopAndBottom, which changes where it is drawn
-        // without laying anything out — so neither a layout listener nor, on the first
-        // settle, the slide callback ever reports the position it came to rest at. Every
-        // move does redraw it, so the check rides along with the draw instead.
-        sheet.viewTreeObserver.addOnPreDrawListener(visibleHeightWatcher)
-
+        houseSheet.attach(openRatio())
         forceImmersiveMode()
     }
 
     override fun onStop() {
-        sheetFrame?.let {
-            if (it.viewTreeObserver.isAlive) {
-                it.viewTreeObserver.removeOnPreDrawListener(visibleHeightWatcher)
-            }
-            runCatching { BottomSheetBehavior.from(it) }
-                .getOrNull()?.removeBottomSheetCallback(slideCallback)
-        }
-        sheetFrame = null
+        houseSheet.detach()
         super.onStop()
     }
 
@@ -155,9 +112,6 @@ class AssetPreviewSheet : BottomSheetDialogFragment() {
      * leaves the artwork the same size it was before — the editor's collapsed panel
      * shortest, its expanded panel taller, and the navigation screens' `tall` preview
      * taller still, which is the distinction that had to survive.
-     *
-     * Expressed in dp rather than as three flat fractions so the artwork keeps its
-     * size across screens instead of growing with the display.
      */
     private fun openRatio(): Float {
         val wellDp = when {
@@ -165,64 +119,8 @@ class AssetPreviewSheet : BottomSheetDialogFragment() {
             expandedNow -> WELL_EXPANDED_DP
             else -> WELL_COLLAPSED_DP
         }
-        val screenDp = resources.displayMetrics.heightPixels / resources.displayMetrics.density
-        if (screenDp <= 0f) return MIN_RATIO
-        return ((wellDp + CHROME_DP) / screenDp).coerceIn(MIN_RATIO, MAX_RATIO)
+        return houseSheet.ratioForHeight(wellDp + CHROME_DP)
     }
-
-    /**
-     * Keeps the preview's own column as tall as the part of the sheet that is on screen.
-     *
-     * The frame is full height and only its top is visible until it is dragged all the
-     * way up, so the rest hangs below the display. Left alone, a match_parent column
-     * would put its buttons down there. Padding the bottom by exactly the overhang puts
-     * them back on the last visible row, and the well — the one weighted child — takes
-     * whatever the drag has just handed over.
-     */
-    private fun applyVisibleHeight(): Boolean {
-        val sheet = sheetFrame ?: return false
-        val view = preview ?: return false
-        val parentHeight = (sheet.parent as? View)?.height ?: return false
-        if (parentHeight <= 0 || sheet.height <= 0) return false
-        val below = (sheet.top + sheet.height - parentHeight).coerceAtLeast(0)
-        val bottom = below + bottomInset()
-        if (view.paddingBottom == bottom) return false
-        view.setPadding(0, 0, 0, bottom)
-        return true
-    }
-
-    /**
-     * The navigation bar, read off the host activity rather than this window.
-     *
-     * The sheet runs edge to edge and hides the navigation for itself, so its own
-     * insets report nothing to clear — while the bar is still there the moment the
-     * sheet goes away. The activity's window carries the real value.
-     */
-    private fun bottomInset(): Int =
-        activity?.window?.decorView
-            ?.let { androidx.core.view.ViewCompat.getRootWindowInsets(it) }
-            ?.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
-            ?.bottom ?: 0
-
-    private val slideCallback = object : BottomSheetBehavior.BottomSheetCallback() {
-        override fun onStateChanged(bottomSheet: View, newState: Int) {
-            applyVisibleHeight()
-        }
-
-        override fun onSlide(bottomSheet: View, slideOffset: Float) {
-            applyVisibleHeight()
-        }
-    }
-
-    /**
-     * Re-measures against the sheet's current position on every frame it is drawn.
-     *
-     * Cheap in the ordinary case: the padding only changes while the sheet is actually
-     * moving, and an unchanged value costs a comparison. Cancelling the draw on a change
-     * is what keeps the content from being painted one frame behind the sheet.
-     */
-    private val visibleHeightWatcher =
-        ViewTreeObserver.OnPreDrawListener { !applyVisibleHeight() }
 
     /**
      * Keeps the navigation bar hidden for this window, matching the editor underneath.
@@ -268,10 +166,12 @@ class AssetPreviewSheet : BottomSheetDialogFragment() {
         }
         preview = view
 
+        val root = houseSheet.wrap(view)
+
         if (bound == null) {
             // Recreated with nothing to show or call. Leave rather than pretend.
-            view.post { dismissAllowingStateLoss() }
-            return view
+            root.post { dismissAllowingStateLoss() }
+            return root
         }
 
         view.onBack = { dismissAllowingStateLoss() }
@@ -285,7 +185,7 @@ class AssetPreviewSheet : BottomSheetDialogFragment() {
         pendingDownloading?.let(view::setDownloading)
         pendingDownloaded?.let(view::setDownloaded)
         pendingRenderedBitmap?.let(view::setRenderedBitmap)
-        return view
+        return root
     }
 
     /** Re-points an already-open sheet at a new asset without closing and reopening it. */
@@ -313,11 +213,7 @@ class AssetPreviewSheet : BottomSheetDialogFragment() {
         preview?.setExpanded(expanded)
         if (expandedNow == expanded) return
         expandedNow = expanded
-        val sheet = sheetFrame ?: return
-        val behavior = runCatching { BottomSheetBehavior.from(sheet) }.getOrNull() ?: return
-        val settled = behavior.state == BottomSheetBehavior.STATE_HALF_EXPANDED
-        behavior.halfExpandedRatio = openRatio()
-        if (settled) behavior.state = BottomSheetBehavior.STATE_HALF_EXPANDED
+        houseSheet.setOpenRatio(openRatio())
     }
 
     /**
@@ -348,6 +244,7 @@ class AssetPreviewSheet : BottomSheetDialogFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        houseSheet.release()
         preview?.onBack = null
         preview?.onPrimaryAction = null
         preview?.onShare = null
@@ -367,6 +264,7 @@ class AssetPreviewSheet : BottomSheetDialogFragment() {
         private const val WELL_COLLAPSED_DP = 210f
         private const val WELL_EXPANDED_DP = 320f
 
+
         /**
          * Off the editor. Taller than the expanded panel because nothing is competing for
          * the screen there — no panel below and no canvas above to keep in view.
@@ -380,9 +278,5 @@ class AssetPreviewSheet : BottomSheetDialogFragment() {
          * little more artwork than it asked for rather than a gap under its buttons.
          */
         private const val CHROME_DP = 200f
-
-        /** Below this it stops reading as a sheet; above it there is nothing left to drag. */
-        private const val MIN_RATIO = 0.45f
-        private const val MAX_RATIO = 0.9f
     }
 }
