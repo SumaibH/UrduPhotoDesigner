@@ -9,7 +9,7 @@ plugins {
 }
 
 val appVersionCode = 31
-val appVersionName = "1.3.0"
+val appVersionName = "1.3.1"
 
 base.archivesName.set("UrduCanvas - V$appVersionCode($appVersionName)")
 
