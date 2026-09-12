@@ -13,6 +13,8 @@ import com.google.android.material.card.MaterialCardView
 import com.webscare.urducanvas.R
 import com.webscare.urducanvas.common.canvas.enums.BrushStyle
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
+import com.webscare.urducanvas.common.utils.onBoxResized
+import com.webscare.urducanvas.common.utils.removeBoxResizedWatcher
 
 class BrushStyleAdapter(
     private var styles: List<BrushStyle>,
@@ -27,15 +29,29 @@ class BrushStyleAdapter(
     var attachedRecyclerView: RecyclerView? = null
         private set
 
+    /** See [com.webscare.urducanvas.common.utils.onBoxResized]. */
+    private var boxWatcher: View.OnLayoutChangeListener? = null
+
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
         attachedRecyclerView = recyclerView
+        boxWatcher = recyclerView.onBoxResized { rv -> resizeVisibleTiles(rv) }
     }
 
     override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
         super.onDetachedFromRecyclerView(recyclerView)
+        recyclerView.removeBoxResizedWatcher(boxWatcher)
+        boxWatcher = null
         if (attachedRecyclerView == recyclerView) {
             attachedRecyclerView = null
+        }
+    }
+
+    /** Re-measures every tile now that [rv] has been laid out at its settled height. */
+    private fun resizeVisibleTiles(rv: RecyclerView) {
+        for (i in 0 until rv.childCount) {
+            val holder = rv.getChildViewHolder(rv.getChildAt(i)) as? StyleViewHolder ?: continue
+            holder.updateSize(slideOffset)
         }
     }
 

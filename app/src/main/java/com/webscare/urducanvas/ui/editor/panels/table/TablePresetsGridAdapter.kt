@@ -8,6 +8,8 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.webscare.urducanvas.R
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
+import com.webscare.urducanvas.common.utils.onBoxResized
+import com.webscare.urducanvas.common.utils.removeBoxResizedWatcher
 import com.webscare.urducanvas.data.repository.TablePresetStyle
 import com.webscare.urducanvas.databinding.ItemTablePresetBinding
 
@@ -21,15 +23,29 @@ class TablePresetsGridAdapter(
     var attachedRecyclerView: RecyclerView? = null
         private set
 
+    /** See [com.webscare.urducanvas.common.utils.onBoxResized]. */
+    private var boxWatcher: android.view.View.OnLayoutChangeListener? = null
+
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
         attachedRecyclerView = recyclerView
+        boxWatcher = recyclerView.onBoxResized { rv -> resizeVisibleTiles(rv) }
     }
 
     override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
         super.onDetachedFromRecyclerView(recyclerView)
+        recyclerView.removeBoxResizedWatcher(boxWatcher)
+        boxWatcher = null
         if (attachedRecyclerView == recyclerView) {
             attachedRecyclerView = null
+        }
+    }
+
+    /** Re-measures every tile now that [rv] has been laid out at its settled height. */
+    private fun resizeVisibleTiles(rv: RecyclerView) {
+        for (i in 0 until rv.childCount) {
+            val holder = rv.getChildViewHolder(rv.getChildAt(i)) as? VH ?: continue
+            holder.updateSize(rv)
         }
     }
 

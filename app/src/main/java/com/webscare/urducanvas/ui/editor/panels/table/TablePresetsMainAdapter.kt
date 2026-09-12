@@ -9,6 +9,8 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
+import com.webscare.urducanvas.common.utils.onBoxResized
+import com.webscare.urducanvas.common.utils.removeBoxResizedWatcher
 import com.webscare.urducanvas.common.views.TablePresetPreviewView
 import com.webscare.urducanvas.data.repository.TablePresetStyle
 import com.webscare.urducanvas.databinding.LayoutTablePresetItemCardBinding
@@ -30,14 +32,31 @@ class TablePresetsMainAdapter(
 
     var attachedRecyclerView: RecyclerView? = null
 
+    /** See [com.webscare.urducanvas.common.utils.onBoxResized]. */
+    private var boxWatcher: View.OnLayoutChangeListener? = null
+
     override fun onAttachedToRecyclerView(rv: RecyclerView) {
         super.onAttachedToRecyclerView(rv)
         attachedRecyclerView = rv
+        boxWatcher = rv.onBoxResized { resized -> resizeVisibleTiles(resized) }
     }
 
     override fun onDetachedFromRecyclerView(rv: RecyclerView) {
         super.onDetachedFromRecyclerView(rv)
+        rv.removeBoxResizedWatcher(boxWatcher)
+        boxWatcher = null
         attachedRecyclerView = null
+    }
+
+    /** Re-measures every tile now that [rv] has been laid out at its settled height. */
+    private fun resizeVisibleTiles(rv: RecyclerView) {
+        val rvPadding = rv.paddingLeft + rv.paddingRight
+        recyclerViewWidth = rv.width
+        recyclerViewPadding = rvPadding
+        for (i in 0 until rv.childCount) {
+            val holder = rv.getChildViewHolder(rv.getChildAt(i)) as? PresetViewHolder ?: continue
+            holder.updateSize(slideOffset, rv.width, rvPadding)
+        }
     }
 
     override fun getItemViewType(position: Int): Int =
