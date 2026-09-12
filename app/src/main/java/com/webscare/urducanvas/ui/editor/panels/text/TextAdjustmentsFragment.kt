@@ -176,9 +176,11 @@ class TextAdjustmentsFragment : androidx.fragment.app.Fragment() {
      * in front of them and never on a sibling.
      */
     private fun scopeForCurrentTab(): String? = when (currentTab) {
-        TAB_STYLES -> SearchScope.TEXT_STYLES
-        TAB_FONT   -> SearchScope.TEXT_FONT
-        else       -> null
+        TAB_STYLES  -> SearchScope.TEXT_STYLES
+        TAB_FONT    -> SearchScope.TEXT_FONT
+        TAB_3D      -> SearchScope.TEXT_3D
+        TAB_SYMBOLS -> SearchScope.TEXT_SYMBOLS
+        else        -> null
     }
 
     private fun setupSearchBar() {
@@ -209,9 +211,14 @@ class TextAdjustmentsFragment : androidx.fragment.app.Fragment() {
     }
 
     /**
-     * Search is only meaningful on the tabs that show a filterable list, and the icon
-     * doubles as the "a filter is on" indicator for the tab that is open — reading that
-     * tab's own query, which is what makes the state follow the tabs.
+     * Search is meaningful on the four tabs that show a list of named things — Styles and
+     * Font, plus 3D (its Presets page) and Symbols, whose glyphs all carry a name the tile
+     * does not print. Appearance and Format are colour swatches, sliders and statically
+     * inflated cards with no user-facing text to match, so the icon stays hidden there
+     * rather than offering a search that could only ever return nothing.
+     *
+     * The icon doubles as the "a filter is on" indicator for the tab that is open, and it
+     * reads that tab's own query — which is what makes the state follow the tabs.
      */
     private fun renderSearchIcon() {
         val b = _binding ?: return
