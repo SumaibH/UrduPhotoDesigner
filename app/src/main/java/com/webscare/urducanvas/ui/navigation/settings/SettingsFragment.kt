@@ -7,9 +7,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.navigation.fragment.findNavController
+import com.webscare.urducanvas.ui.navigation.settings.subscriptions.SubscriptionsFragment
+import com.webscare.urducanvas.analytics.AnalyticsConstants.Values
 import com.webscare.urducanvas.R
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
 import com.webscare.urducanvas.databinding.FragmentSettingsBinding
@@ -178,7 +181,12 @@ class SettingsFragment : androidx.fragment.app.Fragment() {
     }
 
     private fun goToSubscriptions() {
-        view?.post { findNavController().navigate(R.id.subscriptionsFragment) }
+        view?.post {
+            findNavController().navigate(
+                R.id.subscriptionsFragment,
+                bundleOf(SubscriptionsFragment.ARG_SOURCE to Values.PAYWALL_SETTINGS)
+            )
+        }
     }
 
     private fun setEvents() {

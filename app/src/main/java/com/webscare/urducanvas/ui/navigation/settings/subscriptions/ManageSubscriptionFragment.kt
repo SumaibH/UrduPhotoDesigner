@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
 import com.google.android.material.snackbar.Snackbar
+import androidx.core.os.bundleOf
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
@@ -18,6 +19,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import com.webscare.urducanvas.analytics.AnalyticsConstants.Values
 import com.webscare.urducanvas.R
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
 import com.webscare.urducanvas.databinding.FragmentManageSubscriptionBinding
@@ -138,7 +140,10 @@ class ManageSubscriptionFragment : Fragment() {
                 billingManager.refreshSnapshot()
                 toast(getString(R.string.mng_toast_rechecked))
             } else {
-                findNavController().navigate(R.id.subscriptionsFragment)
+                findNavController().navigate(
+                    R.id.subscriptionsFragment,
+                    bundleOf(SubscriptionsFragment.ARG_SOURCE to Values.PAYWALL_MANAGE_SUBSCRIPTION)
+                )
             }
         }
 

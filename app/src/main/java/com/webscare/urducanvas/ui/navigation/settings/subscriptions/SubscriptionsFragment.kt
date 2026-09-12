@@ -36,6 +36,7 @@ import kotlinx.coroutines.launch
 import java.util.Locale
 import javax.inject.Inject
 import com.webscare.urducanvas.common.utils.InsetUtils.applyStatusBarTopPadding
+import com.webscare.urducanvas.analytics.AnalyticsConstants.Values
 import com.webscare.urducanvas.analytics.AnalyticsTracker
 
 @AndroidEntryPoint
@@ -88,7 +89,11 @@ class SubscriptionsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         // Edge to edge: the window no longer reserves the status bar, so leave the margin here.
         view.applyStatusBarTopPadding()
-        val source = arguments?.getString("source") ?: "settings"
+        // Every caller names its route now. The fallback stays because a navigation that
+        // forgets to is better reported as settings than not reported at all -- but it is
+        // a fallback, not the answer for five different routes, which is what it had
+        // silently become.
+        val source = arguments?.getString(ARG_SOURCE) ?: Values.PAYWALL_SETTINGS
         analyticsTracker.logPaywallViewed(source)
         setupPlanList()
         bindFeatureGrid()
@@ -553,6 +558,9 @@ class SubscriptionsFragment : Fragment() {
     }
 
     companion object {
+        /** Navigation argument naming the route that opened this screen. */
+        const val ARG_SOURCE = "source"
+
         // Must match layout_subscriptions_item.xml's card width/margins.
         private const val CARD_WIDTH_DP = 108
         private const val CARD_MARGIN_DP = 4

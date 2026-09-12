@@ -199,6 +199,22 @@ object AnalyticsConstants {
         const val AD_OUTCOME_ABANDONED = "abandoned_feature"
         const val AD_OUTCOME_LEFT_APP = "left_app"
 
+        // ── Paywall entry points ──────────────────────────────────────────────
+        //
+        // Where a subscription screen view came from. Every route names itself, because
+        // until now none of them did and the screen reported "settings" for all five.
+        //
+        // Deliberately none of these is "export_block". That name belongs to the in-place
+        // block on the export screen, which emits its own `paywall_viewed` without
+        // navigating anywhere. Reusing it here would make a single user decision -- hit the
+        // block, then open the paywall -- count twice under one name, and a double-count
+        // that lives in the data is a trap for whoever reads it later.
+        const val PAYWALL_SETTINGS = "settings"
+        const val PAYWALL_PREFERENCES = "preferences"
+        const val PAYWALL_EXPORT_SHARE = "export_share"
+        const val PAYWALL_EXPORT_SAVE = "export_save"
+        const val PAYWALL_MANAGE_SUBSCRIPTION = "manage_subscription"
+
         const val STATUS_STARTED = "started"
         const val STATUS_SUCCESS = "success"
         const val STATUS_FAILED = "failed"

@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.core.os.bundleOf
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -16,6 +17,8 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.webscare.urducanvas.ui.navigation.settings.subscriptions.SubscriptionsFragment
+import com.webscare.urducanvas.analytics.AnalyticsConstants.Values
 import com.webscare.urducanvas.R
 import com.webscare.urducanvas.common.canvas.enums.ExportViewType
 import com.webscare.urducanvas.common.datastore.PreferenceDataStoreKeysConstants
@@ -315,7 +318,10 @@ class PreferencesFragment : Fragment() {
             }
 
             if (isPremiumOption && !isSubscribed) {
-                findNavController().navigate(R.id.subscriptionsFragment)
+                findNavController().navigate(
+                    R.id.subscriptionsFragment,
+                    bundleOf(SubscriptionsFragment.ARG_SOURCE to Values.PAYWALL_PREFERENCES)
+                )
                 return@ExportOptionAdapter
             }
 

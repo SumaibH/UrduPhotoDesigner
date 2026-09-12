@@ -17,6 +17,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.os.bundleOf
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.scale
@@ -27,6 +28,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import com.webscare.urducanvas.ui.navigation.settings.subscriptions.SubscriptionsFragment
+import com.webscare.urducanvas.analytics.AnalyticsConstants.Values
 import com.webscare.urducanvas.BuildConfig
 import com.webscare.ads.WebsCareAds
 import com.webscare.urducanvas.R
@@ -128,7 +131,10 @@ class ExportFragment : androidx.fragment.app.Fragment() {
 
         btnShare.addPressEffect {
             if (isPremiumLocked()) {
-                findNavController().navigate(R.id.subscriptionsFragment)
+                findNavController().navigate(
+                    R.id.subscriptionsFragment,
+                    bundleOf(SubscriptionsFragment.ARG_SOURCE to Values.PAYWALL_EXPORT_SHARE)
+                )
                 return@addPressEffect
             }
 
@@ -498,7 +504,10 @@ class ExportFragment : androidx.fragment.app.Fragment() {
 
     private fun startExport() = with(binding) {
         if (isPremiumLocked()) {
-            findNavController().navigate(R.id.subscriptionsFragment)
+            findNavController().navigate(
+                R.id.subscriptionsFragment,
+                bundleOf(SubscriptionsFragment.ARG_SOURCE to Values.PAYWALL_EXPORT_SAVE)
+            )
             return@with
         }
 
