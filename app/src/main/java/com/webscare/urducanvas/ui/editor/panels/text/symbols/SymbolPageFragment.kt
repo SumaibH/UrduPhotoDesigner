@@ -11,6 +11,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.webscare.urducanvas.common.canvas.CanvasViewModel
 import com.webscare.urducanvas.common.canvas.enums.ElementType
 import com.webscare.urducanvas.databinding.FragmentSymbolPageBinding
+import com.webscare.urducanvas.viewmodels.SearchScope
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.launch
 
 class SymbolPageFragment : Fragment() {
 
@@ -19,8 +24,13 @@ class SymbolPageFragment : Fragment() {
 
     private val viewModel: CanvasViewModel by activityViewModels()
 
+    private val mainViewModel: com.webscare.urducanvas.viewmodels.MainViewModel by activityViewModels()
+
     private lateinit var adapter: SymbolGridAdapter
     private var category: SymbolCategory = SymbolCategory.UPPER
+
+    /** Unfiltered page contents, so clearing the search restores them. */
+    private var allSymbols: List<SymbolItem> = emptyList()
 
     companion object {
         private const val ARG_CATEGORY = "arg_category"
@@ -73,7 +83,26 @@ class SymbolPageFragment : Fragment() {
         }
         binding.root.post { updateRowCount() }
 
-        adapter.submitList(SymbolsRepository.getSymbolsForCategory(category))
+        allSymbols = SymbolsRepository.getSymbolsForCategory(category)
+        adapter.submitList(allSymbols)
+
+        // Every symbol carries an English/transliterated name ("Zabar", "Waqf Lazim",
+        // "Sallallahu") that the tile itself never prints — it is only the content
+        // description and a long-press toast. That makes the name the one handle someone
+        // has on a grid of 30 near-identical marks, so it is exactly what search should
+        // match. The query is this tab's own; typing here filters nothing else.
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                mainViewModel.queryDebouncedFor(SearchScope.TEXT_SYMBOLS).collect { query ->
+                    if (_binding == null) return@collect
+                    val filtered = filterSymbols(query)
+                    adapter.submitList(filtered)
+                    if (query.isNotBlank() && isResumed) {
+                        mainViewModel.reportSearchResultCount(query, filtered.size)
+                    }
+                }
+            }
+        }
 
         // Previews follow the font of whatever text layer is selected.
         viewModel.canvasElements.observe(viewLifecycleOwner) { elements ->
@@ -83,6 +112,13 @@ class SymbolPageFragment : Fragment() {
                 ?.typefaceOrNull
             adapter.setPreviewTypeface(typeface)
         }
+    }
+
+    /** Matches the symbol's name; the glyph itself is not typeable on a Latin keyboard. */
+    private fun filterSymbols(queryRaw: String): List<SymbolItem> {
+        val query = queryRaw.trim().lowercase()
+        if (query.isEmpty()) return allSymbols
+        return allSymbols.filter { it.name.lowercase().contains(query) }
     }
 
     /**

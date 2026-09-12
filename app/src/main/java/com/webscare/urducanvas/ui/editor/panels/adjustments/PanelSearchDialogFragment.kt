@@ -13,6 +13,7 @@ import androidx.fragment.app.activityViewModels
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
 import com.webscare.urducanvas.databinding.DialogPanelSearchBinding
 import com.webscare.urducanvas.viewmodels.MainViewModel
+import com.webscare.urducanvas.viewmodels.SearchScope
 
 @dagger.hilt.android.AndroidEntryPoint
 class PanelSearchDialogFragment : DialogFragment() {
@@ -25,8 +26,16 @@ class PanelSearchDialogFragment : DialogFragment() {
 
     private val mainViewModel: MainViewModel by activityViewModels()
 
-    /** Which panel opened this. See [newInstance]. */
+    /** Which panel opened this, for analytics. See [newInstance]. */
     private var placement: String = "panel"
+
+    /**
+     * Which query this dialog edits. See [com.webscare.urducanvas.viewmodels.SearchScope].
+     *
+     * The dialog is shared by every panel that searches, so without this it wrote into one
+     * global query and whatever it typed filtered every other list in the app.
+     */
+    private var scope: String = SearchScope.HOME
 
     /** Keeps one search to one event, the way SearchFragment's own guard does. */
     private var lastReportedQuery: String? = null
@@ -35,6 +44,7 @@ class PanelSearchDialogFragment : DialogFragment() {
         super.onCreate(savedInstanceState)
         setStyle(STYLE_NO_TITLE, android.R.style.Theme_DeviceDefault_Dialog_NoActionBar_MinWidth)
         placement = arguments?.getString(ARG_PLACEMENT) ?: "panel"
+        scope = arguments?.getString(ARG_SCOPE) ?: SearchScope.HOME
     }
 
     override fun onStart() {
@@ -66,7 +76,7 @@ class PanelSearchDialogFragment : DialogFragment() {
         // no list that filters — report "unknown" instead of a stale number.
         mainViewModel.beginPanelSearch()
 
-        val currentQuery = mainViewModel.searchQuery.value
+        val currentQuery = mainViewModel.queryFor(scope).value
         binding.editSearchInput.setText(currentQuery)
         binding.editSearchInput.setSelection(currentQuery.length)
         binding.btnClearSearch.isVisible = currentQuery.isNotEmpty()
@@ -79,7 +89,7 @@ class PanelSearchDialogFragment : DialogFragment() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val query = s?.toString().orEmpty()
                 binding.btnClearSearch.isVisible = query.isNotEmpty()
-                mainViewModel.setQuery(query)
+                mainViewModel.setQuery(scope, query)
             }
         })
 
@@ -93,7 +103,7 @@ class PanelSearchDialogFragment : DialogFragment() {
 
         binding.btnClearSearch.addPressEffect {
             binding.editSearchInput.setText("")
-            mainViewModel.setQuery("")
+            mainViewModel.setQuery(scope, "")
         }
 
         binding.btnDone.addPressEffect {
@@ -119,7 +129,7 @@ class PanelSearchDialogFragment : DialogFragment() {
      * up, and GA4 rejects events carrying them anyway.
      */
     private fun reportSearch() {
-        val term = mainViewModel.searchQuery.value.trim()
+        val term = mainViewModel.queryFor(scope).value.trim()
         if (term.isBlank() || term == lastReportedQuery) return
         lastReportedQuery = term
         if (PERSONAL_DATA.containsMatchIn(term)) return
@@ -138,6 +148,7 @@ class PanelSearchDialogFragment : DialogFragment() {
 
     companion object {
         private const val ARG_PLACEMENT = "arg_placement"
+        private const val ARG_SCOPE = "arg_scope"
 
         /** Same shape as SearchFragment's guard — see its companion for why. */
         private val PERSONAL_DATA = Regex(
@@ -147,10 +158,22 @@ class PanelSearchDialogFragment : DialogFragment() {
 
         /**
          * [placement] names the panel that opened this, following the convention the home
-         * screen's own `search` call set: a short, stable screen-or-panel name.
+         * screen's own `search` call set: a short, stable screen-or-panel name. It is an
+         * analytics label with a registered GA4 definition behind it.
+         *
+         * [scope] names the query the dialog edits — which *list* the term belongs to. It is
+         * finer-grained than [placement] on purpose: the text panel reports one placement
+         * for the whole panel but each of its tabs owns a separate query, so splitting a
+         * scope never disturbs an existing event.
          */
-        fun newInstance(placement: String = "panel") = PanelSearchDialogFragment().apply {
-            arguments = Bundle().apply { putString(ARG_PLACEMENT, placement) }
+        fun newInstance(
+            placement: String = "panel",
+            scope: String = SearchScope.HOME
+        ) = PanelSearchDialogFragment().apply {
+            arguments = Bundle().apply {
+                putString(ARG_PLACEMENT, placement)
+                putString(ARG_SCOPE, scope)
+            }
         }
     }
 }

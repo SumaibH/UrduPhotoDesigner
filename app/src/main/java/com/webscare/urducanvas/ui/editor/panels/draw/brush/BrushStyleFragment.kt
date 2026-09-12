@@ -67,7 +67,7 @@ class BrushStyleFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                mainViewModel.searchQuery.collect {
+                mainViewModel.queryFor(com.webscare.urducanvas.viewmodels.SearchScope.DRAW_BRUSH).collect {
                     query = it
                     rebind()
                 }

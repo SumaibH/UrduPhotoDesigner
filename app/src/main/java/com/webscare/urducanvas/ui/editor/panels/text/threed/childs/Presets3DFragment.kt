@@ -20,6 +20,10 @@ import com.webscare.urducanvas.ui.editor.panels.preview.showPresetPreview
 import com.webscare.urducanvas.data.repository.TextStylesRepository
 import com.webscare.urducanvas.databinding.Fragment3dPresetsBinding
 import com.webscare.urducanvas.ui.editor.panels.text.styles.TextStylesGridAdapter
+import com.webscare.urducanvas.viewmodels.SearchScope
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.launch
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
@@ -35,7 +39,22 @@ class Presets3DFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: CanvasViewModel by activityViewModels()
+    private val mainViewModel: com.webscare.urducanvas.viewmodels.MainViewModel by activityViewModels()
     private lateinit var adapter: TextStylesGridAdapter
+
+    /** Unfiltered grid contents, so clearing the search restores them. */
+    private var allPresets: List<TextStylePreset> = emptyList()
+
+    /**
+     * Extra words a preset can be found by, keyed by preset id.
+     *
+     * [Text3DPreset] carries a `title` and a `desc` ("Cool grey gradient face, mirror-bright
+     * bevel, short depth.") that [asStylePreset] has to drop, because `TextStylePreset` has
+     * nowhere to put them. They are the most descriptive text these eight built-ins have, so
+     * searching "mirror" or "bevel" ought to find Chrome — this keeps them reachable without
+     * changing the shared preset model.
+     */
+    private var extraKeywords: Map<String, String> = emptyMap()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -56,6 +75,11 @@ class Presets3DFragment : Fragment() {
             PresetCategory.THREE_D, requireContext()
         ).filterNot { it.id == com.webscare.urducanvas.data.model.TextStylePreset.NONE_ID }
 
+        allPresets = builtIns + library
+        extraKeywords = Text3DData.PRESETS.associate { p ->
+            (BUILT_IN_PREFIX + p.id) to "${p.title} ${p.desc}".lowercase()
+        }
+
         fun apply(preset: TextStylePreset) {
             val builtInId = preset.id.removePrefix(BUILT_IN_PREFIX)
             if (builtInId != preset.id) {
@@ -67,7 +91,7 @@ class Presets3DFragment : Fragment() {
         }
 
         adapter = TextStylesGridAdapter(
-            builtIns + library,
+            allPresets,
             onPreviewRequested = { preset ->
                 showPresetPreview(
                     preset = preset,
@@ -100,6 +124,38 @@ class Presets3DFragment : Fragment() {
             val typeface = firstText?.paint?.typeface
             val fontKey = firstText?.fontId ?: firstText?.fontUrl ?: typeface?.hashCode()?.toString()
             adapter.updateTypeface(typeface, fontKey)
+        }
+
+        // The 3D tab's own query — the header icon is live on this tab now, and this is the
+        // page it filters. The other four 3D sub-tabs are sliders and swatches with nothing
+        // a word could match, so they are left alone.
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                mainViewModel.queryDebouncedFor(SearchScope.TEXT_3D).collect { query ->
+                    if (_binding == null) return@collect
+                    val filtered = filterPresets(query)
+                    adapter.submitPresets(filtered)
+                    // Same discipline as the Styles grid: only the page actually on screen
+                    // may report a count for the shared search dialog to read back.
+                    if (query.isNotBlank() && isResumed) {
+                        mainViewModel.reportSearchResultCount(query, filtered.size)
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Matches the preset name, its category label, and — for the eight built-ins — the
+     * title and description that do not survive the mapping into [TextStylePreset].
+     */
+    private fun filterPresets(queryRaw: String): List<TextStylePreset> {
+        val query = queryRaw.trim().lowercase()
+        if (query.isEmpty()) return allPresets
+        return allPresets.filter { preset ->
+            preset.name.lowercase().contains(query) ||
+                preset.category.displayName.lowercase().contains(query) ||
+                extraKeywords[preset.id]?.contains(query) == true
         }
     }
 

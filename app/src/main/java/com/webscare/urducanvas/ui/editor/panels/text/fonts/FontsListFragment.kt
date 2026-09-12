@@ -56,10 +56,15 @@ class FontsListFragment : androidx.fragment.app.Fragment() {
 
     private var standaloneMode: Boolean = false
 
+    /** Whose query this list filters on — see [com.webscare.urducanvas.viewmodels.SearchScope]. */
+    private var searchScope: String = com.webscare.urducanvas.viewmodels.SearchScope.TEXT_FONT
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         currentLanguage = arguments?.getString(ARG_FONT_LANGUAGE) ?: "All"
         standaloneMode  = arguments?.getBoolean(ARG_STANDALONE_MODE, false) ?: false
+        searchScope     = arguments?.getString(ARG_SEARCH_SCOPE)
+            ?: com.webscare.urducanvas.viewmodels.SearchScope.TEXT_FONT
         currentCategory = null
     }
 
@@ -292,7 +297,7 @@ class FontsListFragment : androidx.fragment.app.Fragment() {
 
     private fun rebindLatest() {
         val fonts = mainViewModel.localFonts.value
-        val query = mainViewModel.rawQuery.value
+        val query = mainViewModel.queryFor(searchScope).value
         submitWithScrollPreservation(buildFilteredList(fonts, query))
     }
 
@@ -366,7 +371,7 @@ class FontsListFragment : androidx.fragment.app.Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 combine(
                     mainViewModel.localFonts,
-                    mainViewModel.queryDebounced.onStart { emit("") },
+                    mainViewModel.queryDebouncedFor(searchScope).onStart { emit("") },
                     mainViewModel.recentFonts
                 ) { fonts, queryRaw, _ ->
                     queryRaw to buildFilteredList(fonts, queryRaw)
@@ -470,12 +475,17 @@ class FontsListFragment : androidx.fragment.app.Fragment() {
     companion object {
         private const val ARG_FONT_LANGUAGE   = "font_language"
         private const val ARG_STANDALONE_MODE = "standalone_mode"
+        private const val ARG_SEARCH_SCOPE    = "search_scope"
 
-        fun newInstance(fontLanguage: String, standaloneMode: Boolean = false) =
-            FontsListFragment().also {
+        fun newInstance(
+            fontLanguage: String,
+            standaloneMode: Boolean = false,
+            searchScope: String = com.webscare.urducanvas.viewmodels.SearchScope.TEXT_FONT
+        ) = FontsListFragment().also {
                 it.arguments = Bundle().apply {
                     putString(ARG_FONT_LANGUAGE, fontLanguage)
                     putBoolean(ARG_STANDALONE_MODE, standaloneMode)
+                    putString(ARG_SEARCH_SCOPE, searchScope)
                 }
             }
     }

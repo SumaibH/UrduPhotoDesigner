@@ -933,7 +933,8 @@ class TextFragment : Fragment(), PreviewHostOwner {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 combine(
                     mainViewModel.localFonts,
-                    mainViewModel.queryDebounced.onStart { emit("") },
+                    mainViewModel.queryDebouncedFor(com.webscare.urducanvas.viewmodels.SearchScope.TEXT_PANEL)
+                        .onStart { emit("") },
                     mainViewModel.recentFonts
                 ) { fonts, query, _ -> Pair(fonts, query) }.collect { (fonts, query) ->
                     currentQuery = query
@@ -1306,7 +1307,7 @@ class TextFragment : Fragment(), PreviewHostOwner {
             // selectedLanguage, or selectedCategory so tab state survives collapse.
             hideKeyboard()
             binding.searchBarExpanded.text?.clear()
-            mainViewModel.setQuery("")
+            mainViewModel.setQuery(com.webscare.urducanvas.viewmodels.SearchScope.TEXT_PANEL, "")
             currentQuery = ""
 
             // Persist current tab state to ViewModel so it survives
@@ -1444,7 +1445,7 @@ class TextFragment : Fragment(), PreviewHostOwner {
             }
         }
         if (!isStylesMode) {
-            mainViewModel.setQuery(query)
+            mainViewModel.setQuery(com.webscare.urducanvas.viewmodels.SearchScope.TEXT_PANEL, query)
             rebindFonts()
         } else {
             rebindStyles()

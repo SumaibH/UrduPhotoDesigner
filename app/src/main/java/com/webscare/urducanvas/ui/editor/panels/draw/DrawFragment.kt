@@ -71,17 +71,20 @@ class DrawFragment : Fragment() {
     /**
      * The catalog runs to 68 brushes across 12 shelves, which is more than anyone wants to
      * scroll. The search icon opens the same bottom-anchored dialog the text panel uses and
-     * writes into the shared query, which [BrushStyleFragment] reads.
+     * writes into this panel's own query, which [BrushStyleFragment] reads. The scope keeps
+     * it there: the text panel's tabs and the home screen each search their own list.
      */
     private fun setupSearchBar() {
         binding.searchIcon.addPressEffect {
-            PanelSearchDialogFragment.newInstance("draw_panel")
+            PanelSearchDialogFragment
+                .newInstance("draw_panel", com.webscare.urducanvas.viewmodels.SearchScope.DRAW_BRUSH)
                 .show(childFragmentManager, "brush_search_dialog")
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                mainViewModel.searchQuery.collect { query ->
+                mainViewModel.queryFor(com.webscare.urducanvas.viewmodels.SearchScope.DRAW_BRUSH)
+                    .collect { query ->
                     val binding = _binding ?: return@collect
                     binding.searchIcon.imageTintList = ColorStateList.valueOf(
                         ContextCompat.getColor(
@@ -124,11 +127,12 @@ class DrawFragment : Fragment() {
         b.tabLayout.clearOnTabSelectedListeners()
         b.tabLayout.removeAllTabs()
 
-        // Search only applies to the brush catalog, so the icon follows the Style tab and
-        // the query is dropped on the way out — otherwise Settings would open filtered.
+        // Search only applies to the brush catalog, so the icon follows the Style tab. The
+        // query used to be dropped on the way out because Settings read the same global
+        // string and would open filtered; it now has no query of its own to be filtered by,
+        // so the brush filter simply survives a trip to Settings and back.
         mediator = PanelTabHelper.setupCustomPanelTabs(b.tabLayout, b.viewPager, tabTitles) { position ->
             b.searchIcon.isVisible = position == 0
-            if (position != 0) mainViewModel.setQuery("")
         }
 
 
@@ -290,7 +294,7 @@ class DrawFragment : Fragment() {
         mediator = null
         _binding?.viewPager?.adapter = null
         viewModel.exitDrawingMode(commit = false)
-        mainViewModel.setQuery("")
+        mainViewModel.clearQuery(com.webscare.urducanvas.viewmodels.SearchScope.DRAW_BRUSH)
         super.onDestroyView()
         _binding = null
     }

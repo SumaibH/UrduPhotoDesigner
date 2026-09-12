@@ -7,7 +7,8 @@ import com.webscare.urducanvas.data.model.FontLanguages
 class FontsPagerAdapter(
     fragment: Fragment,
     categories: List<FontLanguages>,
-    private val standaloneMode: Boolean = false
+    private val standaloneMode: Boolean = false,
+    private val searchScope: String = com.webscare.urducanvas.viewmodels.SearchScope.TEXT_FONT
 ) : FragmentStateAdapter(fragment) {
 
     var categories: List<FontLanguages> = categories
@@ -18,7 +19,8 @@ class FontsPagerAdapter(
     override fun createFragment(position: Int): Fragment {
         return FontsListFragment.newInstance(
             fontLanguage  = categories[position].name,
-            standaloneMode = standaloneMode
+            standaloneMode = standaloneMode,
+            searchScope = searchScope
         )
     }
 

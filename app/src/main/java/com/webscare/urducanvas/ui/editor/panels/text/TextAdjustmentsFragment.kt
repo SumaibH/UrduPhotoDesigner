@@ -35,6 +35,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.launch
 import com.webscare.urducanvas.databinding.FragmentTextAdjustmentsBinding
 import com.webscare.urducanvas.viewmodels.MainViewModel
+import com.webscare.urducanvas.viewmodels.SearchScope
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -150,11 +151,9 @@ class TextAdjustmentsFragment : androidx.fragment.app.Fragment() {
     private fun setupTabLayout() {
         mediator?.detach()
         mediator = binding.tabLayout.setupPanelTabs(binding.viewPager, tabs) { position ->
-            // Styles and Font are the only searchable pages; leaving either one
-            // drops the filter so the next visit starts unfiltered.
-            if (position != TAB_STYLES && position != TAB_FONT) {
-                mainViewModel.setQuery("")
-            }
+            // Each searchable tab owns its query now, so leaving one no longer has to throw
+            // the filter away to keep it off the next tab. Switching back shows the term you
+            // left there, and the icon says so.
             viewModel.lastTextAdjustmentsTab = position
         }
 
@@ -169,38 +168,65 @@ class TextAdjustmentsFragment : androidx.fragment.app.Fragment() {
         }
     }
 
+    /**
+     * The query the tab on screen searches, or null if that tab has no list to filter.
+     *
+     * This is the whole of the scoping fix as the user meets it: the icon, the dialog it
+     * opens and the term it clears all resolve through here, so they always act on the tab
+     * in front of them and never on a sibling.
+     */
+    private fun scopeForCurrentTab(): String? = when (currentTab) {
+        TAB_STYLES  -> SearchScope.TEXT_STYLES
+        TAB_FONT    -> SearchScope.TEXT_FONT
+        TAB_3D      -> SearchScope.TEXT_3D
+        TAB_SYMBOLS -> SearchScope.TEXT_SYMBOLS
+        else        -> null
+    }
+
     private fun setupSearchBar() {
         binding.searchIcon.addPressEffect {
-            if (mainViewModel.searchQuery.value.isNotEmpty()) {
+            val scope = scopeForCurrentTab() ?: return@addPressEffect
+            if (mainViewModel.queryFor(scope).value.isNotEmpty()) {
                 // The icon is a cross at this point — it undoes the filter
                 // rather than reopening the dialog on top of it.
-                mainViewModel.setQuery("")
+                mainViewModel.setQuery(scope, "")
             } else {
                 com.webscare.urducanvas.ui.editor.panels.adjustments.PanelSearchDialogFragment
-                    .newInstance("text_adjustments")
+                    .newInstance("text_adjustments", scope)
                     .show(childFragmentManager, "panel_search_dialog")
             }
         }
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
-                mainViewModel.searchQuery.collect { renderSearchIcon(it) }
+        // One collector per searchable scope. The icon shows whichever one the tab on
+        // screen belongs to, so a term typed on Font cannot light the icon up on Styles.
+        SearchScope.TEXT_ADJUSTMENTS_TABS.forEach { scope ->
+            viewLifecycleOwner.lifecycleScope.launch {
+                viewLifecycleOwner.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                    mainViewModel.queryFor(scope).collect {
+                        if (scopeForCurrentTab() == scope) renderSearchIcon()
+                    }
+                }
             }
         }
     }
 
     /**
-     * Search is only meaningful on the two tabs that show a filterable list, and
-     * the icon doubles as the "a filter is on" indicator for whichever of them
-     * is open.
+     * Search is meaningful on the four tabs that show a list of named things — Styles and
+     * Font, plus 3D (its Presets page) and Symbols, whose glyphs all carry a name the tile
+     * does not print. Appearance and Format are colour swatches, sliders and statically
+     * inflated cards with no user-facing text to match, so the icon stays hidden there
+     * rather than offering a search that could only ever return nothing.
+     *
+     * The icon doubles as the "a filter is on" indicator for the tab that is open, and it
+     * reads that tab's own query — which is what makes the state follow the tabs.
      */
-    private fun renderSearchIcon(query: String = mainViewModel.searchQuery.value) {
+    private fun renderSearchIcon() {
         val b = _binding ?: return
-        val searchable = currentTab == TAB_STYLES || currentTab == TAB_FONT
-        b.searchIcon.isVisible = searchable
-        if (!searchable) return
+        val scope = scopeForCurrentTab()
+        b.searchIcon.isVisible = scope != null
+        if (scope == null) return
 
-        val hasQuery = query.isNotEmpty()
+        val hasQuery = mainViewModel.queryFor(scope).value.isNotEmpty()
         b.searchIcon.setImageResource(if (hasQuery) R.drawable.ic_close else R.drawable.ic_search)
         b.searchIcon.imageTintList = android.content.res.ColorStateList.valueOf(
             ContextCompat.getColor(
@@ -277,7 +303,9 @@ class TextAdjustmentsFragment : androidx.fragment.app.Fragment() {
         mediator = null
         _binding?.viewPager?.unregisterOnPageChangeCallback(pageChangeCallback)
         _binding?.viewPager?.adapter = null
-        mainViewModel.setQuery("")
+        // Every tab's filter goes when the panel does. See MainViewModel.clearQueries for
+        // why the line is drawn here and not at the tab switch.
+        mainViewModel.clearQueries(SearchScope.TEXT_ADJUSTMENTS_TABS)
         super.onDestroyView()
         _binding = null
     }
@@ -285,6 +313,7 @@ class TextAdjustmentsFragment : androidx.fragment.app.Fragment() {
     private companion object {
         const val TAB_STYLES = 0
         const val TAB_FONT = 1
+        const val TAB_3D = 3
         const val TAB_SYMBOLS = 5
     }
 }

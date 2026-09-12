@@ -20,6 +20,7 @@ import com.webscare.urducanvas.data.repository.RecentsStore
 import com.webscare.urducanvas.data.repository.TextStylesRepository
 import com.webscare.urducanvas.databinding.FragmentTextStyleGridBinding
 import com.webscare.urducanvas.viewmodels.MainViewModel
+import com.webscare.urducanvas.viewmodels.SearchScope
 import kotlinx.coroutines.launch
 
 class TextStyleGridFragment : Fragment() {
@@ -105,11 +106,11 @@ class TextStyleGridFragment : Fragment() {
         binding.presetsGrid.layoutManager = GridLayoutManager(requireContext(), resources.getInteger(R.integer.panel_preset_grid_rows), RecyclerView.HORIZONTAL, false)
         binding.presetsGrid.adapter = adapter
 
-        // The header's search box applies to whichever tab is open, so the
-        // Styles pages filter themselves the same way the Font list does.
+        // The header's search box is scoped to the tab it was typed on, so these pages watch
+        // the Styles query specifically — a term typed on Font or 3D never reaches here.
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                mainViewModel.queryDebounced.collect { query ->
+                mainViewModel.queryDebouncedFor(SearchScope.TEXT_STYLES).collect { query ->
                     if (_binding == null) return@collect
                     val filtered = filterPresets(query)
                     adapter.submitPresets(filtered)
