@@ -136,8 +136,15 @@ class TextStylesMainAdapter(
         set(value) {
             val old = field
             field = value
-            if (old != value) {
-                notifyDataSetChanged()
+            if (old == value) return
+            // Only the two tiles whose ring actually moved. notifyDataSetChanged() here
+            // rebuilt every holder -- and a lockup bitmap is not cheap to draw -- as well
+            // as throwing away the scroll anchor, so picking a preset from halfway along
+            // the shelf could drop you back at the start. Same discipline as
+            // [setLockupDownload] right above.
+            listOfNotNull(old, value).distinct().forEach { id ->
+                val index = currentList.indexOfFirst { it.id == id }
+                if (index >= 0) notifyItemChanged(index)
             }
         }
 

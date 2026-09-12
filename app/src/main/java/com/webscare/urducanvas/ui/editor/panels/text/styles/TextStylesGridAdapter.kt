@@ -85,8 +85,23 @@ class TextStylesGridAdapter(
         set(value) {
             val old = field
             field = value
-            if (old != value) {
-                notifyDataSetChanged()
+            if (old == value) return
+            // Only the two tiles whose ring actually moved. notifyDataSetChanged() here
+            // rebuilt every holder -- which meant re-rendering every thumbnail -- and threw
+            // away the scroll anchor with it, so picking a preset from halfway along the
+            // strip could drop you back at the start.
+            //
+            // "None" is the one tile whose look depends on the *absence* of a selection
+            // (see the isNone branch in onBindViewHolder), so it is refreshed too whenever
+            // the selection arrives at or leaves null.
+            val touched = buildSet {
+                add(old)
+                add(value)
+                if (old == null || value == null) add(TextStylePreset.NONE_ID)
+            }
+            touched.filterNotNull().forEach { id ->
+                val index = presets.indexOfFirst { it.id == id }
+                if (index >= 0) notifyItemChanged(index)
             }
         }
 
