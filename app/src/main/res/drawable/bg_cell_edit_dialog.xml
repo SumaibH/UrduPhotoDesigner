@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Floating cell-entry dialog: a card that hovers clear of every screen edge, so it
+     reads as a dialog rather than a sheet welded to the bottom of the window. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="@color/screen_bg" />
+    <corners android:radius="24dp" />
+    <stroke
+        android:width="1dp"
+        android:color="@color/surface_stroke" />
+</shape>
