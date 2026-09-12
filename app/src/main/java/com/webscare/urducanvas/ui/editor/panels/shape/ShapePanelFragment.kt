@@ -298,8 +298,14 @@ class ShapePanelFragment : Fragment() {
             adapter = shapesAdapter
         }
 
+        // Row count comes from panel_color_grid_rows like every other palette in the
+        // editor. It used to be a hardcoded 4, which meant this panel laid out four rows
+        // of swatches on every screen — including the compact tier, where the rest of the
+        // app drops to one and four rows of 32dp do not fit at all.
+        val colorRows = resources.getInteger(R.integer.panel_color_grid_rows)
+
         binding.colors.apply {
-            layoutManager = GridLayoutManager(requireActivity(), 4,
+            layoutManager = GridLayoutManager(requireActivity(), colorRows,
                 GridLayoutManager.HORIZONTAL, false)
 
             setHasFixedSize(true)
@@ -307,7 +313,7 @@ class ShapePanelFragment : Fragment() {
         }
 
         binding.gradients.apply {
-            layoutManager = GridLayoutManager(requireActivity(), 4,
+            layoutManager = GridLayoutManager(requireActivity(), colorRows,
                 GridLayoutManager.HORIZONTAL, false)
 
             setHasFixedSize(true)

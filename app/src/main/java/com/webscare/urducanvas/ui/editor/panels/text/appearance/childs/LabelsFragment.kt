@@ -161,11 +161,26 @@ class LabelsFragment : androidx.fragment.app.Fragment() {
                                 }).addToBackStack(null).commit()
                 })
 
+        // Both palettes are horizontal grids declared with app:spanCount="4" in
+        // fragment_labels.xml, and nothing here used to override it — so this panel laid
+        // out four rows of swatches on every screen, ignoring panel_color_grid_rows the
+        // way the rest of the Appearance rail honours it. Take the count from the
+        // resource so the short tiers get the single row they ask for.
+        val colorRows = resources.getInteger(R.integer.panel_color_grid_rows)
+
         binding.colors.apply {
+            layoutManager = androidx.recyclerview.widget.GridLayoutManager(
+                requireContext(), colorRows,
+                androidx.recyclerview.widget.GridLayoutManager.HORIZONTAL, false
+            )
             adapter = colorsAdapter
         }
 
         binding.gradients.apply {
+            layoutManager = androidx.recyclerview.widget.GridLayoutManager(
+                requireContext(), colorRows,
+                androidx.recyclerview.widget.GridLayoutManager.HORIZONTAL, false
+            )
             adapter = gradientsAdapter
         }
 

@@ -62,7 +62,16 @@ class GradientColorListFragment : androidx.fragment.app.Fragment() {
                     viewModel.startPicking(PickerTarget.EYE_DROPPER_GRADIENT)
                 })
 
+        // Same story as LabelsFragment: fragment_gradient_color_list.xml declares a
+        // horizontal grid with app:spanCount="4" and nothing overrode it, so this palette
+        // stayed four rows deep on every screen while the rest of the editor stepped
+        // down. Drive it from panel_color_grid_rows instead.
         binding.colors.apply {
+            layoutManager = androidx.recyclerview.widget.GridLayoutManager(
+                requireContext(),
+                resources.getInteger(R.integer.panel_color_grid_rows),
+                androidx.recyclerview.widget.GridLayoutManager.HORIZONTAL, false
+            )
             adapter = colorsAdapter
         }
 
