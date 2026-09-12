@@ -5,13 +5,27 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!--
+        This page is only ever drawn inside the Text Adjustments sheet, next to 3D →
+        Presets, and the two are the same grid drawn by the same adapter. That adapter
+        sizes a tile from the RecyclerView's own measured height minus its vertical
+        padding, so the 8dp the 3D presets page puts above and below its grid is the
+        whole of the difference between the two — without it the Styles tiles came out
+        a row-share larger (215px against 199px on a 3-row screen) and read as the
+        oversized one of the pair. Matching the padding matches the tile.
+
+        The main Text panel's Styles shelf is a different grid entirely (fontsRV, drawn
+        by TextStylesMainAdapter) and is not touched by this.
+    -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/presetsGrid"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
         android:paddingStart="12dp"
+        android:paddingTop="8dp"
         android:paddingEnd="6dp"
+        android:paddingBottom="8dp"
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
         app:spanCount="3"
         android:orientation="horizontal"
