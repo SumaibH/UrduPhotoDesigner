@@ -15,6 +15,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import com.webscare.ads.NativeSize
 import com.webscare.urducanvas.R
 import com.webscare.urducanvas.BuildConfig
 import com.webscare.ads.WebsCareAds
@@ -146,6 +147,7 @@ class TemplatesListFragment : androidx.fragment.app.Fragment() {
                         binding.searchBar.setText("")
                         applyFiltersList()
                     }
+                    showEmptyStateAd()
                 }
                 ListViewState.Error -> {
                     loadingState.root.visibility = View.GONE
@@ -157,6 +159,9 @@ class TemplatesListFragment : androidx.fragment.app.Fragment() {
                     emptyState.retryButton.visibility = View.VISIBLE
                     (emptyState.retryButton.getChildAt(0) as? android.widget.TextView)?.text = "Retry"
                     emptyState.retryButton.addPressEffect { mainViewModel.retryTemplates() }
+                    // Not on the error state. This layout serves both, and a screen that is
+                    // already apologising for a failure is the wrong place for an advert.
+                    emptyState.emptyStateNativeAd.visibility = View.GONE
                 }
                 ListViewState.Empty -> {
                     loadingState.root.visibility = View.GONE
@@ -166,9 +171,37 @@ class TemplatesListFragment : androidx.fragment.app.Fragment() {
                     emptyState.errorTitle.text = "No templates here"
                     emptyState.errorMessage.text = "There are no templates in this section yet"
                     emptyState.retryButton.visibility = View.GONE
+                    showEmptyStateAd()
                 }
             }
         }
+    }
+
+    /** One screen reports one opportunity, however many times the empty state is rebound. */
+    private var emptyStateAdAttached = false
+
+    /**
+     * Fills the empty-state ad slot.
+     *
+     * Called only from the two genuinely-empty states, never from the error state that
+     * shares this layout. The attach is the opportunity, since there is no "show" call for
+     * a slot the SDK fills itself; the matching impression arrives via
+     * `AdConfig.onAdImpression`, wired in MyApplication.
+     */
+    private fun showEmptyStateAd() {
+        // Blank in the no-ads flavour: the slot does not exist there.
+        if (BuildConfig.AD_NATIVE_EMPTY_STATE.isBlank()) return
+        val slot = binding.emptyState.emptyStateNativeAd
+        slot.visibility = View.VISIBLE
+        if (emptyStateAdAttached) return
+        emptyStateAdAttached = true
+        slot.setAdUnitIdAndSize(BuildConfig.AD_NATIVE_EMPTY_STATE, NativeSize.MEDIUM)
+        adAnalyticsCoordinator.onAdSlotAttached(
+            adUnitName = "native_empty_state",
+            adUnitId = BuildConfig.AD_NATIVE_EMPTY_STATE,
+            adFormat = "native",
+            triggerFeature = "templates_empty"
+        )
     }
 
     private fun updateListState() {

@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.core.os.bundleOf
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
@@ -42,6 +43,9 @@ class SettingsFragment : androidx.fragment.app.Fragment() {
     lateinit var billingManager: BillingManager
 
     @Inject
+    lateinit var adAnalyticsCoordinator: com.webscare.urducanvas.analytics.ads.AdAnalyticsCoordinator
+
+    @Inject
     lateinit var appReviewManager: AppReviewManager
 
     override fun onCreateView(
@@ -61,6 +65,29 @@ class SettingsFragment : androidx.fragment.app.Fragment() {
         observeSubscription()
         setEvents()
         setVersionInfo()
+        setupBannerAd()
+    }
+
+    /**
+     * Attaches the settings banner.
+     *
+     * The attach is the opportunity — a banner is a slot the SDK fills whenever it likes,
+     * with no "show" call to hang one off. The matching impression comes from
+     * `AdConfig.onAdImpression`, wired in MyApplication, and the coordinator counts only
+     * the first render per attach: AdMob refreshes the same AdView on its own schedule and
+     * reports every refresh, so counting those would make the two numbers undivisible.
+     */
+    private fun setupBannerAd() {
+        // Blank in the no-ads flavour, and a subscriber has paid not to see this.
+        if (BuildConfig.AD_BANNER_SETTINGS.isBlank() || billingManager.isSubscribed.value) return
+        binding.settingsBannerAd.isVisible = true
+        binding.settingsBannerAd.setAdUnitId(BuildConfig.AD_BANNER_SETTINGS)
+        adAnalyticsCoordinator.onAdSlotAttached(
+            adUnitName = "banner_settings",
+            adUnitId = BuildConfig.AD_BANNER_SETTINGS,
+            adFormat = "banner",
+            triggerFeature = "settings"
+        )
     }
 
     /**

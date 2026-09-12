@@ -58,4 +58,17 @@
             android:textColor="@color/whiteText"
             android:textSize="14sp" />
     </LinearLayout>
+
+    <!--
+        Empty-state ad slot. Gone by default and shown only for a genuine empty
+        result — never for the error states this layout also serves, where the
+        screen is already telling the user something went wrong.
+    -->
+    <com.webscare.ads.WebsCareNativeView
+        android:id="@+id/empty_state_native_ad"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="28dp"
+        android:visibility="gone"
+        app:webscare_native_size="medium" />
 </LinearLayout>

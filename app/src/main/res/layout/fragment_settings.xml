@@ -544,4 +544,18 @@
         </LinearLayout>
     </com.webscare.urducanvas.common.views.SpringNestedScrollView>
 
+    <!--
+        Settings banner. Sits over the scroll view rather than inside it, so it stays
+        put while the list moves; the list's last row already carries a bottom margin
+        deep enough to scroll clear of it.
+    -->
+    <com.webscare.ads.WebsCareBannerView
+        android:id="@+id/settings_banner_ad"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
