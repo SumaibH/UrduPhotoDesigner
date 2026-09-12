@@ -249,6 +249,35 @@ object TextStylesRepository {
         return listOf(none) + cachedPresets.filter { it.category == category }
     }
 
+    /**
+     * The style [id] names, or `null` when nothing in the catalogue answers to it.
+     *
+     * Null is the whole point of this function. Ids outlive the catalogue: a saved
+     * project, a recents shelf or a preset layer can all name a style that a later
+     * content update renamed or removed, and half the duplicate ids were deleted
+     * outright in 0f91e18. The rule everywhere is that an id which no longer resolves
+     * leaves the element exactly as it is — callers apply nothing rather than
+     * substituting a default, because a default would silently repaint text the user
+     * had styled deliberately. Never throw for an unknown id.
+     *
+     * Searches My Styles first, since a custom style shares the id space and is the
+     * one the user is likelier to have just used.
+     */
+    fun findPresetById(context: Context, id: String): TextStylePreset? {
+        if (id.isBlank() || id == TextStylePreset.NONE_ID) return null
+        getCustomUserSavedStyles(context).firstOrNull { it.id == id }?.let { return it }
+        ensurePresetsLoaded(context)
+        return cachedPresets.firstOrNull { it.id == id }
+    }
+
+    /**
+     * Resolves [ids] to styles in the order given, dropping the ones that no longer
+     * exist. What the recents shelf is built from — it stores ids, so a style removed
+     * by a content update falls off the shelf instead of rendering as a blank card.
+     */
+    fun findPresetsByIds(context: Context, ids: List<String>): List<TextStylePreset> =
+        ids.mapNotNull { findPresetById(context, it) }
+
     // -------------------------------------------------------------
     // USER CUSTOM STYLES PERSISTENCE
     // -------------------------------------------------------------

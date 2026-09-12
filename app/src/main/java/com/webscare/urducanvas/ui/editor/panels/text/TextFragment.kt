@@ -48,8 +48,10 @@ import com.webscare.urducanvas.ui.editor.panels.preview.showPresetPreview
 import com.webscare.urducanvas.ui.editor.EditorFragment
 import com.webscare.urducanvas.ui.editor.panels.text.fonts.FontsAdapter
 import com.webscare.urducanvas.ui.editor.panels.text.fonts.imported.ImportedFontsBottomSheet
+import com.webscare.urducanvas.data.model.TextPresetCategory
 import com.webscare.urducanvas.data.model.PresetCategory
 import com.webscare.urducanvas.data.model.TextStylePreset
+import com.webscare.urducanvas.data.repository.RecentsStore
 import com.webscare.urducanvas.data.repository.TextStylesRepository
 import android.content.res.ColorStateList
 import com.webscare.urducanvas.ui.editor.panels.text.styles.TextStylesMainAdapter
@@ -81,10 +83,24 @@ class TextFragment : Fragment(), PreviewHostOwner {
     private lateinit var stylesAdapter: TextStylesMainAdapter
 
     // ── Styles / Presets Mode State ──────────────────────────────────────────
+
+    /**
+     * Which drill-down the styles side of the panel is showing.
+     *
+     * [NONE] is the group strip — All | Styles | Presets. The other two are the
+     * category strips those groups open into, and they are different shelves with
+     * different catalogues behind them, so the strip alone cannot say which one is
+     * up: both start with a breadcrumb chip and an "All" tab.
+     */
+    private enum class StylesDrill { NONE, STYLES, PRESETS }
+
     private var isStylesMode: Boolean = false
-    private var inPresetCategoryMode: Boolean = false
-    private var selectedPresetGroup: String = "All"
+    private var stylesDrill: StylesDrill = StylesDrill.NONE
+    private var selectedPresetGroup: String = GROUP_ALL
     private var selectedPresetCategory: String? = null
+
+    /** True while either drill-down is up — the breadcrumb chip sits at position 0. */
+    private val inPresetCategoryMode: Boolean get() = stylesDrill != StylesDrill.NONE
 
     // ── Tab state ─────────────────────────────────────────────────────────────
     // Single TabLayout, two visual states:
@@ -207,6 +223,11 @@ class TextFragment : Fragment(), PreviewHostOwner {
     }
 
     private fun applyPresetToCanvas(preset: TextStylePreset) {
+        // "None" is a reset, not a style — putting it on the shelf would offer the user
+        // a shortcut to undoing their own work.
+        if (preset.id != TextStylePreset.NONE_ID) {
+            RecentsStore.record(requireContext(), RecentsStore.Kind.STYLE, preset.id)
+        }
         viewModel.addTextWithStyle(
             requireActivity().getString(R.string.dummyText),
             preset,
@@ -408,10 +429,9 @@ class TextFragment : Fragment(), PreviewHostOwner {
 
                 if (isStylesMode) {
                     if (inPresetCategoryMode) {
-                        // pos 0 = [← Styles] breadcrumb chip — returns to preset group list
+                        // pos 0 = [← Styles] / [← Presets] breadcrumb — back to the groups
                         if (pos == 0) {
                             selectedPresetCategory = null
-                            inPresetCategoryMode = false
                             showPresetGroupTabs(animate = true)
                             rebindStyles()
                             return
@@ -421,7 +441,7 @@ class TextFragment : Fragment(), PreviewHostOwner {
                             (tab.customView?.findViewById<TextView>(R.id.tabTitle))?.text?.toString()
                                 ?: tab.text?.toString() ?: return
 
-                        selectedPresetCategory = if (cat == "All") null else cat
+                        selectedPresetCategory = if (cat == TAB_ALL) null else cat
 
                         updateTextTabStyles(binding.tabLayout, pos)
                         updateTextTabStyles(binding.tabLayoutExpanded, pos)
@@ -440,9 +460,11 @@ class TextFragment : Fragment(), PreviewHostOwner {
                         com.webscare.urducanvas.common.utils.PanelTabHelper.scrollToTabIfOverflows(binding.tabLayout, pos)
                         com.webscare.urducanvas.common.utils.PanelTabHelper.scrollToTabIfOverflows(binding.tabLayoutExpanded, pos)
 
-                        if (grp == "Styles") {
-                            val cats = PresetCategory.values().filter { it != PresetCategory.MY_STYLES }.map { it.displayName }
-                            showPresetCategoryTabs(cats, animate = true)
+                        // Every group but All drills in. Rebinding first would flash the
+                        // group's own feed for a frame before the drill-down replaces it.
+                        when (grp) {
+                            GROUP_STYLES -> showPresetCategoryTabs(StylesDrill.STYLES, animate = true)
+                            GROUP_PRESETS -> showPresetCategoryTabs(StylesDrill.PRESETS, animate = true)
                         }
                         rebindStyles()
                     }
@@ -503,7 +525,6 @@ class TextFragment : Fragment(), PreviewHostOwner {
                 if (isStylesMode) {
                     if (inPresetCategoryMode && tab?.position == 0) {
                         selectedPresetCategory = null
-                        inPresetCategoryMode = false
                         showPresetGroupTabs(animate = true)
                         rebindStyles()
                         return
@@ -512,9 +533,11 @@ class TextFragment : Fragment(), PreviewHostOwner {
                         val grp =
                             (tab?.customView?.findViewById<TextView>(R.id.tabTitle))?.text?.toString()
                                 ?: tab?.text?.toString() ?: return
-                        if (grp == "Styles") {
-                            val cats = PresetCategory.values().filter { it != PresetCategory.MY_STYLES }.map { it.displayName }
-                            showPresetCategoryTabs(cats, animate = true)
+                        // Tapping the group you are already on drills in — the same
+                        // second chance the language strip gives.
+                        when (grp) {
+                            GROUP_STYLES -> showPresetCategoryTabs(StylesDrill.STYLES, animate = true)
+                            GROUP_PRESETS -> showPresetCategoryTabs(StylesDrill.PRESETS, animate = true)
                         }
                     }
                     return
@@ -1355,10 +1378,10 @@ class TextFragment : Fragment(), PreviewHostOwner {
             stylesAdapter.recyclerViewPadding = binding.fontsRV.paddingLeft + binding.fontsRV.paddingRight
             binding.fontsRV.adapter = stylesAdapter
 
-            // Show preset category/group tabs in TabLayout
+            // Show preset category/group tabs in TabLayout. Coming back to styles mode
+            // returns to whichever drill-down was left open, not to the top of the tree.
             if (inPresetCategoryMode) {
-                val cats = PresetCategory.values().filter { it != PresetCategory.MY_STYLES }.map { it.displayName }
-                showPresetCategoryTabs(cats)
+                showPresetCategoryTabs(stylesDrill)
             } else {
                 showPresetGroupTabs()
             }
@@ -1410,20 +1433,23 @@ class TextFragment : Fragment(), PreviewHostOwner {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // PRESETS GROUP state  →  "All | Styles | My Styles"
+    // PRESETS GROUP state  →  "All | Styles | Presets"
+    //
+    // Three groups, and every one of them drills in — which is why none of them
+    // carries a drill-in glyph. An affordance that sits on all three says nothing.
+    //
+    // My Styles used to stand here as a fourth group, appearing and disappearing with
+    // whether the user had saved anything. It now lives inside the Styles drill-down
+    // beside Recents, where the rest of the style shelves are.
     // ─────────────────────────────────────────────────────────────────────────
 
     private fun showPresetGroupTabs(animate: Boolean = false) {
         val rebuildAction = {
-            inPresetCategoryMode = false
+            stylesDrill = StylesDrill.NONE
             tabListenerAttached = false
             clearTabListeners()
 
-            val groups = mutableListOf("All", "Styles")
-            val customStyles = TextStylesRepository.getCustomUserSavedStyles(requireContext())
-            if (customStyles.isNotEmpty()) {
-                groups.add(PresetCategory.MY_STYLES.displayName)
-            }
+            val groups = listOf(GROUP_ALL, GROUP_STYLES, GROUP_PRESETS)
 
             listOf(binding.tabLayout, binding.tabLayoutExpanded).forEach { tl ->
                 tl.removeAllTabs()
@@ -1451,24 +1477,56 @@ class TextFragment : Fragment(), PreviewHostOwner {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // PRESETS CATEGORY state  →  "[← Styles]  All  3D  Layers  Emboss …"
+    // DRILL-DOWN state  →  "[← Styles]  All  Recents  My Styles  3D  Layers …"
+    //                  →  "[← Presets] All  Recents  Ramadan  Eid  Islamic …"
     //
-    // Tab 0 = Breadcrumb Back Chip: [← Styles]
+    // Tab 0 = Breadcrumb Back Chip, naming the group it returns to
     // Tab 1 = "All"
-    // Tab 2+ = individual categories
+    // Tab 2+ = Recents and My Styles where they have anything in them, then categories
     // ─────────────────────────────────────────────────────────────────────────
 
-    private fun showPresetCategoryTabs(categories: List<String>, animate: Boolean = false) {
+    /**
+     * Builds the category strip for [drill].
+     *
+     * The shelves in front of the categories are conditional: Recents only appears once
+     * something has been applied, and My Styles only once something has been saved. An
+     * empty shelf is a tab that leads nowhere, so it is not offered at all.
+     */
+    private fun showPresetCategoryTabs(drill: StylesDrill, animate: Boolean = false) {
+        if (drill == StylesDrill.NONE) return
+
         val rebuildAction = {
-            inPresetCategoryMode = true
+            stylesDrill = drill
             tabListenerAttached = false
             clearTabListeners()
 
-            val realCategories = categories.filter { it != "All" }
-            val allCategories = listOf("All") + realCategories
+            val ctx = requireContext()
+            val breadcrumbLabel: String
+            val shelves = mutableListOf<String>()
+            val categories: List<String>
+
+            when (drill) {
+                StylesDrill.PRESETS -> {
+                    breadcrumbLabel = GROUP_PRESETS
+                    if (!RecentsStore.isEmpty(ctx, RecentsStore.Kind.PRESET)) shelves.add(TAB_RECENTS)
+                    categories = TextPresetCategory.values().map { it.displayName }
+                }
+                else -> {
+                    breadcrumbLabel = GROUP_STYLES
+                    if (!RecentsStore.isEmpty(ctx, RecentsStore.Kind.STYLE)) shelves.add(TAB_RECENTS)
+                    if (TextStylesRepository.getCustomUserSavedStyles(ctx).isNotEmpty()) {
+                        shelves.add(PresetCategory.MY_STYLES.displayName)
+                    }
+                    categories = PresetCategory.values()
+                        .filter { it != PresetCategory.MY_STYLES }
+                        .map { it.displayName }
+                }
+            }
+
+            val allCategories = listOf(TAB_ALL) + shelves + categories.filter { it != TAB_ALL }
 
             val targetCat: String? = when {
-                selectedPresetCategory != null && categories.contains(selectedPresetCategory) -> selectedPresetCategory
+                selectedPresetCategory != null && allCategories.contains(selectedPresetCategory) -> selectedPresetCategory
                 else -> null  // null = "All"
             }
             selectedPresetCategory = targetCat
@@ -1476,10 +1534,10 @@ class TextFragment : Fragment(), PreviewHostOwner {
             listOf(binding.tabLayout, binding.tabLayoutExpanded).forEach { tl ->
                 tl.removeAllTabs()
 
-                // Tab 0 — Breadcrumb Back Chip: [← Styles]
+                // Tab 0 — Breadcrumb Back Chip: [← Styles] or [← Presets]
                 val breadcrumbTab = tl.newTab()
                 val breadcrumbView = LayoutInflater.from(context).inflate(R.layout.view_panel_tab_breadcrumb, tl, false)
-                breadcrumbView.findViewById<TextView>(R.id.tabTitle).text = "Styles"
+                breadcrumbView.findViewById<TextView>(R.id.tabTitle).text = breadcrumbLabel
                 breadcrumbTab.customView = breadcrumbView
                 tl.addTab(breadcrumbTab, false)
 
@@ -1516,24 +1574,39 @@ class TextFragment : Fragment(), PreviewHostOwner {
     }
 
     private fun rebindStyles() {
-        val allPresets = TextStylesRepository.getAllPresets(requireContext())
-        val filteredByCategory = if (inPresetCategoryMode) {
-            // In Category mode under "Styles"
-            if (selectedPresetCategory == null || selectedPresetCategory == "All") {
-                allPresets.filter { it.category != PresetCategory.MY_STYLES }
-            } else {
-                val cat = PresetCategory.values().firstOrNull { it.displayName.equals(selectedPresetCategory, ignoreCase = true) }
-                if (cat != null) TextStylesRepository.getPresetsByCategory(cat, requireContext())
-                    .filterNot { it.id == com.webscare.urducanvas.data.model.TextStylePreset.NONE_ID }
-                else allPresets
+        val ctx = requireContext()
+        val allPresets = TextStylesRepository.getAllPresets(ctx)
+        val catalogueStyles = allPresets.filter { it.category != PresetCategory.MY_STYLES }
+
+        val filteredByCategory = when (stylesDrill) {
+            // Inside Presets. The lockup catalogue does not exist yet — the shelf is
+            // built and reachable so the rest of it has somewhere to land, and until
+            // then every category here is legitimately empty rather than broken.
+            StylesDrill.PRESETS -> emptyList()
+
+            StylesDrill.STYLES -> when {
+                selectedPresetCategory == null || selectedPresetCategory == TAB_ALL -> catalogueStyles
+                selectedPresetCategory == TAB_RECENTS ->
+                    TextStylesRepository.findPresetsByIds(ctx, RecentsStore.ids(ctx, RecentsStore.Kind.STYLE))
+                selectedPresetCategory == PresetCategory.MY_STYLES.displayName ->
+                    TextStylesRepository.getCustomUserSavedStyles(ctx)
+                else -> {
+                    val cat = PresetCategory.values()
+                        .firstOrNull { it.displayName.equals(selectedPresetCategory, ignoreCase = true) }
+                    if (cat != null) TextStylesRepository.getPresetsByCategory(cat, ctx)
+                        .filterNot { it.id == com.webscare.urducanvas.data.model.TextStylePreset.NONE_ID }
+                    else catalogueStyles
+                }
             }
-        } else {
-            // In Presets Group mode
-            when (selectedPresetGroup) {
-                "All" -> allPresets
-                PresetCategory.MY_STYLES.displayName -> TextStylesRepository.getCustomUserSavedStyles(requireContext())
-                "Styles" -> allPresets.filter { it.category != PresetCategory.MY_STYLES }
-                else -> allPresets
+
+            // The group strip. "All" is the mixed feed of styles and presets; with no
+            // presets to mix in yet it is the style catalogue, and gains the second
+            // card type when the lockups land.
+            StylesDrill.NONE -> when (selectedPresetGroup) {
+                GROUP_ALL -> catalogueStyles
+                GROUP_STYLES -> catalogueStyles
+                GROUP_PRESETS -> emptyList()
+                else -> catalogueStyles
             }
         }
 
@@ -1563,5 +1636,16 @@ class TextFragment : Fragment(), PreviewHostOwner {
         requireContext().getSystemService(InputMethodManager::class.java)
             ?.hideSoftInputFromWindow(binding.root.windowToken, 0)
         binding.searchBarExpanded.clearFocus()
+    }
+
+    companion object {
+        // Tab titles are the identity of a tab here — the strip is rebuilt from strings
+        // and read back off the custom view's TextView — so they are named once rather
+        // than spelled out at each of the comparison sites.
+        private const val GROUP_ALL = "All"
+        private const val GROUP_STYLES = "Styles"
+        private const val GROUP_PRESETS = "Presets"
+        private const val TAB_ALL = "All"
+        private const val TAB_RECENTS = "Recents"
     }
 }
