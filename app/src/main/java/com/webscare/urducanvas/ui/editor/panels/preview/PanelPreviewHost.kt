@@ -1,37 +1,42 @@
 package com.webscare.urducanvas.ui.editor.panels.preview
 
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
+import dagger.hilt.android.EntryPointAccessors
 
 /**
- * Opens the asset preview for one editor panel.
+ * Opens the asset preview for one surface — an editor panel, or one of the navigation
+ * screens' tile rows.
  *
- * The preview is a bottom sheet of its own, shown over the editor. It used to be drawn
- * inside the panel that opened it, which meant the panel had to park its own rows, give
- * away its background so a gap could show through, ask the editor's sheet to grow, and put
- * all of it back afterwards -- and it needed an `onRestore` hook from each panel because
- * the panels drive those same views themselves and any stashed state went stale. A
- * separate sheet needs none of that: the panel underneath is left exactly as it was.
+ * The preview is a bottom sheet of its own. It used to be drawn inside the panel that
+ * opened it, which meant the panel had to park its own rows, give away its background so a
+ * gap could show through, ask the editor's sheet to grow, and put all of it back
+ * afterwards -- and it needed an `onRestore` hook from each panel because the panels drive
+ * those same views themselves and any stashed state went stale. A separate sheet needs
+ * none of that: whatever is underneath is left exactly as it was.
  *
- * What survives from that design is this class's shape, so the seven panels that own a
- * preview still say only what the asset is and what its actions do.
+ * That is also what lets Home, Templates and Popular Fonts host one. The host needs
+ * nothing from the editor: no panel root (the old constructor took one and never touched
+ * it) and no `CanvasViewModel` — analytics now go straight to the singleton tracker, so a
+ * long-press on Home does not construct the whole canvas graph to log one event.
+ *
+ * [tall] is the one thing the navigation screens ask for that the panels do not. In the
+ * editor a panel is already holding the bottom of the screen and the canvas above it has
+ * to stay visible; outside it nothing is competing, so the sheet is given more room.
  */
 class PanelPreviewHost(
     private val fragment: Fragment,
-    private val panelRoot: ConstraintLayout
+    private val tall: Boolean = false
 ) {
 
     private var sheet: AssetPreviewSheet? = null
     private var showing = false
 
-    /**
-     * Reached through the view model because this is a helper, not a fragment, so Hilt has
-     * nothing to inject into. Activity-scoped, which is the same instance every panel holds.
-     */
-    private val canvasViewModel by lazy {
-        androidx.lifecycle.ViewModelProvider(
-            fragment.requireActivity()
-        )[com.webscare.urducanvas.common.canvas.CanvasViewModel::class.java]
+    /** Hilt has nothing to inject into here — this is a helper, not a fragment. */
+    private val analyticsTracker by lazy {
+        EntryPointAccessors.fromApplication(
+            fragment.requireContext().applicationContext,
+            com.webscare.urducanvas.di.AnalyticsEntryPoint::class.java
+        ).analyticsTracker()
     }
 
     val isShowing: Boolean get() = showing
@@ -58,13 +63,14 @@ class PanelPreviewHost(
             asset = asset,
             primaryLabel = primaryLabel,
             expanded = expanded,
+            tall = tall,
             onPrimary = { picked ->
                 // The commit. Separate from the open below so the pair answers the question
                 // the preview was built for: how often looking closer leads to using the
-                // asset rather than backing out. Both go through this one place, so all
-                // seven panels that own a preview are covered without any of them knowing
-                // about analytics.
-                canvasViewModel.logToolAction(TOOL_PREVIEW, "use_asset", kindOf(picked))
+                // asset rather than backing out. Both go through this one place, so every
+                // surface that owns a preview is covered without any of them knowing about
+                // analytics.
+                analyticsTracker.logToolActionPerformed(TOOL_PREVIEW, "use_asset", kindOf(picked))
                 onPrimary(picked)
             },
             onShare = onShare,
@@ -81,7 +87,7 @@ class PanelPreviewHost(
             return
         }
 
-        canvasViewModel.logToolAction(TOOL_PREVIEW, "open", kindOf(asset))
+        analyticsTracker.logToolActionPerformed(TOOL_PREVIEW, "open", kindOf(asset))
         showing = true
         sheet = AssetPreviewSheet().apply {
             binding = bound
@@ -138,6 +144,7 @@ class PanelPreviewHost(
         is PreviewAsset.Font -> "font"
         is PreviewAsset.Picture -> "picture"
         is PreviewAsset.Rendered -> "rendered"
+        is PreviewAsset.Artwork -> asset.kind
     }
 
     companion object {

@@ -34,6 +34,8 @@ import com.webscare.urducanvas.data.model.TemplateEntity
 import com.webscare.urducanvas.data.model.toExportResultFinal
 import com.webscare.urducanvas.databinding.DialogLoadingProgressBinding
 import com.webscare.urducanvas.databinding.FragmentTemplatesCategoriesBinding
+import com.webscare.urducanvas.ui.editor.panels.preview.PanelPreviewHost
+import com.webscare.urducanvas.ui.navigation.preview.showTemplatePreview
 import com.webscare.urducanvas.ui.creation.CanvasSizeAdapter
 import com.webscare.urducanvas.viewmodels.FiltersViewModel
 import com.webscare.urducanvas.viewmodels.MainViewModel
@@ -53,6 +55,12 @@ class TemplateCategoriesFragment : androidx.fragment.app.Fragment() {
 
     private var _binding: FragmentTemplatesCategoriesBinding? = null
     private val binding get() = _binding!!
+
+    /**
+     * The hold-to-peek preview for this screen's tiles — the grid and the category sections
+     * both. `tall` because nothing here competes for the screen the way a panel does.
+     */
+    private var previewHost: PanelPreviewHost? = null
     private val mainViewModel: MainViewModel by activityViewModels()
     private val viewModel: CanvasViewModel by activityViewModels()
     private val filtersVM: FiltersViewModel by activityViewModels()
@@ -79,7 +87,49 @@ class TemplateCategoriesFragment : androidx.fragment.app.Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentTemplatesCategoriesBinding.inflate(layoutInflater, container, false)
+        previewHost = PanelPreviewHost(this, tall = true)
         return binding.root
+    }
+
+    /**
+     * What a tile in the grid does — open the template if it is on the device, fetch it if
+     * not. Shared with the preview's primary action so the two cannot drift apart.
+     */
+    private fun useTemplate(template: TemplateEntity, isDownloaded: Boolean) {
+        if (isDownloaded) {
+            val exportResult = template.toExportResultFinal()
+            viewModel.loadTemplateFromJsonFile(exportResult, requireContext()) { success ->
+                if (success && isAdded) {
+                    findNavController().navigate(R.id.editorFragment)
+                }
+            }
+            return
+        }
+        downloadingTemplate = template
+        mainViewModel.downloadTemplate(template)
+    }
+
+    /**
+     * The same act for a tile in a category section rather than the grid. Kept apart from
+     * [useTemplate] only because progress is reported through the section adapter, which
+     * owns those tiles.
+     */
+    private fun useCategoryTemplate(template: TemplateEntity, isDownloaded: Boolean) {
+        if (template.is_downloading) return
+        if (!isDownloaded) {
+            if (template.file_path.isNullOrEmpty()) {
+                downloadingTemplate = template
+                categoryAdapter.updateTemplateProgress(template.id, 0, true, false)
+                mainViewModel.downloadTemplate(template)
+            }
+            return
+        }
+        val exportResult = template.toExportResultFinal()
+        viewModel.loadTemplateFromJsonFile(exportResult, requireContext()) { success ->
+            if (success && isAdded) {
+                findNavController().navigate(R.id.editorFragment)
+            }
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -196,24 +246,15 @@ class TemplateCategoriesFragment : androidx.fragment.app.Fragment() {
                 val args = Bundle().apply { putString("CATEGORY_NAME", category) }
                 view?.post { findNavController().navigate(R.id.templatesFragment, args) }
             },
-            onTemplateClick = { template, bool ->
-                if (template.is_downloading) return@TemplateCategoriesAdapter
-                if (!bool) {
-                    if (template.file_path.isNullOrEmpty()) {
-                        downloadingTemplate = template
-                        categoryAdapter.updateTemplateProgress(template.id, 0, true, false)
-                        mainViewModel.downloadTemplate(template)
-                        return@TemplateCategoriesAdapter
-                    }
-                } else {
-                    val exportResult = template.toExportResultFinal()
-                    viewModel.loadTemplateFromJsonFile(exportResult, requireContext()) { success ->
-                        if (success && isAdded) {
-                            findNavController().navigate(R.id.editorFragment)
-                        }
-                    }
-                    return@TemplateCategoriesAdapter
-                }
+            onTemplateClick = { template, isDownloaded ->
+                useCategoryTemplate(template, isDownloaded)
+            },
+            onTemplateLongClick = { template ->
+                showTemplatePreview(
+                    previewHost,
+                    template,
+                    template.category ?: getString(R.string.templates)
+                ) { useCategoryTemplate(it, it.is_downloaded) }
             }
         )
         
@@ -235,19 +276,16 @@ class TemplateCategoriesFragment : androidx.fragment.app.Fragment() {
         binding.categoriesRV.adapter = wrappedCategoryAdapter
         binding.categoriesRV.addItemDecoration(NativeAdSpacingDecoration(requireContext()))
 
-        templatesAdapter = TemplatesAdapter { template, isDownloaded ->
-            if (isDownloaded) {
-                val exportResult = template.toExportResultFinal()
-                viewModel.loadTemplateFromJsonFile(exportResult, requireContext()) { success ->
-                    if (success && isAdded) {
-                        findNavController().navigate(R.id.editorFragment)
-                    }
-                }
-                return@TemplatesAdapter
+        templatesAdapter = TemplatesAdapter(
+            onTemplateSelected = { template, isDownloaded -> useTemplate(template, isDownloaded) },
+            onTemplateLongPressed = { template ->
+                showTemplatePreview(
+                    previewHost,
+                    template,
+                    template.category ?: getString(R.string.templates)
+                ) { useTemplate(it, it.is_downloaded) }
             }
-            downloadingTemplate = template
-            mainViewModel.downloadTemplate(template)
-        }
+        )
         
         wrappedGridAdapter = WebsCareAds.wrapWithNativeAds(
             originalAdapter = templatesAdapter,
@@ -476,6 +514,8 @@ class TemplateCategoriesFragment : androidx.fragment.app.Fragment() {
     }
 
     override fun onDestroyView() {
+        previewHost?.release()
+        previewHost = null
         _binding?.categoriesRV?.adapter = null
         loadingDialog?.dismiss()
         loadingDialog = null

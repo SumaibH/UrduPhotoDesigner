@@ -9,15 +9,19 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.signature.ObjectKey
-import com.webscare.urducanvas.common.utils.Utils.addPressEffect
 import com.webscare.urducanvas.common.utils.Utils.addPressEffectWithLongClick
 import com.webscare.urducanvas.data.model.ExportResult
 import com.webscare.urducanvas.databinding.LayoutRecentsItemBinding
-import com.webscare.urducanvas.common.utils.Utils.addPressEffect
 import java.io.File
 
+/**
+ * [onLongClick] opens the hold-to-peek preview. Nothing is drawn on the tile for it: the
+ * eye button belongs to the editor's expanded panels, and Home has no expanded state, so
+ * this row is permanently the collapsed case — long-press only.
+ */
 class RecentAdapter(
     private val onClick: (com.webscare.urducanvas.data.model.ExportResult) -> Unit,
+    private val onLongClick: ((com.webscare.urducanvas.data.model.ExportResult) -> Unit)? = null,
 ) : androidx.recyclerview.widget.ListAdapter<com.webscare.urducanvas.data.model.ExportResult, RecentAdapter.RecentViewHolder>(DiffCallback) {
 
     companion object {
@@ -65,7 +69,13 @@ class RecentAdapter(
 
             binding.title.text = item.fileName
 
-            binding.root.addPressEffect { onClick(item) }
+            // The tap path is untouched — same callback, no delay added. The long-press
+            // variant fires its own handler at the platform timeout and suppresses the
+            // click that would otherwise follow.
+            binding.root.addPressEffectWithLongClick(
+                onLongClick = { onLongClick?.invoke(item) },
+                onClick = { onClick(item) }
+            )
         }
     }
 }

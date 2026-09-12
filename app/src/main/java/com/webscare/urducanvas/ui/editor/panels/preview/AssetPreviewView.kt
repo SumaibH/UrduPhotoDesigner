@@ -60,6 +60,14 @@ class AssetPreviewView @JvmOverloads constructor(
     private var asset: PreviewAsset? = null
     private var expanded = false
 
+    /**
+     * Set by the sheet before [show]. True only outside the editor, where there is no panel
+     * holding the bottom of the screen and no canvas above that has to stay visible, so the
+     * artwork gets a taller well than either editor state. Left false for the panels, whose
+     * two heights are unchanged.
+     */
+    var tall = false
+
     private val zoom = PreviewZoom(binding.previewPaper, binding.zoomLayer)
 
     /**
@@ -164,6 +172,11 @@ class AssetPreviewView @JvmOverloads constructor(
         is PreviewAsset.Picture -> {
             showImageOnly()
             loadPicture(asset.entity)
+        }
+
+        is PreviewAsset.Artwork -> {
+            showImageOnly()
+            loadArtwork(asset)
         }
 
         is PreviewAsset.Rendered -> {
@@ -333,6 +346,26 @@ class AssetPreviewView @JvmOverloads constructor(
     }
 
     /**
+     * A template thumbnail or a saved project's export, drawn big.
+     *
+     * Both are ordinary rasters — no SVG path and no white tint. The one thing worth doing
+     * for a saved project is keying the cache on the file's timestamp, the way the Recents
+     * tile does: re-saving a project rewrites the same path, and without the signature the
+     * preview would show the copy Glide cached before the edit.
+     */
+    private fun loadArtwork(artwork: PreviewAsset.Artwork) {
+        binding.assetImage.clearColorFilter()
+        startLoading()
+        var request = Glide.with(this).load(artwork.source)
+        (artwork.source as? File)?.let {
+            request = request.signature(
+                com.bumptech.glide.signature.ObjectKey(it.lastModified())
+            )
+        }
+        request.listener(shimmerStopper).into(binding.assetImage)
+    }
+
+    /**
      * SvgLoader announces success through its callback but returns silently when the file
      * cannot be parsed, so the shimmer is stopped on the job ending as well — otherwise a
      * picture that fails to load shimmers for as long as the preview is open.
@@ -361,7 +394,13 @@ class AssetPreviewView @JvmOverloads constructor(
      */
     private fun applyWellHeight() {
         binding.previewWell.layoutParams = binding.previewWell.layoutParams.apply {
-            height = dp(if (expanded) WELL_EXPANDED_DP else WELL_COLLAPSED_DP)
+            height = dp(
+                when {
+                    tall -> WELL_TALL_DP
+                    expanded -> WELL_EXPANDED_DP
+                    else -> WELL_COLLAPSED_DP
+                }
+            )
         }
         binding.previewWell.requestLayout()
     }
@@ -422,6 +461,12 @@ class AssetPreviewView @JvmOverloads constructor(
         private const val SAMPLE_EXPANDED_SP = 48f
         private const val WELL_COLLAPSED_DP = 210
         private const val WELL_EXPANDED_DP = 320
+
+        /**
+         * Off the editor. Taller than the expanded panel because nothing is competing for
+         * the screen there — no panel below and no canvas above to keep in view.
+         */
+        private const val WELL_TALL_DP = 420
         private const val SVG_MAX_PX = 1024
     }
 }

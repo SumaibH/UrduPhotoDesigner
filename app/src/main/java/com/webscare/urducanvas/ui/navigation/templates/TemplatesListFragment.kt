@@ -30,6 +30,8 @@ import com.webscare.urducanvas.data.model.TemplateEntity
 import com.webscare.urducanvas.data.model.toExportResultFinal
 import com.webscare.urducanvas.databinding.DialogLoadingProgressBinding
 import com.webscare.urducanvas.databinding.FragmentTemplatesListBinding
+import com.webscare.urducanvas.ui.editor.panels.preview.PanelPreviewHost
+import com.webscare.urducanvas.ui.navigation.preview.showTemplatePreview
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -53,6 +55,12 @@ class TemplatesListFragment : androidx.fragment.app.Fragment() {
 
     private var _binding: FragmentTemplatesListBinding? = null
     private val binding get() = _binding!!
+
+    /**
+     * The hold-to-peek preview for this screen's tiles. `tall` because nothing here is
+     * competing for the screen the way an editor panel is.
+     */
+    private var previewHost: PanelPreviewHost? = null
     private var filterType: String? = null
     private val mainViewModel: com.webscare.urducanvas.viewmodels.MainViewModel by activityViewModels()
     private val viewModel: com.webscare.urducanvas.common.canvas.CanvasViewModel by activityViewModels()
@@ -88,6 +96,7 @@ class TemplatesListFragment : androidx.fragment.app.Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentTemplatesListBinding.inflate(layoutInflater, container, false)
+        previewHost = PanelPreviewHost(this, tall = true)
         return binding.root
     }
 
@@ -263,6 +272,36 @@ class TemplatesListFragment : androidx.fragment.app.Fragment() {
 
     // ─── Recycler ─────────────────────────────────────────────────────────────
 
+    /**
+     * What a tile does — open the template if it is on the device, fetch it if not.
+     * Shared with the preview's primary action so the two cannot drift apart.
+     */
+    private fun useTemplate(
+        template: com.webscare.urducanvas.data.model.TemplateEntity,
+        isDownloaded: Boolean
+    ) {
+        analyticsTracker.logTemplateClick(
+            templateId = template.id,
+            name = template.template_name,
+            category = template.category,
+            isDownloaded = isDownloaded,
+            isPremium = template.is_premium
+        )
+        if (isDownloaded) {
+            val exportResult = template.toExportResultFinal()
+            viewModel.loadTemplateFromJsonFile(
+                exportResult, requireContext(), titleHint = "Loading Template"
+            ) { success ->
+                if (success && isAdded) {
+                    findNavController().navigate(R.id.editorFragment)
+                }
+            }
+            return
+        }
+        downloadingTemplate = template
+        mainViewModel.downloadTemplate(template)
+    }
+
     private fun setupRecycler() {
         binding.title.text = when {
             !currentSubcategory.isNullOrBlank() -> currentSubcategory
@@ -270,26 +309,17 @@ class TemplatesListFragment : androidx.fragment.app.Fragment() {
             else                                -> currentCategory ?: "Templates"
         }
 
-        adapter = TemplatesAdapter { template, isDownloaded ->
-            analyticsTracker.logTemplateClick(
-                templateId = template.id,
-                name = template.template_name,
-                category = template.category,
-                isDownloaded = isDownloaded,
-                isPremium = template.is_premium
-            )
-            if (isDownloaded) {
-                val exportResult = template.toExportResultFinal()
-                viewModel.loadTemplateFromJsonFile(exportResult, requireContext(), titleHint = "Loading Template") { success ->
-                    if (success && isAdded) {
-                        findNavController().navigate(R.id.editorFragment)
-                    }
-                }
-                return@TemplatesAdapter
+        adapter = TemplatesAdapter(
+            onTemplateSelected = { template, isDownloaded -> useTemplate(template, isDownloaded) },
+            onTemplateLongPressed = { template ->
+                showTemplatePreview(
+                    previewHost,
+                    template,
+                    binding.title.text?.toString()?.takeIf { it.isNotBlank() }
+                        ?: getString(R.string.templates)
+                ) { useTemplate(it, it.is_downloaded) }
             }
-            downloadingTemplate = template
-            mainViewModel.downloadTemplate(template)
-        }
+        )
 
         sglm = com.webscare.urducanvas.common.views.SafeStaggeredGridLayoutManager(2, RecyclerView.VERTICAL).apply {
             gapStrategy = StaggeredGridLayoutManager.GAP_HANDLING_NONE
@@ -490,6 +520,8 @@ class TemplatesListFragment : androidx.fragment.app.Fragment() {
 
     override fun onDestroyView() {
         impressionTracker.stop()
+        previewHost?.release()
+        previewHost = null
         _binding?.templatesRV?.adapter = null
         loadingDialog?.dismiss()
         loadingDialog = null

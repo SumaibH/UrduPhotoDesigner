@@ -18,14 +18,18 @@ import com.webscare.urducanvas.R
 import com.webscare.urducanvas.common.utils.Constants
 import com.webscare.urducanvas.common.utils.startShimmerSoft
 import com.webscare.urducanvas.common.utils.isDarkModeEnabled
-import com.webscare.urducanvas.common.utils.Utils.addPressEffect
+import com.webscare.urducanvas.common.utils.Utils.addPressEffectWithLongClick
 import com.webscare.urducanvas.data.model.ProgressUi
 import com.webscare.urducanvas.data.model.TemplateEntity
 import com.webscare.urducanvas.databinding.LayoutTemplatePopularBinding
-import com.webscare.urducanvas.common.utils.Utils.addPressEffect
 
+/**
+ * [onLongClick] opens the hold-to-peek preview. No eye button is drawn — Home has no
+ * expanded state, so this row is permanently the collapsed case.
+ */
 class PopularTemplatesAdapter(
-    private val onClick: (TemplateEntity, Boolean) -> Unit
+    private val onClick: (TemplateEntity, Boolean) -> Unit,
+    private val onLongClick: ((TemplateEntity) -> Unit)? = null
 ) : ListAdapter<TemplateEntity, PopularTemplatesAdapter.VH>(Diff()) {
 
     init {
@@ -65,11 +69,14 @@ class PopularTemplatesAdapter(
 //                binding.percentage.text = ""
 //            }
 
-            binding.root.addPressEffect {
-                if (!item.is_downloading) {
-                    onClick(item, item.is_downloaded)
+            binding.root.addPressEffectWithLongClick(
+                onLongClick = { onLongClick?.invoke(item) },
+                onClick = {
+                    if (!item.is_downloading) {
+                        onClick(item, item.is_downloaded)
+                    }
                 }
-            }
+            )
 
             // Thumbnail
             val url = Constants.BASE_URL_GLIDE + item.thumbnail_url

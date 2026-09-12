@@ -18,16 +18,22 @@ import com.bumptech.glide.request.target.Target
 import com.webscare.urducanvas.R
 import com.webscare.urducanvas.common.utils.Constants
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
+import com.webscare.urducanvas.common.utils.Utils.addPressEffectWithLongClick
 import com.webscare.urducanvas.data.model.FontEntity
 import com.webscare.urducanvas.data.model.ProgressUi
 import com.webscare.urducanvas.databinding.LayoutFontsGridBinding
 import com.webscare.urducanvas.databinding.LayoutFontsRowBinding
-import com.webscare.urducanvas.common.utils.Utils.addPressEffect
 
+/**
+ * [onLongClick] opens the hold-to-peek preview, in both the grid and the list layout. No
+ * eye button is drawn on either — the eye belongs to the editor's expanded panels, and this
+ * screen has no expanded state, so it is permanently the collapsed case.
+ */
 class PopularFontsAdapter(
     private val onFontClick: (com.webscare.urducanvas.data.model.FontEntity, Boolean) -> Unit,
     private val onDownload: (com.webscare.urducanvas.data.model.FontEntity) -> Unit,
-    private var isGrid: Boolean = true
+    private var isGrid: Boolean = true,
+    private val onLongClick: ((com.webscare.urducanvas.data.model.FontEntity) -> Unit)? = null
 ) : androidx.recyclerview.widget.ListAdapter<com.webscare.urducanvas.data.model.FontEntity, RecyclerView.ViewHolder>(Diff()) {
 
     companion object {
@@ -105,7 +111,12 @@ class PopularFontsAdapter(
             binding.isPremium.isVisible = item.is_premium && !item.is_subscribed
             binding.assetName.text = item.font_name
             binding.metaData.text = "${formatSize(item.file_size)}"
-            binding.root.addPressEffect { onFontClick(item, item.is_downloaded) }
+            // Tap unchanged; hold peeks. `onLongClick` is the adapter's, not this holder's
+            // — the holders shadow the click callbacks but not this one.
+            binding.root.addPressEffectWithLongClick(
+                onLongClick = { onLongClick?.invoke(item) },
+                onClick = { onFontClick(item, item.is_downloaded) }
+            )
             binding.download.addPressEffect { onDownload(item) }
             applyProgress(progress)
         }
@@ -185,7 +196,12 @@ class PopularFontsAdapter(
             binding.isPremium.isVisible = item.is_premium && !item.is_subscribed
             binding.assetName.text = item.font_name
             binding.metaData.text = "${formatSize(item.file_size)}"
-            binding.root.addPressEffect { onFontClick(item, item.is_downloaded) }
+            // Tap unchanged; hold peeks. `onLongClick` is the adapter's, not this holder's
+            // — the holders shadow the click callbacks but not this one.
+            binding.root.addPressEffectWithLongClick(
+                onLongClick = { onLongClick?.invoke(item) },
+                onClick = { onFontClick(item, item.is_downloaded) }
+            )
             binding.download.addPressEffect { onDownload(item) }
             applyProgress(progress)
         }
