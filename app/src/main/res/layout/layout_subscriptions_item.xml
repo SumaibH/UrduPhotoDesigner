@@ -55,7 +55,16 @@
                 android:textColor="@color/gray"
                 android:textSize="11.5sp" />
 
-            <!-- Price on its own line -->
+            <!--
+                Price on its own line, sized to fit rather than fixed.
+
+                These cards are 108dp wide and the price comes from Play formatted for
+                the user's locale, so its width is not ours to predict: "Rs 3,100.00"
+                at a fixed 20sp broke after the decimal point and rendered as two
+                lines, with the pennies stranded underneath. Autosize keeps it on one
+                line and shrinks only as far as it must, so short prices still read at
+                full size.
+            -->
             <TextView
                 android:id="@+id/price"
                 android:layout_width="match_parent"
@@ -64,9 +73,13 @@
                 android:fontFamily="@font/bold"
                 android:gravity="center"
                 android:includeFontPadding="false"
+                android:maxLines="1"
                 android:text="@string/rs_399"
                 android:textColor="@color/black"
-                android:textSize="20sp" />
+                app:autoSizeMaxTextSize="20sp"
+                app:autoSizeMinTextSize="11sp"
+                app:autoSizeStepGranularity="1sp"
+                app:autoSizeTextType="uniform" />
 
             <!-- Duration underneath — its own line so long strings like
                  "/6 Months" wrap inside the card instead of overflowing

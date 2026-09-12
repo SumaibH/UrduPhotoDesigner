@@ -310,7 +310,27 @@ class SettingsFragment : androidx.fragment.app.Fragment() {
 
     private fun color(res: Int) = ContextCompat.getColor(requireContext(), res)
 
+    /**
+     * Takes the banner out of the tree before this view goes.
+     *
+     * Measured on a Samsung S24 with LeakCanary: closing Settings left the whole
+     * screen's view hierarchy reachable. The chain is
+     * `JNI global → Google's ad WebView → AdView → its AdListener →
+     * BannerAdHandler$loadBanner$1.$container → WebsCareBannerView → mParent →
+     * this fragment's ConstraintLayout`.
+     *
+     * Every link above the banner belongs to the ad SDKs — the root is one of
+     * Google Mobile Ads' own global references, and `WebsCareBannerView` exposes no
+     * release of its own — so the banner itself outlives this fragment whatever we
+     * do. `mParent` is the single link the app owns, and cutting it is the
+     * difference between leaking one ad view and leaking every view on the screen
+     * behind it. Removing it also fires the SDK's own `onDetachedFromWindow`
+     * cleanup, which is where it calls `destroyBanner`.
+     */
     override fun onDestroyView() {
+        _binding?.settingsBannerAd?.let { banner ->
+            (banner.parent as? ViewGroup)?.removeView(banner)
+        }
         super.onDestroyView()
         _binding = null
     }

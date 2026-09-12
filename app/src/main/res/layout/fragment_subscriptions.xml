@@ -32,7 +32,7 @@
         android:scaleType="fitCenter"
         android:src="@drawable/header_calligraphy"
         android:translationX="60dp"
-        android:translationY="30dp"
+        android:translationY="110dp"
         app:layout_constraintDimensionRatio="614:900"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@id/footer"
