@@ -38,6 +38,8 @@ class AssetPreviewSheet : BottomSheetDialogFragment() {
         val asset: PreviewAsset,
         val primaryLabel: String,
         val expanded: Boolean,
+        /** Outside the editor nothing competes for the screen, so the card is given more of it. */
+        val tall: Boolean,
         val onPrimary: (PreviewAsset) -> Unit,
         val onShare: ((PreviewAsset) -> Unit)?,
         val onDownload: ((PreviewAsset) -> Unit)?,
@@ -147,6 +149,7 @@ class AssetPreviewSheet : BottomSheetDialogFragment() {
         }
         view.onShare = bound.onShare
         view.onDownload = bound.onDownload
+        view.tall = bound.tall
         view.show(bound.asset, bound.expanded, bound.primaryLabel)
         pendingDownloading?.let(view::setDownloading)
         pendingDownloaded?.let(view::setDownloaded)
@@ -166,6 +169,7 @@ class AssetPreviewSheet : BottomSheetDialogFragment() {
         }
         view.onShare = bound.onShare
         view.onDownload = bound.onDownload
+        view.tall = bound.tall
         view.show(bound.asset, bound.expanded, bound.primaryLabel)
     }
 

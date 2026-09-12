@@ -176,7 +176,7 @@ class TextFragment : Fragment(), PreviewHostOwner {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        previewHost = PanelPreviewHost(this, binding.root)
+        previewHost = PanelPreviewHost(this)
         setupRecyclerView()
         restoreTabState()
         setupSwipeRefresh()

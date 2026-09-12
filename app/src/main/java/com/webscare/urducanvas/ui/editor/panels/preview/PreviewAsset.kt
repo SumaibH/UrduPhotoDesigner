@@ -82,6 +82,33 @@ sealed class PreviewAsset {
     }
 
     /**
+     * A finished picture named by where it lives rather than by an entity: a template's
+     * thumbnail on the asset host, or a saved project's exported PNG on the device.
+     *
+     * The navigation screens deal in these. A template is not an [ImageEntity] and a saved
+     * export is not one either, but both are "one picture, drawn big" — which is the whole
+     * of what their preview has to do.
+     *
+     * [source] is handed to Glide as-is, so it takes a URL string or a [java.io.File].
+     * [shareFile] is set only for artwork already on the device; a template thumbnail is
+     * the asset host's, not the user's, so nothing is offered to share.
+     */
+    data class Artwork(
+        override val breadcrumb: String,
+        override val title: String,
+        val source: Any,
+        /** Short, stable and locale-independent — the analytics bucket for this surface. */
+        val kind: String,
+        override val isPremium: Boolean = false,
+        override val details: List<String> = emptyList(),
+        val shareFile: java.io.File? = null
+    ) : PreviewAsset() {
+        override val isDownloaded get() = true
+        override val canDownload get() = false
+        override val canShare get() = shareFile != null
+    }
+
+    /**
      * Anything already rendered to a bitmap: shapes, emoji and style presets. Nothing
      * to download and no file to share, so the preview shows the mark and the one
      * action that applies.

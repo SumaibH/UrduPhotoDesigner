@@ -93,7 +93,7 @@ class ImagesFragment : Fragment(), PreviewHostOwner {
         super.onViewCreated(view, savedInstanceState)
         // The tiles live two fragments down, so the preview is hosted up here where
         // it can cover the tab rows as well as the grid.
-        previewHost = PanelPreviewHost(this, binding.root)
+        previewHost = PanelPreviewHost(this)
         
         setEvents()
         attachDragHandleSwipe()

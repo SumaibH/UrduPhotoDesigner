@@ -63,7 +63,7 @@ class FontsFragment : Fragment(), PreviewHostOwner {
         super.onViewCreated(view, savedInstanceState)
         // The rail is how you get between shelves, so the preview covers the grid
         // beside it rather than the whole panel.
-        previewHost = PanelPreviewHost(this, binding.root)
+        previewHost = PanelPreviewHost(this)
         setupRailView()
         setupViewPager()
         observeLocalFontsForLanguages()
