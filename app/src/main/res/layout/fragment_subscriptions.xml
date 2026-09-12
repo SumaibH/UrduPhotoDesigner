@@ -13,9 +13,14 @@
 
         First child so it sits under the content, and outside the scroll view so it
         stays put while the plans and features move over it — a watermark on the
-        page rather than a picture in the list. It bleeds off the end edge the same
-        way Home's header does, and its densest strokes sit beside the headline,
-        which is the one part of this screen that is not covered by a card.
+        page rather than a picture in the list.
+
+        Anchored to the foot rather than the head. With real plans loaded, the top of
+        this screen is the banner card and the close button, and a watermark up there
+        is almost entirely covered — it only looked right against the empty skeleton
+        an emulator gets. The feature list is plain rows on white, so the glyph reads
+        through it. It bleeds off the end edge and dips under the footer, the way
+        Home's header lets it run off the corner.
     -->
     <ImageView
         android:id="@+id/watermark"
@@ -26,12 +31,12 @@
         android:importantForAccessibility="no"
         android:scaleType="fitCenter"
         android:src="@drawable/header_calligraphy"
-        android:translationX="66dp"
-        android:translationY="-70dp"
+        android:translationX="60dp"
+        android:translationY="30dp"
         app:layout_constraintDimensionRatio="614:900"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_percent="0.80"
+        app:layout_constraintBottom_toTopOf="@id/footer"
+        app:layout_constraintWidth_percent="0.72"
         app:tint="@color/watermark_tint" />
 
     <!-- ── Fixed top bar (does not scroll) ───────────────────────────────── -->
