@@ -1,0 +1,1062 @@
+[
+  {
+    "id": "motivation_001",
+    "name": "ہمت نہ ہارو — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ہمت نہ ہارو",
+        "fontId": "AA Sameer Sagar.ttf",
+        "styleId": "threed_001",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_002",
+    "name": "محنت رنگ لائے گی — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "محنت رنگ لائے گی",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "modern_006",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_003",
+    "name": "یقین رکھو — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "یقین رکھو",
+        "fontId": "Al Qalam Naqsh.ttf",
+        "styleId": "neon_011",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_004",
+    "name": "Never Give Up — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "Never Give Up",
+        "fontId": "Al Qalam Shahjahan.ttf",
+        "styleId": "threed_016",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_005",
+    "name": "Dream Big — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "Dream Big",
+        "fontId": "Al Qalam Shahzaib.ttf",
+        "styleId": "modern_029",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_006",
+    "name": "ہمت نہ ہارو — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ہمت",
+        "fontId": "alfars-10-badriya-regular-1.ttf",
+        "styleId": "neon_026",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "نہ ہارو",
+        "fontId": "alfars-10-badriya-regular-1.ttf",
+        "styleId": "modern_001",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_007",
+    "name": "محنت رنگ لائے گی — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "محنت",
+        "fontId": "alfont_com_ITC-Handel-Gothic-Arabic-Bold.ttf",
+        "styleId": "threed_031",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "رنگ لائے گی",
+        "fontId": "alfont_com_ITC-Handel-Gothic-Arabic-Bold.ttf",
+        "styleId": "modern_001",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_008",
+    "name": "خواب دیکھو پورے کرو — offset-diagonal",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "خواب دیکھو",
+        "fontId": "alqalam-ishtiaq-regular-1.ttf",
+        "styleId": "modern_044",
+        "xPct": 0.38,
+        "yPct": 0.34,
+        "widthPct": 0.44,
+        "rotation": -6,
+        "align": "CENTER"
+      },
+      {
+        "text": "پورے کرو",
+        "fontId": "alqalam-ishtiaq-regular-1.ttf",
+        "styleId": "dark_006",
+        "xPct": 0.6,
+        "yPct": 0.63,
+        "widthPct": 0.56,
+        "rotation": -6,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_009",
+    "name": "Never Give Up — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "Never",
+        "fontId": "alqalam-khat-e-kamal-regular-1.ttf",
+        "styleId": "neon_041",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "Give Up",
+        "fontId": "alqalam-khat-e-kamal-regular-1.ttf",
+        "styleId": "modern_010",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_010",
+    "name": "Dream Big — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "Dream",
+        "fontId": "Aseer Unicode Aseer Unicode.ttf",
+        "styleId": "threed_046",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "Big",
+        "fontId": "Aseer Unicode Aseer Unicode.ttf",
+        "styleId": "modern_022",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_011",
+    "name": "یقین رکھو — big-over-small",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "یقین",
+        "fontId": "Attari_Salees.ttf",
+        "styleId": "modern_001",
+        "xPct": 0.5,
+        "yPct": 0.43,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "رکھو",
+        "fontId": "Attari_Salees.ttf",
+        "styleId": "dark_032",
+        "xPct": 0.5,
+        "yPct": 0.67,
+        "widthPct": 0.38,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_012",
+    "name": "Keep Going — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "Keep",
+        "fontId": "Baloo Bhaijaan2 Extra Bold .ttf",
+        "styleId": "neon_006",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "Going",
+        "fontId": "Baloo Bhaijaan2 Extra Bold .ttf",
+        "styleId": "modern_041",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_013",
+    "name": "ہمت نہ ہارو منزل قریب ہے — three-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ہمت",
+        "fontId": "Bieta Regular - [UrduFonts.com].ttf",
+        "styleId": "threed_011",
+        "xPct": 0.5,
+        "yPct": 0.24,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "نہ ہارو",
+        "fontId": "Bieta Regular - [UrduFonts.com].ttf",
+        "styleId": "modern_047",
+        "xPct": 0.5,
+        "yPct": 0.47,
+        "widthPct": 0.76,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "منزل قریب ہے",
+        "fontId": "Bieta Regular - [UrduFonts.com].ttf",
+        "styleId": "modern_047",
+        "xPct": 0.5,
+        "yPct": 0.71,
+        "widthPct": 0.5,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_014",
+    "name": "محنت کرو یقین رکھو کامیابی ملے گی — three-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "محنت کرو",
+        "fontId": "Cairo Black.ttf",
+        "styleId": "modern_019",
+        "xPct": 0.5,
+        "yPct": 0.29,
+        "widthPct": 0.6,
+        "rotation": -5,
+        "align": "CENTER"
+      },
+      {
+        "text": "یقین رکھو",
+        "fontId": "Cairo Black.ttf",
+        "styleId": "dark_001",
+        "xPct": 0.5,
+        "yPct": 0.51,
+        "widthPct": 0.7,
+        "rotation": -5,
+        "align": "CENTER"
+      },
+      {
+        "text": "کامیابی ملے گی",
+        "fontId": "Cairo Black.ttf",
+        "styleId": "dark_001",
+        "xPct": 0.5,
+        "yPct": 0.73,
+        "widthPct": 0.52,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_015",
+    "name": "خواب محنت کامیابی — three-stack",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "خواب",
+        "fontId": "Damavand Heavy.ttf",
+        "styleId": "neon_021",
+        "xPct": 0.5,
+        "yPct": 0.28,
+        "widthPct": 0.44,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "محنت",
+        "fontId": "Damavand Heavy.ttf",
+        "styleId": "modern_004",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "کامیابی",
+        "fontId": "Damavand Heavy.ttf",
+        "styleId": "modern_004",
+        "xPct": 0.5,
+        "yPct": 0.72,
+        "widthPct": 0.36,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_016",
+    "name": "Dream Believe Achieve — three-even",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "Dream",
+        "fontId": "DIWANLTR.TTF",
+        "styleId": "threed_026",
+        "xPct": 0.5,
+        "yPct": 0.28,
+        "widthPct": 0.64,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "Believe",
+        "fontId": "DIWANLTR.TTF",
+        "styleId": "modern_009",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.7,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "Achieve",
+        "fontId": "DIWANLTR.TTF",
+        "styleId": "modern_009",
+        "xPct": 0.5,
+        "yPct": 0.72,
+        "widthPct": 0.6,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_017",
+    "name": "ارادہ محنت کامیابی — three-lead",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ارادہ",
+        "fontId": "Doran ExtraBold.ttf",
+        "styleId": "modern_039",
+        "xPct": 0.5,
+        "yPct": 0.29,
+        "widthPct": 0.78,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "محنت",
+        "fontId": "Doran ExtraBold.ttf",
+        "styleId": "dark_020",
+        "xPct": 0.5,
+        "yPct": 0.52,
+        "widthPct": 0.56,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "کامیابی",
+        "fontId": "Doran ExtraBold.ttf",
+        "styleId": "dark_020",
+        "xPct": 0.5,
+        "yPct": 0.73,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_018",
+    "name": "Work Hard Stay Humble Keep Going — three-tail",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "Work Hard",
+        "fontId": "DUBAI-MEDIUM.TTF",
+        "styleId": "neon_036",
+        "xPct": 0.5,
+        "yPct": 0.27,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "Stay Humble",
+        "fontId": "DUBAI-MEDIUM.TTF",
+        "styleId": "modern_031",
+        "xPct": 0.5,
+        "yPct": 0.48,
+        "widthPct": 0.56,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "Keep Going",
+        "fontId": "DUBAI-MEDIUM.TTF",
+        "styleId": "modern_031",
+        "xPct": 0.5,
+        "yPct": 0.71,
+        "widthPct": 0.78,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_019",
+    "name": "آج ابھی شروع کرو — three-banner",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "آج",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "threed_041",
+        "xPct": 0.5,
+        "yPct": 0.26,
+        "widthPct": 0.74,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "ابھی",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "modern_038",
+        "xPct": 0.5,
+        "yPct": 0.49,
+        "widthPct": 0.42,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "شروع کرو",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "modern_038",
+        "xPct": 0.5,
+        "yPct": 0.73,
+        "widthPct": 0.66,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_020",
+    "name": "Mehnat Karo Rang Layegi — three-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "Mehnat",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "modern_054",
+        "xPct": 0.5,
+        "yPct": 0.24,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "Karo",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "dark_045",
+        "xPct": 0.5,
+        "yPct": 0.47,
+        "widthPct": 0.76,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "Rang Layegi",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "dark_045",
+        "xPct": 0.5,
+        "yPct": 0.71,
+        "widthPct": 0.5,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_021",
+    "name": "خواب دیکھو محنت کرو یقین رکھو کامیاب ہو جاؤ — four-tail",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "خواب دیکھو",
+        "fontId": "Helvetica Neue LT Arabic 55.ttf",
+        "styleId": "neon_001",
+        "xPct": 0.5,
+        "yPct": 0.2,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "محنت کرو",
+        "fontId": "Helvetica Neue LT Arabic 55.ttf",
+        "styleId": "modern_001",
+        "xPct": 0.5,
+        "yPct": 0.39,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "یقین رکھو",
+        "fontId": "Helvetica Neue LT Arabic 55.ttf",
+        "styleId": "modern_001",
+        "xPct": 0.5,
+        "yPct": 0.59,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "کامیاب ہو جاؤ",
+        "fontId": "Helvetica Neue LT Arabic 55.ttf",
+        "styleId": "modern_001",
+        "xPct": 0.5,
+        "yPct": 0.79,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_022",
+    "name": "Dream Believe Work Achieve — four-ladder",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "Dream",
+        "fontId": "IRANSansX Black.ttf",
+        "styleId": "threed_006",
+        "xPct": 0.44,
+        "yPct": 0.2,
+        "widthPct": 0.5,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "Believe",
+        "fontId": "IRANSansX Black.ttf",
+        "styleId": "modern_002",
+        "xPct": 0.5,
+        "yPct": 0.4,
+        "widthPct": 0.56,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "Work",
+        "fontId": "IRANSansX Black.ttf",
+        "styleId": "modern_002",
+        "xPct": 0.56,
+        "yPct": 0.6,
+        "widthPct": 0.56,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "Achieve",
+        "fontId": "IRANSansX Black.ttf",
+        "styleId": "modern_002",
+        "xPct": 0.6,
+        "yPct": 0.8,
+        "widthPct": 0.48,
+        "rotation": -4,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_023",
+    "name": "ہمت حوصلہ محنت کامیابی — four-pyramid",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ہمت",
+        "fontId": "Jadeer Bold.otf",
+        "styleId": "modern_011",
+        "xPct": 0.5,
+        "yPct": 0.2,
+        "widthPct": 0.42,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "حوصلہ",
+        "fontId": "Jadeer Bold.otf",
+        "styleId": "dark_010",
+        "xPct": 0.5,
+        "yPct": 0.4,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "محنت",
+        "fontId": "Jadeer Bold.otf",
+        "styleId": "dark_010",
+        "xPct": 0.5,
+        "yPct": 0.6,
+        "widthPct": 0.64,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "کامیابی",
+        "fontId": "Jadeer Bold.otf",
+        "styleId": "dark_010",
+        "xPct": 0.5,
+        "yPct": 0.8,
+        "widthPct": 0.74,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_024",
+    "name": "اٹھو چلو بڑھو جیتو — four-stack",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "اٹھو",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "neon_016",
+        "xPct": 0.5,
+        "yPct": 0.2,
+        "widthPct": 0.58,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "چلو",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "modern_019",
+        "xPct": 0.5,
+        "yPct": 0.4,
+        "widthPct": 0.66,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "بڑھو",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "modern_019",
+        "xPct": 0.5,
+        "yPct": 0.6,
+        "widthPct": 0.66,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "جیتو",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "modern_019",
+        "xPct": 0.5,
+        "yPct": 0.8,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_025",
+    "name": "Wake Up Work Hard Stay Focused Repeat — four-tail",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "Wake Up",
+        "fontId": "Jazeel Bold.otf",
+        "styleId": "threed_021",
+        "xPct": 0.5,
+        "yPct": 0.2,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "Work Hard",
+        "fontId": "Jazeel Bold.otf",
+        "styleId": "modern_032",
+        "xPct": 0.5,
+        "yPct": 0.39,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "Stay Focused",
+        "fontId": "Jazeel Bold.otf",
+        "styleId": "modern_032",
+        "xPct": 0.5,
+        "yPct": 0.59,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "Repeat",
+        "fontId": "Jazeel Bold.otf",
+        "styleId": "modern_032",
+        "xPct": 0.5,
+        "yPct": 0.79,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_026",
+    "name": "ہمت نہ ہارو — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ہمت نہ ہارو",
+        "fontId": "Al Qalam Shahjahan.ttf",
+        "styleId": "modern_013",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_027",
+    "name": "محنت رنگ لائے گی — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "محنت رنگ لائے گی",
+        "fontId": "Al Qalam Shahzaib.ttf",
+        "styleId": "neon_017",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_028",
+    "name": "یقین رکھو — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "یقین رکھو",
+        "fontId": "alfars-10-badriya-regular-1.ttf",
+        "styleId": "threed_022",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_029",
+    "name": "Never Give Up — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "Never Give Up",
+        "fontId": "alfont_com_ITC-Handel-Gothic-Arabic-Bold.ttf",
+        "styleId": "modern_035",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_030",
+    "name": "Dream Big — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "Dream Big",
+        "fontId": "alqalam-ishtiaq-regular-1.ttf",
+        "styleId": "neon_032",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_031",
+    "name": "ہمت نہ ہارو — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ہمت",
+        "fontId": "alqalam-khat-e-kamal-regular-1.ttf",
+        "styleId": "threed_037",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "نہ ہارو",
+        "fontId": "alqalam-khat-e-kamal-regular-1.ttf",
+        "styleId": "modern_002",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_032",
+    "name": "محنت رنگ لائے گی — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "محنت",
+        "fontId": "Aseer Unicode Aseer Unicode.ttf",
+        "styleId": "modern_050",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "رنگ لائے گی",
+        "fontId": "Aseer Unicode Aseer Unicode.ttf",
+        "styleId": "dark_010",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_033",
+    "name": "خواب دیکھو پورے کرو — wide-with-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "خواب دیکھو",
+        "fontId": "Attari_Salees.ttf",
+        "styleId": "neon_047",
+        "xPct": 0.5,
+        "yPct": 0.45,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "پورے کرو",
+        "fontId": "Attari_Salees.ttf",
+        "styleId": "modern_019",
+        "xPct": 0.5,
+        "yPct": 0.68,
+        "widthPct": 0.32,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_034",
+    "name": "Never Give Up — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "Never",
+        "fontId": "Baloo Bhaijaan2 Extra Bold .ttf",
+        "styleId": "threed_002",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "Give Up",
+        "fontId": "Baloo Bhaijaan2 Extra Bold .ttf",
+        "styleId": "modern_031",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "motivation_035",
+    "name": "Dream Big — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "Dream",
+        "fontId": "Bieta Regular - [UrduFonts.com].ttf",
+        "styleId": "modern_007",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "Big",
+        "fontId": "Bieta Regular - [UrduFonts.com].ttf",
+        "styleId": "dark_038",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  }
+]

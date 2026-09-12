@@ -1,0 +1,1232 @@
+[
+  {
+    "id": "milad_001",
+    "name": "میلادُ النبی ﷺ — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "میلادُ النبی ﷺ",
+        "fontId": "AA Sameer Rafiya Unicode Regular - [UrduFonts.com].ttf",
+        "styleId": "gold_001",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_002",
+    "name": "ربیع الاول مبارک — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ربیع الاول مبارک",
+        "fontId": "AA Sameer Shamok - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_006",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_003",
+    "name": "مرحبا یا مصطفیٰ ﷺ — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "مرحبا یا مصطفیٰ ﷺ",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "emboss_012",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_004",
+    "name": "درود شریف — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "درود شریف",
+        "fontId": "AlQalam Quran.ttf",
+        "styleId": "gold_016",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_005",
+    "name": "۱۲ ربیع الاول — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "۱۲ ربیع الاول",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "calligraphy_021",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_006",
+    "name": "ربیع الاول مبارک — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ربیع الاول",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "emboss_027",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "calligraphy_039",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_007",
+    "name": "جشنِ عید میلاد النبی ﷺ — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "جشنِ عید",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "gold_031",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "میلاد النبی ﷺ",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "calligraphy_046",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_008",
+    "name": "مرحبا یا مصطفیٰ ﷺ — offset-diagonal",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "مرحبا",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_036",
+        "xPct": 0.38,
+        "yPct": 0.34,
+        "widthPct": 0.44,
+        "rotation": -6,
+        "align": "CENTER"
+      },
+      {
+        "text": "یا مصطفیٰ ﷺ",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "minimal_003",
+        "xPct": 0.6,
+        "yPct": 0.63,
+        "widthPct": 0.56,
+        "rotation": -6,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_009",
+    "name": "یا نبی سلام علیک — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "یا نبی",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "emboss_043",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "سلام علیک",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "calligraphy_010",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_010",
+    "name": "ماہِ ربیع الاول — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ماہِ",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "gold_049",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "ربیع الاول",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "calligraphy_019",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_011",
+    "name": "آمد مرحبا — big-over-small",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "آمد",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "calligraphy_001",
+        "xPct": 0.5,
+        "yPct": 0.43,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مرحبا",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "gold_024",
+        "xPct": 0.5,
+        "yPct": 0.67,
+        "widthPct": 0.38,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_012",
+    "name": "نعت شریف — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "نعت",
+        "fontId": "MB Sarem Muhammad Bux Kaladi 1.0.ttf",
+        "styleId": "emboss_009",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "شریف",
+        "fontId": "MB Sarem Muhammad Bux Kaladi 1.0.ttf",
+        "styleId": "gold_031",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_013",
+    "name": "یا نبی سلام علیک — three-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "یا نبی",
+        "fontId": "MB Sarem Rizwan Gul.ttf",
+        "styleId": "gold_011",
+        "xPct": 0.5,
+        "yPct": 0.24,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "سلام",
+        "fontId": "MB Sarem Rizwan Gul.ttf",
+        "styleId": "calligraphy_043",
+        "xPct": 0.5,
+        "yPct": 0.47,
+        "widthPct": 0.76,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "علیک",
+        "fontId": "MB Sarem Rizwan Gul.ttf",
+        "styleId": "calligraphy_043",
+        "xPct": 0.5,
+        "yPct": 0.71,
+        "widthPct": 0.5,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_014",
+    "name": "جشنِ عید میلاد النبی ﷺ — three-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "جشنِ",
+        "fontId": "NooreHira.ttf",
+        "styleId": "calligraphy_016",
+        "xPct": 0.5,
+        "yPct": 0.29,
+        "widthPct": 0.6,
+        "rotation": -5,
+        "align": "CENTER"
+      },
+      {
+        "text": "عید میلاد",
+        "fontId": "NooreHira.ttf",
+        "styleId": "minimal_045",
+        "xPct": 0.5,
+        "yPct": 0.51,
+        "widthPct": 0.7,
+        "rotation": -5,
+        "align": "CENTER"
+      },
+      {
+        "text": "النبی ﷺ",
+        "fontId": "NooreHira.ttf",
+        "styleId": "minimal_045",
+        "xPct": 0.5,
+        "yPct": 0.73,
+        "widthPct": 0.52,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_015",
+    "name": "ربیع الاول کا چاند مبارک — three-stack",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ربیع الاول",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "emboss_024",
+        "xPct": 0.5,
+        "yPct": 0.28,
+        "widthPct": 0.44,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "کا چاند",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "gold_002",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "gold_002",
+        "xPct": 0.5,
+        "yPct": 0.72,
+        "widthPct": 0.36,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_016",
+    "name": "صلی اللہ علیہ وآلہ وسلم — three-even",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "صلی اللہ",
+        "fontId": "Sarem-Murtaza-Naz-Regular.ttf",
+        "styleId": "gold_026",
+        "xPct": 0.5,
+        "yPct": 0.28,
+        "widthPct": 0.64,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "علیہ وآلہ",
+        "fontId": "Sarem-Murtaza-Naz-Regular.ttf",
+        "styleId": "calligraphy_019",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.7,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "وسلم",
+        "fontId": "Sarem-Murtaza-Naz-Regular.ttf",
+        "styleId": "calligraphy_019",
+        "xPct": 0.5,
+        "yPct": 0.72,
+        "widthPct": 0.6,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_017",
+    "name": "مرحبا یا مصطفیٰ ﷺ — three-lead",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "مرحبا",
+        "fontId": "Sarem-Naseer-Regular.ttf",
+        "styleId": "calligraphy_031",
+        "xPct": 0.5,
+        "yPct": 0.29,
+        "widthPct": 0.78,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "یا مصطفیٰ",
+        "fontId": "Sarem-Naseer-Regular.ttf",
+        "styleId": "gold_016",
+        "xPct": 0.5,
+        "yPct": 0.52,
+        "widthPct": 0.56,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "ﷺ",
+        "fontId": "Sarem-Naseer-Regular.ttf",
+        "styleId": "gold_016",
+        "xPct": 0.5,
+        "yPct": 0.73,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_018",
+    "name": "آمنہ کے لال کی آمد مرحبا — three-tail",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "آمنہ کے",
+        "fontId": "AA Sameer Rafiya Unicode Regular - [UrduFonts.com].ttf",
+        "styleId": "emboss_040",
+        "xPct": 0.5,
+        "yPct": 0.27,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "لال کی",
+        "fontId": "AA Sameer Rafiya Unicode Regular - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_035",
+        "xPct": 0.5,
+        "yPct": 0.48,
+        "widthPct": 0.56,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "آمد مرحبا",
+        "fontId": "AA Sameer Rafiya Unicode Regular - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_035",
+        "xPct": 0.5,
+        "yPct": 0.71,
+        "widthPct": 0.78,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_019",
+    "name": "سرکار ﷺ کی آمد کا مہینہ — three-banner",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سرکار ﷺ کی",
+        "fontId": "AA Sameer Shamok - [UrduFonts.com].ttf",
+        "styleId": "gold_041",
+        "xPct": 0.5,
+        "yPct": 0.26,
+        "widthPct": 0.74,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "آمد کا",
+        "fontId": "AA Sameer Shamok - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_030",
+        "xPct": 0.5,
+        "yPct": 0.49,
+        "widthPct": 0.42,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مہینہ",
+        "fontId": "AA Sameer Shamok - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_030",
+        "xPct": 0.5,
+        "yPct": 0.73,
+        "widthPct": 0.66,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_020",
+    "name": "درود و سلام — three-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "درود",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "calligraphy_046",
+        "xPct": 0.5,
+        "yPct": 0.24,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "و",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "gold_037",
+        "xPct": 0.5,
+        "yPct": 0.47,
+        "widthPct": 0.76,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "سلام",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "gold_037",
+        "xPct": 0.5,
+        "yPct": 0.71,
+        "widthPct": 0.5,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_021",
+    "name": "یا رسول اللہ ﷺ سلام علیک — three-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "یا رسول اللہ",
+        "fontId": "AlQalam Quran.ttf",
+        "styleId": "emboss_006",
+        "xPct": 0.5,
+        "yPct": 0.29,
+        "widthPct": 0.6,
+        "rotation": -5,
+        "align": "CENTER"
+      },
+      {
+        "text": "ﷺ",
+        "fontId": "AlQalam Quran.ttf",
+        "styleId": "calligraphy_002",
+        "xPct": 0.5,
+        "yPct": 0.51,
+        "widthPct": 0.7,
+        "rotation": -5,
+        "align": "CENTER"
+      },
+      {
+        "text": "سلام علیک",
+        "fontId": "AlQalam Quran.ttf",
+        "styleId": "calligraphy_002",
+        "xPct": 0.5,
+        "yPct": 0.73,
+        "widthPct": 0.52,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_022",
+    "name": "یا نبی سلام علیک یا رسول سلام علیک — four-ladder",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "یا نبی",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "gold_006",
+        "xPct": 0.44,
+        "yPct": 0.2,
+        "widthPct": 0.5,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "سلام علیک",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "calligraphy_001",
+        "xPct": 0.5,
+        "yPct": 0.4,
+        "widthPct": 0.56,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "یا رسول",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "calligraphy_001",
+        "xPct": 0.56,
+        "yPct": 0.6,
+        "widthPct": 0.56,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "سلام علیک",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "calligraphy_001",
+        "xPct": 0.6,
+        "yPct": 0.8,
+        "widthPct": 0.48,
+        "rotation": -4,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_023",
+    "name": "جشنِ عید میلاد النبی ﷺ مبارک ہو — four-pyramid",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "جشنِ",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "calligraphy_011",
+        "xPct": 0.5,
+        "yPct": 0.2,
+        "widthPct": 0.42,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "عید میلاد",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "minimal_008",
+        "xPct": 0.5,
+        "yPct": 0.4,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "النبی ﷺ",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "minimal_008",
+        "xPct": 0.5,
+        "yPct": 0.6,
+        "widthPct": 0.64,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک ہو",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "minimal_008",
+        "xPct": 0.5,
+        "yPct": 0.8,
+        "widthPct": 0.74,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_024",
+    "name": "اللھم صلِّ علیٰ سیدنا محمد ﷺ — four-stack",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "اللھم",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "emboss_021",
+        "xPct": 0.5,
+        "yPct": 0.2,
+        "widthPct": 0.58,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "صلِّ علیٰ",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "calligraphy_015",
+        "xPct": 0.5,
+        "yPct": 0.4,
+        "widthPct": 0.66,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "سیدنا",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "calligraphy_015",
+        "xPct": 0.5,
+        "yPct": 0.6,
+        "widthPct": 0.66,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "محمد ﷺ",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "calligraphy_015",
+        "xPct": 0.5,
+        "yPct": 0.8,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_025",
+    "name": "ربیع الاول آمد مرحبا مرحبا یا مصطفیٰ ﷺ — four-tail",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ربیع الاول",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "gold_021",
+        "xPct": 0.5,
+        "yPct": 0.2,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "آمد مرحبا",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_022",
+        "xPct": 0.5,
+        "yPct": 0.39,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مرحبا",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_022",
+        "xPct": 0.5,
+        "yPct": 0.59,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "یا مصطفیٰ ﷺ",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_022",
+        "xPct": 0.5,
+        "yPct": 0.79,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_026",
+    "name": "درود سلام عقیدت محبت — four-even",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "درود",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "calligraphy_026",
+        "xPct": 0.5,
+        "yPct": 0.22,
+        "widthPct": 0.6,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "سلام",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "gold_029",
+        "xPct": 0.5,
+        "yPct": 0.41,
+        "widthPct": 0.6,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "عقیدت",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "gold_029",
+        "xPct": 0.5,
+        "yPct": 0.59,
+        "widthPct": 0.6,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "محبت",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "gold_029",
+        "xPct": 0.5,
+        "yPct": 0.78,
+        "widthPct": 0.6,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_027",
+    "name": "میلادُ النبی ﷺ — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "میلادُ النبی ﷺ",
+        "fontId": "AlQalam Quran.ttf",
+        "styleId": "calligraphy_012",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_028",
+    "name": "ربیع الاول مبارک — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ربیع الاول مبارک",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "emboss_018",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_029",
+    "name": "مرحبا یا مصطفیٰ ﷺ — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "مرحبا یا مصطفیٰ ﷺ",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "gold_022",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_030",
+    "name": "درود شریف — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "درود شریف",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "calligraphy_027",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_031",
+    "name": "۱۲ ربیع الاول — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "۱۲ ربیع الاول",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "emboss_033",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_032",
+    "name": "ربیع الاول مبارک — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ربیع الاول",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "gold_037",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "calligraphy_005",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_033",
+    "name": "جشنِ عید میلاد النبی ﷺ — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "جشنِ عید",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "calligraphy_042",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "میلاد النبی ﷺ",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "minimal_009",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_034",
+    "name": "مرحبا یا مصطفیٰ ﷺ — wide-with-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "مرحبا",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "emboss_049",
+        "xPct": 0.5,
+        "yPct": 0.45,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "یا مصطفیٰ ﷺ",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "gold_016",
+        "xPct": 0.5,
+        "yPct": 0.68,
+        "widthPct": 0.32,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_035",
+    "name": "یا نبی سلام علیک — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "یا نبی",
+        "fontId": "MB Sarem Muhammad Bux Kaladi 1.0.ttf",
+        "styleId": "gold_002",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "سلام علیک",
+        "fontId": "MB Sarem Muhammad Bux Kaladi 1.0.ttf",
+        "styleId": "calligraphy_023",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_036",
+    "name": "ماہِ ربیع الاول — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ماہِ",
+        "fontId": "MB Sarem Rizwan Gul.ttf",
+        "styleId": "calligraphy_007",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "ربیع الاول",
+        "fontId": "MB Sarem Rizwan Gul.ttf",
+        "styleId": "minimal_030",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_037",
+    "name": "آمد مرحبا — offset-diagonal",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "آمد",
+        "fontId": "NooreHira.ttf",
+        "styleId": "emboss_015",
+        "xPct": 0.38,
+        "yPct": 0.34,
+        "widthPct": 0.44,
+        "rotation": -6,
+        "align": "CENTER"
+      },
+      {
+        "text": "مرحبا",
+        "fontId": "NooreHira.ttf",
+        "styleId": "calligraphy_037",
+        "xPct": 0.6,
+        "yPct": 0.63,
+        "widthPct": 0.56,
+        "rotation": -6,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_038",
+    "name": "نعت شریف — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "نعت",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "gold_017",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "شریف",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "calligraphy_044",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_039",
+    "name": "یا نبی سلام علیک — three-stack",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "یا نبی",
+        "fontId": "Sarem-Murtaza-Naz-Regular.ttf",
+        "styleId": "calligraphy_022",
+        "xPct": 0.5,
+        "yPct": 0.28,
+        "widthPct": 0.44,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "سلام",
+        "fontId": "Sarem-Murtaza-Naz-Regular.ttf",
+        "styleId": "gold_001",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "علیک",
+        "fontId": "Sarem-Murtaza-Naz-Regular.ttf",
+        "styleId": "gold_001",
+        "xPct": 0.5,
+        "yPct": 0.72,
+        "widthPct": 0.36,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "milad_040",
+    "name": "جشنِ عید میلاد النبی ﷺ — three-arch",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "جشنِ",
+        "fontId": "Sarem-Naseer-Regular.ttf",
+        "styleId": "emboss_030",
+        "xPct": 0.5,
+        "yPct": 0.26,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "عید میلاد",
+        "fontId": "Sarem-Naseer-Regular.ttf",
+        "styleId": "calligraphy_008",
+        "xPct": 0.5,
+        "yPct": 0.49,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "النبی ﷺ",
+        "fontId": "Sarem-Naseer-Regular.ttf",
+        "styleId": "calligraphy_008",
+        "xPct": 0.5,
+        "yPct": 0.73,
+        "widthPct": 0.5,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  }
+]

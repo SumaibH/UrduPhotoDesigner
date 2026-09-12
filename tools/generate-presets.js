@@ -145,9 +145,28 @@ function fontPool(categories) {
  */
 const MAX_PER_PHRASE = 3;
 
+/**
+ * The layouts a category is allowed to draw on.
+ *
+ * Every layout carries a `pool`, defaulting to "core". A category names the pools it
+ * wants and gets those layouts in declaration order, so adding a layout to a pool a
+ * category does not name cannot move that category's output by a pixel.
+ *
+ * That is the whole point of the field. Layout choice is `candidates[... % length]`, so
+ * appending one 3-line layout to a shared list would re-cut every existing lockup that
+ * has three lines — same ids, different geometry, which is worse than a preset
+ * disappearing out of somebody's Recents because it disappears quietly. The ten original
+ * categories name no pools and therefore stay on "core" exactly as generated.
+ */
+function layoutsFor(config) {
+  const allowed = new Set(config.layouts || ['core']);
+  return LAYOUTS.filter((l) => allowed.has(l.pool || 'core'));
+}
+
 function generateCategory(name, config, startAt) {
   const phrases = PHRASES[name] || [];
   if (!phrases.length) return [];
+  const layouts = layoutsFor(config);
 
   const primaryPools = config.primary.map(stylePool).filter((p) => p.length);
   const secondaryPools = config.secondary.map(stylePool).filter((p) => p.length);
@@ -163,7 +182,7 @@ function generateCategory(name, config, startAt) {
   for (let round = 0; round < MAX_PER_PHRASE && out.length < config.target; round++) {
     for (let p = 0; p < phrases.length && out.length < config.target; p++) {
       const lines = phrases[p];
-      const candidates = LAYOUTS.filter((l) => l.lines === lines.length);
+      const candidates = layouts.filter((l) => l.lines === lines.length);
       if (!candidates.length) continue;
 
       // Offset by the round so the second appearance of a phrase is a different

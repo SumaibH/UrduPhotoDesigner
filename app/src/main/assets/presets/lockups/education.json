@@ -1,0 +1,742 @@
+[
+  {
+    "id": "education_001",
+    "name": "داخلے جاری ہیں — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "داخلے جاری ہیں",
+        "fontId": "AA Sameer Sagar.ttf",
+        "styleId": "modern_001",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "education_002",
+    "name": "ٹیوشن سنٹر — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ٹیوشن سنٹر",
+        "fontId": "aa-sameer-almas-regular-1.ttf",
+        "styleId": "minimal_006",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "education_003",
+    "name": "علم روشنی ہے — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "علم روشنی ہے",
+        "fontId": "aa-sameer-bassam-bold-regular-1.ttf",
+        "styleId": "emboss_012",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "education_004",
+    "name": "Admission Open — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "Admission Open",
+        "fontId": "aa-sameer-divangiry-regular-1.ttf",
+        "styleId": "modern_019",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "education_005",
+    "name": "داخلے جاری ہیں — wide-with-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "داخلے",
+        "fontId": "aa-sameer-kelk-regular-1.ttf",
+        "styleId": "minimal_021",
+        "xPct": 0.5,
+        "yPct": 0.45,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "جاری ہیں",
+        "fontId": "aa-sameer-kelk-regular-1.ttf",
+        "styleId": "dark_041",
+        "xPct": 0.5,
+        "yPct": 0.68,
+        "widthPct": 0.32,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "education_006",
+    "name": "Admission Open — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "Admission",
+        "fontId": "aadil-regular-1.ttf",
+        "styleId": "emboss_027",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "Open",
+        "fontId": "aadil-regular-1.ttf",
+        "styleId": "minimal_039",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "education_007",
+    "name": "ٹیوشن سنٹر — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ٹیوشن",
+        "fontId": "Al Qalam Hassan.ttf",
+        "styleId": "modern_039",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "سنٹر",
+        "fontId": "Al Qalam Hassan.ttf",
+        "styleId": "modern_054",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "education_008",
+    "name": "علم روشنی ہے — offset-diagonal",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "علم",
+        "fontId": "Al Qalam Naqsh.ttf",
+        "styleId": "minimal_036",
+        "xPct": 0.38,
+        "yPct": 0.34,
+        "widthPct": 0.44,
+        "rotation": -6,
+        "align": "CENTER"
+      },
+      {
+        "text": "روشنی ہے",
+        "fontId": "Al Qalam Naqsh.ttf",
+        "styleId": "dark_006",
+        "xPct": 0.6,
+        "yPct": 0.63,
+        "widthPct": 0.56,
+        "rotation": -6,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "education_009",
+    "name": "بہترین نتائج — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "بہترین",
+        "fontId": "Al Qalam Shahjahan.ttf",
+        "styleId": "emboss_043",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "نتائج",
+        "fontId": "Al Qalam Shahjahan.ttf",
+        "styleId": "minimal_010",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "education_010",
+    "name": "تجربہ کار اساتذہ — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "تجربہ کار",
+        "fontId": "Al Qalam Shahzaib.ttf",
+        "styleId": "modern_054",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "اساتذہ",
+        "fontId": "Al Qalam Shahzaib.ttf",
+        "styleId": "modern_020",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "education_011",
+    "name": "داخلے جاری ہیں آج ہی رابطہ کریں — three-tail",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "داخلے",
+        "fontId": "alfars-10-badriya-regular-1.ttf",
+        "styleId": "minimal_001",
+        "xPct": 0.5,
+        "yPct": 0.27,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "جاری ہیں",
+        "fontId": "alfars-10-badriya-regular-1.ttf",
+        "styleId": "dark_041",
+        "xPct": 0.5,
+        "yPct": 0.48,
+        "widthPct": 0.56,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "آج ہی رابطہ کریں",
+        "fontId": "alfars-10-badriya-regular-1.ttf",
+        "styleId": "dark_041",
+        "xPct": 0.5,
+        "yPct": 0.71,
+        "widthPct": 0.78,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "education_012",
+    "name": "تجربہ کار اساتذہ بہترین نتائج — three-ladder",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "تجربہ کار",
+        "fontId": "alfars-15-farnaz-regular-1.ttf",
+        "styleId": "emboss_009",
+        "xPct": 0.42,
+        "yPct": 0.28,
+        "widthPct": 0.54,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "اساتذہ",
+        "fontId": "alfars-15-farnaz-regular-1.ttf",
+        "styleId": "modern_041",
+        "xPct": 0.52,
+        "yPct": 0.5,
+        "widthPct": 0.6,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "بہترین نتائج",
+        "fontId": "alfars-15-farnaz-regular-1.ttf",
+        "styleId": "modern_041",
+        "xPct": 0.6,
+        "yPct": 0.72,
+        "widthPct": 0.52,
+        "rotation": -4,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "education_013",
+    "name": "علم شعور کامیابی — three-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "علم",
+        "fontId": "alfars-19-abshar-regular-1.ttf",
+        "styleId": "modern_011",
+        "xPct": 0.5,
+        "yPct": 0.24,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "شعور",
+        "fontId": "alfars-19-abshar-regular-1.ttf",
+        "styleId": "modern_047",
+        "xPct": 0.5,
+        "yPct": 0.47,
+        "widthPct": 0.76,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "کامیابی",
+        "fontId": "alfars-19-abshar-regular-1.ttf",
+        "styleId": "modern_047",
+        "xPct": 0.5,
+        "yPct": 0.71,
+        "widthPct": 0.5,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "education_014",
+    "name": "Admission Open Apply Now — three-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "Admission",
+        "fontId": "alfont_com_ITC-Handel-Gothic-Arabic-Bold.ttf",
+        "styleId": "minimal_016",
+        "xPct": 0.5,
+        "yPct": 0.29,
+        "widthPct": 0.6,
+        "rotation": -5,
+        "align": "CENTER"
+      },
+      {
+        "text": "Open",
+        "fontId": "alfont_com_ITC-Handel-Gothic-Arabic-Bold.ttf",
+        "styleId": "dark_053",
+        "xPct": 0.5,
+        "yPct": 0.51,
+        "widthPct": 0.7,
+        "rotation": -5,
+        "align": "CENTER"
+      },
+      {
+        "text": "Apply Now",
+        "fontId": "alfont_com_ITC-Handel-Gothic-Arabic-Bold.ttf",
+        "styleId": "dark_053",
+        "xPct": 0.5,
+        "yPct": 0.73,
+        "widthPct": 0.52,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "education_015",
+    "name": "میٹرک انٹر بی اے — three-stack",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "میٹرک",
+        "fontId": "AlQalam Abuzar Regular.ttf",
+        "styleId": "emboss_024",
+        "xPct": 0.5,
+        "yPct": 0.28,
+        "widthPct": 0.44,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "انٹر",
+        "fontId": "AlQalam Abuzar Regular.ttf",
+        "styleId": "modern_004",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "بی اے",
+        "fontId": "AlQalam Abuzar Regular.ttf",
+        "styleId": "modern_004",
+        "xPct": 0.5,
+        "yPct": 0.72,
+        "widthPct": 0.36,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "education_016",
+    "name": "پڑھو سمجھو آگے بڑھو — three-even",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "پڑھو",
+        "fontId": "AlQalam Fahad Regular.ttf",
+        "styleId": "modern_034",
+        "xPct": 0.5,
+        "yPct": 0.28,
+        "widthPct": 0.64,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "سمجھو",
+        "fontId": "AlQalam Fahad Regular.ttf",
+        "styleId": "modern_010",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.7,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "آگے بڑھو",
+        "fontId": "AlQalam Fahad Regular.ttf",
+        "styleId": "modern_010",
+        "xPct": 0.5,
+        "yPct": 0.72,
+        "widthPct": 0.6,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "education_017",
+    "name": "داخلے جاری ہیں تجربہ کار اساتذہ بہترین نتائج آج ہی رابطہ کریں — four-even",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "داخلے جاری ہیں",
+        "fontId": "AlQalam Irzan.ttf",
+        "styleId": "minimal_031",
+        "xPct": 0.5,
+        "yPct": 0.22,
+        "widthPct": 0.6,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "تجربہ کار اساتذہ",
+        "fontId": "AlQalam Irzan.ttf",
+        "styleId": "dark_020",
+        "xPct": 0.5,
+        "yPct": 0.41,
+        "widthPct": 0.6,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "بہترین نتائج",
+        "fontId": "AlQalam Irzan.ttf",
+        "styleId": "dark_020",
+        "xPct": 0.5,
+        "yPct": 0.59,
+        "widthPct": 0.6,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "آج ہی رابطہ کریں",
+        "fontId": "AlQalam Irzan.ttf",
+        "styleId": "dark_020",
+        "xPct": 0.5,
+        "yPct": 0.78,
+        "widthPct": 0.6,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "education_018",
+    "name": "علم محنت شعور کامیابی — four-ladder",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "علم",
+        "fontId": "AlQalam Ishtiaq Regular.ttf",
+        "styleId": "emboss_040",
+        "xPct": 0.44,
+        "yPct": 0.2,
+        "widthPct": 0.5,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "محنت",
+        "fontId": "AlQalam Ishtiaq Regular.ttf",
+        "styleId": "minimal_023",
+        "xPct": 0.5,
+        "yPct": 0.4,
+        "widthPct": 0.56,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "شعور",
+        "fontId": "AlQalam Ishtiaq Regular.ttf",
+        "styleId": "minimal_023",
+        "xPct": 0.56,
+        "yPct": 0.6,
+        "widthPct": 0.56,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "کامیابی",
+        "fontId": "AlQalam Ishtiaq Regular.ttf",
+        "styleId": "minimal_023",
+        "xPct": 0.6,
+        "yPct": 0.8,
+        "widthPct": 0.48,
+        "rotation": -4,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "education_019",
+    "name": "Admission Open Limited Seats Apply Now — four-stack",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "Admission",
+        "fontId": "AlQalam Makki Regular.ttf",
+        "styleId": "modern_049",
+        "xPct": 0.5,
+        "yPct": 0.2,
+        "widthPct": 0.58,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "Open",
+        "fontId": "AlQalam Makki Regular.ttf",
+        "styleId": "modern_038",
+        "xPct": 0.5,
+        "yPct": 0.4,
+        "widthPct": 0.66,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "Limited Seats",
+        "fontId": "AlQalam Makki Regular.ttf",
+        "styleId": "modern_038",
+        "xPct": 0.5,
+        "yPct": 0.6,
+        "widthPct": 0.66,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "Apply Now",
+        "fontId": "AlQalam Makki Regular.ttf",
+        "styleId": "modern_038",
+        "xPct": 0.5,
+        "yPct": 0.8,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "education_020",
+    "name": "داخلے جاری ہیں — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "داخلے جاری ہیں",
+        "fontId": "aa-sameer-divangiry-regular-1.ttf",
+        "styleId": "minimal_012",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "education_021",
+    "name": "ٹیوشن سنٹر — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ٹیوشن سنٹر",
+        "fontId": "aa-sameer-kelk-regular-1.ttf",
+        "styleId": "emboss_018",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "education_022",
+    "name": "علم روشنی ہے — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "علم روشنی ہے",
+        "fontId": "aadil-regular-1.ttf",
+        "styleId": "modern_030",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "education_023",
+    "name": "Admission Open — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "Admission Open",
+        "fontId": "Al Qalam Hassan.ttf",
+        "styleId": "minimal_027",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "education_024",
+    "name": "داخلے جاری ہیں — big-over-small",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "داخلے",
+        "fontId": "Al Qalam Naqsh.ttf",
+        "styleId": "emboss_033",
+        "xPct": 0.5,
+        "yPct": 0.43,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "جاری ہیں",
+        "fontId": "Al Qalam Naqsh.ttf",
+        "styleId": "minimal_045",
+        "xPct": 0.5,
+        "yPct": 0.67,
+        "widthPct": 0.38,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "education_025",
+    "name": "Admission Open — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "Admission",
+        "fontId": "Al Qalam Shahjahan.ttf",
+        "styleId": "modern_045",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "Open",
+        "fontId": "Al Qalam Shahjahan.ttf",
+        "styleId": "modern_002",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  }
+]

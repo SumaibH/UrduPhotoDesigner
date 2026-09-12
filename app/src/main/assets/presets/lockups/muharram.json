@@ -1,0 +1,912 @@
+[
+  {
+    "id": "muharram_001",
+    "name": "محرم الحرام — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "محرم الحرام",
+        "fontId": "aa-sameer-almas-regular-1.ttf",
+        "styleId": "dark_001",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "muharram_002",
+    "name": "یا حسین — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "یا حسین",
+        "fontId": "aa-sameer-bassam-bold-regular-1.ttf",
+        "styleId": "minimal_006",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "muharram_003",
+    "name": "یومِ عاشورہ — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "یومِ عاشورہ",
+        "fontId": "aa-sameer-divangiry-regular-1.ttf",
+        "styleId": "emboss_012",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "muharram_004",
+    "name": "کربلا — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "کربلا",
+        "fontId": "aa-sameer-kelk-regular-1.ttf",
+        "styleId": "dark_019",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "muharram_005",
+    "name": "محرم الحرام — wide-with-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "محرم",
+        "fontId": "aadil-regular-1.ttf",
+        "styleId": "minimal_021",
+        "xPct": 0.5,
+        "yPct": 0.45,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "الحرام",
+        "fontId": "aadil-regular-1.ttf",
+        "styleId": "emboss_033",
+        "xPct": 0.5,
+        "yPct": 0.68,
+        "widthPct": 0.32,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "muharram_006",
+    "name": "یومِ عاشورہ — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "یومِ",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "emboss_027",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "عاشورہ",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "dark_047",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "muharram_007",
+    "name": "سلام یا حسین — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سلام",
+        "fontId": "Al Qalam Hassan.ttf",
+        "styleId": "dark_039",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "یا حسین",
+        "fontId": "Al Qalam Hassan.ttf",
+        "styleId": "dark_001",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "muharram_008",
+    "name": "شہیدانِ کربلا — offset-diagonal",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "شہیدانِ",
+        "fontId": "alfars-15-farnaz-regular-1.ttf",
+        "styleId": "minimal_036",
+        "xPct": 0.38,
+        "yPct": 0.34,
+        "widthPct": 0.44,
+        "rotation": -6,
+        "align": "CENTER"
+      },
+      {
+        "text": "کربلا",
+        "fontId": "alfars-15-farnaz-regular-1.ttf",
+        "styleId": "emboss_006",
+        "xPct": 0.6,
+        "yPct": 0.63,
+        "widthPct": 0.56,
+        "rotation": -6,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "muharram_009",
+    "name": "نواسۂ رسول ﷺ — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "نواسۂ",
+        "fontId": "alfars-19-abshar-regular-1.ttf",
+        "styleId": "emboss_043",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "رسول ﷺ",
+        "fontId": "alfars-19-abshar-regular-1.ttf",
+        "styleId": "dark_010",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "muharram_010",
+    "name": "امام حسین — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "امام",
+        "fontId": "AlQalam Abuzar Regular.ttf",
+        "styleId": "dark_054",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "حسین",
+        "fontId": "AlQalam Abuzar Regular.ttf",
+        "styleId": "minimal_017",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "muharram_011",
+    "name": "یا حسین ابنِ علی — three-tail",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "یا",
+        "fontId": "AlQalam Fahad Regular.ttf",
+        "styleId": "minimal_001",
+        "xPct": 0.5,
+        "yPct": 0.27,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "حسین",
+        "fontId": "AlQalam Fahad Regular.ttf",
+        "styleId": "emboss_027",
+        "xPct": 0.5,
+        "yPct": 0.48,
+        "widthPct": 0.56,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "ابنِ علی",
+        "fontId": "AlQalam Fahad Regular.ttf",
+        "styleId": "emboss_027",
+        "xPct": 0.5,
+        "yPct": 0.71,
+        "widthPct": 0.78,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "muharram_012",
+    "name": "سلام شہیدانِ کربلا — three-ladder",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سلام",
+        "fontId": "AlQalam Irzan.ttf",
+        "styleId": "emboss_009",
+        "xPct": 0.42,
+        "yPct": 0.28,
+        "widthPct": 0.54,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "شہیدانِ",
+        "fontId": "AlQalam Irzan.ttf",
+        "styleId": "dark_039",
+        "xPct": 0.52,
+        "yPct": 0.5,
+        "widthPct": 0.6,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "کربلا",
+        "fontId": "AlQalam Irzan.ttf",
+        "styleId": "dark_039",
+        "xPct": 0.6,
+        "yPct": 0.72,
+        "widthPct": 0.52,
+        "rotation": -4,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "muharram_013",
+    "name": "کربلا کے شہیدوں کو سلام — three-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "کربلا",
+        "fontId": "AlQalam Ishtiaq Regular.ttf",
+        "styleId": "dark_011",
+        "xPct": 0.5,
+        "yPct": 0.24,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "کے شہیدوں",
+        "fontId": "AlQalam Ishtiaq Regular.ttf",
+        "styleId": "dark_001",
+        "xPct": 0.5,
+        "yPct": 0.47,
+        "widthPct": 0.76,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "کو سلام",
+        "fontId": "AlQalam Ishtiaq Regular.ttf",
+        "styleId": "dark_001",
+        "xPct": 0.5,
+        "yPct": 0.71,
+        "widthPct": 0.5,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "muharram_014",
+    "name": "محرم الحرام کی آمد — three-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "محرم",
+        "fontId": "AlQalam Makki Regular.ttf",
+        "styleId": "minimal_016",
+        "xPct": 0.5,
+        "yPct": 0.29,
+        "widthPct": 0.6,
+        "rotation": -5,
+        "align": "CENTER"
+      },
+      {
+        "text": "الحرام",
+        "fontId": "AlQalam Makki Regular.ttf",
+        "styleId": "emboss_050",
+        "xPct": 0.5,
+        "yPct": 0.51,
+        "widthPct": 0.7,
+        "rotation": -5,
+        "align": "CENTER"
+      },
+      {
+        "text": "کی آمد",
+        "fontId": "AlQalam Makki Regular.ttf",
+        "styleId": "emboss_050",
+        "xPct": 0.5,
+        "yPct": 0.73,
+        "widthPct": 0.52,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "muharram_015",
+    "name": "نواسۂ رسول ﷺ کو سلام — three-stack",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "نواسۂ",
+        "fontId": "AlQalam Mehfil Regular.ttf",
+        "styleId": "emboss_024",
+        "xPct": 0.5,
+        "yPct": 0.28,
+        "widthPct": 0.44,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "رسول ﷺ",
+        "fontId": "AlQalam Mehfil Regular.ttf",
+        "styleId": "dark_003",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "کو سلام",
+        "fontId": "AlQalam Mehfil Regular.ttf",
+        "styleId": "dark_003",
+        "xPct": 0.5,
+        "yPct": 0.72,
+        "widthPct": 0.36,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "muharram_016",
+    "name": "حق اور صداقت — three-even",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "حق",
+        "fontId": "AlQalam Quran.ttf",
+        "styleId": "dark_034",
+        "xPct": 0.5,
+        "yPct": 0.28,
+        "widthPct": 0.64,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "اور",
+        "fontId": "AlQalam Quran.ttf",
+        "styleId": "dark_009",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.7,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "صداقت",
+        "fontId": "AlQalam Quran.ttf",
+        "styleId": "dark_009",
+        "xPct": 0.5,
+        "yPct": 0.72,
+        "widthPct": 0.6,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "muharram_017",
+    "name": "۱۰ محرم الحرام — three-lead",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "۱۰",
+        "fontId": "AlQalam Shakir Regular.ttf",
+        "styleId": "minimal_031",
+        "xPct": 0.5,
+        "yPct": 0.29,
+        "widthPct": 0.78,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "محرم",
+        "fontId": "AlQalam Shakir Regular.ttf",
+        "styleId": "emboss_021",
+        "xPct": 0.5,
+        "yPct": 0.52,
+        "widthPct": 0.56,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "الحرام",
+        "fontId": "AlQalam Shakir Regular.ttf",
+        "styleId": "emboss_021",
+        "xPct": 0.5,
+        "yPct": 0.73,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "muharram_018",
+    "name": "محرم الحرام یومِ عاشورہ سلام یا حسین — four-ladder",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "محرم الحرام",
+        "fontId": "AlQalam Shamil Regular.ttf",
+        "styleId": "emboss_040",
+        "xPct": 0.44,
+        "yPct": 0.2,
+        "widthPct": 0.5,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "یومِ عاشورہ",
+        "fontId": "AlQalam Shamil Regular.ttf",
+        "styleId": "dark_041",
+        "xPct": 0.5,
+        "yPct": 0.4,
+        "widthPct": 0.56,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "سلام",
+        "fontId": "AlQalam Shamil Regular.ttf",
+        "styleId": "dark_041",
+        "xPct": 0.56,
+        "yPct": 0.6,
+        "widthPct": 0.56,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "یا حسین",
+        "fontId": "AlQalam Shamil Regular.ttf",
+        "styleId": "dark_041",
+        "xPct": 0.6,
+        "yPct": 0.8,
+        "widthPct": 0.48,
+        "rotation": -4,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "muharram_019",
+    "name": "کربلا کا پیغام حق کے لیے ڈٹ جانا — four-stack",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "کربلا",
+        "fontId": "AlQalam Tahir.ttf",
+        "styleId": "dark_049",
+        "xPct": 0.5,
+        "yPct": 0.2,
+        "widthPct": 0.58,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "کا پیغام",
+        "fontId": "AlQalam Tahir.ttf",
+        "styleId": "minimal_030",
+        "xPct": 0.5,
+        "yPct": 0.4,
+        "widthPct": 0.66,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "حق کے لیے",
+        "fontId": "AlQalam Tahir.ttf",
+        "styleId": "minimal_030",
+        "xPct": 0.5,
+        "yPct": 0.6,
+        "widthPct": 0.66,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "ڈٹ جانا",
+        "fontId": "AlQalam Tahir.ttf",
+        "styleId": "minimal_030",
+        "xPct": 0.5,
+        "yPct": 0.8,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "muharram_020",
+    "name": "صبر قربانی ایثار حسینیت — four-lead",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "صبر",
+        "fontId": "alqalam-amjad-alvi-regular-1.ttf",
+        "styleId": "minimal_046",
+        "xPct": 0.5,
+        "yPct": 0.21,
+        "widthPct": 0.74,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "قربانی",
+        "fontId": "alqalam-amjad-alvi-regular-1.ttf",
+        "styleId": "emboss_043",
+        "xPct": 0.5,
+        "yPct": 0.41,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "ایثار",
+        "fontId": "alqalam-amjad-alvi-regular-1.ttf",
+        "styleId": "emboss_043",
+        "xPct": 0.5,
+        "yPct": 0.61,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "حسینیت",
+        "fontId": "alqalam-amjad-alvi-regular-1.ttf",
+        "styleId": "emboss_043",
+        "xPct": 0.5,
+        "yPct": 0.8,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "muharram_021",
+    "name": "سلام یا حسین سلام شہیدانِ کربلا — four-tail",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سلام",
+        "fontId": "alqalam-khat-e-sumbali-regular-1.ttf",
+        "styleId": "emboss_006",
+        "xPct": 0.5,
+        "yPct": 0.2,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "یا حسین",
+        "fontId": "alqalam-khat-e-sumbali-regular-1.ttf",
+        "styleId": "dark_052",
+        "xPct": 0.5,
+        "yPct": 0.39,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "سلام",
+        "fontId": "alqalam-khat-e-sumbali-regular-1.ttf",
+        "styleId": "dark_052",
+        "xPct": 0.5,
+        "yPct": 0.59,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "شہیدانِ کربلا",
+        "fontId": "alqalam-khat-e-sumbali-regular-1.ttf",
+        "styleId": "dark_052",
+        "xPct": 0.5,
+        "yPct": 0.79,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "muharram_022",
+    "name": "محرم الحرام — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "محرم الحرام",
+        "fontId": "aa-sameer-kelk-regular-1.ttf",
+        "styleId": "minimal_012",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "muharram_023",
+    "name": "یا حسین — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "یا حسین",
+        "fontId": "aadil-regular-1.ttf",
+        "styleId": "emboss_018",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "muharram_024",
+    "name": "یومِ عاشورہ — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "یومِ عاشورہ",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "dark_030",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "muharram_025",
+    "name": "کربلا — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "کربلا",
+        "fontId": "Al Qalam Hassan.ttf",
+        "styleId": "minimal_027",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "muharram_026",
+    "name": "محرم الحرام — big-over-small",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "محرم",
+        "fontId": "alfars-15-farnaz-regular-1.ttf",
+        "styleId": "emboss_033",
+        "xPct": 0.5,
+        "yPct": 0.43,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "الحرام",
+        "fontId": "alfars-15-farnaz-regular-1.ttf",
+        "styleId": "dark_053",
+        "xPct": 0.5,
+        "yPct": 0.67,
+        "widthPct": 0.38,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "muharram_027",
+    "name": "یومِ عاشورہ — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "یومِ",
+        "fontId": "alfars-19-abshar-regular-1.ttf",
+        "styleId": "dark_045",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "عاشورہ",
+        "fontId": "alfars-19-abshar-regular-1.ttf",
+        "styleId": "minimal_002",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "muharram_028",
+    "name": "سلام یا حسین — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سلام",
+        "fontId": "AlQalam Abuzar Regular.ttf",
+        "styleId": "minimal_042",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "یا حسین",
+        "fontId": "AlQalam Abuzar Regular.ttf",
+        "styleId": "emboss_012",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "muharram_029",
+    "name": "شہیدانِ کربلا — wide-with-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "شہیدانِ",
+        "fontId": "AlQalam Fahad Regular.ttf",
+        "styleId": "emboss_049",
+        "xPct": 0.5,
+        "yPct": 0.45,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "کربلا",
+        "fontId": "AlQalam Fahad Regular.ttf",
+        "styleId": "dark_019",
+        "xPct": 0.5,
+        "yPct": 0.68,
+        "widthPct": 0.32,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "muharram_030",
+    "name": "نواسۂ رسول ﷺ — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "نواسۂ",
+        "fontId": "AlQalam Irzan.ttf",
+        "styleId": "dark_002",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "رسول ﷺ",
+        "fontId": "AlQalam Irzan.ttf",
+        "styleId": "minimal_023",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  }
+]

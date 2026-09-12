@@ -1,0 +1,742 @@
+[
+  {
+    "id": "seasons_001",
+    "name": "نیا سال مبارک — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "نیا سال مبارک",
+        "fontId": "AA Sameer Rafiya Unicode Regular - [UrduFonts.com].ttf",
+        "styleId": "layers_001",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "seasons_002",
+    "name": "بارش — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "بارش",
+        "fontId": "AA Sameer Shamok - [UrduFonts.com].ttf",
+        "styleId": "neon_006",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "seasons_003",
+    "name": "موسمِ بہار — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "موسمِ بہار",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "modern_011",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "seasons_004",
+    "name": "Happy New Year — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "Happy New Year",
+        "fontId": "AlFars 7 Kodak.ttf",
+        "styleId": "layers_016",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "seasons_005",
+    "name": "نیا سال مبارک — wide-with-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "نیا سال",
+        "fontId": "alfars-6-kamran-bold-regular-1.ttf",
+        "styleId": "neon_021",
+        "xPct": 0.5,
+        "yPct": 0.45,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "alfars-6-kamran-bold-regular-1.ttf",
+        "styleId": "layers_032",
+        "xPct": 0.5,
+        "yPct": 0.68,
+        "widthPct": 0.32,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "seasons_006",
+    "name": "موسمِ بہار — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "موسمِ",
+        "fontId": "AlQalam Mujeeb.ttf",
+        "styleId": "modern_034",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "بہار",
+        "fontId": "AlQalam Mujeeb.ttf",
+        "styleId": "modern_001",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "seasons_007",
+    "name": "بارش کا موسم — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "بارش",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "layers_031",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "کا موسم",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "modern_001",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "seasons_008",
+    "name": "سردیوں کی آمد — offset-diagonal",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سردیوں کی",
+        "fontId": "alqalam-shamil-regular-1.ttf",
+        "styleId": "neon_036",
+        "xPct": 0.38,
+        "yPct": 0.34,
+        "widthPct": 0.44,
+        "rotation": -6,
+        "align": "CENTER"
+      },
+      {
+        "text": "آمد",
+        "fontId": "alqalam-shamil-regular-1.ttf",
+        "styleId": "layers_021",
+        "xPct": 0.6,
+        "yPct": 0.63,
+        "widthPct": 0.56,
+        "rotation": -6,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "seasons_009",
+    "name": "Happy New Year — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "Happy",
+        "fontId": "alqalam-shekastah-regular-1.ttf",
+        "styleId": "modern_049",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "New Year",
+        "fontId": "alqalam-shekastah-regular-1.ttf",
+        "styleId": "minimal_010",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "seasons_010",
+    "name": "نیا سال نئی امیدیں مبارک ہو — three-lead",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "نیا سال",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "layers_046",
+        "xPct": 0.5,
+        "yPct": 0.29,
+        "widthPct": 0.78,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "نئی امیدیں",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "modern_022",
+        "xPct": 0.5,
+        "yPct": 0.52,
+        "widthPct": 0.56,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک ہو",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "modern_022",
+        "xPct": 0.5,
+        "yPct": 0.73,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "seasons_011",
+    "name": "بارش چائے اور پکوڑے — three-tail",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "بارش",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "neon_001",
+        "xPct": 0.5,
+        "yPct": 0.27,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "چائے",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "layers_024",
+        "xPct": 0.5,
+        "yPct": 0.48,
+        "widthPct": 0.56,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "اور پکوڑے",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "layers_024",
+        "xPct": 0.5,
+        "yPct": 0.71,
+        "widthPct": 0.78,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "seasons_012",
+    "name": "بہار پھول خوشبو — three-ladder",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "بہار",
+        "fontId": "Bahij .ttf",
+        "styleId": "modern_006",
+        "xPct": 0.42,
+        "yPct": 0.28,
+        "widthPct": 0.54,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "پھول",
+        "fontId": "Bahij .ttf",
+        "styleId": "minimal_031",
+        "xPct": 0.52,
+        "yPct": 0.5,
+        "widthPct": 0.6,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "خوشبو",
+        "fontId": "Bahij .ttf",
+        "styleId": "minimal_031",
+        "xPct": 0.6,
+        "yPct": 0.72,
+        "widthPct": 0.52,
+        "rotation": -4,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "seasons_013",
+    "name": "سردی چائے اور رضائی — three-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سردی",
+        "fontId": "Baloo Bhaijaan 2 Medium - [UrduFonts.com].ttf",
+        "styleId": "layers_011",
+        "xPct": 0.5,
+        "yPct": 0.24,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "چائے",
+        "fontId": "Baloo Bhaijaan 2 Medium - [UrduFonts.com].ttf",
+        "styleId": "modern_047",
+        "xPct": 0.5,
+        "yPct": 0.47,
+        "widthPct": 0.76,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "اور رضائی",
+        "fontId": "Baloo Bhaijaan 2 Medium - [UrduFonts.com].ttf",
+        "styleId": "modern_047",
+        "xPct": 0.5,
+        "yPct": 0.71,
+        "widthPct": 0.5,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "seasons_014",
+    "name": "پہلی بارش کا موسم — three-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "پہلی",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "neon_016",
+        "xPct": 0.5,
+        "yPct": 0.29,
+        "widthPct": 0.6,
+        "rotation": -5,
+        "align": "CENTER"
+      },
+      {
+        "text": "بارش",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "layers_045",
+        "xPct": 0.5,
+        "yPct": 0.51,
+        "widthPct": 0.7,
+        "rotation": -5,
+        "align": "CENTER"
+      },
+      {
+        "text": "کا موسم",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "layers_045",
+        "xPct": 0.5,
+        "yPct": 0.73,
+        "widthPct": 0.52,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "seasons_015",
+    "name": "ساون برسات ٹھنڈی ہوا — three-stack",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ساون",
+        "fontId": "Fanni.ttf",
+        "styleId": "modern_029",
+        "xPct": 0.5,
+        "yPct": 0.28,
+        "widthPct": 0.44,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "برسات",
+        "fontId": "Fanni.ttf",
+        "styleId": "modern_004",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "ٹھنڈی ہوا",
+        "fontId": "Fanni.ttf",
+        "styleId": "modern_004",
+        "xPct": 0.5,
+        "yPct": 0.72,
+        "widthPct": 0.36,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "seasons_016",
+    "name": "نیا سال نیا آغاز نئی امیدیں مبارک ہو — four-tail",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "نیا سال",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "layers_026",
+        "xPct": 0.5,
+        "yPct": 0.2,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "نیا آغاز",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "modern_010",
+        "xPct": 0.5,
+        "yPct": 0.39,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "نئی امیدیں",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "modern_010",
+        "xPct": 0.5,
+        "yPct": 0.59,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک ہو",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "modern_010",
+        "xPct": 0.5,
+        "yPct": 0.79,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "seasons_017",
+    "name": "بہار گرمی ساون سردی — four-even",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "بہار",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "neon_031",
+        "xPct": 0.5,
+        "yPct": 0.22,
+        "widthPct": 0.6,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "گرمی",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "layers_021",
+        "xPct": 0.5,
+        "yPct": 0.41,
+        "widthPct": 0.6,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "ساون",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "layers_021",
+        "xPct": 0.5,
+        "yPct": 0.59,
+        "widthPct": 0.6,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "سردی",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "layers_021",
+        "xPct": 0.5,
+        "yPct": 0.78,
+        "widthPct": 0.6,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "seasons_018",
+    "name": "بارش چائے پکوڑے اور آپ — four-ladder",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "بارش",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "modern_044",
+        "xPct": 0.44,
+        "yPct": 0.2,
+        "widthPct": 0.5,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "چائے",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "minimal_023",
+        "xPct": 0.5,
+        "yPct": 0.4,
+        "widthPct": 0.56,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "پکوڑے",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "minimal_023",
+        "xPct": 0.56,
+        "yPct": 0.6,
+        "widthPct": 0.56,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "اور آپ",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "minimal_023",
+        "xPct": 0.6,
+        "yPct": 0.8,
+        "widthPct": 0.48,
+        "rotation": -4,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "seasons_019",
+    "name": "نیا سال مبارک — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "نیا سال مبارک",
+        "fontId": "AlFars 7 Kodak.ttf",
+        "styleId": "neon_012",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "seasons_020",
+    "name": "بارش — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "بارش",
+        "fontId": "alfars-6-kamran-bold-regular-1.ttf",
+        "styleId": "modern_020",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "seasons_021",
+    "name": "موسمِ بہار — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "موسمِ بہار",
+        "fontId": "AlQalam Mujeeb.ttf",
+        "styleId": "layers_022",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "seasons_022",
+    "name": "Happy New Year — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "Happy New Year",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "neon_027",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "seasons_023",
+    "name": "نیا سال مبارک — big-over-small",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "نیا سال",
+        "fontId": "alqalam-shamil-regular-1.ttf",
+        "styleId": "modern_040",
+        "xPct": 0.5,
+        "yPct": 0.43,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "alqalam-shamil-regular-1.ttf",
+        "styleId": "minimal_045",
+        "xPct": 0.5,
+        "yPct": 0.67,
+        "widthPct": 0.38,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "seasons_024",
+    "name": "موسمِ بہار — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "موسمِ",
+        "fontId": "alqalam-shekastah-regular-1.ttf",
+        "styleId": "layers_037",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "بہار",
+        "fontId": "alqalam-shekastah-regular-1.ttf",
+        "styleId": "modern_004",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "seasons_025",
+    "name": "بارش کا موسم — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "بارش",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "neon_042",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "کا موسم",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "layers_021",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  }
+]

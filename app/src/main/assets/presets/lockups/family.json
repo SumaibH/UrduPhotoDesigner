@@ -1,0 +1,912 @@
+[
+  {
+    "id": "family_001",
+    "name": "ماں — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ماں",
+        "fontId": "AA Sameer Rafiya Unicode Regular - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_001",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "family_002",
+    "name": "ماں کی دعا — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ماں کی دعا",
+        "fontId": "AA Sameer Shamok - [UrduFonts.com].ttf",
+        "styleId": "gold_006",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "family_003",
+    "name": "والدین — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "والدین",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "minimal_011",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "family_004",
+    "name": "دوستی — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "دوستی",
+        "fontId": "alfars-6-kamran-bold-regular-1.ttf",
+        "styleId": "calligraphy_016",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "family_005",
+    "name": "ماں کی دعا — wide-with-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ماں",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "gold_021",
+        "xPct": 0.5,
+        "yPct": 0.45,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "کی دعا",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "modern_041",
+        "xPct": 0.5,
+        "yPct": 0.68,
+        "widthPct": 0.32,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "family_006",
+    "name": "یومِ مادر — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "یومِ",
+        "fontId": "alqalam-shekastah-regular-1.ttf",
+        "styleId": "minimal_026",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مادر",
+        "fontId": "alqalam-shekastah-regular-1.ttf",
+        "styleId": "minimal_039",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "family_007",
+    "name": "بہن بھائی — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "بہن",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "calligraphy_031",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "بھائی",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "calligraphy_046",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "family_008",
+    "name": "سچی دوستی — offset-diagonal",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سچی",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "gold_036",
+        "xPct": 0.38,
+        "yPct": 0.34,
+        "widthPct": 0.44,
+        "rotation": -6,
+        "align": "CENTER"
+      },
+      {
+        "text": "دوستی",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "modern_004",
+        "xPct": 0.6,
+        "yPct": 0.63,
+        "widthPct": 0.56,
+        "rotation": -6,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "family_009",
+    "name": "والدین کا سایہ — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "والدین کا",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "minimal_041",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "سایہ",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "minimal_010",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "family_010",
+    "name": "یومِ والد — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "یومِ",
+        "fontId": "Fanni.ttf",
+        "styleId": "calligraphy_046",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "والد",
+        "fontId": "Fanni.ttf",
+        "styleId": "calligraphy_019",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "family_011",
+    "name": "ماں کے قدموں تلے جنت ہے — three-tail",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ماں کے",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "gold_001",
+        "xPct": 0.5,
+        "yPct": 0.27,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "قدموں تلے",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "modern_034",
+        "xPct": 0.5,
+        "yPct": 0.48,
+        "widthPct": 0.56,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "جنت ہے",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "modern_034",
+        "xPct": 0.5,
+        "yPct": 0.71,
+        "widthPct": 0.78,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "family_012",
+    "name": "ماں باپ کی خدمت عبادت ہے — three-ladder",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ماں باپ",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "minimal_006",
+        "xPct": 0.42,
+        "yPct": 0.28,
+        "widthPct": 0.54,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "کی خدمت",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "minimal_031",
+        "xPct": 0.52,
+        "yPct": 0.5,
+        "widthPct": 0.6,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "عبادت ہے",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "minimal_031",
+        "xPct": 0.6,
+        "yPct": 0.72,
+        "widthPct": 0.52,
+        "rotation": -4,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "family_013",
+    "name": "یومِ والدہ مبارک — three-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "یومِ",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "calligraphy_011",
+        "xPct": 0.5,
+        "yPct": 0.24,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "والدہ",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "calligraphy_038",
+        "xPct": 0.5,
+        "yPct": 0.47,
+        "widthPct": 0.76,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "calligraphy_038",
+        "xPct": 0.5,
+        "yPct": 0.71,
+        "widthPct": 0.5,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "family_014",
+    "name": "بہن بھائی کا پیار — three-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "بہن",
+        "fontId": "MB Sarem Muhammad Bux Kaladi 1.0.ttf",
+        "styleId": "gold_016",
+        "xPct": 0.5,
+        "yPct": 0.29,
+        "widthPct": 0.6,
+        "rotation": -5,
+        "align": "CENTER"
+      },
+      {
+        "text": "بھائی",
+        "fontId": "MB Sarem Muhammad Bux Kaladi 1.0.ttf",
+        "styleId": "modern_001",
+        "xPct": 0.5,
+        "yPct": 0.51,
+        "widthPct": 0.7,
+        "rotation": -5,
+        "align": "CENTER"
+      },
+      {
+        "text": "کا پیار",
+        "fontId": "MB Sarem Muhammad Bux Kaladi 1.0.ttf",
+        "styleId": "modern_001",
+        "xPct": 0.5,
+        "yPct": 0.73,
+        "widthPct": 0.52,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "family_015",
+    "name": "سچے دوست قسمت والوں کو ملتے ہیں — three-stack",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سچے دوست",
+        "fontId": "MB Sarem Rizwan Gul.ttf",
+        "styleId": "minimal_021",
+        "xPct": 0.5,
+        "yPct": 0.28,
+        "widthPct": 0.44,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "قسمت والوں",
+        "fontId": "MB Sarem Rizwan Gul.ttf",
+        "styleId": "minimal_002",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "کو ملتے ہیں",
+        "fontId": "MB Sarem Rizwan Gul.ttf",
+        "styleId": "minimal_002",
+        "xPct": 0.5,
+        "yPct": 0.72,
+        "widthPct": 0.36,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "family_016",
+    "name": "ماں باپ اولاد — three-even",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ماں",
+        "fontId": "Mj Ghalam 1 Regular- [UrduFonts.com].ttf",
+        "styleId": "calligraphy_026",
+        "xPct": 0.5,
+        "yPct": 0.28,
+        "widthPct": 0.64,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "باپ",
+        "fontId": "Mj Ghalam 1 Regular- [UrduFonts.com].ttf",
+        "styleId": "calligraphy_019",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.7,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "اولاد",
+        "fontId": "Mj Ghalam 1 Regular- [UrduFonts.com].ttf",
+        "styleId": "calligraphy_019",
+        "xPct": 0.5,
+        "yPct": 0.72,
+        "widthPct": 0.6,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "family_017",
+    "name": "گھر کی رونق — three-lead",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "گھر",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "gold_031",
+        "xPct": 0.5,
+        "yPct": 0.29,
+        "widthPct": 0.78,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "کی",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "modern_019",
+        "xPct": 0.5,
+        "yPct": 0.52,
+        "widthPct": 0.56,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "رونق",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "modern_019",
+        "xPct": 0.5,
+        "yPct": 0.73,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "family_018",
+    "name": "ماں کی دعا باپ کا سایہ اللہ سب کو نصیب کرے — four-ladder",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ماں کی دعا",
+        "fontId": "PDMS Pencil.ttf",
+        "styleId": "minimal_036",
+        "xPct": 0.44,
+        "yPct": 0.2,
+        "widthPct": 0.5,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "باپ کا سایہ",
+        "fontId": "PDMS Pencil.ttf",
+        "styleId": "minimal_023",
+        "xPct": 0.5,
+        "yPct": 0.4,
+        "widthPct": 0.56,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "اللہ سب کو",
+        "fontId": "PDMS Pencil.ttf",
+        "styleId": "minimal_023",
+        "xPct": 0.56,
+        "yPct": 0.6,
+        "widthPct": 0.56,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "نصیب کرے",
+        "fontId": "PDMS Pencil.ttf",
+        "styleId": "minimal_023",
+        "xPct": 0.6,
+        "yPct": 0.8,
+        "widthPct": 0.48,
+        "rotation": -4,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "family_019",
+    "name": "گھر خاندان محبت سکون — four-stack",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "گھر",
+        "fontId": "Resalaty-Regular.ttf",
+        "styleId": "calligraphy_041",
+        "xPct": 0.5,
+        "yPct": 0.2,
+        "widthPct": 0.58,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "خاندان",
+        "fontId": "Resalaty-Regular.ttf",
+        "styleId": "calligraphy_035",
+        "xPct": 0.5,
+        "yPct": 0.4,
+        "widthPct": 0.66,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "محبت",
+        "fontId": "Resalaty-Regular.ttf",
+        "styleId": "calligraphy_035",
+        "xPct": 0.5,
+        "yPct": 0.6,
+        "widthPct": 0.66,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "سکون",
+        "fontId": "Resalaty-Regular.ttf",
+        "styleId": "calligraphy_035",
+        "xPct": 0.5,
+        "yPct": 0.8,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "family_020",
+    "name": "ماں باپ بہن بھائی — four-lead",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ماں",
+        "fontId": "Sarem-Murtaza-Naz-Regular.ttf",
+        "styleId": "gold_049",
+        "xPct": 0.5,
+        "yPct": 0.21,
+        "widthPct": 0.74,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "باپ",
+        "fontId": "Sarem-Murtaza-Naz-Regular.ttf",
+        "styleId": "modern_046",
+        "xPct": 0.5,
+        "yPct": 0.41,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "بہن",
+        "fontId": "Sarem-Murtaza-Naz-Regular.ttf",
+        "styleId": "modern_046",
+        "xPct": 0.5,
+        "yPct": 0.61,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "بھائی",
+        "fontId": "Sarem-Murtaza-Naz-Regular.ttf",
+        "styleId": "modern_046",
+        "xPct": 0.5,
+        "yPct": 0.8,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "family_021",
+    "name": "دوستی خلوص اعتبار ساتھ — four-tail",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "دوستی",
+        "fontId": "Sarem-Naseer-Regular.ttf",
+        "styleId": "minimal_001",
+        "xPct": 0.5,
+        "yPct": 0.2,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "خلوص",
+        "fontId": "Sarem-Naseer-Regular.ttf",
+        "styleId": "minimal_044",
+        "xPct": 0.5,
+        "yPct": 0.39,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "اعتبار",
+        "fontId": "Sarem-Naseer-Regular.ttf",
+        "styleId": "minimal_044",
+        "xPct": 0.5,
+        "yPct": 0.59,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "ساتھ",
+        "fontId": "Sarem-Naseer-Regular.ttf",
+        "styleId": "minimal_044",
+        "xPct": 0.5,
+        "yPct": 0.79,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "family_022",
+    "name": "ماں — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ماں",
+        "fontId": "alfars-6-kamran-bold-regular-1.ttf",
+        "styleId": "gold_012",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "family_023",
+    "name": "ماں کی دعا — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ماں کی دعا",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "minimal_017",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "family_024",
+    "name": "والدین — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "والدین",
+        "fontId": "alqalam-shekastah-regular-1.ttf",
+        "styleId": "calligraphy_022",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "family_025",
+    "name": "دوستی — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "دوستی",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "gold_027",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "family_026",
+    "name": "ماں کی دعا — big-over-small",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ماں",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "minimal_032",
+        "xPct": 0.5,
+        "yPct": 0.43,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "کی دعا",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "minimal_045",
+        "xPct": 0.5,
+        "yPct": 0.67,
+        "widthPct": 0.38,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "family_027",
+    "name": "یومِ مادر — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "یومِ",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_037",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مادر",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_002",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "family_028",
+    "name": "بہن بھائی — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "بہن",
+        "fontId": "Fanni.ttf",
+        "styleId": "gold_043",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "بھائی",
+        "fontId": "Fanni.ttf",
+        "styleId": "modern_010",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "family_029",
+    "name": "سچی دوستی — wide-with-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سچی",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "minimal_047",
+        "xPct": 0.5,
+        "yPct": 0.45,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "دوستی",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "minimal_016",
+        "xPct": 0.5,
+        "yPct": 0.68,
+        "widthPct": 0.32,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "family_030",
+    "name": "والدین کا سایہ — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "والدین کا",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "calligraphy_002",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "سایہ",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "calligraphy_035",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  }
+]
