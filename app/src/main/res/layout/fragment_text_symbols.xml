@@ -36,20 +36,47 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Shown when nothing (or a non-text layer) is selected -->
-        <TextView
-            android:id="@+id/tvEmptyState"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/regular"
-            android:text="@string/symbols_no_text_selected"
-            android:textColor="@color/gray"
-            android:textSize="12sp"
+        <!--
+            Shown when nothing (or a non-text layer) is selected.
+
+            Scrim and chip are one group, not two siblings, for two reasons: the
+            fade is then a single alpha animation on the parent, so the pill can
+            never be caught half-lit against a fully-lit scrim; and the scrim is
+            what swallows the touch, so the grid underneath cannot be tapped
+            while it looks inert. Declared after the pager so it both draws over
+            it and is offered the touch first.
+
+            This replaces the bare centred caption that used to float loose over
+            the tiles — same string, same anchor, now a state instead of a label.
+        -->
+        <FrameLayout
+            android:id="@+id/inactiveOverlay"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@color/panel_inactive_scrim"
+            android:clickable="true"
+            android:focusable="false"
+            android:soundEffectsEnabled="false"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="@id/viewPager"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/viewPager" />
+            app:layout_constraintEnd_toEndOf="@id/viewPager"
+            app:layout_constraintStart_toStartOf="@id/viewPager"
+            app:layout_constraintTop_toTopOf="@id/viewPager">
+
+            <TextView
+                android:id="@+id/tvEmptyState"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="@drawable/bg_panel_state_chip"
+                android:fontFamily="@font/regular"
+                android:paddingHorizontal="18dp"
+                android:paddingVertical="9dp"
+                android:text="@string/symbols_no_text_selected"
+                android:textColor="@color/panel_state_chip_text"
+                android:textSize="12sp" />
+
+        </FrameLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
