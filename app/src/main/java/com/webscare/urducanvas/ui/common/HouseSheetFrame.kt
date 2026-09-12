@@ -1,8 +1,10 @@
 package com.webscare.urducanvas.ui.common
 
+import android.os.Build
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
+import android.view.WindowManager
 import android.widget.FrameLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -77,6 +79,26 @@ class HouseSheetFrame(private val fragment: DialogFragment) {
      */
     fun attach(openRatio: Float = DEFAULT_OPEN_RATIO) {
         this.openRatio = openRatio
+
+        // The window has to be allowed to draw past the system bars before any of the
+        // sheet sizing below means anything. Without FLAG_LAYOUT_NO_LIMITS the window is
+        // laid out inside the navigation bar's reserved strip, so a full-height sheet
+        // still stops short of the screen edge and leaves a band of dead space under its
+        // primary button — visible even though the bar itself is hidden. Hiding the bar
+        // and letting the window ignore its limits are two separate things, and the
+        // sheets that look right do both.
+        fragment.dialog?.window?.apply {
+            setBackgroundDrawableResource(android.R.color.transparent)
+            setDimAmount(DIM_AMOUNT)
+            setFlags(
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+            )
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                setDecorFitsSystemWindows(false)
+            }
+        }
+
         val sheet = fragment.dialog?.findViewById<View>(
             com.google.android.material.R.id.design_bottom_sheet
         ) ?: return
@@ -191,5 +213,8 @@ class HouseSheetFrame(private val fragment: DialogFragment) {
         /** Below this it stops reading as a sheet; above it there is nothing left to drag. */
         const val MIN_RATIO = 0.45f
         const val MAX_RATIO = 0.9f
+
+        /** The scrim behind the sheet, matching the Create Canvas sheet. */
+        private const val DIM_AMOUNT = 0.45f
     }
 }

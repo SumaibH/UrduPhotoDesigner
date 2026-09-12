@@ -94,9 +94,14 @@ class AssetPreviewSheet : BottomSheetDialogFragment() {
         super.onStart()
         houseSheet.attach(openRatio())
         forceImmersiveMode()
+        // Swiping from the edge brings the navigation bar back for a few seconds. Without
+        // this the sheet keeps the bar for the rest of its life and the dead space returns.
+        // Same re-assert the Create Canvas sheet does.
+        dialog?.window?.decorView?.setOnSystemUiVisibilityChangeListener { forceImmersiveMode() }
     }
 
     override fun onStop() {
+        dialog?.window?.decorView?.setOnSystemUiVisibilityChangeListener(null)
         houseSheet.detach()
         super.onStop()
     }
