@@ -67,8 +67,36 @@ class TextStylesMainAdapter(
      * still reads and upgrades itself once the download finishes.
      */
     private val typefaceFor: (String) -> Typeface? = { null },
+    /**
+     * Whether a lockup needs a subscription — true if any font or style it uses does.
+     * Asked rather than stored, so a card re-prices itself when a flag changes on the
+     * dashboard instead of when content is re-released.
+     */
+    internal val isLockupPremium: (TextPreset) -> Boolean = { false },
     private val onPresetClick: (TextStylePreset) -> Unit
 ) : ListAdapter<PanelCard, TextStylesMainAdapter.PresetViewHolder>(DiffCallback()) {
+
+    /**
+     * The lockup currently fetching its fonts, and how far along it is.
+     *
+     * One at a time by construction: the card is inert while it downloads, so a second
+     * tap on the same card does nothing and a tap on another one is what replaces this.
+     */
+    internal var downloadingLockupId: String? = null
+    internal var downloadPercent: Int = 0
+
+    /** Shows or clears the progress overlay. Pass null for [id] when it is finished. */
+    fun setLockupDownload(id: String?, percent: Int) {
+        val changed = listOf(downloadingLockupId, id).filterNotNull().distinct()
+        downloadingLockupId = id
+        downloadPercent = percent.coerceIn(0, 100)
+        // Only the cards whose state actually moved, so the rest of the grid is not
+        // re-rendered — a lockup bitmap is not cheap to draw.
+        changed.forEach { changedId ->
+            val index = currentList.indexOfFirst { it is PanelCard.Lockup && it.id == changedId }
+            if (index >= 0) notifyItemChanged(index)
+        }
+    }
 
     /** Submits styles, for the callers that only ever have styles. */
     fun submitStyles(styles: List<TextStylePreset>, commitCallback: Runnable? = null) =
@@ -166,6 +194,9 @@ class TextStylesMainAdapter(
             previewImg.setImageBitmap(
                 TextStyleThumbnailRenderer.getCachedOrGenerateThumbnail(cardRoot.context, preset)
             )
+            // Reset what only the lockup path sets, so a recycled tile arrives clean.
+            previewImg.alpha = 1f
+            binding.isPremium.isVisible = preset.isPremium
 
             // One rule everywhere: long-press opens the preview only while collapsed,
             // and the eye button is what does it once there is room to draw one.
@@ -207,9 +238,28 @@ class TextStylesMainAdapter(
                 )
             )
 
-            cardRoot.addPressEffect { onLockupClick(preset) }
+            binding.isPremium.isVisible = adapter.isLockupPremium(preset)
+
             // No preview sheet for lockups yet — the eye would open nothing.
             binding.previewEye.isVisible = false
+
+            val isDownloading = preset.id == adapter.downloadingLockupId
+            if (isDownloading) {
+                // The card is its own progress indicator: the lockup dims and the
+                // percentage sits over it, so the thing being waited for is the thing
+                // showing the wait. Inert meanwhile — tapping twice must not insert twice.
+                previewImg.alpha = DOWNLOADING_ALPHA
+                titleTxt.text = cardRoot.context.getString(
+                    R.string.percent_complete, adapter.downloadPercent
+                )
+                titleTxt.visibility = View.VISIBLE
+                cardRoot.isClickable = false
+                cardRoot.setOnClickListener(null)
+            } else {
+                previewImg.alpha = 1f
+                titleTxt.visibility = View.GONE
+                cardRoot.addPressEffect { onLockupClick(preset) }
+            }
         }
 
         fun updateSize(slideOffset: Float, rvWidth: Int, rvPadding: Int) {
@@ -278,5 +328,8 @@ class TextStylesMainAdapter(
     companion object {
         /** Used only if a tile is bound before it has been measured; layout corrects it. */
         private const val TILE_FALLBACK_PX = 180
+
+        /** How far the lockup fades behind its own progress figure. */
+        private const val DOWNLOADING_ALPHA = 0.3f
     }
 }

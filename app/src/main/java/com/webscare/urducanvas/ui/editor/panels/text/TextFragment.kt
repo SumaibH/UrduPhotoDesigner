@@ -55,6 +55,7 @@ import com.webscare.urducanvas.data.repository.RecentsStore
 import com.webscare.urducanvas.data.repository.TextPresetsRepository
 import com.webscare.urducanvas.data.repository.TextStylesRepository
 import android.content.res.ColorStateList
+import com.webscare.urducanvas.ui.editor.panels.text.styles.TextStyleThumbnailRenderer
 import com.webscare.urducanvas.ui.editor.panels.text.styles.TextStylesMainAdapter
 import com.webscare.urducanvas.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -100,6 +101,27 @@ class TextFragment : Fragment(), PreviewHostOwner {
 
     /** Faces already loaded off disk for lockup cards, by font file name. */
     private val typefaceCache = mutableMapOf<String, Typeface>()
+
+    /** The lockup waiting on font downloads, and which font rows it is still waiting for. */
+    private var pendingLockup: com.webscare.urducanvas.data.model.TextPreset? = null
+    private val pendingLockupFontIds = mutableSetOf<Int>()
+
+    /** The faces that actually arrived for [pendingLockup], to hand to the insertion. */
+    private val lockupDownloadedFonts = mutableListOf<FontEntity>()
+
+    /** Byte progress per font row still in flight, so the card can show one figure. */
+    private val lockupFontProgress = mutableMapOf<Int, Int>()
+
+    /**
+     * What is premium right now, refreshed whenever the grid rebinds.
+     *
+     * Held rather than recomputed per card because a card asks on every bind and the
+     * answer is the same for all of them — but not held for longer than a rebind, because
+     * a font's flag can change under us when the list refreshes from the server. Both are
+     * empty today: nothing in the font table or the style catalogue is marked premium.
+     */
+    private var premiumFontFiles: Set<String> = emptySet()
+    private var premiumStyleIds: Set<String> = emptySet()
     private var selectedPresetGroup: String = GROUP_ALL
     private var selectedPresetCategory: String? = null
 
@@ -209,7 +231,8 @@ class TextFragment : Fragment(), PreviewHostOwner {
                 ) { picked -> applyPresetToCanvas(picked) }
             },
             onLockupClick = { lockup -> insertLockup(lockup) },
-            typefaceFor = { fileName -> typefaceForFontFile(fileName) }
+            typefaceFor = { fileName -> typefaceForFontFile(fileName) },
+            isLockupPremium = { lockup -> lockup.isPremium(premiumFontFiles, premiumStyleIds) }
         ) { preset ->
             applyPresetToCanvas(preset)
         }
@@ -250,9 +273,94 @@ class TextFragment : Fragment(), PreviewHostOwner {
         }
     }
 
+    /**
+     * Tapping a lockup: fetch whatever fonts it needs that are not on disk, then insert.
+     *
+     * One tap, one wait, no half-rendered result. A lockup whose fonts are all present —
+     * which is every lockup once the user has been in the app a while — inserts with no
+     * wait at all, so the download path only shows itself when it has something to do.
+     */
     private fun insertLockup(preset: com.webscare.urducanvas.data.model.TextPreset) {
+        if (pendingLockup != null) return  // already fetching for another card
+
+        val missing = preset.fontIds.mapNotNull { fileName ->
+            mainViewModel.localFonts.value.firstOrNull { it.file_name == fileName }
+        }.filterNot { font ->
+            font.is_downloaded && !font.file_path.isNullOrBlank() && java.io.File(font.file_path!!).exists()
+        }
+
+        if (missing.isEmpty()) {
+            dropLockup(preset)
+            return
+        }
+
+        // A font the content names but the server no longer lists cannot be fetched, and
+        // waiting for it would hang the insertion forever. Those layers simply render in
+        // the fallback face, which is the same rule the cards already follow.
+        pendingLockup = preset
+        pendingLockupFontIds.clear()
+        pendingLockupFontIds.addAll(missing.map { it.id })
+        stylesAdapter.setLockupDownload(preset.id, 0)
+        missing.forEach { mainViewModel.downloadFont(it) }
+    }
+
+    /** Records the lockup as recent and hands it to the canvas. */
+    private fun dropLockup(
+        preset: com.webscare.urducanvas.data.model.TextPreset,
+        justDownloaded: List<FontEntity> = emptyList()
+    ) {
         RecentsStore.record(requireContext(), RecentsStore.Kind.PRESET, preset.id)
-        viewModel.addTextPreset(preset, requireContext())
+        viewModel.addTextPreset(preset, requireContext(), justDownloaded)
+        mainViewModel.collapsePanel()
+    }
+
+    /**
+     * One of a pending lockup's fonts has finished, one way or the other.
+     *
+     * A failure counts as finished. The alternative is a card that never stops spinning
+     * because one font of three is unreachable, and a lockup that inserts with two of
+     * its three faces is far better than one that never inserts at all.
+     */
+    private fun onLockupFontSettled(font: FontEntity, downloaded: Boolean) {
+        val preset = pendingLockup ?: return
+        if (!pendingLockupFontIds.remove(font.id)) return
+        if (downloaded) lockupDownloadedFonts.add(font)
+
+        lockupFontProgress.remove(font.id)
+        if (pendingLockupFontIds.isNotEmpty()) {
+            publishLockupProgress(preset)
+            return
+        }
+
+        val arrived = lockupDownloadedFonts.toList()
+        pendingLockup = null
+        lockupDownloadedFonts.clear()
+        lockupFontProgress.clear()
+        stylesAdapter.setLockupDownload(null, 0)
+
+        // The cards were drawn against the fallback face and their bitmaps are cached, so
+        // they have to be told that the real one has arrived — otherwise a lockup you just
+        // waited for keeps showing the face you waited to be rid of.
+        arrived.forEach { typefaceCache.remove(it.file_name) }
+        if (arrived.isNotEmpty()) {
+            TextStyleThumbnailRenderer.clearCache()
+            rebindStyles()
+        }
+        dropLockup(preset, arrived)
+    }
+
+    /**
+     * Reports how far a pending lockup's fonts have got, averaged over all of them.
+     *
+     * Averaged over bytes rather than counted in whole fonts, because most lockups need
+     * one or two faces and a count would sit at 0% for the whole of a 14MB Nastaliq and
+     * then finish. A font already settled counts as done whether it arrived or failed.
+     */
+    private fun publishLockupProgress(preset: com.webscare.urducanvas.data.model.TextPreset) {
+        val total = preset.fontIds.size.coerceAtLeast(1)
+        val settled = total - pendingLockupFontIds.size
+        val inFlight = pendingLockupFontIds.sumOf { lockupFontProgress[it] ?: 0 }
+        stylesAdapter.setLockupDownload(preset.id, (settled * 100 + inFlight) / total)
     }
 
     private fun applyPresetToCanvas(preset: TextStylePreset) {
@@ -898,6 +1006,7 @@ class TextFragment : Fragment(), PreviewHostOwner {
                     when (state) {
                         is FontDownloadState.SuccessWithTypeface -> {
                             val done = state.fontEntity
+                            onLockupFontSettled(done, downloaded = true)
                             if (fontPreview.owns(done.id)) {
                                 fontsAdapter.clearDownloadingId(done.id)
                                 fontPreview.onDownloaded(done)
@@ -926,6 +1035,7 @@ class TextFragment : Fragment(), PreviewHostOwner {
 
                         is FontDownloadState.Error -> {
                             val failedFont = state.fontEntity
+                            onLockupFontSettled(failedFont, downloaded = false)
                             if (fontPreview.owns(failedFont.id)) fontPreview.onFailed()
                             isDownloadingFont = false
                             fontsAdapter.clearDownloadingId(failedFont.id)
@@ -935,6 +1045,17 @@ class TextFragment : Fragment(), PreviewHostOwner {
                             pendingFontEntity = null
                             lastRequestedFontId = null
                             mainViewModel.clearFontDownloadState(failedFont.id.toString())
+                        }
+
+                        is FontDownloadState.Progress -> {
+                            val preset = pendingLockup
+                            if (preset != null && state.fontEntity.id in pendingLockupFontIds) {
+                                lockupFontProgress[state.fontEntity.id] = state.progress.coerceIn(0, 100)
+                                publishLockupProgress(preset)
+                            }
+                            pendingFontEntity?.let { font ->
+                                if (font.is_downloaded) viewModel.setFont(font)
+                            }
                         }
 
                         else -> {
@@ -1611,6 +1732,12 @@ class TextFragment : Fragment(), PreviewHostOwner {
         val allPresets = TextStylesRepository.getAllPresets(ctx)
         val catalogueStyles = allPresets.filter { it.category != PresetCategory.MY_STYLES }
         val q = currentQuery.trim().lowercase()
+
+        premiumFontFiles = mainViewModel.localFonts.value
+            .filter { it.is_premium && !it.is_subscribed }
+            .map { it.file_name }
+            .toSet()
+        premiumStyleIds = allPresets.filter { it.isPremium }.map { it.id }.toSet()
 
         // Lockups first, because two of the shelves hold them instead of styles and the
         // grid takes one kind or the other per shelf. Only "All" mixes, and it does that

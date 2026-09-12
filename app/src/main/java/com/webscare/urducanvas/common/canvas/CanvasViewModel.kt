@@ -4761,7 +4761,20 @@ class CanvasViewModel @Inject constructor(
         const val MAX_PRESET_TEXT_SIZE = 400f
     }
 
-    fun addTextPreset(preset: com.webscare.urducanvas.data.model.TextPreset, context: Context) {
+    fun addTextPreset(
+        preset: com.webscare.urducanvas.data.model.TextPreset,
+        context: Context,
+        /**
+         * Fonts fetched for this insertion, ahead of the font list.
+         *
+         * A lockup is inserted the moment its downloads report success, and the list this
+         * ViewModel reads is refreshed from the database a beat later — so a face that has
+         * just arrived is not in it yet, and the layer that waited for it would be drawn in
+         * the fallback anyway. These are consulted first, which is the difference between
+         * waiting for a 14MB Nastaliq and then seeing it.
+         */
+        justDownloaded: List<FontEntity> = emptyList()
+    ) {
         if (preset.layers.isEmpty()) return
 
         val currentList = _canvasElements.value ?: emptyList()
@@ -4784,6 +4797,7 @@ class CanvasViewModel @Inject constructor(
 
         val groupId = UUID.randomUUID().toString()
         var nextZ = (currentList.maxOfOrNull { it.zIndex } ?: 0) + 1
+        val isSubscribed = billingManager.isSubscribed.value
 
         val newElements = preset.layers.map { layer ->
             // A style that no longer resolves leaves the layer unstyled rather than
@@ -4795,7 +4809,8 @@ class CanvasViewModel @Inject constructor(
             // key on the row id, which is not. Resolving here rather than in the content is
             // what keeps a re-imported font list from silently re-pointing every preset.
             val font = layer.fontId?.let { fileName ->
-                localFonts.value.firstOrNull { it.file_name == fileName }
+                justDownloaded.firstOrNull { it.file_name == fileName }
+                    ?: localFonts.value.firstOrNull { it.file_name == fileName }
             }
 
             val base = CanvasElement(
@@ -4815,12 +4830,29 @@ class CanvasViewModel @Inject constructor(
                 paintAlpha = 255,
                 zIndex = nextZ++,
                 groupId = groupId,
-                fontId = font?.id?.toString()
+                fontId = font?.id?.toString(),
+                // A lockup inherits premium from what it is made of, and it rides on the
+                // elements rather than on the preset, because that is where the export
+                // gate looks: getPremiumAssets walks the canvas, not the thing that put
+                // it there. So a preset using a premium font is collected at export by
+                // the same path as that font applied by hand, and needs no gate of its
+                // own. Nothing is marked premium in the catalogue today, so this is
+                // dormant until flags are set on the dashboard.
+                isPremium = font?.is_premium == true || style?.isPremium == true,
+                isSubscribed = isSubscribed
             )
 
             val element = style?.let { TextStyleApplier.apply(base, it) } ?: base
             element.updatePaintProperties()
-            val tf = element.applyTypefaceFromFontList()
+
+            // Loaded from the font's own path rather than looked up by id, for the same
+            // reason the entity is passed in: applyTypefaceFromFontList searches the font
+            // list, and a face that finished downloading a moment ago is not in it yet.
+            // Falls back to the lookup for fonts that were already on disk.
+            val tf = font?.file_path
+                ?.takeIf { it.isNotBlank() && File(it).exists() }
+                ?.let { path -> runCatching { Typeface.createFromFile(path) }.getOrNull() }
+                ?: element.applyTypefaceFromFontList()
             element.originalTypeface = tf
             element.paint.typeface = tf
 
