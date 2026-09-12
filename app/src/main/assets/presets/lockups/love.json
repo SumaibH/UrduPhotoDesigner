@@ -1,0 +1,912 @@
+[
+  {
+    "id": "love_001",
+    "name": "محبت — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "محبت",
+        "fontId": "AA Sameer Rafiya Unicode Regular - [UrduFonts.com].ttf",
+        "styleId": "neon_001",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "love_002",
+    "name": "میری جان — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "میری جان",
+        "fontId": "AA Sameer Shamok - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_006",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "love_003",
+    "name": "عشق — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عشق",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "layers_011",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "love_004",
+    "name": "تم سے محبت ہے — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "تم سے محبت ہے",
+        "fontId": "alfars-6-kamran-bold-regular-1.ttf",
+        "styleId": "neon_016",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "love_005",
+    "name": "تم سے محبت ہے — wide-with-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "تم سے",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "calligraphy_021",
+        "xPct": 0.5,
+        "yPct": 0.45,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "محبت ہے",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "modern_041",
+        "xPct": 0.5,
+        "yPct": 0.68,
+        "widthPct": 0.32,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "love_006",
+    "name": "میری جان — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "میری",
+        "fontId": "alqalam-shekastah-regular-1.ttf",
+        "styleId": "layers_026",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "جان",
+        "fontId": "alqalam-shekastah-regular-1.ttf",
+        "styleId": "calligraphy_043",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "love_007",
+    "name": "ہمیشہ ساتھ — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ہمیشہ",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "neon_031",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "ساتھ",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "calligraphy_046",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "love_008",
+    "name": "دل سے دل تک — offset-diagonal",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "دل سے",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "calligraphy_036",
+        "xPct": 0.38,
+        "yPct": 0.34,
+        "widthPct": 0.44,
+        "rotation": -6,
+        "align": "CENTER"
+      },
+      {
+        "text": "دل تک",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "modern_003",
+        "xPct": 0.6,
+        "yPct": 0.63,
+        "widthPct": 0.56,
+        "rotation": -6,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "love_009",
+    "name": "تیرے بغیر — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "تیرے",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "layers_041",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "بغیر",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_019",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "love_010",
+    "name": "تم میری دنیا ہو — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "تم میری",
+        "fontId": "Fanni.ttf",
+        "styleId": "neon_046",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "دنیا ہو",
+        "fontId": "Fanni.ttf",
+        "styleId": "calligraphy_019",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "love_011",
+    "name": "تم ہو تو سب کچھ ہے — three-tail",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "تم ہو",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "calligraphy_001",
+        "xPct": 0.5,
+        "yPct": 0.27,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "تو سب",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "modern_034",
+        "xPct": 0.5,
+        "yPct": 0.48,
+        "widthPct": 0.56,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "کچھ ہے",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "modern_034",
+        "xPct": 0.5,
+        "yPct": 0.71,
+        "widthPct": 0.78,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "love_012",
+    "name": "تم سے محبت ہے بے پناہ — three-ladder",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "تم سے",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "layers_006",
+        "xPct": 0.42,
+        "yPct": 0.28,
+        "widthPct": 0.54,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "محبت ہے",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "minimal_031",
+        "xPct": 0.52,
+        "yPct": 0.5,
+        "widthPct": 0.6,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "بے پناہ",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "minimal_031",
+        "xPct": 0.6,
+        "yPct": 0.72,
+        "widthPct": 0.52,
+        "rotation": -4,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "love_013",
+    "name": "ہر خوشی تمہارے نام — three-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ہر خوشی",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "neon_011",
+        "xPct": 0.5,
+        "yPct": 0.24,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "تمہارے",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "calligraphy_043",
+        "xPct": 0.5,
+        "yPct": 0.47,
+        "widthPct": 0.76,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "نام",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "calligraphy_043",
+        "xPct": 0.5,
+        "yPct": 0.71,
+        "widthPct": 0.5,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "love_014",
+    "name": "میری جان میری دنیا میرا سکون — three-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "میری جان",
+        "fontId": "MB Sarem Muhammad Bux Kaladi 1.0.ttf",
+        "styleId": "calligraphy_016",
+        "xPct": 0.5,
+        "yPct": 0.29,
+        "widthPct": 0.6,
+        "rotation": -5,
+        "align": "CENTER"
+      },
+      {
+        "text": "میری دنیا",
+        "fontId": "MB Sarem Muhammad Bux Kaladi 1.0.ttf",
+        "styleId": "modern_053",
+        "xPct": 0.5,
+        "yPct": 0.51,
+        "widthPct": 0.7,
+        "rotation": -5,
+        "align": "CENTER"
+      },
+      {
+        "text": "میرا سکون",
+        "fontId": "MB Sarem Muhammad Bux Kaladi 1.0.ttf",
+        "styleId": "modern_053",
+        "xPct": 0.5,
+        "yPct": 0.73,
+        "widthPct": 0.52,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "love_015",
+    "name": "ہمیشہ ساتھ رہنا — three-stack",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ہمیشہ",
+        "fontId": "MB Sarem Rizwan Gul.ttf",
+        "styleId": "layers_021",
+        "xPct": 0.5,
+        "yPct": 0.28,
+        "widthPct": 0.44,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "ساتھ",
+        "fontId": "MB Sarem Rizwan Gul.ttf",
+        "styleId": "calligraphy_005",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "رہنا",
+        "fontId": "MB Sarem Rizwan Gul.ttf",
+        "styleId": "calligraphy_005",
+        "xPct": 0.5,
+        "yPct": 0.72,
+        "widthPct": 0.36,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "love_016",
+    "name": "دل دھڑکن تم — three-even",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "دل",
+        "fontId": "Mj Ghalam 1 Regular- [UrduFonts.com].ttf",
+        "styleId": "neon_026",
+        "xPct": 0.5,
+        "yPct": 0.28,
+        "widthPct": 0.64,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "دھڑکن",
+        "fontId": "Mj Ghalam 1 Regular- [UrduFonts.com].ttf",
+        "styleId": "calligraphy_019",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.7,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "تم",
+        "fontId": "Mj Ghalam 1 Regular- [UrduFonts.com].ttf",
+        "styleId": "calligraphy_019",
+        "xPct": 0.5,
+        "yPct": 0.72,
+        "widthPct": 0.6,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "love_017",
+    "name": "تم میری کائنات ہو — three-lead",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "تم",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "calligraphy_031",
+        "xPct": 0.5,
+        "yPct": 0.29,
+        "widthPct": 0.78,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "میری",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "modern_019",
+        "xPct": 0.5,
+        "yPct": 0.52,
+        "widthPct": 0.56,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "کائنات ہو",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "modern_019",
+        "xPct": 0.5,
+        "yPct": 0.73,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "love_018",
+    "name": "تم ہو تو دنیا خوبصورت لگتی ہے — four-ladder",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "تم ہو",
+        "fontId": "PDMS Pencil.ttf",
+        "styleId": "layers_036",
+        "xPct": 0.44,
+        "yPct": 0.2,
+        "widthPct": 0.5,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "تو دنیا",
+        "fontId": "PDMS Pencil.ttf",
+        "styleId": "calligraphy_023",
+        "xPct": 0.5,
+        "yPct": 0.4,
+        "widthPct": 0.56,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "خوبصورت",
+        "fontId": "PDMS Pencil.ttf",
+        "styleId": "calligraphy_023",
+        "xPct": 0.56,
+        "yPct": 0.6,
+        "widthPct": 0.56,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "لگتی ہے",
+        "fontId": "PDMS Pencil.ttf",
+        "styleId": "calligraphy_023",
+        "xPct": 0.6,
+        "yPct": 0.8,
+        "widthPct": 0.48,
+        "rotation": -4,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "love_019",
+    "name": "محبت اعتبار وفا ہمیشہ — four-stack",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "محبت",
+        "fontId": "Resalaty-Regular.ttf",
+        "styleId": "neon_041",
+        "xPct": 0.5,
+        "yPct": 0.2,
+        "widthPct": 0.58,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "اعتبار",
+        "fontId": "Resalaty-Regular.ttf",
+        "styleId": "calligraphy_030",
+        "xPct": 0.5,
+        "yPct": 0.4,
+        "widthPct": 0.66,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "وفا",
+        "fontId": "Resalaty-Regular.ttf",
+        "styleId": "calligraphy_030",
+        "xPct": 0.5,
+        "yPct": 0.6,
+        "widthPct": 0.66,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "ہمیشہ",
+        "fontId": "Resalaty-Regular.ttf",
+        "styleId": "calligraphy_030",
+        "xPct": 0.5,
+        "yPct": 0.8,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "love_020",
+    "name": "میری جان میری دنیا میرا سکون تم ہی ہو — four-lead",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "میری جان",
+        "fontId": "Sarem-Murtaza-Naz-Regular.ttf",
+        "styleId": "calligraphy_046",
+        "xPct": 0.5,
+        "yPct": 0.21,
+        "widthPct": 0.74,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "میری دنیا",
+        "fontId": "Sarem-Murtaza-Naz-Regular.ttf",
+        "styleId": "modern_046",
+        "xPct": 0.5,
+        "yPct": 0.41,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "میرا سکون",
+        "fontId": "Sarem-Murtaza-Naz-Regular.ttf",
+        "styleId": "modern_046",
+        "xPct": 0.5,
+        "yPct": 0.61,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "تم ہی ہو",
+        "fontId": "Sarem-Murtaza-Naz-Regular.ttf",
+        "styleId": "modern_046",
+        "xPct": 0.5,
+        "yPct": 0.8,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "love_021",
+    "name": "دل جان عشق وفا — four-tail",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "دل",
+        "fontId": "Sarem-Naseer-Regular.ttf",
+        "styleId": "layers_001",
+        "xPct": 0.5,
+        "yPct": 0.2,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "جان",
+        "fontId": "Sarem-Naseer-Regular.ttf",
+        "styleId": "minimal_044",
+        "xPct": 0.5,
+        "yPct": 0.39,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "عشق",
+        "fontId": "Sarem-Naseer-Regular.ttf",
+        "styleId": "minimal_044",
+        "xPct": 0.5,
+        "yPct": 0.59,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "وفا",
+        "fontId": "Sarem-Naseer-Regular.ttf",
+        "styleId": "minimal_044",
+        "xPct": 0.5,
+        "yPct": 0.79,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "love_022",
+    "name": "محبت — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "محبت",
+        "fontId": "alfars-6-kamran-bold-regular-1.ttf",
+        "styleId": "calligraphy_012",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "love_023",
+    "name": "میری جان — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "میری جان",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "layers_017",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "love_024",
+    "name": "عشق — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عشق",
+        "fontId": "alqalam-shekastah-regular-1.ttf",
+        "styleId": "neon_022",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "love_025",
+    "name": "تم سے محبت ہے — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "تم سے محبت ہے",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "calligraphy_027",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "love_026",
+    "name": "تم سے محبت ہے — big-over-small",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "تم سے",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "layers_032",
+        "xPct": 0.5,
+        "yPct": 0.43,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "محبت ہے",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "calligraphy_045",
+        "xPct": 0.5,
+        "yPct": 0.67,
+        "widthPct": 0.38,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "love_027",
+    "name": "میری جان — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "میری",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "neon_037",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "جان",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_005",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "love_028",
+    "name": "ہمیشہ ساتھ — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ہمیشہ",
+        "fontId": "Fanni.ttf",
+        "styleId": "calligraphy_042",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "ساتھ",
+        "fontId": "Fanni.ttf",
+        "styleId": "modern_009",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "love_029",
+    "name": "دل سے دل تک — wide-with-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "دل سے",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "layers_047",
+        "xPct": 0.5,
+        "yPct": 0.45,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "دل تک",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "calligraphy_019",
+        "xPct": 0.5,
+        "yPct": 0.68,
+        "widthPct": 0.32,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "love_030",
+    "name": "تیرے بغیر — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "تیرے",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "neon_002",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "بغیر",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "calligraphy_023",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  }
+]

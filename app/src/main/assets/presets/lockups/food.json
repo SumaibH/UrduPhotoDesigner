@@ -1,0 +1,912 @@
+[
+  {
+    "id": "food_001",
+    "name": "بریانی — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "بریانی",
+        "fontId": "AA Sameer Rafiya Unicode Regular - [UrduFonts.com].ttf",
+        "styleId": "badges_001",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "food_002",
+    "name": "چائے — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "چائے",
+        "fontId": "AA Sameer Shamok - [UrduFonts.com].ttf",
+        "styleId": "threed_006",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "food_003",
+    "name": "دیسی کھانے — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "دیسی کھانے",
+        "fontId": "Abdo Line.otf",
+        "styleId": "ribbons_011",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "food_004",
+    "name": "آج ہی آرڈر کریں — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "آج ہی آرڈر کریں",
+        "fontId": "Al Qalam Naqsh.ttf",
+        "styleId": "badges_016",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "food_005",
+    "name": "مزیدار بریانی — wide-with-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "مزیدار",
+        "fontId": "Al Qalam Shahjahan.ttf",
+        "styleId": "threed_021",
+        "xPct": 0.5,
+        "yPct": 0.45,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "بریانی",
+        "fontId": "Al Qalam Shahjahan.ttf",
+        "styleId": "badges_035",
+        "xPct": 0.5,
+        "yPct": 0.68,
+        "widthPct": 0.32,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "food_006",
+    "name": "گرم گرم چائے — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "گرم گرم",
+        "fontId": "Al Qalam Shahzaib.ttf",
+        "styleId": "ribbons_026",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "چائے",
+        "fontId": "Al Qalam Shahzaib.ttf",
+        "styleId": "modern_001",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "food_007",
+    "name": "آج ہی آرڈر کریں — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "آج ہی",
+        "fontId": "AlFars 7 Kodak.ttf",
+        "styleId": "badges_031",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "آرڈر کریں",
+        "fontId": "AlFars 7 Kodak.ttf",
+        "styleId": "modern_001",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "food_008",
+    "name": "فریش اور لذیذ — offset-diagonal",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "فریش",
+        "fontId": "AlQalam Mujeeb.ttf",
+        "styleId": "threed_036",
+        "xPct": 0.38,
+        "yPct": 0.34,
+        "widthPct": 0.44,
+        "rotation": -6,
+        "align": "CENTER"
+      },
+      {
+        "text": "اور لذیذ",
+        "fontId": "AlQalam Mujeeb.ttf",
+        "styleId": "badges_009",
+        "xPct": 0.6,
+        "yPct": 0.63,
+        "widthPct": 0.56,
+        "rotation": -6,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "food_009",
+    "name": "ہوم میڈ — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ہوم",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "ribbons_041",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "میڈ",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "modern_010",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "food_010",
+    "name": "فری ڈیلیوری — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "فری",
+        "fontId": "alqalam-khat-e-kamal-regular-1.ttf",
+        "styleId": "badges_046",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "ڈیلیوری",
+        "fontId": "alqalam-khat-e-kamal-regular-1.ttf",
+        "styleId": "modern_022",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "food_011",
+    "name": "مزیدار بریانی آرڈر کریں — three-tail",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "مزیدار",
+        "fontId": "alqalam-shamil-regular-1.ttf",
+        "styleId": "threed_001",
+        "xPct": 0.5,
+        "yPct": 0.27,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "بریانی",
+        "fontId": "alqalam-shamil-regular-1.ttf",
+        "styleId": "badges_024",
+        "xPct": 0.5,
+        "yPct": 0.48,
+        "widthPct": 0.56,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "آرڈر کریں",
+        "fontId": "alqalam-shamil-regular-1.ttf",
+        "styleId": "badges_024",
+        "xPct": 0.5,
+        "yPct": 0.71,
+        "widthPct": 0.78,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "food_012",
+    "name": "گرم گرم چائے اور پراٹھا — three-ladder",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "گرم گرم",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "ribbons_006",
+        "xPct": 0.42,
+        "yPct": 0.28,
+        "widthPct": 0.54,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "چائے",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "modern_041",
+        "xPct": 0.52,
+        "yPct": 0.5,
+        "widthPct": 0.6,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "اور پراٹھا",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "modern_041",
+        "xPct": 0.6,
+        "yPct": 0.72,
+        "widthPct": 0.52,
+        "rotation": -4,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "food_013",
+    "name": "دیسی کھانے گھر جیسا ذائقہ — three-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "دیسی کھانے",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "badges_011",
+        "xPct": 0.5,
+        "yPct": 0.24,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "گھر جیسا",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "modern_046",
+        "xPct": 0.5,
+        "yPct": 0.47,
+        "widthPct": 0.76,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "ذائقہ",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "modern_046",
+        "xPct": 0.5,
+        "yPct": 0.71,
+        "widthPct": 0.5,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "food_014",
+    "name": "فریش لذیذ سستا — three-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "فریش",
+        "fontId": "Arif.ttf",
+        "styleId": "threed_016",
+        "xPct": 0.5,
+        "yPct": 0.29,
+        "widthPct": 0.6,
+        "rotation": -5,
+        "align": "CENTER"
+      },
+      {
+        "text": "لذیذ",
+        "fontId": "Arif.ttf",
+        "styleId": "badges_046",
+        "xPct": 0.5,
+        "yPct": 0.51,
+        "widthPct": 0.7,
+        "rotation": -5,
+        "align": "CENTER"
+      },
+      {
+        "text": "سستا",
+        "fontId": "Arif.ttf",
+        "styleId": "badges_046",
+        "xPct": 0.5,
+        "yPct": 0.73,
+        "widthPct": 0.52,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "food_015",
+    "name": "آج کا خصوصی مینو — three-stack",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "آج کا",
+        "fontId": "Aseer Unicode Aseer Unicode.ttf",
+        "styleId": "ribbons_021",
+        "xPct": 0.5,
+        "yPct": 0.28,
+        "widthPct": 0.44,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "خصوصی",
+        "fontId": "Aseer Unicode Aseer Unicode.ttf",
+        "styleId": "modern_004",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مینو",
+        "fontId": "Aseer Unicode Aseer Unicode.ttf",
+        "styleId": "modern_004",
+        "xPct": 0.5,
+        "yPct": 0.72,
+        "widthPct": 0.36,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "food_016",
+    "name": "نہاری حلیم قورمہ — three-even",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "نہاری",
+        "fontId": "Attari_Salees.ttf",
+        "styleId": "badges_026",
+        "xPct": 0.5,
+        "yPct": 0.28,
+        "widthPct": 0.64,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "حلیم",
+        "fontId": "Attari_Salees.ttf",
+        "styleId": "modern_010",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.7,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "قورمہ",
+        "fontId": "Attari_Salees.ttf",
+        "styleId": "modern_010",
+        "xPct": 0.5,
+        "yPct": 0.72,
+        "widthPct": 0.6,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "food_017",
+    "name": "ہوم میڈ فریش روزانہ — three-lead",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ہوم میڈ",
+        "fontId": "Bahij .ttf",
+        "styleId": "threed_031",
+        "xPct": 0.5,
+        "yPct": 0.29,
+        "widthPct": 0.78,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "فریش",
+        "fontId": "Bahij .ttf",
+        "styleId": "badges_016",
+        "xPct": 0.5,
+        "yPct": 0.52,
+        "widthPct": 0.56,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "روزانہ",
+        "fontId": "Bahij .ttf",
+        "styleId": "badges_016",
+        "xPct": 0.5,
+        "yPct": 0.73,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "food_018",
+    "name": "مزیدار کھانا مناسب قیمت فری ڈیلیوری آج ہی آرڈر کریں — four-ladder",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "مزیدار کھانا",
+        "fontId": "Baloo Bhaijaan 2 Medium - [UrduFonts.com].ttf",
+        "styleId": "ribbons_036",
+        "xPct": 0.44,
+        "yPct": 0.2,
+        "widthPct": 0.5,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "مناسب قیمت",
+        "fontId": "Baloo Bhaijaan 2 Medium - [UrduFonts.com].ttf",
+        "styleId": "modern_031",
+        "xPct": 0.5,
+        "yPct": 0.4,
+        "widthPct": 0.56,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "فری ڈیلیوری",
+        "fontId": "Baloo Bhaijaan 2 Medium - [UrduFonts.com].ttf",
+        "styleId": "modern_031",
+        "xPct": 0.56,
+        "yPct": 0.6,
+        "widthPct": 0.56,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "آج ہی آرڈر کریں",
+        "fontId": "Baloo Bhaijaan 2 Medium - [UrduFonts.com].ttf",
+        "styleId": "modern_031",
+        "xPct": 0.6,
+        "yPct": 0.8,
+        "widthPct": 0.48,
+        "rotation": -4,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "food_019",
+    "name": "ناشتہ دوپہر رات ہر وقت حاضر — four-stack",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ناشتہ",
+        "fontId": "Baloo Bhaijaan2 Extra Bold .ttf",
+        "styleId": "badges_041",
+        "xPct": 0.5,
+        "yPct": 0.2,
+        "widthPct": 0.58,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "دوپہر",
+        "fontId": "Baloo Bhaijaan2 Extra Bold .ttf",
+        "styleId": "modern_041",
+        "xPct": 0.5,
+        "yPct": 0.4,
+        "widthPct": 0.66,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "رات",
+        "fontId": "Baloo Bhaijaan2 Extra Bold .ttf",
+        "styleId": "modern_041",
+        "xPct": 0.5,
+        "yPct": 0.6,
+        "widthPct": 0.66,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "ہر وقت حاضر",
+        "fontId": "Baloo Bhaijaan2 Extra Bold .ttf",
+        "styleId": "modern_041",
+        "xPct": 0.5,
+        "yPct": 0.8,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "food_020",
+    "name": "بریانی نہاری حلیم قورمہ — four-lead",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "بریانی",
+        "fontId": "Cairo Black.ttf",
+        "styleId": "threed_046",
+        "xPct": 0.5,
+        "yPct": 0.21,
+        "widthPct": 0.74,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "نہاری",
+        "fontId": "Cairo Black.ttf",
+        "styleId": "badges_037",
+        "xPct": 0.5,
+        "yPct": 0.41,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "حلیم",
+        "fontId": "Cairo Black.ttf",
+        "styleId": "badges_037",
+        "xPct": 0.5,
+        "yPct": 0.61,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "قورمہ",
+        "fontId": "Cairo Black.ttf",
+        "styleId": "badges_037",
+        "xPct": 0.5,
+        "yPct": 0.8,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "food_021",
+    "name": "فریش لذیذ سستا گھر تک — four-tail",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "فریش",
+        "fontId": "Damavand DemiBold.ttf",
+        "styleId": "ribbons_001",
+        "xPct": 0.5,
+        "yPct": 0.2,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "لذیذ",
+        "fontId": "Damavand DemiBold.ttf",
+        "styleId": "modern_001",
+        "xPct": 0.5,
+        "yPct": 0.39,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "سستا",
+        "fontId": "Damavand DemiBold.ttf",
+        "styleId": "modern_001",
+        "xPct": 0.5,
+        "yPct": 0.59,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "گھر تک",
+        "fontId": "Damavand DemiBold.ttf",
+        "styleId": "modern_001",
+        "xPct": 0.5,
+        "yPct": 0.79,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "food_022",
+    "name": "بریانی — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "بریانی",
+        "fontId": "Al Qalam Naqsh.ttf",
+        "styleId": "threed_012",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "food_023",
+    "name": "چائے — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "چائے",
+        "fontId": "Al Qalam Shahjahan.ttf",
+        "styleId": "ribbons_017",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "food_024",
+    "name": "دیسی کھانے — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "دیسی کھانے",
+        "fontId": "Al Qalam Shahzaib.ttf",
+        "styleId": "badges_022",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "food_025",
+    "name": "آج ہی آرڈر کریں — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "آج ہی آرڈر کریں",
+        "fontId": "AlFars 7 Kodak.ttf",
+        "styleId": "threed_027",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "food_026",
+    "name": "مزیدار بریانی — big-over-small",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "مزیدار",
+        "fontId": "AlQalam Mujeeb.ttf",
+        "styleId": "ribbons_032",
+        "xPct": 0.5,
+        "yPct": 0.43,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "بریانی",
+        "fontId": "AlQalam Mujeeb.ttf",
+        "styleId": "modern_001",
+        "xPct": 0.5,
+        "yPct": 0.67,
+        "widthPct": 0.38,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "food_027",
+    "name": "گرم گرم چائے — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "گرم گرم",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "badges_037",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "چائے",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "modern_004",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "food_028",
+    "name": "آج ہی آرڈر کریں — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "آج ہی",
+        "fontId": "alqalam-khat-e-kamal-regular-1.ttf",
+        "styleId": "threed_042",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "آرڈر کریں",
+        "fontId": "alqalam-khat-e-kamal-regular-1.ttf",
+        "styleId": "badges_010",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "food_029",
+    "name": "فریش اور لذیذ — wide-with-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "فریش",
+        "fontId": "alqalam-shamil-regular-1.ttf",
+        "styleId": "ribbons_047",
+        "xPct": 0.5,
+        "yPct": 0.45,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "اور لذیذ",
+        "fontId": "alqalam-shamil-regular-1.ttf",
+        "styleId": "modern_019",
+        "xPct": 0.5,
+        "yPct": 0.68,
+        "widthPct": 0.32,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "food_030",
+    "name": "ہوم میڈ — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ہوم",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "badges_002",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "میڈ",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "minimal_023",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  }
+]

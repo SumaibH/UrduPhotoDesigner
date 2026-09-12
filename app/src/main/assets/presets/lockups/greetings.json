@@ -1,0 +1,1232 @@
+[
+  {
+    "id": "greetings_001",
+    "name": "صبح بخیر — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "صبح بخیر",
+        "fontId": "AA Sameer Rafiya Unicode Regular - [UrduFonts.com].ttf",
+        "styleId": "minimal_001",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_002",
+    "name": "شب بخیر — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "شب بخیر",
+        "fontId": "AA Sameer Shamok - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_006",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_003",
+    "name": "السلام علیکم — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "السلام علیکم",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "gold_011",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_004",
+    "name": "خوش آمدید — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "خوش آمدید",
+        "fontId": "alfars-6-kamran-bold-regular-1.ttf",
+        "styleId": "minimal_016",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_005",
+    "name": "شکریہ — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "شکریہ",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "calligraphy_021",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_006",
+    "name": "صبح بخیر — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "صبح",
+        "fontId": "alqalam-shekastah-regular-1.ttf",
+        "styleId": "gold_026",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "بخیر",
+        "fontId": "alqalam-shekastah-regular-1.ttf",
+        "styleId": "modern_001",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_007",
+    "name": "شب بخیر — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "شب",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "minimal_031",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "بخیر",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "modern_054",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_008",
+    "name": "السلام علیکم — offset-diagonal",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "السلام",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "calligraphy_036",
+        "xPct": 0.38,
+        "yPct": 0.34,
+        "widthPct": 0.44,
+        "rotation": -6,
+        "align": "CENTER"
+      },
+      {
+        "text": "علیکم",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "calligraphy_003",
+        "xPct": 0.6,
+        "yPct": 0.63,
+        "widthPct": 0.56,
+        "rotation": -6,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_009",
+    "name": "بہت بہت شکریہ — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "بہت بہت",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "gold_041",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "شکریہ",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "modern_010",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_010",
+    "name": "اللہ حافظ — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "اللہ",
+        "fontId": "Fanni.ttf",
+        "styleId": "minimal_046",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "حافظ",
+        "fontId": "Fanni.ttf",
+        "styleId": "modern_020",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_011",
+    "name": "آپ کا دن اچھا گزرے — big-over-small",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "آپ کا دن",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "calligraphy_001",
+        "xPct": 0.5,
+        "yPct": 0.43,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "اچھا گزرے",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "calligraphy_024",
+        "xPct": 0.5,
+        "yPct": 0.67,
+        "widthPct": 0.38,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_012",
+    "name": "ہمیشہ خوش رہیں — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ہمیشہ",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "gold_006",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "خوش رہیں",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "modern_041",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_013",
+    "name": "السلام علیکم ورحمۃ اللہ — three-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "السلام",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "minimal_011",
+        "xPct": 0.5,
+        "yPct": 0.24,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "علیکم",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "modern_047",
+        "xPct": 0.5,
+        "yPct": 0.47,
+        "widthPct": 0.76,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "ورحمۃ اللہ",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "modern_047",
+        "xPct": 0.5,
+        "yPct": 0.71,
+        "widthPct": 0.5,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_014",
+    "name": "صبح بخیر خوش رہیں آباد رہیں — three-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "صبح بخیر",
+        "fontId": "MB Sarem Muhammad Bux Kaladi 1.0.ttf",
+        "styleId": "calligraphy_016",
+        "xPct": 0.5,
+        "yPct": 0.29,
+        "widthPct": 0.6,
+        "rotation": -5,
+        "align": "CENTER"
+      },
+      {
+        "text": "خوش رہیں",
+        "fontId": "MB Sarem Muhammad Bux Kaladi 1.0.ttf",
+        "styleId": "calligraphy_002",
+        "xPct": 0.5,
+        "yPct": 0.51,
+        "widthPct": 0.7,
+        "rotation": -5,
+        "align": "CENTER"
+      },
+      {
+        "text": "آباد رہیں",
+        "fontId": "MB Sarem Muhammad Bux Kaladi 1.0.ttf",
+        "styleId": "calligraphy_002",
+        "xPct": 0.5,
+        "yPct": 0.73,
+        "widthPct": 0.52,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_015",
+    "name": "نیا دن نئی امید نیا حوصلہ — three-stack",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "نیا دن",
+        "fontId": "MB Sarem Rizwan Gul.ttf",
+        "styleId": "gold_021",
+        "xPct": 0.5,
+        "yPct": 0.28,
+        "widthPct": 0.44,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "نئی امید",
+        "fontId": "MB Sarem Rizwan Gul.ttf",
+        "styleId": "modern_004",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "نیا حوصلہ",
+        "fontId": "MB Sarem Rizwan Gul.ttf",
+        "styleId": "modern_004",
+        "xPct": 0.5,
+        "yPct": 0.72,
+        "widthPct": 0.36,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_016",
+    "name": "دعا ہے آپ کا دن اچھا گزرے — three-even",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "دعا ہے",
+        "fontId": "Mj Ghalam 1 Regular- [UrduFonts.com].ttf",
+        "styleId": "minimal_026",
+        "xPct": 0.5,
+        "yPct": 0.28,
+        "widthPct": 0.64,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "آپ کا دن",
+        "fontId": "Mj Ghalam 1 Regular- [UrduFonts.com].ttf",
+        "styleId": "modern_009",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.7,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "اچھا گزرے",
+        "fontId": "Mj Ghalam 1 Regular- [UrduFonts.com].ttf",
+        "styleId": "modern_009",
+        "xPct": 0.5,
+        "yPct": 0.72,
+        "widthPct": 0.6,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_017",
+    "name": "شب بخیر میٹھے خواب اللہ حافظ — three-lead",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "شب بخیر",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "calligraphy_031",
+        "xPct": 0.5,
+        "yPct": 0.29,
+        "widthPct": 0.78,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "میٹھے خواب",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "calligraphy_019",
+        "xPct": 0.5,
+        "yPct": 0.52,
+        "widthPct": 0.56,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "اللہ حافظ",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "calligraphy_019",
+        "xPct": 0.5,
+        "yPct": 0.73,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_018",
+    "name": "مسکرائیں خوش رہیں دعا کریں — three-tail",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "مسکرائیں",
+        "fontId": "PDMS Pencil.ttf",
+        "styleId": "gold_036",
+        "xPct": 0.5,
+        "yPct": 0.27,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "خوش رہیں",
+        "fontId": "PDMS Pencil.ttf",
+        "styleId": "modern_031",
+        "xPct": 0.5,
+        "yPct": 0.48,
+        "widthPct": 0.56,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "دعا کریں",
+        "fontId": "PDMS Pencil.ttf",
+        "styleId": "modern_031",
+        "xPct": 0.5,
+        "yPct": 0.71,
+        "widthPct": 0.78,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_019",
+    "name": "اللہ آپ کو خوش رکھے — three-banner",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "اللہ",
+        "fontId": "Resalaty-Regular.ttf",
+        "styleId": "minimal_041",
+        "xPct": 0.5,
+        "yPct": 0.26,
+        "widthPct": 0.74,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "آپ کو",
+        "fontId": "Resalaty-Regular.ttf",
+        "styleId": "modern_038",
+        "xPct": 0.5,
+        "yPct": 0.49,
+        "widthPct": 0.42,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "خوش رکھے",
+        "fontId": "Resalaty-Regular.ttf",
+        "styleId": "modern_038",
+        "xPct": 0.5,
+        "yPct": 0.73,
+        "widthPct": 0.66,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_020",
+    "name": "خوش آمدید تشریف لائیے شکریہ — three-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "خوش آمدید",
+        "fontId": "Sarem-Murtaza-Naz-Regular.ttf",
+        "styleId": "calligraphy_046",
+        "xPct": 0.5,
+        "yPct": 0.24,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "تشریف لائیے",
+        "fontId": "Sarem-Murtaza-Naz-Regular.ttf",
+        "styleId": "calligraphy_043",
+        "xPct": 0.5,
+        "yPct": 0.47,
+        "widthPct": 0.76,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "شکریہ",
+        "fontId": "Sarem-Murtaza-Naz-Regular.ttf",
+        "styleId": "calligraphy_043",
+        "xPct": 0.5,
+        "yPct": 0.71,
+        "widthPct": 0.5,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_021",
+    "name": "السلام علیکم صبح بخیر اللہ آپ کو خوش رکھے — four-tail",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "السلام علیکم",
+        "fontId": "Sarem-Naseer-Regular.ttf",
+        "styleId": "gold_001",
+        "xPct": 0.5,
+        "yPct": 0.2,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "صبح بخیر",
+        "fontId": "Sarem-Naseer-Regular.ttf",
+        "styleId": "modern_001",
+        "xPct": 0.5,
+        "yPct": 0.39,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "اللہ آپ کو",
+        "fontId": "Sarem-Naseer-Regular.ttf",
+        "styleId": "modern_001",
+        "xPct": 0.5,
+        "yPct": 0.59,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "خوش رکھے",
+        "fontId": "Sarem-Naseer-Regular.ttf",
+        "styleId": "modern_001",
+        "xPct": 0.5,
+        "yPct": 0.79,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_022",
+    "name": "نیا دن نیا آغاز نئی امید نیا حوصلہ — four-ladder",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "نیا دن",
+        "fontId": "AA Sameer Rafiya Unicode Regular - [UrduFonts.com].ttf",
+        "styleId": "minimal_006",
+        "xPct": 0.44,
+        "yPct": 0.2,
+        "widthPct": 0.5,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "نیا آغاز",
+        "fontId": "AA Sameer Rafiya Unicode Regular - [UrduFonts.com].ttf",
+        "styleId": "modern_002",
+        "xPct": 0.5,
+        "yPct": 0.4,
+        "widthPct": 0.56,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "نئی امید",
+        "fontId": "AA Sameer Rafiya Unicode Regular - [UrduFonts.com].ttf",
+        "styleId": "modern_002",
+        "xPct": 0.56,
+        "yPct": 0.6,
+        "widthPct": 0.56,
+        "rotation": -4,
+        "align": "CENTER"
+      },
+      {
+        "text": "نیا حوصلہ",
+        "fontId": "AA Sameer Rafiya Unicode Regular - [UrduFonts.com].ttf",
+        "styleId": "modern_002",
+        "xPct": 0.6,
+        "yPct": 0.8,
+        "widthPct": 0.48,
+        "rotation": -4,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_023",
+    "name": "خوش رہیں مسکراتے رہیں دعاؤں میں یاد رکھیں — four-pyramid",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "خوش رہیں",
+        "fontId": "AA Sameer Shamok - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_011",
+        "xPct": 0.5,
+        "yPct": 0.2,
+        "widthPct": 0.42,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مسکراتے رہیں",
+        "fontId": "AA Sameer Shamok - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_008",
+        "xPct": 0.5,
+        "yPct": 0.4,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "دعاؤں میں",
+        "fontId": "AA Sameer Shamok - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_008",
+        "xPct": 0.5,
+        "yPct": 0.6,
+        "widthPct": 0.64,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "یاد رکھیں",
+        "fontId": "AA Sameer Shamok - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_008",
+        "xPct": 0.5,
+        "yPct": 0.8,
+        "widthPct": 0.74,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_024",
+    "name": "صبح بخیر دن اچھا گزرے شام خوشگوار ہو شب بخیر — four-stack",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "صبح بخیر",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "gold_016",
+        "xPct": 0.5,
+        "yPct": 0.2,
+        "widthPct": 0.58,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "دن اچھا گزرے",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "modern_019",
+        "xPct": 0.5,
+        "yPct": 0.4,
+        "widthPct": 0.66,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "شام خوشگوار ہو",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "modern_019",
+        "xPct": 0.5,
+        "yPct": 0.6,
+        "widthPct": 0.66,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "شب بخیر",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "modern_019",
+        "xPct": 0.5,
+        "yPct": 0.8,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_025",
+    "name": "سلامتی خوشی صحت سکون — four-tail",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سلامتی",
+        "fontId": "alfars-6-kamran-bold-regular-1.ttf",
+        "styleId": "minimal_021",
+        "xPct": 0.5,
+        "yPct": 0.2,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "خوشی",
+        "fontId": "alfars-6-kamran-bold-regular-1.ttf",
+        "styleId": "modern_032",
+        "xPct": 0.5,
+        "yPct": 0.39,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "صحت",
+        "fontId": "alfars-6-kamran-bold-regular-1.ttf",
+        "styleId": "modern_032",
+        "xPct": 0.5,
+        "yPct": 0.59,
+        "widthPct": 0.54,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "سکون",
+        "fontId": "alfars-6-kamran-bold-regular-1.ttf",
+        "styleId": "modern_032",
+        "xPct": 0.5,
+        "yPct": 0.79,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_026",
+    "name": "صبح بخیر — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "صبح بخیر",
+        "fontId": "alfars-6-kamran-bold-regular-1.ttf",
+        "styleId": "calligraphy_012",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_027",
+    "name": "شب بخیر — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "شب بخیر",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "gold_017",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_028",
+    "name": "السلام علیکم — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "السلام علیکم",
+        "fontId": "alqalam-shekastah-regular-1.ttf",
+        "styleId": "minimal_022",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_029",
+    "name": "خوش آمدید — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "خوش آمدید",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "calligraphy_027",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_030",
+    "name": "شکریہ — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "شکریہ",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "gold_032",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_031",
+    "name": "صبح بخیر — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "صبح",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "minimal_037",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "بخیر",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "modern_002",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_032",
+    "name": "شب بخیر — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "شب",
+        "fontId": "Fanni.ttf",
+        "styleId": "calligraphy_042",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "بخیر",
+        "fontId": "Fanni.ttf",
+        "styleId": "calligraphy_009",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_033",
+    "name": "السلام علیکم — wide-with-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "السلام",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "gold_050",
+        "xPct": 0.5,
+        "yPct": 0.45,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "علیکم",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "modern_019",
+        "xPct": 0.5,
+        "yPct": 0.68,
+        "widthPct": 0.32,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_034",
+    "name": "بہت بہت شکریہ — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "بہت بہت",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "minimal_002",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "شکریہ",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "modern_032",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_035",
+    "name": "اللہ حافظ — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "اللہ",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "calligraphy_007",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "حافظ",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "calligraphy_035",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_036",
+    "name": "آپ کا دن اچھا گزرے — offset-diagonal",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "آپ کا دن",
+        "fontId": "MB Sarem Muhammad Bux Kaladi 1.0.ttf",
+        "styleId": "gold_012",
+        "xPct": 0.38,
+        "yPct": 0.34,
+        "widthPct": 0.44,
+        "rotation": -6,
+        "align": "CENTER"
+      },
+      {
+        "text": "اچھا گزرے",
+        "fontId": "MB Sarem Muhammad Bux Kaladi 1.0.ttf",
+        "styleId": "modern_046",
+        "xPct": 0.6,
+        "yPct": 0.63,
+        "widthPct": 0.56,
+        "rotation": -6,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_037",
+    "name": "ہمیشہ خوش رہیں — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ہمیشہ",
+        "fontId": "MB Sarem Rizwan Gul.ttf",
+        "styleId": "minimal_017",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "خوش رہیں",
+        "fontId": "MB Sarem Rizwan Gul.ttf",
+        "styleId": "modern_052",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_038",
+    "name": "السلام علیکم ورحمۃ اللہ — three-stack",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "السلام",
+        "fontId": "Mj Ghalam 1 Regular- [UrduFonts.com].ttf",
+        "styleId": "calligraphy_022",
+        "xPct": 0.5,
+        "yPct": 0.28,
+        "widthPct": 0.44,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "علیکم",
+        "fontId": "Mj Ghalam 1 Regular- [UrduFonts.com].ttf",
+        "styleId": "calligraphy_001",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "ورحمۃ اللہ",
+        "fontId": "Mj Ghalam 1 Regular- [UrduFonts.com].ttf",
+        "styleId": "calligraphy_001",
+        "xPct": 0.5,
+        "yPct": 0.72,
+        "widthPct": 0.36,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_039",
+    "name": "صبح بخیر خوش رہیں آباد رہیں — three-arch",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "صبح بخیر",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "gold_027",
+        "xPct": 0.5,
+        "yPct": 0.26,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "خوش رہیں",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "modern_010",
+        "xPct": 0.5,
+        "yPct": 0.49,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "آباد رہیں",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "modern_010",
+        "xPct": 0.5,
+        "yPct": 0.73,
+        "widthPct": 0.5,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "greetings_040",
+    "name": "نیا دن نئی امید نیا حوصلہ — three-even",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "نیا دن",
+        "fontId": "PDMS Pencil.ttf",
+        "styleId": "minimal_032",
+        "xPct": 0.5,
+        "yPct": 0.28,
+        "widthPct": 0.64,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "نئی امید",
+        "fontId": "PDMS Pencil.ttf",
+        "styleId": "modern_017",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.7,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "نیا حوصلہ",
+        "fontId": "PDMS Pencil.ttf",
+        "styleId": "modern_017",
+        "xPct": 0.5,
+        "yPct": 0.72,
+        "widthPct": 0.6,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  }
+]
