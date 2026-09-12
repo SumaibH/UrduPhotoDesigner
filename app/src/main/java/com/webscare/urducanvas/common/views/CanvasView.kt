@@ -1123,10 +1123,48 @@ class CanvasView @JvmOverloads constructor(
      * so without this every alignment saw a group as N separate objects and SELECTION mode
      * stacked its children on top of each other instead of moving the group.
      *
-     * groupBy keeps first-encounter order, so the first unit is the one the rest align to.
+     * The anchor unit — the one the rest align to — comes first, see [selectionAnchorKey].
+     * It cannot be read off [selectedElements] directly: that list is rebuilt from scratch
+     * on every republish by walking a z-sorted list, so its order is z-order and not the
+     * order anything was picked in.
      */
-    private fun selectionUnits(): List<List<CanvasElement>> =
-        selectedElements.groupBy { it.groupId ?: it.id }.values.toList()
+    private fun selectionUnits(): List<List<CanvasElement>> {
+        val byKey = selectedElements.groupBy { it.groupId ?: it.id }
+        val anchor = selectionAnchorKey
+        if (anchor == null || !byKey.containsKey(anchor)) return byKey.values.toList()
+        return listOf(byKey.getValue(anchor)) + byKey.filterKeys { it != anchor }.values
+    }
+
+    /**
+     * The unit the rest of a selection aligns to: the one the user picked first.
+     *
+     * Held as a key rather than a reference because [selectedElements] does not survive a
+     * republish — `syncElements` clears it and refills it from `resolveSelectedForCanvas`
+     * over a z-sorted list — so anything derived from that list's order gives you the
+     * bottom-most layer, which is neither visible to the user nor what they chose.
+     */
+    private var selectionAnchorKey: String? = null
+
+    /**
+     * Carries the anchor across a rebuild.
+     *
+     * Selections are built one unit at a time, so the first unit to appear while the
+     * selection was empty is the one that was picked first; every later addition leaves the
+     * anchor where it is. If the anchor itself is deselected the next remaining unit takes
+     * over, which is arbitrary but so is any other answer at that point.
+     *
+     * A rubber-band that selects several units at once from nothing has no first-picked
+     * element to find, and lands on whichever the grouping yields. That is the one case
+     * this cannot answer honestly.
+     */
+    private fun updateSelectionAnchor() {
+        val keys = selectedElements.mapTo(mutableSetOf()) { it.groupId ?: it.id }
+        selectionAnchorKey = when {
+            keys.isEmpty() -> null
+            selectionAnchorKey in keys -> selectionAnchorKey
+            else -> keys.firstOrNull()
+        }
+    }
 
     /**
      * One entry per selected unit, for the ViewModel: a group reports its sentinel once,
@@ -1471,6 +1509,8 @@ class CanvasView @JvmOverloads constructor(
         } else {
             selectedElements.addAll(resolveSelectedForCanvas(canvasElements.toList()))
         }
+
+        updateSelectionAnchor()
 
         // If exactly one group child is selected (e.g. from the layers panel),
         // enter GROUP_EDIT mode automatically so the first canvas drag moves only
