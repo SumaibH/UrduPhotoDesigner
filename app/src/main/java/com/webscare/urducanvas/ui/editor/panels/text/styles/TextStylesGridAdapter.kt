@@ -14,13 +14,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
 import com.webscare.urducanvas.R
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
+import com.webscare.urducanvas.common.utils.Utils.addPressEffectWithLongClick
 import com.webscare.urducanvas.data.model.TextStylePreset
 
 class TextStylesGridAdapter(
     private var presets: List<TextStylePreset>,
     /**
-     * Asked to open the preview for a tile. This grid only ever draws expanded,
-     * so the eye button carries it here and there is no long-press variant.
+     * Asked to open the preview for a tile. One rule everywhere: long-press opens it
+     * while the panel is collapsed, the eye button once there is room to draw one.
      * Declared before [onPresetClick] so that stays the last parameter and the
      * existing trailing-lambda call sites keep binding to it.
      */
@@ -63,6 +64,22 @@ class TextStylesGridAdapter(
             attachedRecyclerView = null
         }
     }
+
+    /**
+     * Whether the panel drawing this grid is open to its full height.
+     *
+     * Both hosts -- the Styles page of Text Adjustments and 3D -> Presets -- live in the
+     * adjustments sheet, which `EditorFragment.nonExpandableDestinations` locks collapsed,
+     * so in practice this stays false and the tiles take the collapsed gesture. It is a
+     * property rather than a constant so a host that *can* expand sets it and gets the eye
+     * button, the same way [TextStylesMainAdapter] does.
+     */
+    var isExpanded: Boolean = false
+        set(value) {
+            if (field == value) return
+            field = value
+            notifyDataSetChanged()
+        }
 
     var selectedPresetId: String? = null
         set(value) {
@@ -134,14 +151,30 @@ class TextStylesGridAdapter(
 
         holder.updateSize(attachedRecyclerView)
 
-        holder.itemView.addPressEffect {
+        // One rule everywhere: long-press opens the preview only while collapsed, and the
+        // eye button is what does it once there is room to draw one. Tap is unchanged in
+        // both states and carries no added delay -- the long-press helper starts its timer
+        // on ACTION_DOWN and fires the click immediately on a short ACTION_UP.
+        val select = {
             selectedPresetId = preset.id
             onPresetClick(preset)
         }
+        if (isExpanded) {
+            holder.itemView.addPressEffect { select() }
+        } else {
+            holder.itemView.addPressEffectWithLongClick(
+                // "None" is the absence of a style -- there is nothing to look at closer.
+                onLongClick = if (isNone) null else ({ onPreviewRequested(preset) }),
+                onClick = { select() }
+            )
+        }
 
-        // "None" is the absence of a style — there is nothing to look at closer.
+        // Drawn only when the panel is open: collapsed, the tile is small enough that the
+        // button covers the thumbnail it is meant to let you look at, which is why the
+        // collapsed state uses long-press instead. "None" never carries one -- it is the
+        // absence of a style, and there is nothing to look at closer.
         holder.previewEye.apply {
-            isVisible = !isNone
+            isVisible = isExpanded && !isNone
             addPressEffect { onPreviewRequested(preset) }
         }
     }
