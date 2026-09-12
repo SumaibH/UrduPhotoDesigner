@@ -393,9 +393,31 @@ class MainViewModel @Inject constructor(
     private val _localCanvasSizes = MutableStateFlow<List<CanvasSizeEntity>>(emptyList())
     val localCanvasSizes: StateFlow<List<CanvasSizeEntity>> = _localCanvasSizes.asStateFlow()
 
-    private val _rawQuery = MutableStateFlow("")
-    val rawQuery: StateFlow<String> = _rawQuery.asStateFlow()
-    val searchQuery: StateFlow<String> get() = rawQuery
+    // ── Search — one query per searchable surface ─────────────────────────────
+    //
+    // This used to be a single `_rawQuery` shared by everything that searches: the six
+    // text-panel tabs, the brush catalogue, the tables panel and the home screen's own
+    // SearchFragment. They all read and wrote the one string, so a term typed in any of
+    // them silently filtered every other list — typing "bold" in Styles left the Font tab
+    // showing only fonts matching "bold", and a home-screen search was still in force when
+    // the editor opened. The tab-switch and onDestroyView `setQuery("")` calls dotted
+    // around the panels were each a local patch over that.
+    //
+    // A query belongs to the list it was typed against, so it is now keyed by scope. Each
+    // surface names its own [SearchScope] and sees only its own term; nothing a surface
+    // does can reach another's. The flows are created on demand and live as long as the
+    // ViewModel, which is what lets a tab keep its filter while you visit a sibling tab.
+    private val queryFlows = java.util.concurrent.ConcurrentHashMap<String, MutableStateFlow<String>>()
+
+    private fun queryFlow(scope: String): MutableStateFlow<String> =
+        queryFlows.getOrPut(scope) { MutableStateFlow("") }
+
+    /** The live query for [scope]. Empty until something types into that surface. */
+    fun queryFor(scope: String): StateFlow<String> = queryFlow(scope).asStateFlow()
+
+    /** Trimmed and de-duplicated — what a list should filter on. */
+    fun queryDebouncedFor(scope: String): kotlinx.coroutines.flow.Flow<String> =
+        queryFlow(scope).map { it.trim() }.distinctUntilChanged()
 
     // ── Recent fonts — in-memory ordered list (most-recent first, max 20) ─────
     private val _recentFontIds = MutableStateFlow<List<Int>>(emptyList())
@@ -430,8 +452,6 @@ class MainViewModel @Inject constructor(
     var lastFontsScrollIndex: Int = 0
     var lastFontsScrollOffset: Int = 0
 
-    // Debounced, distinct stream for UI filtering
-    val queryDebounced = rawQuery.map { it.trim() }.distinctUntilChanged()
 
     /**
      * How many rows the panel on screen shows for one particular query.
@@ -471,12 +491,25 @@ class MainViewModel @Inject constructor(
         return if (countedQuery == query.trim()) count else UNKNOWN_RESULT_COUNT
     }
 
-    fun setQuery(q: String) {
-        _rawQuery.value = q
+    fun setQuery(scope: String, q: String) {
+        queryFlow(scope).value = q
     }
 
-    fun clearQuery() {
-        _rawQuery.value = ""
+    fun clearQuery(scope: String) {
+        queryFlow(scope).value = ""
+    }
+
+    /**
+     * Drops the filters for a whole panel at once, used when that panel is torn down.
+     *
+     * A filter you cannot see is a trap: reopening Text Properties and finding the Styles
+     * grid showing four presets, with no memory of having typed anything, reads as missing
+     * content rather than as a search. While the panel is open the icon is on screen saying
+     * a filter is on, so switching tabs keeps each tab's term; closing the panel takes that
+     * indicator away with it, so the terms go too.
+     */
+    fun clearQueries(scopes: Collection<String>) {
+        scopes.forEach { clearQuery(it) }
     }
 
 

@@ -38,6 +38,7 @@ class FontsFragment : Fragment(), PreviewHostOwner {
     private lateinit var pagerAdapter: FontsPagerAdapter
 
     private var standaloneMode: Boolean = false
+    private var searchScope: String = com.webscare.urducanvas.viewmodels.SearchScope.TEXT_FONT
     private var selectedLanguage: String = "All"
     private var selectedCategory: String? = null
 
@@ -47,6 +48,8 @@ class FontsFragment : Fragment(), PreviewHostOwner {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         standaloneMode = arguments?.getBoolean(ARG_STANDALONE_MODE, false) ?: false
+        searchScope = arguments?.getString(ARG_SEARCH_SCOPE)
+            ?: com.webscare.urducanvas.viewmodels.SearchScope.TEXT_FONT
     }
 
     override fun onCreateView(
@@ -98,7 +101,7 @@ class FontsFragment : Fragment(), PreviewHostOwner {
     }
 
     private fun setupViewPager() {
-        pagerAdapter = FontsPagerAdapter(this, emptyList(), standaloneMode)
+        pagerAdapter = FontsPagerAdapter(this, emptyList(), standaloneMode, searchScope)
         binding.viewPager.adapter = pagerAdapter
         binding.viewPager.isUserInputEnabled = false
 
@@ -300,11 +303,22 @@ class FontsFragment : Fragment(), PreviewHostOwner {
 
     companion object {
         private const val ARG_STANDALONE_MODE = "standalone_mode"
+        private const val ARG_SEARCH_SCOPE = "search_scope"
 
-        fun newInstance(standaloneMode: Boolean = false): FontsFragment {
+        /**
+         * [searchScope] says whose query this font list filters on. The same fragment backs
+         * both the text panel's Font tab and the table panel's, and they are two different
+         * lists on screen at two different times — a term typed into one must not follow the
+         * user into the other, which is what a single shared query used to do.
+         */
+        fun newInstance(
+            standaloneMode: Boolean = false,
+            searchScope: String = com.webscare.urducanvas.viewmodels.SearchScope.TEXT_FONT
+        ): FontsFragment {
             return FontsFragment().also {
                 it.arguments = Bundle().apply {
                     putBoolean(ARG_STANDALONE_MODE, standaloneMode)
+                    putString(ARG_SEARCH_SCOPE, searchScope)
                 }
             }
         }

@@ -31,7 +31,10 @@ class TextAdjustmentsPagerAdapter(
     override fun createFragment(position: Int): Fragment {
         return when (tabs[position]) {
             "Styles"     -> TextStylesFragment.newInstance()
-            "Font"       -> FontsFragment.newInstance(standaloneMode = true)
+            "Font"       -> FontsFragment.newInstance(
+                standaloneMode = true,
+                searchScope = com.webscare.urducanvas.viewmodels.SearchScope.TEXT_FONT
+            )
             "Appearance" -> AppearanceFragment.newInstance()
             "3D"         -> Text3DFragment.newInstance()
             "Format"     -> FormatFragment.newInstance()

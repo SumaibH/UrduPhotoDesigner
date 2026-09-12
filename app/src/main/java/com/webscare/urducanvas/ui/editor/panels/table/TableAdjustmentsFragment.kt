@@ -98,23 +98,27 @@ class TableAdjustmentsFragment : Fragment() {
         // the TabLayout and the ViewPager2 -- so with the fragment living on the editor's
         // nested back stack, the whole dead panel view tree stayed reachable through the
         // adapter. TextAdjustmentsFragment already captures it; this one did not.
+        //
+        // Font is the one tab here with a list a query can filter — it hosts the same
+        // FontsFragment the text panel does. The callback used to clear the global query on
+        // the way to the other four because they would otherwise inherit it; now they have
+        // no query of their own, so it only has to hide the icon where it means nothing.
         mediator = binding.tabLayout.setupPanelTabs(binding.viewPager, tabs) { position ->
-            if (position != 0) {
-                mainViewModel.setQuery("")
-            }
+            _binding?.searchIcon?.isVisible = position == TAB_FONT
         }
     }
 
     private fun setupSearchBar() {
         binding.searchIcon.addPressEffect {
             com.webscare.urducanvas.ui.editor.panels.adjustments.PanelSearchDialogFragment
-                .newInstance("table_adjustments")
+                .newInstance("table_adjustments", com.webscare.urducanvas.viewmodels.SearchScope.TABLE_FONT)
                 .show(childFragmentManager, "panel_search_dialog")
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
-                mainViewModel.searchQuery.collect { query ->
+                mainViewModel.queryFor(com.webscare.urducanvas.viewmodels.SearchScope.TABLE_FONT)
+                    .collect { query ->
                     val hasQuery = query.isNotEmpty()
                     binding.searchIcon.imageTintList = android.content.res.ColorStateList.valueOf(
                         androidx.core.content.ContextCompat.getColor(
@@ -134,8 +138,12 @@ class TableAdjustmentsFragment : Fragment() {
         // Detaching the mediator unregisters its observer, but the adapter itself is what
         // the surviving fragment holds, so drop it too.
         adapter = null
-        mainViewModel.setQuery("")
+        mainViewModel.clearQuery(com.webscare.urducanvas.viewmodels.SearchScope.TABLE_FONT)
         super.onDestroyView()
         _binding = null
+    }
+
+    private companion object {
+        const val TAB_FONT = 0
     }
 }

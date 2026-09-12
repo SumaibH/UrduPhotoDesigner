@@ -342,7 +342,7 @@ class SearchFragment : Fragment() {
                 } else false
             }
             setupClearButton {
-                mainViewModel.setQuery("")
+                mainViewModel.setQuery(com.webscare.urducanvas.viewmodels.SearchScope.HOME, "")
                 updateKeywordChipsSelection("")
             }
         }
@@ -350,7 +350,7 @@ class SearchFragment : Fragment() {
         binding.searchBar.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 val q = s?.toString().orEmpty()
-                mainViewModel.setQuery(q)
+                mainViewModel.setQuery(com.webscare.urducanvas.viewmodels.SearchScope.HOME, q)
                 updateKeywordChipsSelection(q)
             }
 
@@ -382,7 +382,8 @@ class SearchFragment : Fragment() {
                     mainViewModel.localFonts,
                     mainViewModel.localImages,
                     mainViewModel.exportResults.asFlow(),
-                    mainViewModel.queryDebounced.debounce(250).distinctUntilChanged()
+                    mainViewModel.queryDebouncedFor(com.webscare.urducanvas.viewmodels.SearchScope.HOME)
+                        .debounce(250).distinctUntilChanged()
                 ) { templates, fonts, images, exports, query ->
                     val q = query.trim().lowercase()
 
