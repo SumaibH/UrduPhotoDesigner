@@ -60,14 +60,6 @@ class AssetPreviewView @JvmOverloads constructor(
     private var asset: PreviewAsset? = null
     private var expanded = false
 
-    /**
-     * Set by the sheet before [show]. True only outside the editor, where there is no panel
-     * holding the bottom of the screen and no canvas above that has to stay visible, so the
-     * artwork gets a taller well than either editor state. Left false for the panels, whose
-     * two heights are unchanged.
-     */
-    var tall = false
-
     private val zoom = PreviewZoom(binding.previewPaper, binding.zoomLayer)
 
     /**
@@ -83,7 +75,7 @@ class AssetPreviewView @JvmOverloads constructor(
 
     init {
         zoom.attach()
-        binding.breadcrumbChip.addPressEffect { onBack?.invoke() }
+        binding.previewClose.addPressEffect { onBack?.invoke() }
         binding.primaryAction.addPressEffect { asset?.let { onPrimaryAction?.invoke(it) } }
         binding.shareAction.addPressEffect { asset?.let { onShare?.invoke(it) } }
         binding.downloadAction.addPressEffect { asset?.let { onDownload?.invoke(it) } }
@@ -110,15 +102,21 @@ class AssetPreviewView @JvmOverloads constructor(
         // A new asset always starts at life size; carrying the last one's zoom over
         // would open the preview already halfway into something else.
         zoom.reset()
-        applyWellHeight()
 
         binding.breadcrumbLabel.text = asset.breadcrumb
         binding.previewTitle.text = asset.title
         // A picture with nothing readable in its file name falls back to the set it came
-        // from, which is the word already on the back chip — "‹ Islamic Architecture
-        // Islamic Architecture" says it twice and names nothing. Sooner have the chip
-        // alone than an echo of it.
-        binding.previewTitle.isVisible = !asset.title.equals(asset.breadcrumb, ignoreCase = true)
+        // from, which is the word already on the breadcrumb — "Islamic Architecture ·
+        // Islamic Architecture" says it twice and names nothing. Sooner have the
+        // breadcrumb alone than an echo of it, and the separator goes with the name it
+        // was separating.
+        //
+        // The title is hidden rather than dropped: it carries the weight that pushes the
+        // close button to the end of the header, and a gone view carries no weight, so
+        // dropping it would drag the cross in next to the breadcrumb.
+        val named = !asset.title.equals(asset.breadcrumb, ignoreCase = true)
+        binding.previewTitle.visibility = if (named) VISIBLE else INVISIBLE
+        binding.breadcrumbDot.isVisible = named
         binding.proPill.isVisible = asset.isPremium
         binding.primaryAction.text = primaryLabel
 
@@ -135,7 +133,6 @@ class AssetPreviewView @JvmOverloads constructor(
     fun setExpanded(expanded: Boolean) {
         if (this.expanded == expanded) return
         this.expanded = expanded
-        applyWellHeight()
         asset?.let { renderBody(it) }
     }
 
@@ -382,29 +379,6 @@ class AssetPreviewView @JvmOverloads constructor(
         job.invokeOnCompletion { post { finishLoading() } }
     }
 
-    /**
-     * The artwork gets a fixed height rather than a minimum one.
-     *
-     * The shimmer covering the well while an asset loads is match_parent, and a
-     * match_parent child measures against everything going spare in a wrap_content
-     * parent: the well grew to the height of the screen, the sheet opened full height
-     * with the pills and the buttons pushed off the bottom of it, and it only settled
-     * once the asset arrived. Fixing the well also hands the picture the whole page
-     * instead of penning it into a short letterbox with dead paper underneath.
-     */
-    private fun applyWellHeight() {
-        binding.previewWell.layoutParams = binding.previewWell.layoutParams.apply {
-            height = dp(
-                when {
-                    tall -> WELL_TALL_DP
-                    expanded -> WELL_EXPANDED_DP
-                    else -> WELL_COLLAPSED_DP
-                }
-            )
-        }
-        binding.previewWell.requestLayout()
-    }
-
     // ── Detail pills ─────────────────────────────────────────────────────────
 
     private fun renderDetails(asset: PreviewAsset) {
@@ -459,14 +433,6 @@ class AssetPreviewView @JvmOverloads constructor(
 
         private const val SAMPLE_COLLAPSED_SP = 32f
         private const val SAMPLE_EXPANDED_SP = 48f
-        private const val WELL_COLLAPSED_DP = 210
-        private const val WELL_EXPANDED_DP = 320
-
-        /**
-         * Off the editor. Taller than the expanded panel because nothing is competing for
-         * the screen there — no panel below and no canvas above to keep in view.
-         */
-        private const val WELL_TALL_DP = 420
         private const val SVG_MAX_PX = 1024
     }
 }

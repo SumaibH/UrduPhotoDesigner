@@ -194,6 +194,8 @@
     <string name="preview_downloaded">Downloaded</string>
     <string name="preview_download_to_type">Download the font to type your own words</string>
     <string name="preview_type_your_words">Type your own words to try it</string>
+    <!-- Sits between the set the asset came from and the asset's own name. -->
+    <string name="preview_breadcrumb_separator" translatable="false">·</string>
     <!-- Primary actions for the preview off the editor, where there is no canvas to add to
          and each surface names what tapping the tile already does. -->
     <string name="preview_open_project">Open project</string>
