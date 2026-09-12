@@ -18,7 +18,8 @@ enum class PresetCategory(val displayName: String) {
     RIBBONS("Ribbons"),
     MINIMAL("Minimal"),
     MODERN("Modern"),
-    DARK("Dark")
+    DARK("Dark"),
+    DOODLE("Doodle")
 }
 
 data class TextStylePreset(

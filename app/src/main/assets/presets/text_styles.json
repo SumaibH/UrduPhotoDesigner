@@ -13909,5 +13909,137 @@
     "shadowDy": 3,
     "shadowRadius": 6,
     "shadowOpacity": 170
+  },
+  {
+    "id": "doodle_probe_001",
+    "name": "PROBE Bubblegum Tube",
+    "category": "DOODLE",
+    "textColor": "#FF4FA3",
+    "textGradientColors": [
+      "#FF9ECB",
+      "#FF4FA3",
+      "#D81B7A"
+    ],
+    "textGradientPositions": [
+      0,
+      0.45,
+      1
+    ],
+    "textGradientAngle": 90,
+    "strokeColor": "#FF4FA3",
+    "strokeWidth": 22,
+    "hasUnderStroke": true,
+    "underStrokeColor": "#1A1033",
+    "underStrokeWidth": 32,
+    "hasInnerGlow": true,
+    "innerGlowColor": "#FFFFFF",
+    "innerGlowRadius": 9,
+    "innerGlowOpacity": 190,
+    "shadowColor": "#66000000",
+    "shadowDx": 0,
+    "shadowDy": 7,
+    "shadowRadius": 10,
+    "shadowOpacity": 160
+  },
+  {
+    "id": "doodle_probe_002",
+    "name": "PROBE Lime Noodle",
+    "category": "DOODLE",
+    "textColor": "#7BE23F",
+    "textGradientColors": [
+      "#D6FF9E",
+      "#7BE23F",
+      "#3F9E17"
+    ],
+    "textGradientPositions": [
+      0,
+      0.45,
+      1
+    ],
+    "textGradientAngle": 90,
+    "strokeColor": "#7BE23F",
+    "strokeWidth": 20,
+    "hasUnderStroke": true,
+    "underStrokeColor": "#14300A",
+    "underStrokeWidth": 30,
+    "hasBevel": true,
+    "bevelHighlightColor": "#99FFFFFF",
+    "bevelShadowColor": "#4D1B3A08",
+    "bevelDepth": 3,
+    "hasInnerGlow": true,
+    "innerGlowColor": "#FFFFFF",
+    "innerGlowRadius": 8,
+    "innerGlowOpacity": 180,
+    "shadowColor": "#66000000",
+    "shadowDx": 0,
+    "shadowDy": 6,
+    "shadowRadius": 9,
+    "shadowOpacity": 150
+  },
+  {
+    "id": "doodle_probe_003",
+    "name": "PROBE Blueberry Gloss",
+    "category": "DOODLE",
+    "textColor": "#4F8BFF",
+    "textGradientColors": [
+      "#B9D2FF",
+      "#4F8BFF",
+      "#1B47B5"
+    ],
+    "textGradientPositions": [
+      0,
+      0.42,
+      1
+    ],
+    "textGradientAngle": 90,
+    "strokeColor": "#4F8BFF",
+    "strokeWidth": 24,
+    "hasUnderStroke": true,
+    "underStrokeColor": "#FFFFFF",
+    "underStrokeWidth": 34,
+    "hasInnerGlow": true,
+    "innerGlowColor": "#FFFFFF",
+    "innerGlowRadius": 10,
+    "innerGlowOpacity": 200,
+    "shadowColor": "#73000000",
+    "shadowDx": 0,
+    "shadowDy": 8,
+    "shadowRadius": 12,
+    "shadowOpacity": 170
+  },
+  {
+    "id": "doodle_probe_004",
+    "name": "PROBE Tangerine Marker",
+    "category": "DOODLE",
+    "textColor": "#FF8A1F",
+    "textGradientColors": [
+      "#FFD08A",
+      "#FF8A1F",
+      "#C4560A"
+    ],
+    "textGradientPositions": [
+      0,
+      0.45,
+      1
+    ],
+    "textGradientAngle": 90,
+    "strokeColor": "#FF8A1F",
+    "strokeWidth": 26,
+    "hasUnderStroke": true,
+    "underStrokeColor": "#3A1A00",
+    "underStrokeWidth": 36,
+    "hasBevel": true,
+    "bevelHighlightColor": "#A6FFFFFF",
+    "bevelShadowColor": "#593A1A00",
+    "bevelDepth": 3.5,
+    "hasInnerGlow": true,
+    "innerGlowColor": "#FFFFFF",
+    "innerGlowRadius": 11,
+    "innerGlowOpacity": 195,
+    "shadowColor": "#66000000",
+    "shadowDx": 0,
+    "shadowDy": 7,
+    "shadowRadius": 10,
+    "shadowOpacity": 160
   }
 ]
