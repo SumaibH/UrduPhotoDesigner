@@ -195,17 +195,26 @@
                 tools:itemCount="20"
                 tools:listitem="@layout/layout_color_item" />
 
+            <!--
+                The row count and the swatch size are set in Material3DFragment: this grid
+                scrolls sideways, so its height is divided by the row count and the item is
+                measured to the result. The fading edge is what keeps the column at the
+                scroll edge from reading as a broken half-circle — it is a list that
+                continues, not a clipped one.
+            -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/materials_list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:clipToPadding="false"
+                android:fadingEdgeLength="16dp"
                 android:orientation="horizontal"
+                android:requiresFadingEdge="horizontal"
                 android:visibility="gone"
                 app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
                 app:spanCount="2"
                 tools:itemCount="20"
-                tools:listitem="@layout/item_material_surface" />
+                tools:listitem="@layout/item_material_swatch" />
 
         </FrameLayout>
 
