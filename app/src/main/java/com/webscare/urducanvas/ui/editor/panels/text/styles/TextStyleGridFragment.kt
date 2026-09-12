@@ -16,6 +16,7 @@ import com.webscare.urducanvas.common.canvas.CanvasViewModel
 import com.webscare.urducanvas.data.model.PresetCategory
 import com.webscare.urducanvas.data.model.TextStylePreset
 import com.webscare.urducanvas.ui.editor.panels.preview.showPresetPreview
+import com.webscare.urducanvas.data.repository.RecentsStore
 import com.webscare.urducanvas.data.repository.TextStylesRepository
 import com.webscare.urducanvas.databinding.FragmentTextStyleGridBinding
 import com.webscare.urducanvas.viewmodels.MainViewModel
@@ -57,6 +58,12 @@ class TextStyleGridFragment : Fragment() {
         val presets = TextStylesRepository.getPresetsByCategory(category, requireContext())
         allPresets = presets
         fun apply(preset: TextStylePreset) {
+            // The recents shelf lives in the main text panel, but it is a record of what
+            // the user reached for rather than of where they reached for it — so this
+            // grid writes to it too. "None" is a reset and does not belong on it.
+            if (preset.id != TextStylePreset.NONE_ID) {
+                RecentsStore.record(requireContext(), RecentsStore.Kind.STYLE, preset.id)
+            }
             if (isAddMode) {
                 viewModel.addTextWithStyle("Your Text", preset, requireContext())
             } else {

@@ -85,7 +85,16 @@ data class TextStylePreset(
     val labelStrokeWidth: Float = 0f,
     val hasGlossHighlight: Boolean = false,
     val hasFoldedRibbonFlaps: Boolean = false,
-    val isCustomUserSaved: Boolean = false
+    val isCustomUserSaved: Boolean = false,
+
+    /**
+     * Whether this style needs a subscription.
+     *
+     * Read from the catalogue rather than computed, and a preset inherits it: a lockup
+     * using a premium style is a premium lockup. Nothing in the catalogue sets it today,
+     * so like the font flag it stays dormant until content marks something premium.
+     */
+    val isPremium: Boolean = false
 ) {
     companion object {
         /** Id of the synthetic "no style" cell that leads every category grid. */

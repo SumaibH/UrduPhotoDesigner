@@ -1,0 +1,492 @@
+[
+  {
+    "id": "sale_001",
+    "name": "سیل — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سیل",
+        "fontId": "Abdo Line.otf",
+        "styleId": "badges_001",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "sale_002",
+    "name": "بڑی سیل — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "بڑی سیل",
+        "fontId": "Al Qalam Naqsh.ttf",
+        "styleId": "ribbons_006",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "sale_003",
+    "name": "خصوصی رعایت — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "خصوصی رعایت",
+        "fontId": "Al Qalam Shahjahan.ttf",
+        "styleId": "threed_011",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "sale_004",
+    "name": "۵۰٪ رعایت — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "۵۰٪ رعایت",
+        "fontId": "Al Qalam Shahzaib.ttf",
+        "styleId": "neon_016",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "sale_005",
+    "name": "آخری موقع — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "آخری موقع",
+        "fontId": "AlFars 7 Kodak.ttf",
+        "styleId": "badges_021",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "sale_006",
+    "name": "مفت ڈیلیوری — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "مفت ڈیلیوری",
+        "fontId": "alfont_com_ITC-Handel-Gothic-Arabic-Bold.ttf",
+        "styleId": "ribbons_026",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "sale_007",
+    "name": "کلیئرنس سیل — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "کلیئرنس سیل",
+        "fontId": "AlQalam Mujeeb.ttf",
+        "styleId": "threed_031",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "sale_008",
+    "name": "آدھی قیمت — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "آدھی قیمت",
+        "fontId": "alqalam-khat-e-kamal-regular-1.ttf",
+        "styleId": "neon_036",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "sale_009",
+    "name": "سیل شروع — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سیل",
+        "fontId": "alqalam-shamil-regular-1.ttf",
+        "styleId": "badges_041",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "شروع",
+        "fontId": "alqalam-shamil-regular-1.ttf",
+        "styleId": "modern_010",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "sale_010",
+    "name": "بڑی سیل — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "بڑی",
+        "fontId": "Arif.ttf",
+        "styleId": "ribbons_046",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "سیل",
+        "fontId": "Arif.ttf",
+        "styleId": "modern_022",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "sale_011",
+    "name": "سیل — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سیل",
+        "fontId": "Al Qalam Shahzaib.ttf",
+        "styleId": "ribbons_012",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "sale_012",
+    "name": "بڑی سیل — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "بڑی سیل",
+        "fontId": "AlFars 7 Kodak.ttf",
+        "styleId": "threed_017",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "sale_013",
+    "name": "خصوصی رعایت — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "خصوصی رعایت",
+        "fontId": "alfont_com_ITC-Handel-Gothic-Arabic-Bold.ttf",
+        "styleId": "neon_022",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "sale_014",
+    "name": "۵۰٪ رعایت — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "۵۰٪ رعایت",
+        "fontId": "AlQalam Mujeeb.ttf",
+        "styleId": "badges_027",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "sale_015",
+    "name": "آخری موقع — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "آخری موقع",
+        "fontId": "alqalam-khat-e-kamal-regular-1.ttf",
+        "styleId": "ribbons_032",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "sale_016",
+    "name": "مفت ڈیلیوری — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "مفت ڈیلیوری",
+        "fontId": "alqalam-shamil-regular-1.ttf",
+        "styleId": "threed_037",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "sale_017",
+    "name": "کلیئرنس سیل — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "کلیئرنس سیل",
+        "fontId": "Arif.ttf",
+        "styleId": "neon_042",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "sale_018",
+    "name": "آدھی قیمت — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "آدھی قیمت",
+        "fontId": "Aseer Unicode Aseer Unicode.ttf",
+        "styleId": "badges_047",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "sale_019",
+    "name": "سیل شروع — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سیل",
+        "fontId": "Attari_Salees.ttf",
+        "styleId": "ribbons_002",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "شروع",
+        "fontId": "Attari_Salees.ttf",
+        "styleId": "minimal_023",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "sale_020",
+    "name": "بڑی سیل — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "بڑی",
+        "fontId": "Bahij .ttf",
+        "styleId": "threed_007",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "سیل",
+        "fontId": "Bahij .ttf",
+        "styleId": "badges_030",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "sale_021",
+    "name": "سیل — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سیل",
+        "fontId": "AlQalam Mujeeb.ttf",
+        "styleId": "threed_023",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "sale_022",
+    "name": "بڑی سیل — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "بڑی سیل",
+        "fontId": "alqalam-khat-e-kamal-regular-1.ttf",
+        "styleId": "neon_028",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "sale_023",
+    "name": "خصوصی رعایت — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "خصوصی رعایت",
+        "fontId": "alqalam-shamil-regular-1.ttf",
+        "styleId": "badges_033",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "sale_024",
+    "name": "۵۰٪ رعایت — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "۵۰٪ رعایت",
+        "fontId": "Arif.ttf",
+        "styleId": "ribbons_038",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "sale_025",
+    "name": "آخری موقع — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "آخری موقع",
+        "fontId": "Aseer Unicode Aseer Unicode.ttf",
+        "styleId": "threed_043",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  }
+]

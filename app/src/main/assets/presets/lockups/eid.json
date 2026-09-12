@@ -1,0 +1,1256 @@
+[
+  {
+    "id": "eid_001",
+    "name": "Eid Mubarak — Imperial Gold",
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عید",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "gold_005",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.44,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "gold_005",
+        "xPct": 0.5,
+        "yPct": 0.64,
+        "widthPct": 0.66,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_002",
+    "name": "Eid-ul-Fitr Mubarak — Rose Gold",
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عید الفطر",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "gold_003",
+        "xPct": 0.5,
+        "yPct": 0.42,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "calligraphy_005",
+        "xPct": 0.5,
+        "yPct": 0.68,
+        "widthPct": 0.44,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_003",
+    "name": "Eid-ul-Adha Mubarak — Emerald",
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عید الاضحیٰ",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_004",
+        "xPct": 0.5,
+        "yPct": 0.44,
+        "widthPct": 0.86,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "emboss_005",
+        "xPct": 0.5,
+        "yPct": 0.7,
+        "widthPct": 0.4,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_004",
+    "name": "Chand Raat Mubarak — Night",
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "چاند رات",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "neon_006",
+        "xPct": 0.5,
+        "yPct": 0.4,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "neon_001",
+        "xPct": 0.5,
+        "yPct": 0.66,
+        "widthPct": 0.42,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_005",
+    "name": "Eid Saeed — One Line",
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عید سعید",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "calligraphy_003",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.78,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_006",
+    "name": "Eid Mubarak — Offset Diagonal",
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عید",
+        "fontId": "Sarem-Naseer-Regular.ttf",
+        "styleId": "threed_003",
+        "xPct": 0.36,
+        "yPct": 0.34,
+        "widthPct": 0.36,
+        "rotation": -6,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "Sarem-Naseer-Regular.ttf",
+        "styleId": "threed_003",
+        "xPct": 0.6,
+        "yPct": 0.64,
+        "widthPct": 0.56,
+        "rotation": -6,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_007",
+    "name": "عید مبارک — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عید",
+        "fontId": "AA Sameer Rafiya Unicode Regular - [UrduFonts.com].ttf",
+        "styleId": "gold_001",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "AA Sameer Rafiya Unicode Regular - [UrduFonts.com].ttf",
+        "styleId": "gold_004",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_008",
+    "name": "عید الفطر مبارک — big-over-small",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عید الفطر",
+        "fontId": "AA Sameer Shamok - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_006",
+        "xPct": 0.5,
+        "yPct": 0.43,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "AA Sameer Shamok - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_011",
+        "xPct": 0.5,
+        "yPct": 0.67,
+        "widthPct": 0.38,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_009",
+    "name": "عید الاضحیٰ مبارک — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عید الاضحیٰ",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "threed_011",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "minimal_018",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_010",
+    "name": "عید سعید — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عید سعید",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "gold_016",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_011",
+    "name": "چاند رات مبارک — wide-with-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "چاند رات",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "calligraphy_021",
+        "xPct": 0.5,
+        "yPct": 0.45,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "calligraphy_032",
+        "xPct": 0.5,
+        "yPct": 0.68,
+        "widthPct": 0.32,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_012",
+    "name": "بقر عید مبارک — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "بقر عید",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "threed_026",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "minimal_039",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_013",
+    "name": "عید مبارک — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عید مبارک",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "gold_031",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_014",
+    "name": "عیدِ قرباں مبارک — offset-diagonal",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عیدِ قرباں",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "calligraphy_036",
+        "xPct": 0.38,
+        "yPct": 0.34,
+        "widthPct": 0.44,
+        "rotation": -6,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "calligraphy_003",
+        "xPct": 0.6,
+        "yPct": 0.63,
+        "widthPct": 0.56,
+        "rotation": -6,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_015",
+    "name": "میٹھی عید مبارک — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "میٹھی عید",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "threed_041",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "minimal_010",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_016",
+    "name": "نمازِ عید مبارک — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "نمازِ عید",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "gold_049",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "gold_017",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_017",
+    "name": "عید کی خوشیاں — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عید کی خوشیاں",
+        "fontId": "MB Sarem Muhammad Bux Kaladi 1.0.ttf",
+        "styleId": "calligraphy_001",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_018",
+    "name": "خوشیوں بھری عید — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "خوشیوں بھری عید",
+        "fontId": "MB Sarem Rizwan Gul.ttf",
+        "styleId": "threed_006",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_019",
+    "name": "عیدی مبارک — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عیدی",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "gold_011",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "gold_038",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_020",
+    "name": "سب کو عید مبارک — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سب کو عید مبارک",
+        "fontId": "Sarem-Murtaza-Naz-Regular.ttf",
+        "styleId": "calligraphy_016",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_021",
+    "name": "عید آئی — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عید آئی",
+        "fontId": "Sarem-Naseer-Regular.ttf",
+        "styleId": "threed_021",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_022",
+    "name": "تقبل اللہ منا و منکم — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "تقبل اللہ منا و منکم",
+        "fontId": "AA Sameer Rafiya Unicode Regular - [UrduFonts.com].ttf",
+        "styleId": "gold_026",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_023",
+    "name": "عید الفطر مبارک — three-arch",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عید",
+        "fontId": "AA Sameer Shamok - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_031",
+        "xPct": 0.5,
+        "yPct": 0.26,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "الفطر",
+        "fontId": "AA Sameer Shamok - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_019",
+        "xPct": 0.5,
+        "yPct": 0.49,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "AA Sameer Shamok - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_019",
+        "xPct": 0.5,
+        "yPct": 0.73,
+        "widthPct": 0.5,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_024",
+    "name": "عید الاضحیٰ مبارک — three-stack",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عید",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "threed_036",
+        "xPct": 0.5,
+        "yPct": 0.28,
+        "widthPct": 0.44,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "الاضحیٰ",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "minimal_023",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "minimal_023",
+        "xPct": 0.5,
+        "yPct": 0.72,
+        "widthPct": 0.36,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_025",
+    "name": "چاند رات مبارک — three-stack",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "چاند",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "gold_041",
+        "xPct": 0.5,
+        "yPct": 0.28,
+        "widthPct": 0.44,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "رات",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "gold_030",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "gold_030",
+        "xPct": 0.5,
+        "yPct": 0.72,
+        "widthPct": 0.36,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_026",
+    "name": "عید مبارک — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عید",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "calligraphy_012",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "calligraphy_017",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_027",
+    "name": "عید الفطر مبارک — offset-diagonal",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عید الفطر",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "threed_017",
+        "xPct": 0.38,
+        "yPct": 0.34,
+        "widthPct": 0.44,
+        "rotation": -6,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "minimal_024",
+        "xPct": 0.6,
+        "yPct": 0.63,
+        "widthPct": 0.56,
+        "rotation": -6,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_028",
+    "name": "عید الاضحیٰ مبارک — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عید الاضحیٰ",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "gold_022",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "gold_031",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_029",
+    "name": "عید سعید — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عید سعید",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_027",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_030",
+    "name": "چاند رات مبارک — big-over-small",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "چاند رات",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "threed_032",
+        "xPct": 0.5,
+        "yPct": 0.43,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "gold_047",
+        "xPct": 0.5,
+        "yPct": 0.67,
+        "widthPct": 0.38,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_031",
+    "name": "بقر عید مبارک — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "بقر عید",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "gold_037",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "gold_002",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_032",
+    "name": "عید مبارک — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عید مبارک",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "calligraphy_042",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_033",
+    "name": "عیدِ قرباں مبارک — wide-with-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عیدِ قرباں",
+        "fontId": "MB Sarem Muhammad Bux Kaladi 1.0.ttf",
+        "styleId": "threed_047",
+        "xPct": 0.5,
+        "yPct": 0.45,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "MB Sarem Muhammad Bux Kaladi 1.0.ttf",
+        "styleId": "minimal_016",
+        "xPct": 0.5,
+        "yPct": 0.68,
+        "widthPct": 0.32,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_034",
+    "name": "میٹھی عید مبارک — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "میٹھی عید",
+        "fontId": "MB Sarem Rizwan Gul.ttf",
+        "styleId": "gold_002",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "MB Sarem Rizwan Gul.ttf",
+        "styleId": "gold_023",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_035",
+    "name": "نمازِ عید مبارک — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "نمازِ عید",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "calligraphy_007",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "calligraphy_035",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_036",
+    "name": "عید کی خوشیاں — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عید کی خوشیاں",
+        "fontId": "Sarem-Murtaza-Naz-Regular.ttf",
+        "styleId": "threed_012",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_037",
+    "name": "خوشیوں بھری عید — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "خوشیوں بھری عید",
+        "fontId": "Sarem-Naseer-Regular.ttf",
+        "styleId": "gold_017",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_038",
+    "name": "عیدی مبارک — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عیدی",
+        "fontId": "AA Sameer Rafiya Unicode Regular - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_022",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "AA Sameer Rafiya Unicode Regular - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_001",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_039",
+    "name": "سب کو عید مبارک — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سب کو عید مبارک",
+        "fontId": "AA Sameer Shamok - [UrduFonts.com].ttf",
+        "styleId": "threed_027",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_040",
+    "name": "عید آئی — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عید آئی",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "gold_032",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_041",
+    "name": "تقبل اللہ منا و منکم — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "تقبل اللہ منا و منکم",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "calligraphy_037",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_042",
+    "name": "عید مبارک — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عید",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "threed_023",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "minimal_030",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_043",
+    "name": "عید الفطر مبارک — wide-with-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عید الفطر",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "gold_028",
+        "xPct": 0.5,
+        "yPct": 0.45,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "gold_037",
+        "xPct": 0.5,
+        "yPct": 0.68,
+        "widthPct": 0.32,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_044",
+    "name": "عید الاضحیٰ مبارک — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عید الاضحیٰ",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "calligraphy_033",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "calligraphy_044",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_045",
+    "name": "عید سعید — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عید سعید",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "threed_038",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_046",
+    "name": "چاند رات مبارک — offset-diagonal",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "چاند رات",
+        "fontId": "MB Sarem Muhammad Bux Kaladi 1.0.ttf",
+        "styleId": "gold_044",
+        "xPct": 0.38,
+        "yPct": 0.34,
+        "widthPct": 0.44,
+        "rotation": -6,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "MB Sarem Muhammad Bux Kaladi 1.0.ttf",
+        "styleId": "gold_008",
+        "xPct": 0.6,
+        "yPct": 0.63,
+        "widthPct": 0.56,
+        "rotation": -6,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_047",
+    "name": "بقر عید مبارک — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "بقر عید",
+        "fontId": "MB Sarem Rizwan Gul.ttf",
+        "styleId": "calligraphy_048",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "MB Sarem Rizwan Gul.ttf",
+        "styleId": "calligraphy_019",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_048",
+    "name": "عید مبارک — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عید مبارک",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "threed_003",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_049",
+    "name": "عیدِ قرباں مبارک — big-over-small",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "عیدِ قرباں",
+        "fontId": "Sarem-Murtaza-Naz-Regular.ttf",
+        "styleId": "gold_008",
+        "xPct": 0.5,
+        "yPct": 0.43,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "Sarem-Murtaza-Naz-Regular.ttf",
+        "styleId": "gold_029",
+        "xPct": 0.5,
+        "yPct": 0.67,
+        "widthPct": 0.38,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "eid_050",
+    "name": "میٹھی عید مبارک — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "میٹھی عید",
+        "fontId": "Sarem-Naseer-Regular.ttf",
+        "styleId": "calligraphy_013",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "Sarem-Naseer-Regular.ttf",
+        "styleId": "calligraphy_036",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  }
+]

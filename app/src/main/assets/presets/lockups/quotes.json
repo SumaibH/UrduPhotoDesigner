@@ -1,0 +1,582 @@
+[
+  {
+    "id": "quotes_001",
+    "name": "اقوالِ زریں — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "اقوالِ زریں",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "calligraphy_001",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "quotes_002",
+    "name": "شعر و شاعری — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "شعر و شاعری",
+        "fontId": "alfars-6-kamran-bold-regular-1.ttf",
+        "styleId": "minimal_006",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "quotes_003",
+    "name": "غزل — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "غزل",
+        "fontId": "alqalam-shekastah-regular-1.ttf",
+        "styleId": "emboss_012",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "quotes_004",
+    "name": "نصیحت — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "نصیحت",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_016",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "quotes_005",
+    "name": "کہاوت — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "کہاوت",
+        "fontId": "Fanni.ttf",
+        "styleId": "minimal_021",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "quotes_006",
+    "name": "سوچ بدلو — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سوچ بدلو",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "emboss_027",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "quotes_007",
+    "name": "زندگی — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "زندگی",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "calligraphy_031",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "quotes_008",
+    "name": "محبت — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "محبت",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "minimal_036",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "quotes_009",
+    "name": "امید — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "امید",
+        "fontId": "Mj Ghalam 1 Regular- [UrduFonts.com].ttf",
+        "styleId": "emboss_043",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "quotes_010",
+    "name": "حوصلہ — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "حوصلہ",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "calligraphy_046",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "quotes_011",
+    "name": "اقوالِ زریں — big-over-small",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "اقوالِ",
+        "fontId": "PDMS Pencil.ttf",
+        "styleId": "minimal_001",
+        "xPct": 0.5,
+        "yPct": 0.43,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "زریں",
+        "fontId": "PDMS Pencil.ttf",
+        "styleId": "modern_032",
+        "xPct": 0.5,
+        "yPct": 0.67,
+        "widthPct": 0.38,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "quotes_012",
+    "name": "شعر و شاعری — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "شعر و",
+        "fontId": "Resalaty-Regular.ttf",
+        "styleId": "emboss_009",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "شاعری",
+        "fontId": "Resalaty-Regular.ttf",
+        "styleId": "calligraphy_031",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "quotes_013",
+    "name": "اقوالِ زریں — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "اقوالِ زریں",
+        "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "minimal_012",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "quotes_014",
+    "name": "شعر و شاعری — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "شعر و شاعری",
+        "fontId": "Fanni.ttf",
+        "styleId": "emboss_018",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "quotes_015",
+    "name": "غزل — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "غزل",
+        "fontId": "Gulzar-Regular.ttf",
+        "styleId": "calligraphy_022",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "quotes_016",
+    "name": "نصیحت — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "نصیحت",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "minimal_027",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "quotes_017",
+    "name": "کہاوت — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "کہاوت",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "emboss_033",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "quotes_018",
+    "name": "سوچ بدلو — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سوچ بدلو",
+        "fontId": "Mj Ghalam 1 Regular- [UrduFonts.com].ttf",
+        "styleId": "calligraphy_037",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "quotes_019",
+    "name": "زندگی — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "زندگی",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "minimal_042",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "quotes_020",
+    "name": "محبت — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "محبت",
+        "fontId": "PDMS Pencil.ttf",
+        "styleId": "emboss_049",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "quotes_021",
+    "name": "امید — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "امید",
+        "fontId": "Resalaty-Regular.ttf",
+        "styleId": "calligraphy_002",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "quotes_022",
+    "name": "حوصلہ — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "حوصلہ",
+        "fontId": "Al Qalam Alvi Nastaleeq.TTF",
+        "styleId": "minimal_007",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "quotes_023",
+    "name": "اقوالِ زریں — offset-diagonal",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "اقوالِ",
+        "fontId": "alfars-6-kamran-bold-regular-1.ttf",
+        "styleId": "emboss_015",
+        "xPct": 0.38,
+        "yPct": 0.34,
+        "widthPct": 0.44,
+        "rotation": -6,
+        "align": "CENTER"
+      },
+      {
+        "text": "زریں",
+        "fontId": "alfars-6-kamran-bold-regular-1.ttf",
+        "styleId": "minimal_037",
+        "xPct": 0.6,
+        "yPct": 0.63,
+        "widthPct": 0.56,
+        "rotation": -6,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "quotes_024",
+    "name": "شعر و شاعری — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "شعر و",
+        "fontId": "alqalam-shekastah-regular-1.ttf",
+        "styleId": "calligraphy_017",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "شاعری",
+        "fontId": "alqalam-shekastah-regular-1.ttf",
+        "styleId": "calligraphy_002",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "quotes_025",
+    "name": "اقوالِ زریں — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "اقوالِ زریں",
+        "fontId": "Jameel Noori Nastaleeq .ttf",
+        "styleId": "emboss_024",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "quotes_026",
+    "name": "شعر و شاعری — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "شعر و شاعری",
+        "fontId": "Lateef-Regular.ttf",
+        "styleId": "calligraphy_028",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "quotes_027",
+    "name": "غزل — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "غزل",
+        "fontId": "Mj Ghalam 1 Regular- [UrduFonts.com].ttf",
+        "styleId": "minimal_033",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "quotes_028",
+    "name": "نصیحت — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "نصیحت",
+        "fontId": "NotoNastaliqUrdu-Regular.ttf",
+        "styleId": "emboss_040",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "quotes_029",
+    "name": "کہاوت — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "کہاوت",
+        "fontId": "PDMS Pencil.ttf",
+        "styleId": "calligraphy_043",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "quotes_030",
+    "name": "سوچ بدلو — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سوچ بدلو",
+        "fontId": "Resalaty-Regular.ttf",
+        "styleId": "minimal_048",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  }
+]

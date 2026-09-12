@@ -39,6 +39,21 @@
             android:visibility="gone" />
 
         <!--
+            Same badge the font and image grids use. A lockup inherits premium from the
+            fonts and styles it is built from, so the badge is computed rather than
+            stored — and like everywhere else in the editor it marks the asset without
+            blocking it, because the subscription gate is at export.
+        -->
+        <ImageView
+            android:id="@+id/isPremium"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_gravity="top|end"
+            android:contentDescription="@string/premium"
+            android:src="@drawable/ic_premium_icon"
+            android:visibility="gone" />
+
+        <!--
             Opens the preview while the panel is expanded. Collapsed, the tile is
             44dp and this would cover it, so long-press does the same job there.
         -->

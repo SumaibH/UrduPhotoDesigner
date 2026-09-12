@@ -1,0 +1,712 @@
+[
+  {
+    "id": "birthday_001",
+    "name": "سالگرہ مبارک — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سالگرہ",
+        "fontId": "AA Sameer Rafiya Unicode Regular - [UrduFonts.com].ttf",
+        "styleId": "neon_001",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "AA Sameer Rafiya Unicode Regular - [UrduFonts.com].ttf",
+        "styleId": "modern_004",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "birthday_002",
+    "name": "جنم دن مبارک — big-over-small",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "جنم دن",
+        "fontId": "AA Sameer Shamok - [UrduFonts.com].ttf",
+        "styleId": "threed_006",
+        "xPct": 0.5,
+        "yPct": 0.43,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "AA Sameer Shamok - [UrduFonts.com].ttf",
+        "styleId": "modern_011",
+        "xPct": 0.5,
+        "yPct": 0.67,
+        "widthPct": 0.38,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "birthday_003",
+    "name": "ہیپی برتھ ڈے — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ہیپی برتھ ڈے",
+        "fontId": "Al Qalam Naqsh.ttf",
+        "styleId": "layers_011",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "birthday_004",
+    "name": "سالگرہ کی مبارکباد — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سالگرہ کی مبارکباد",
+        "fontId": "Al Qalam Shahjahan.ttf",
+        "styleId": "neon_016",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "birthday_005",
+    "name": "سالگرہ مبارک — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سالگرہ مبارک",
+        "fontId": "Al Qalam Shahzaib.ttf",
+        "styleId": "threed_021",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "birthday_006",
+    "name": "جنم دن مبارک ہو — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "جنم دن مبارک ہو",
+        "fontId": "AlFars 7 Kodak.ttf",
+        "styleId": "layers_026",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "birthday_007",
+    "name": "خوش رہو — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "خوش رہو",
+        "fontId": "alfars-6-kamran-bold-regular-1.ttf",
+        "styleId": "neon_031",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "birthday_008",
+    "name": "سال گرہ مبارک ہو — offset-diagonal",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سال گرہ",
+        "fontId": "AlQalam Mujeeb.ttf",
+        "styleId": "threed_036",
+        "xPct": 0.38,
+        "yPct": 0.34,
+        "widthPct": 0.44,
+        "rotation": -6,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک ہو",
+        "fontId": "AlQalam Mujeeb.ttf",
+        "styleId": "modern_003",
+        "xPct": 0.6,
+        "yPct": 0.63,
+        "widthPct": 0.56,
+        "rotation": -6,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "birthday_009",
+    "name": "سالگرہ مبارک ہو — three-stack",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سالگرہ",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "layers_041",
+        "xPct": 0.5,
+        "yPct": 0.28,
+        "widthPct": 0.44,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "modern_010",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "ہو",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "modern_010",
+        "xPct": 0.5,
+        "yPct": 0.72,
+        "widthPct": 0.36,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "birthday_010",
+    "name": "ڈھیروں مبارکباد — stacked-centre",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ڈھیروں",
+        "fontId": "alqalam-khat-e-kamal-regular-1.ttf",
+        "styleId": "neon_046",
+        "xPct": 0.5,
+        "yPct": 0.38,
+        "widthPct": 0.72,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارکباد",
+        "fontId": "alqalam-khat-e-kamal-regular-1.ttf",
+        "styleId": "modern_022",
+        "xPct": 0.5,
+        "yPct": 0.63,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "birthday_011",
+    "name": "مبارک ہو سالگرہ — big-over-small",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "مبارک ہو",
+        "fontId": "alqalam-shamil-regular-1.ttf",
+        "styleId": "threed_001",
+        "xPct": 0.5,
+        "yPct": 0.43,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "سالگرہ",
+        "fontId": "alqalam-shamil-regular-1.ttf",
+        "styleId": "neon_024",
+        "xPct": 0.5,
+        "yPct": 0.67,
+        "widthPct": 0.38,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "birthday_012",
+    "name": "آپ کو سالگرہ مبارک — three-stack",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "آپ کو",
+        "fontId": "alqalam-shekastah-regular-1.ttf",
+        "styleId": "layers_006",
+        "xPct": 0.5,
+        "yPct": 0.28,
+        "widthPct": 0.44,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "سالگرہ",
+        "fontId": "alqalam-shekastah-regular-1.ttf",
+        "styleId": "modern_039",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "alqalam-shekastah-regular-1.ttf",
+        "styleId": "modern_039",
+        "xPct": 0.5,
+        "yPct": 0.72,
+        "widthPct": 0.36,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "birthday_013",
+    "name": "سالگرہ مبارک — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سالگرہ",
+        "fontId": "Al Qalam Shahjahan.ttf",
+        "styleId": "threed_012",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "Al Qalam Shahjahan.ttf",
+        "styleId": "neon_017",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "birthday_014",
+    "name": "جنم دن مبارک — offset-diagonal",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "جنم دن",
+        "fontId": "Al Qalam Shahzaib.ttf",
+        "styleId": "layers_017",
+        "xPct": 0.38,
+        "yPct": 0.34,
+        "widthPct": 0.44,
+        "rotation": -6,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "Al Qalam Shahzaib.ttf",
+        "styleId": "modern_032",
+        "xPct": 0.6,
+        "yPct": 0.63,
+        "widthPct": 0.56,
+        "rotation": -6,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "birthday_015",
+    "name": "ہیپی برتھ ڈے — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ہیپی برتھ ڈے",
+        "fontId": "AlFars 7 Kodak.ttf",
+        "styleId": "neon_022",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "birthday_016",
+    "name": "سالگرہ کی مبارکباد — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سالگرہ کی مبارکباد",
+        "fontId": "alfars-6-kamran-bold-regular-1.ttf",
+        "styleId": "threed_027",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "birthday_017",
+    "name": "سالگرہ مبارک — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سالگرہ مبارک",
+        "fontId": "AlQalam Mujeeb.ttf",
+        "styleId": "layers_032",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "birthday_018",
+    "name": "جنم دن مبارک ہو — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "جنم دن مبارک ہو",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "neon_037",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "birthday_019",
+    "name": "خوش رہو — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "خوش رہو",
+        "fontId": "alqalam-khat-e-kamal-regular-1.ttf",
+        "styleId": "threed_042",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "birthday_020",
+    "name": "سال گرہ مبارک ہو — wide-with-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سال گرہ",
+        "fontId": "alqalam-shamil-regular-1.ttf",
+        "styleId": "layers_047",
+        "xPct": 0.5,
+        "yPct": 0.45,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک ہو",
+        "fontId": "alqalam-shamil-regular-1.ttf",
+        "styleId": "modern_019",
+        "xPct": 0.5,
+        "yPct": 0.68,
+        "widthPct": 0.32,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "birthday_021",
+    "name": "ڈھیروں مبارکباد — small-over-big",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ڈھیروں",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "threed_007",
+        "xPct": 0.5,
+        "yPct": 0.32,
+        "widthPct": 0.34,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارکباد",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "modern_038",
+        "xPct": 0.5,
+        "yPct": 0.58,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "birthday_022",
+    "name": "مبارک ہو سالگرہ — offset-diagonal",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "مبارک ہو",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "layers_012",
+        "xPct": 0.38,
+        "yPct": 0.34,
+        "widthPct": 0.44,
+        "rotation": -6,
+        "align": "CENTER"
+      },
+      {
+        "text": "سالگرہ",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "modern_045",
+        "xPct": 0.6,
+        "yPct": 0.63,
+        "widthPct": 0.56,
+        "rotation": -6,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "birthday_023",
+    "name": "سالگرہ مبارک — baseline-shifted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سالگرہ",
+        "fontId": "alfars-6-kamran-bold-regular-1.ttf",
+        "styleId": "layers_023",
+        "xPct": 0.42,
+        "yPct": 0.42,
+        "widthPct": 0.52,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "alfars-6-kamran-bold-regular-1.ttf",
+        "styleId": "modern_041",
+        "xPct": 0.6,
+        "yPct": 0.62,
+        "widthPct": 0.46,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "birthday_024",
+    "name": "جنم دن مبارک — wide-with-kicker",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "جنم دن",
+        "fontId": "AlQalam Mujeeb.ttf",
+        "styleId": "neon_028",
+        "xPct": 0.5,
+        "yPct": 0.45,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک",
+        "fontId": "AlQalam Mujeeb.ttf",
+        "styleId": "modern_046",
+        "xPct": 0.5,
+        "yPct": 0.68,
+        "widthPct": 0.32,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "birthday_025",
+    "name": "ہیپی برتھ ڈے — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "ہیپی برتھ ڈے",
+        "fontId": "alqalam-irzan-regular-1.ttf",
+        "styleId": "threed_033",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "birthday_026",
+    "name": "سالگرہ کی مبارکباد — single-tilted",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سالگرہ کی مبارکباد",
+        "fontId": "alqalam-khat-e-kamal-regular-1.ttf",
+        "styleId": "layers_038",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.82,
+        "rotation": -5,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "birthday_027",
+    "name": "سالگرہ مبارک — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سالگرہ مبارک",
+        "fontId": "alqalam-shamil-regular-1.ttf",
+        "styleId": "neon_043",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "birthday_028",
+    "name": "جنم دن مبارک ہو — single-wide",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "جنم دن مبارک ہو",
+        "fontId": "alqalam-shekastah-regular-1.ttf",
+        "styleId": "threed_048",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.84,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "birthday_029",
+    "name": "خوش رہو — single",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "خوش رہو",
+        "fontId": "alqalam-tafseer-regular-1.ttf",
+        "styleId": "layers_003",
+        "xPct": 0.5,
+        "yPct": 0.5,
+        "widthPct": 0.8,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  },
+  {
+    "id": "birthday_030",
+    "name": "سال گرہ مبارک ہو — big-over-small",
+    "generated": true,
+    "aspect": 1,
+    "layers": [
+      {
+        "text": "سال گرہ",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "neon_008",
+        "xPct": 0.5,
+        "yPct": 0.43,
+        "widthPct": 0.82,
+        "rotation": 0,
+        "align": "CENTER"
+      },
+      {
+        "text": "مبارک ہو",
+        "fontId": "AlQlam_Sadaf.ttf",
+        "styleId": "modern_041",
+        "xPct": 0.5,
+        "yPct": 0.67,
+        "widthPct": 0.38,
+        "rotation": 0,
+        "align": "CENTER"
+      }
+    ]
+  }
+]

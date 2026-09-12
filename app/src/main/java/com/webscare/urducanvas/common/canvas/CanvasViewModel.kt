@@ -2780,64 +2780,7 @@ class CanvasViewModel @Inject constructor(
             actionLabel = "text" to "style_preset",
             actionDetail = preset.id
         ) { element ->
-            val hasStrokeVal = preset.strokeColor != null && preset.strokeWidth > 0f
-            val hasShadowVal = preset.shadowColor != null && (preset.shadowRadius > 0f || preset.shadowDx != 0f || preset.shadowDy != 0f)
-            element.copy(
-                paintColor = preset.textColor ?: element.paintColor,
-                fillGradient = preset.textGradient,
-                hasStroke = hasStrokeVal,
-                strokeColor = preset.strokeColor ?: Color.TRANSPARENT,
-                strokeWidth = preset.strokeWidth,
-                hasUnderStroke = preset.hasUnderStroke,
-                underStrokeColor = preset.underStrokeColor ?: Color.TRANSPARENT,
-                underStrokeWidth = preset.underStrokeWidth,
-                has3dExtrude = preset.has3dExtrude,
-                extrudeColor = preset.extrudeColor ?: Color.BLACK,
-                extrudeDepth = preset.extrudeDepth,
-                extrudeDx = preset.extrudeDx,
-                extrudeDy = preset.extrudeDy,
-                hasDoubleExtrude = preset.hasDoubleExtrude,
-                extrudeStep2Color = preset.extrudeStep2Color ?: Color.BLACK,
-                extrudeStep2Depth = preset.extrudeStep2Depth,
-                extrudeStep2Dx = preset.extrudeStep2Dx,
-                extrudeStep2Dy = preset.extrudeStep2Dy,
-                hasAnaglyph = preset.hasAnaglyph,
-                anaglyphOffset = preset.anaglyphOffset,
-                anaglyphColor1 = preset.anaglyphColor1 ?: Color.parseColor("#FF0055"),
-                anaglyphColor2 = preset.anaglyphColor2 ?: Color.parseColor("#00E5FF"),
-                hasBevel = preset.hasBevel,
-                bevelHighlightColor = preset.bevelHighlightColor ?: Color.parseColor("#80FFFFFF"),
-                bevelShadowColor = preset.bevelShadowColor ?: Color.parseColor("#80000000"),
-                bevelDepth = preset.bevelDepth,
-                hasEmboss = preset.hasEmboss,
-                isDebossed = preset.isDebossed,
-                embossDepth = preset.embossDepth,
-                embossHighlightColor = preset.embossHighlightColor ?: Color.parseColor("#80FFFFFF"),
-                embossShadowColor = preset.embossShadowColor ?: Color.parseColor("#80000000"),
-                hasOuterGlow = preset.hasOuterGlow,
-                outerGlowColor = preset.outerGlowColor ?: Color.parseColor("#00E5FF"),
-                outerGlowRadius = preset.outerGlowRadius,
-                outerGlowOpacity = preset.outerGlowOpacity,
-                hasInnerGlow = preset.hasInnerGlow,
-                innerGlowColor = preset.innerGlowColor ?: Color.parseColor("#FFFFFF"),
-                innerGlowRadius = preset.innerGlowRadius,
-                innerGlowOpacity = preset.innerGlowOpacity,
-                hasShadow = hasShadowVal,
-                shadowColor = preset.shadowColor ?: Color.TRANSPARENT,
-                shadowRadius = preset.shadowRadius,
-                shadowDx = preset.shadowDx,
-                shadowDy = preset.shadowDy,
-                shadowOpacity = preset.shadowOpacity,
-                hasLabel = preset.hasLabel,
-                labelShape = preset.labelShape,
-                labelColor = preset.labelColor,
-                labelGradient = preset.labelGradient,
-                labelSecondaryColor = preset.labelSecondaryColor,
-                labelStrokeColor = preset.labelStrokeColor,
-                labelStrokeWidth = preset.labelStrokeWidth,
-                hasGlossHighlight = preset.hasGlossHighlight,
-                hasFoldedRibbonFlaps = preset.hasFoldedRibbonFlaps
-            )
+            TextStyleApplier.apply(element, preset)
         }
     }
 
@@ -4744,73 +4687,24 @@ class CanvasViewModel @Inject constructor(
         val canvasH = _canvasSize.value?.height ?: 0f
         val scaledTextSize = (minOf(canvasW, canvasH) * 0.05f).coerceIn(24f, 200f)
 
-        val hasStrokeVal = stylePreset.strokeColor != null && stylePreset.strokeWidth > 0f
-        val hasShadowVal = stylePreset.shadowColor != null && (stylePreset.shadowRadius > 0f || stylePreset.shadowDx != 0f || stylePreset.shadowDy != 0f)
-
-        val element = CanvasElement(
-            context = context,
-            type = ElementType.TEXT,
-            text = text,
-            x = canvasW / 2f,
-            y = canvasH / 2f,
-            paintColor = stylePreset.textColor ?: Color.BLACK,
-            fillGradient = stylePreset.textGradient,
-            hasStroke = hasStrokeVal,
-            strokeColor = stylePreset.strokeColor ?: Color.TRANSPARENT,
-            strokeWidth = stylePreset.strokeWidth,
-            hasUnderStroke = stylePreset.hasUnderStroke,
-            underStrokeColor = stylePreset.underStrokeColor ?: Color.TRANSPARENT,
-            underStrokeWidth = stylePreset.underStrokeWidth,
-            has3dExtrude = stylePreset.has3dExtrude,
-            extrudeColor = stylePreset.extrudeColor ?: Color.BLACK,
-            extrudeDepth = stylePreset.extrudeDepth,
-            extrudeDx = stylePreset.extrudeDx,
-            extrudeDy = stylePreset.extrudeDy,
-            hasDoubleExtrude = stylePreset.hasDoubleExtrude,
-            extrudeStep2Color = stylePreset.extrudeStep2Color ?: Color.BLACK,
-            extrudeStep2Depth = stylePreset.extrudeStep2Depth,
-            extrudeStep2Dx = stylePreset.extrudeStep2Dx,
-            extrudeStep2Dy = stylePreset.extrudeStep2Dy,
-            hasAnaglyph = stylePreset.hasAnaglyph,
-            anaglyphOffset = stylePreset.anaglyphOffset,
-            anaglyphColor1 = stylePreset.anaglyphColor1 ?: Color.parseColor("#FF0055"),
-            anaglyphColor2 = stylePreset.anaglyphColor2 ?: Color.parseColor("#00E5FF"),
-            hasBevel = stylePreset.hasBevel,
-            bevelHighlightColor = stylePreset.bevelHighlightColor ?: Color.parseColor("#80FFFFFF"),
-            bevelShadowColor = stylePreset.bevelShadowColor ?: Color.parseColor("#80000000"),
-            bevelDepth = stylePreset.bevelDepth,
-            hasEmboss = stylePreset.hasEmboss,
-            isDebossed = stylePreset.isDebossed,
-            embossDepth = stylePreset.embossDepth,
-            embossHighlightColor = stylePreset.embossHighlightColor ?: Color.parseColor("#80FFFFFF"),
-            embossShadowColor = stylePreset.embossShadowColor ?: Color.parseColor("#80000000"),
-            hasOuterGlow = stylePreset.hasOuterGlow,
-            outerGlowColor = stylePreset.outerGlowColor ?: Color.parseColor("#00E5FF"),
-            outerGlowRadius = stylePreset.outerGlowRadius,
-            outerGlowOpacity = stylePreset.outerGlowOpacity,
-            hasInnerGlow = stylePreset.hasInnerGlow,
-            innerGlowColor = stylePreset.innerGlowColor ?: Color.parseColor("#FFFFFF"),
-            innerGlowRadius = stylePreset.innerGlowRadius,
-            innerGlowOpacity = stylePreset.innerGlowOpacity,
-            hasShadow = hasShadowVal,
-            shadowColor = stylePreset.shadowColor ?: Color.TRANSPARENT,
-            shadowRadius = stylePreset.shadowRadius,
-            shadowDx = stylePreset.shadowDx,
-            shadowDy = stylePreset.shadowDy,
-            shadowOpacity = stylePreset.shadowOpacity,
-            hasLabel = stylePreset.hasLabel,
-            labelShape = stylePreset.labelShape,
-            labelColor = stylePreset.labelColor ?: Color.TRANSPARENT,
-            labelGradient = stylePreset.labelGradient,
-            labelSecondaryColor = stylePreset.labelSecondaryColor ?: Color.TRANSPARENT,
-            labelStrokeColor = stylePreset.labelStrokeColor ?: Color.TRANSPARENT,
-            labelStrokeWidth = stylePreset.labelStrokeWidth ?: 0f,
-            hasGlossHighlight = stylePreset.hasGlossHighlight,
-            hasFoldedRibbonFlaps = stylePreset.hasFoldedRibbonFlaps,
-            paintTextSize = scaledTextSize,
-            alignment = TextAlignment.CENTER,
-            paintAlpha = 255,
-            zIndex = newZIndex
+        // Built plain, then styled — TextStyleApplier is the one place the catalogue's
+        // fields are mapped onto an element, and it is what preset layers go through too.
+        // Black is the default fill rather than a choice: a style that names no colour of
+        // its own leaves whatever the element already has, which for a new one is this.
+        val element = TextStyleApplier.apply(
+            CanvasElement(
+                context = context,
+                type = ElementType.TEXT,
+                text = text,
+                x = canvasW / 2f,
+                y = canvasH / 2f,
+                paintColor = Color.BLACK,
+                paintTextSize = scaledTextSize,
+                alignment = TextAlignment.CENTER,
+                paintAlpha = 255,
+                zIndex = newZIndex
+            ),
+            stylePreset
         )
 
         element.updatePaintProperties()
@@ -4838,6 +4732,194 @@ class CanvasViewModel @Inject constructor(
         // AddText cannot carry it. Reported as an add rather than a style change because
         // that is what happened; the detail says which preset it came from.
         pendingActionDetail = stylePreset.id
+        notifyUndoRedoChanged()
+    }
+
+    /**
+     * Drops a whole lockup onto the canvas as one grouped object.
+     *
+     * The preset's layers are positioned as fractions of a box, not in pixels, so the box
+     * is worked out here against the current canvas and the fractions are read against it.
+     * That is what lets one preset land correctly on a square post and on a story.
+     *
+     * Everything lands in a single undo step and a single group: a lockup is one thing the
+     * user chose, so one tap of undo should take it away and one drag should move it. The
+     * group can be ungrouped afterwards for "let me move just this word".
+     *
+     * Presets are text only — nothing here touches the canvas background, so dropping one
+     * onto a photo cannot disturb it.
+     */
+    private companion object {
+        /** How much of the canvas a dropped lockup takes, leaving a margin to grab it by. */
+        const val PRESET_DROP_WIDTH_FRACTION = 0.78f
+
+        /** Reference size the layer is measured at before being scaled to its target width. */
+        const val PRESET_PROBE_TEXT_SIZE = 100f
+
+        /** Bounds on the solved size: unreadable below, and past the top of the range above. */
+        const val MIN_PRESET_TEXT_SIZE = 8f
+        const val MAX_PRESET_TEXT_SIZE = 400f
+
+        /** A little under the room a layer is owed, so lines have air rather than touch. */
+        const val PRESET_ROOM_SLACK = 0.88f
+    }
+
+    fun addTextPreset(
+        preset: com.webscare.urducanvas.data.model.TextPreset,
+        context: Context,
+        /**
+         * Fonts fetched for this insertion, ahead of the font list.
+         *
+         * A lockup is inserted the moment its downloads report success, and the list this
+         * ViewModel reads is refreshed from the database a beat later — so a face that has
+         * just arrived is not in it yet, and the layer that waited for it would be drawn in
+         * the fallback anyway. These are consulted first, which is the difference between
+         * waiting for a 14MB Nastaliq and then seeing it.
+         */
+        justDownloaded: List<FontEntity> = emptyList()
+    ) {
+        if (preset.layers.isEmpty()) return
+
+        val currentList = _canvasElements.value ?: emptyList()
+        val oldList = currentList.map { it.copy(context = null) }
+        val canvasW = _canvasSize.value?.width ?: 0f
+        val canvasH = _canvasSize.value?.height ?: 0f
+        if (canvasW <= 0f || canvasH <= 0f) return
+
+        // The drop box: centred, most of the canvas width, in the preset's own proportion,
+        // and shrunk to fit if that proportion makes it taller than the canvas allows.
+        var boxW = canvasW * PRESET_DROP_WIDTH_FRACTION
+        var boxH = boxW / preset.aspect.coerceAtLeast(0.05f)
+        val maxH = canvasH * PRESET_DROP_WIDTH_FRACTION
+        if (boxH > maxH) {
+            boxH = maxH
+            boxW = boxH * preset.aspect.coerceAtLeast(0.05f)
+        }
+        val boxLeft = (canvasW - boxW) / 2f
+        val boxTop = (canvasH - boxH) / 2f
+
+        val groupId = UUID.randomUUID().toString()
+        var nextZ = (currentList.maxOfOrNull { it.zIndex } ?: 0) + 1
+        val isSubscribed = billingManager.isSubscribed.value
+
+        val newElements = preset.layers.mapIndexed { index, layer ->
+            // A style that no longer resolves leaves the layer unstyled rather than
+            // failing the insertion — the words and the arrangement still arrive.
+            val style = com.webscare.urducanvas.data.repository.TextPresetsRepository
+                .resolveLayerStyle(context, layer)
+
+            // Content names a font by file_name, which is stable across releases; elements
+            // key on the row id, which is not. Resolving here rather than in the content is
+            // what keeps a re-imported font list from silently re-pointing every preset.
+            val font = layer.fontId?.let { fileName ->
+                justDownloaded.firstOrNull { it.file_name == fileName }
+                    ?: localFonts.value.firstOrNull { it.file_name == fileName }
+            }
+
+            val base = CanvasElement(
+                context = context,
+                type = ElementType.TEXT,
+                text = layer.text,
+                x = boxLeft + boxW * layer.xPct,
+                y = boxTop + boxH * layer.yPct,
+                paintColor = Color.BLACK,
+                paintTextSize = PRESET_PROBE_TEXT_SIZE,
+                alignment = when (layer.align.uppercase()) {
+                    "LEFT" -> TextAlignment.LEFT
+                    "RIGHT" -> TextAlignment.RIGHT
+                    else -> TextAlignment.CENTER
+                },
+                rotation = layer.rotation,
+                paintAlpha = 255,
+                zIndex = nextZ++,
+                groupId = groupId,
+                fontId = font?.id?.toString(),
+                // A lockup inherits premium from what it is made of, and it rides on the
+                // elements rather than on the preset, because that is where the export
+                // gate looks: getPremiumAssets walks the canvas, not the thing that put
+                // it there. So a preset using a premium font is collected at export by
+                // the same path as that font applied by hand, and needs no gate of its
+                // own. Nothing is marked premium in the catalogue today, so this is
+                // dormant until flags are set on the dashboard.
+                isPremium = font?.is_premium == true || style?.isPremium == true,
+                isSubscribed = isSubscribed
+            )
+
+            val element = style?.let { TextStyleApplier.apply(base, it) } ?: base
+            element.updatePaintProperties()
+
+            // Loaded from the font's own path rather than looked up by id, for the same
+            // reason the entity is passed in: applyTypefaceFromFontList searches the font
+            // list, and a face that finished downloading a moment ago is not in it yet.
+            // Falls back to the lookup for fonts that were already on disk.
+            val tf = font?.file_path
+                ?.takeIf { it.isNotBlank() && File(it).exists() }
+                ?.let { path -> runCatching { Typeface.createFromFile(path) }.getOrNull() }
+                ?: element.applyTypefaceFromFontList()
+            element.originalTypeface = tf
+            element.paint.typeface = tf
+
+            // Solve the size rather than author it: measure the line at a reference size
+            // and scale by how far off the target width it lands. The authored widthPct is
+            // a fraction of the box, so this is the only place the two meet.
+            val target = boxW * layer.widthPct
+            val measured = element.paint.measureText(element.getTextWithKashida())
+            if (measured > 0f && target > 0f) {
+                var solved = (PRESET_PROBE_TEXT_SIZE * (target / measured))
+                    .coerceIn(MIN_PRESET_TEXT_SIZE, MAX_PRESET_TEXT_SIZE)
+
+                // Width alone does not decide a size. A short word given a wide target
+                // becomes enormous and lands on the line below it, so it is then held to
+                // the room the layout leaves — measured at the solved size, because how
+                // tall a face runs is the face's business and Nastaliq descends a long
+                // way. The same rule runs in the thumbnail renderer, so what the card
+                // shows and what the canvas gets are the same lockup.
+                element.paintTextSize = solved
+                element.updatePaintProperties()
+                element.paint.typeface = tf
+                // Ink, not font metrics: a face's ascent-to-descent covers every glyph it
+                // can draw, and for Nastaliq that reaches far below what most words use.
+                val drawn = element.getTextWithKashida()
+                val ink = android.graphics.Rect()
+                element.paint.getTextBounds(drawn, 0, drawn.length, ink)
+                val inkHeight = ink.height().toFloat()
+                val roomPx = preset.verticalRoom(index) * boxH * PRESET_ROOM_SLACK
+                if (inkHeight > roomPx && inkHeight > 0f) {
+                    solved = (solved * (roomPx / inkHeight)).coerceAtLeast(MIN_PRESET_TEXT_SIZE)
+                }
+
+                element.paintTextSize = solved
+                element.updatePaintProperties()
+                element.paint.typeface = tf
+            }
+            element.shrinkBoxToContent()
+            element
+        }
+
+        // The sentinel the rest of the app recognises a group by: its id is the children's
+        // groupId, and it sits at the top of their z range.
+        val groupSentinel = CanvasElement(
+            type = ElementType.GROUP,
+            id = groupId,
+            customName = preset.name.takeIf { it.isNotBlank() } ?: "Preset",
+            zIndex = newElements.maxOf { it.zIndex },
+            isSelected = true,
+            groupId = null,
+            isGroupCollapsed = false
+        )
+
+        val updated = currentList + newElements + groupSentinel
+        _canvasElements.value = updated
+        _currentGroupId.value = groupId
+
+        // One action for the whole insertion. AddText carries a single element and could
+        // not describe this, so it goes on as an order change — which is what undo needs
+        // to put the canvas back exactly as it was.
+        _canvasActions.push(
+            CanvasAction.UpdateCanvasElementsOrder(oldList, updated.map { it.copy(context = null) })
+        )
+        _redoStack.clear()
+        pendingActionDetail = preset.id
         notifyUndoRedoChanged()
     }
 
