@@ -21,17 +21,17 @@
         android:id="@+id/watermark"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:alpha="0.07"
+        android:alpha="0.13"
         android:contentDescription="@null"
         android:importantForAccessibility="no"
         android:scaleType="fitCenter"
         android:src="@drawable/header_calligraphy"
-        android:translationX="58dp"
-        android:translationY="-18dp"
+        android:translationX="66dp"
+        android:translationY="-70dp"
         app:layout_constraintDimensionRatio="614:900"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_percent="0.66"
+        app:layout_constraintWidth_percent="0.80"
         app:tint="@color/watermark_tint" />
 
     <!-- ── Fixed top bar (does not scroll) ───────────────────────────────── -->

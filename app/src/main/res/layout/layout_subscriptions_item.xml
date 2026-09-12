@@ -21,28 +21,6 @@
     android:clipChildren="false"
     android:clipToPadding="false">
 
-    <!-- "BEST VALUE" ribbon — pinned to the card's top edge, only shown on
-         whichever plan the adapter flags as best value. Reuses the same
-         gradient pill drawable the old full-width item badge used. -->
-    <TextView
-        android:id="@+id/bestValueBadge"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@drawable/ic_button_gradient_wrap"
-        android:fontFamily="@font/bold"
-        android:letterSpacing="0.03"
-        android:paddingHorizontal="8dp"
-        android:paddingVertical="3dp"
-        android:text="@string/sub_best_value"
-        android:textColor="@color/white"
-        android:textSize="8.5sp"
-        android:visibility="gone"
-        tools:visibility="visible"
-        app:layout_constraintTop_toTopOf="@id/mainCard"
-        app:layout_constraintBottom_toTopOf="@id/mainCard"
-        app:layout_constraintStart_toStartOf="@id/mainCard"
-        app:layout_constraintEnd_toEndOf="@id/mainCard" />
-
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/mainCard"
         android:layout_width="match_parent"
@@ -119,4 +97,33 @@
                 android:textSize="11sp" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
+
+    <!-- "BEST VALUE" ribbon — straddling the card's top edge, only shown on
+         whichever plan the adapter flags as best value. Reuses the same
+         gradient pill drawable the old full-width item badge used.
+
+         Declared after the card on purpose: a ConstraintLayout draws its children
+         in order, and while this sat above the card the half of the ribbon that
+         overlaps was painted over and the words were cut in two. translationZ
+         would do it too, but only by out-elevating a card whose elevation is
+         deliberately 0. -->
+    <TextView
+        android:id="@+id/bestValueBadge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/ic_button_gradient_wrap"
+        android:fontFamily="@font/bold"
+        android:letterSpacing="0.03"
+        android:paddingHorizontal="8dp"
+        android:paddingVertical="3dp"
+        android:text="@string/sub_best_value"
+        android:textColor="@color/white"
+        android:textSize="8.5sp"
+        android:visibility="gone"
+        tools:visibility="visible"
+        app:layout_constraintTop_toTopOf="@id/mainCard"
+        app:layout_constraintBottom_toTopOf="@id/mainCard"
+        app:layout_constraintStart_toStartOf="@id/mainCard"
+        app:layout_constraintEnd_toEndOf="@id/mainCard" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
