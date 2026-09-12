@@ -7,13 +7,29 @@
     tools:context=".ui.editor.panels.text.fonts.FontsListFragment"
     android:background="@color/screen_bg">
 
+    <!--
+        This list is only ever drawn inside an adjustments sheet: FontsListFragment is
+        created only by FontsFragment, and FontsFragment only by TextAdjustmentsPagerAdapter
+        and TableAdjustmentsPagerAdapter. The main bottom-navigation Text panel draws its
+        own font strip from TextFragment, so nothing here reaches it.
+
+        Which means the padding below is the adjustments panel's tile metric, and it is the
+        one 3D -> Presets uses: fragment_3d_presets.xml puts 12dp/8dp/6dp/8dp around its
+        grid, and fragment_text_style_grid.xml matches it. All three grids size a tile the
+        same way, as (the RecyclerView's height minus its vertical padding minus rows times
+        6dp) / rows, so the padding is the whole of the difference. Without the 8dp above and
+        below, this grid measured 215px tiles against the 199px of the two beside it and
+        read as the oversized one of the three.
+    -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/englishRV"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:clipToPadding="false"
         android:paddingStart="12dp"
-        android:paddingEnd="4dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="6dp"
+        android:paddingBottom="8dp"
         android:orientation="horizontal"
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
         tools:itemCount="50"
