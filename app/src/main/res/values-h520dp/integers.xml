@@ -34,4 +34,13 @@
 <resources>
     <integer name="panel_color_grid_rows">1</integer>
     <integer name="panel_preset_grid_rows">1</integer>
+
+    <!--
+        Browse strips (MorphGridLayoutManager). One, and one is forced rather than chosen:
+        the strip measures 138px / 46dp here, and these adapters floor a tile at 24dp, so
+        two rows want 2 * (24 + 6) = 60dp and still overflow - the second row is clipped
+        and the first is left at the 24dp floor, which is the arrows-with-no-preview state
+        the user reported. One row gives a 120px / 40dp tile that actually fills the strip.
+    -->
+    <integer name="panel_browse_grid_rows">1</integer>
 </resources>

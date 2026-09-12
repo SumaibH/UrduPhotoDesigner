@@ -16,4 +16,19 @@
     -->
     <integer name="panel_color_grid_rows">1</integer>
     <integer name="panel_preset_grid_rows">1</integer>
+
+    <!--
+        Rows in the browse strips that MorphGridLayoutManager drives - the resting,
+        horizontal half of the panels you pick fonts, styles, objects, images, shapes,
+        vectors and tables from. Kept separate from panel_preset_grid_rows because the
+        container is a different size entirely: measured on a Pixel 10 Pro XL, the browse
+        strip is 185dp tall at h640dp but only 46dp at h520dp, where the preset grid still
+        has 99dp. Tuning one should not silently move the other.
+
+        These adapters floor a tile at 24dp, so too many rows do not shrink the tile, they
+        overflow the strip and clip it: at 46dp, three rows want 3 * (24 + 6) = 90dp and
+        you see the top of row one and nothing else - which is why the small-screen panel
+        showed bare download arrows and no previews at all.
+    -->
+    <integer name="panel_browse_grid_rows">1</integer>
 </resources>

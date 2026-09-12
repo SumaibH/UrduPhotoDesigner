@@ -94,7 +94,6 @@ class ObjectsListFragment : androidx.fragment.app.Fragment() {
             recycledViewPool.setMaxRecycledViews(0, 25)
             layoutManager = MorphGridLayoutManager(
                 context = requireContext(),
-                collapsedSpan = 3,
                 expandedSpan = 3
             ).apply {
                 applyFraction(binding.objects, if (mainViewModel.isPanelExpanded(PanelType.OBJECTS)) 1f else 0f)

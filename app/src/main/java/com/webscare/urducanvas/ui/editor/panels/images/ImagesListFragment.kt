@@ -95,7 +95,6 @@ class ImagesListFragment : Fragment() {
             recycledViewPool.setMaxRecycledViews(0, 25)
             layoutManager = MorphGridLayoutManager(
                 context = requireContext(),
-                collapsedSpan = 3,
                 expandedSpan = 3
             ).apply {
                 applyFraction(binding.backgrounds, if (mainViewModel.isPanelExpanded(PanelType.IMAGES)) 1f else 0f)

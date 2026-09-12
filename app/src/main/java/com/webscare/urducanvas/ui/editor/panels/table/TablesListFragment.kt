@@ -60,7 +60,6 @@ class TablesListFragment : Fragment() {
             recycledViewPool.setMaxRecycledViews(0, 25)
             layoutManager = MorphGridLayoutManager(
                 context = requireContext(),
-                collapsedSpan = 3,
                 expandedSpan = 3
             ).apply {
                 applyFraction(binding.tablesRV, if (mainViewModel.isPanelExpanded(PanelType.TABLES)) 1f else 0f)

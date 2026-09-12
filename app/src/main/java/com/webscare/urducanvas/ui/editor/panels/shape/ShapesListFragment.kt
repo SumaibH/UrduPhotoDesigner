@@ -85,7 +85,6 @@ class ShapesListFragment : Fragment() {
             recycledViewPool.setMaxRecycledViews(0, 32)
             layoutManager = MorphGridLayoutManager(
                 context = requireContext(),
-                collapsedSpan = 3,
                 expandedSpan = 3
             ).apply {
                 applyFraction(binding.objects, if (mainViewModel.isPanelExpanded(PanelType.SHAPES)) 1f else 0f)
