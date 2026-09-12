@@ -97,10 +97,7 @@ class ObjectsFragment : Fragment(), PreviewHostOwner {
         super.onViewCreated(view, savedInstanceState)
         // The tiles live two fragments down, so the preview is hosted up here where
         // it can cover the tab rows as well as the grid.
-        previewHost = PanelPreviewHost(
-            this, binding.root, topAnchorId = R.id.dragHandle,
-            onRestore = { applyExpandedUi(mainViewModel.isPanelExpanded(PanelType.OBJECTS)) }
-        )
+        previewHost = PanelPreviewHost(this, binding.root)
         
         setEvents()
         attachDragHandleSwipe()

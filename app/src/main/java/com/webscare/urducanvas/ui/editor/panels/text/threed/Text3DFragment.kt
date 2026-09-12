@@ -56,7 +56,7 @@ class Text3DFragment : Fragment(), PreviewHostOwner {
 
         // The rail is how you get between preset groups, so the preview covers the
         // grid beside it rather than the whole panel.
-        previewHost = PanelPreviewHost(this, binding.root, startAnchorId = R.id.collapsibleRail)
+        previewHost = PanelPreviewHost(this, binding.root)
         setupRailAndPager()
         initObservers()
     }

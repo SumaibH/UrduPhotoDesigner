@@ -134,10 +134,7 @@ class TextFragment : Fragment(), PreviewHostOwner {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        previewHost = PanelPreviewHost(
-            this, binding.root, topAnchorId = R.id.dragHandle,
-            onRestore = { applyExpandedUi(isPanelExpanded) }
-        )
+        previewHost = PanelPreviewHost(this, binding.root)
         setupRecyclerView()
         restoreTabState()
         setupSwipeRefresh()
