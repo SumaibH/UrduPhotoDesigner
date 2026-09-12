@@ -427,7 +427,6 @@
                     app:layout_constraintTop_toBottomOf="@id/quickActionTitle"
                     app:layout_constraintEnd_toEndOf="parent"
                     android:layout_marginTop="6dp"
-                    android:weightSum="3"
                     android:gravity="center">
 
                     <TextView
@@ -479,6 +478,27 @@
                         android:textSize="15sp"
                         app:drawableTint="@color/black"
                         app:drawableTopCompat="@drawable/ic_share" />
+
+                    <!-- Debug only: zips the project json + thumbnail. Made visible from code when !IS_PROD_LOGIC. -->
+                    <TextView
+                        android:id="@+id/exportZip"
+                        android:layout_width="0dp"
+                        android:layout_height="80dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:background="@drawable/card_bg"
+                        android:drawablePadding="6dp"
+                        android:fontFamily="@font/regular"
+                        android:gravity="center"
+                        android:paddingVertical="15dp"
+                        android:text="Zip"
+                        android:textColor="@color/black"
+                        android:textSize="15sp"
+                        android:visibility="gone"
+                        app:drawableTint="@color/black"
+                        app:drawableTopCompat="@drawable/ic_export"
+                        tools:ignore="HardcodedText"
+                        tools:visibility="visible" />
                 </LinearLayout>
 
             </androidx.constraintlayout.widget.ConstraintLayout>

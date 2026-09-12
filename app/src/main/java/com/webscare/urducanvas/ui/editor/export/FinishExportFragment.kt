@@ -1,10 +1,23 @@
 package com.webscare.urducanvas.ui.editor.export
 
+import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
+import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.LinearInterpolator
+import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
+import com.webscare.urducanvas.databinding.DialogLoadingProgressBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.core.content.FileProvider
 import androidx.core.content.ContextCompat
 import com.webscare.urducanvas.BuildConfig
@@ -49,6 +62,12 @@ class FinishExportFragment : androidx.fragment.app.Fragment() {
     lateinit var adAnalyticsCoordinator: com.webscare.urducanvas.analytics.ads.AdAnalyticsCoordinator
 
     val viewModel: CanvasViewModel by activityViewModels()
+
+    // Debug zip export state (only reachable when !IS_PROD_LOGIC)
+    private var zipExportJob: Job? = null
+    private var zipDialog: Dialog? = null
+    private var zipDialogBinding: DialogLoadingProgressBinding? = null
+    private var zipIconRotation: ObjectAnimator? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -163,62 +182,39 @@ class FinishExportFragment : androidx.fragment.app.Fragment() {
                 templateId = export.sourceTemplateId ?: sessionStateManager.activeTemplateId
             )
 
-            if (!BuildConfig.IS_PROD_LOGIC) {
-                // Debug: zip json + thumbnail image and share
-                val jsonFile = File(export.jsonPath)
-                val imageFile = File(export.imagePath)
+            // Share the final exported file (image or PDF) — what the user actually made.
+            // Project sharing (.urdc) is on the Export Settings screen; the debug zip
+            // (json + thumbnail) has its own button below.
+            val filePath = export.pdfPath ?: export.imagePath
+            val file = File(filePath)
+            if (!file.exists()) return@addPressEffect
 
-                if (!jsonFile.exists() || !imageFile.exists()) return@addPressEffect
-
-                val thumbnailFile = createThumbnail(imageFile, export.imagePath)
-                if (thumbnailFile == null) return@addPressEffect
-
-                val downloadFolder = android.os.Environment
-                    .getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS)
-                val zipFile = File(downloadFolder, "design_${System.currentTimeMillis()}.zip")
-                createZipFromFiles(listOf(jsonFile, thumbnailFile), zipFile)
-
-                // Clean up temp thumbnail
-                thumbnailFile.delete()
-
-                val uri = FileProvider.getUriForFile(
-                    requireContext(),
-                    "${requireContext().packageName}.fileprovider",
-                    zipFile
-                )
-                val intent = Intent(Intent.ACTION_SEND).apply {
-                    type = "application/zip"
-                    putExtra(Intent.EXTRA_STREAM, uri)
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                }
-                startActivity(Intent.createChooser(intent, "Share Design Zip"))
-
-            } else {
-                // Release: share the final exported file (image or PDF) — what the user
-                // actually made. Project sharing (.urdc) is on the Export Settings screen.
-                val filePath = export.pdfPath ?: export.imagePath
-                val file = File(filePath)
-                if (!file.exists()) return@addPressEffect
-
-                val mimeType = when {
-                    filePath.endsWith(".pdf", true) -> "application/pdf"
-                    filePath.endsWith(".png", true) -> "image/png"
-                    filePath.endsWith(".jpg", true) || filePath.endsWith(".jpeg", true) -> "image/jpeg"
-                    filePath.endsWith(".webp", true) -> "image/webp"
-                    else -> "image/*"
-                }
-                val uri = FileProvider.getUriForFile(
-                    requireContext(),
-                    "${requireContext().packageName}.fileprovider",
-                    file
-                )
-                val intent = Intent(Intent.ACTION_SEND).apply {
-                    type = mimeType
-                    putExtra(Intent.EXTRA_STREAM, uri)
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                }
-                startActivity(Intent.createChooser(intent, "Share"))
+            val mimeType = when {
+                filePath.endsWith(".pdf", true) -> "application/pdf"
+                filePath.endsWith(".png", true) -> "image/png"
+                filePath.endsWith(".jpg", true) || filePath.endsWith(".jpeg", true) -> "image/jpeg"
+                filePath.endsWith(".webp", true) -> "image/webp"
+                else -> "image/*"
             }
+            val uri = FileProvider.getUriForFile(
+                requireContext(),
+                "${requireContext().packageName}.fileprovider",
+                file
+            )
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = mimeType
+                putExtra(Intent.EXTRA_STREAM, uri)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            startActivity(Intent.createChooser(intent, "Share"))
+        }
+
+        // 🔹 Debug only: export the project json + thumbnail as a zip into Downloads
+        binding.exportZip.isVisible = !BuildConfig.IS_PROD_LOGIC
+        binding.exportZip.addPressEffect {
+            val export = viewModel.exportResult.value ?: return@addPressEffect
+            if (zipExportJob?.isActive == true) return@addPressEffect
+            exportDebugZip(export.jsonPath, export.imagePath)
         }
 
         // 🔹 Open logic (PDF or Image)
@@ -304,6 +300,102 @@ class FinishExportFragment : androidx.fragment.app.Fragment() {
         }
     }
 
+    // ── Debug zip export ──────────────────────────────────────────────────────────
+
+    private fun exportDebugZip(jsonPath: String, imagePath: String) {
+        val jsonFile = File(jsonPath)
+        val imageFile = File(imagePath)
+        if (!jsonFile.exists() || !imageFile.exists()) {
+            Snackbar.make(binding.root, "Project files not found — nothing to zip", Snackbar.LENGTH_SHORT).show()
+            return
+        }
+
+        showZipProgressDialog()
+        zipExportJob = viewLifecycleOwner.lifecycleScope.launch {
+            var thumbnailFile: File? = null
+            try {
+                setZipProgress(10, "Creating thumbnail…")
+                thumbnailFile = withContext(Dispatchers.IO) { createThumbnail(imageFile, imagePath) }
+                if (thumbnailFile == null) {
+                    dismissZipProgressDialog()
+                    Snackbar.make(binding.root, "Could not read the exported image", Snackbar.LENGTH_SHORT).show()
+                    return@launch
+                }
+
+                setZipProgress(40, "Compressing project files…")
+                val downloadFolder = android.os.Environment
+                    .getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS)
+                val zipFile = File(downloadFolder, "design_${System.currentTimeMillis()}.zip")
+                withContext(Dispatchers.IO) {
+                    downloadFolder.mkdirs()
+                    createZipFromFiles(listOf(jsonFile, thumbnailFile), zipFile)
+                }
+
+                setZipProgress(100, "Done")
+                delay(250) // let the bar visibly reach 100% before the dialog goes
+                dismissZipProgressDialog()
+                Snackbar.make(
+                    binding.root,
+                    "Zip exported: Download/${zipFile.name}",
+                    Snackbar.LENGTH_LONG
+                ).show()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                dismissZipProgressDialog()
+                if (isAdded) {
+                    Snackbar.make(binding.root, "Zip export failed: ${e.message}", Snackbar.LENGTH_LONG).show()
+                }
+            } finally {
+                thumbnailFile?.delete()
+            }
+        }
+    }
+
+    private fun showZipProgressDialog() {
+        if (!isAdded || zipDialog?.isShowing == true) return
+        val dialogBinding = DialogLoadingProgressBinding.inflate(LayoutInflater.from(requireActivity()))
+        zipDialogBinding = dialogBinding
+        dialogBinding.title.text = "Exporting Zip"
+        dialogBinding.subtitle.text = "Processing…"
+        dialogBinding.tvProgressPercent.text = "0% complete"
+        dialogBinding.progressBar.progress = 0
+        dialogBinding.cancel.isVisible = false
+
+        zipDialog = Dialog(requireContext()).apply {
+            setContentView(dialogBinding.root)
+            setCancelable(false)
+            window?.setBackgroundDrawableResource(android.R.color.transparent)
+            val params = window?.attributes
+            params?.width = (resources.displayMetrics.widthPixels * 0.8).toInt()
+            params?.height = ViewGroup.LayoutParams.WRAP_CONTENT
+            window?.attributes = params
+            window?.setGravity(Gravity.CENTER)
+            show()
+        }
+
+        zipIconRotation = ObjectAnimator.ofFloat(dialogBinding.view4, View.ROTATION, 0f, 360f).apply {
+            duration = 1000L
+            repeatCount = ValueAnimator.INFINITE
+            interpolator = LinearInterpolator()
+            start()
+        }
+    }
+
+    private fun setZipProgress(percent: Int, stage: String) {
+        val b = zipDialogBinding ?: return
+        b.subtitle.text = stage
+        b.progressBar.progress = percent
+        b.tvProgressPercent.text = "$percent% complete"
+    }
+
+    private fun dismissZipProgressDialog() {
+        zipIconRotation?.cancel()
+        zipIconRotation = null
+        zipDialog?.dismiss()
+        zipDialog = null
+        zipDialogBinding = null
+    }
+
     private fun createThumbnail(originalFile: File, imagePath: String): File? {
         val original = ImageProcessor.filePathToBitmap(imagePath) ?: return null
 
@@ -338,6 +430,9 @@ class FinishExportFragment : androidx.fragment.app.Fragment() {
     }
 
     override fun onDestroyView() {
+        zipExportJob?.cancel()
+        zipExportJob = null
+        dismissZipProgressDialog()
         _binding?.previewImage?.setImageBitmap(null)
         super.onDestroyView()
         _binding = null
