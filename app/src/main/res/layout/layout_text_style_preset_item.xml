@@ -54,6 +54,26 @@
             android:visibility="gone" />
 
         <!--
+            The in-progress badge, copied attribute for attribute from the font tile
+            (layout_font_item.xml): same 16dp disc, same slot, same animation. A lockup
+            fetching its fonts is the same wait a font tile shows, so it shows it the
+            same way — and nothing else, no figure and no dimming.
+        -->
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/loading"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_gravity="end|bottom"
+            android:layout_margin="4dp"
+            android:background="@drawable/button_bg_round"
+            android:backgroundTint="@color/surface_2"
+            android:padding="3dp"
+            android:visibility="gone"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="true"
+            app:lottie_rawRes="@raw/loading_gray" />
+
+        <!--
             Opens the preview while the panel is expanded. Collapsed, the tile is
             44dp and this would cover it, so long-press does the same job there.
         -->

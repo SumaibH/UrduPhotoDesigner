@@ -83,13 +83,20 @@ class TextStylesMainAdapter(
      * tap on the same card does nothing and a tap on another one is what replaces this.
      */
     internal var downloadingLockupId: String? = null
-    internal var downloadPercent: Int = 0
 
-    /** Shows or clears the progress overlay. Pass null for [id] when it is finished. */
+    /**
+     * Shows or clears the spinner. Pass null for [id] when it is finished.
+     *
+     * [percent] is accepted but not drawn. The tile shows the same indeterminate loader
+     * a font tile shows, so how far along the fetch is makes no visible difference — and
+     * a repeat call for the same card is therefore a no-op rather than a rebind, which
+     * matters because re-binding a lockup redraws its bitmap.
+     */
+    @Suppress("UNUSED_PARAMETER")
     fun setLockupDownload(id: String?, percent: Int) {
+        if (id == downloadingLockupId) return
         val changed = listOf(downloadingLockupId, id).filterNotNull().distinct()
         downloadingLockupId = id
-        downloadPercent = percent.coerceIn(0, 100)
         // Only the cards whose state actually moved, so the rest of the grid is not
         // re-rendered — a lockup bitmap is not cheap to draw.
         changed.forEach { changedId ->
@@ -202,7 +209,8 @@ class TextStylesMainAdapter(
                 TextStyleThumbnailRenderer.getCachedOrGenerateThumbnail(cardRoot.context, preset)
             )
             // Reset what only the lockup path sets, so a recycled tile arrives clean.
-            previewImg.alpha = 1f
+            // A style is on disk by definition, so it never wears the spinner.
+            binding.loading.isVisible = false
             binding.isPremium.isVisible = preset.isPremium
 
             // One rule everywhere: long-press opens the preview only while collapsed,
@@ -251,20 +259,14 @@ class TextStylesMainAdapter(
             binding.previewEye.isVisible = false
 
             val isDownloading = preset.id == adapter.downloadingLockupId
+            binding.loading.isVisible = isDownloading
             if (isDownloading) {
-                // The card is its own progress indicator: the lockup dims and the
-                // percentage sits over it, so the thing being waited for is the thing
-                // showing the wait. Inert meanwhile — tapping twice must not insert twice.
-                previewImg.alpha = DOWNLOADING_ALPHA
-                titleTxt.text = cardRoot.context.getString(
-                    R.string.percent_complete, adapter.downloadPercent
-                )
-                titleTxt.visibility = View.VISIBLE
+                // The same badge a font tile wears while it downloads, in the same
+                // corner: an indeterminate spinner and nothing else. Inert meanwhile —
+                // tapping twice must not insert twice.
                 cardRoot.isClickable = false
                 cardRoot.setOnClickListener(null)
             } else {
-                previewImg.alpha = 1f
-                titleTxt.visibility = View.GONE
                 cardRoot.addPressEffect { onLockupClick(preset) }
             }
         }
@@ -335,8 +337,5 @@ class TextStylesMainAdapter(
     companion object {
         /** Used only if a tile is bound before it has been measured; layout corrects it. */
         private const val TILE_FALLBACK_PX = 180
-
-        /** How far the lockup fades behind its own progress figure. */
-        private const val DOWNLOADING_ALPHA = 0.3f
     }
 }
