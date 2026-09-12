@@ -2,8 +2,36 @@
 <!--
     Panel grid rows, medium tier: 520dp to 639dp of available height — short and older
     phones. See values/integers.xml for what these are and why they are bucketed.
+
+    Both counts are 1 here, same as the compact tier. Multiple rows start at h640dp.
+    The two resources arrive at 1 for different reasons, so they are justified separately:
+
+    panel_preset_grid_rows — readability. The preset adapters size a tile as
+        (recycler height - rows * 6dp) / rows
+    and make it square, so the row count divides the tile directly. Measured on a
+    Pixel 10 Pro XL at 1344px wide:
+
+        h640dp (997dp)   3 rows   215px tile     Styles grid
+        h520dp (600dp)   2 rows   130px tile     <- was here
+        values  (500dp)  1 row    189px tile
+
+    The "eye" preview badge is a fixed 66px, so on the 130px tile it covered 51% of it,
+    and on the 3D presets grid (106px tile) 62% — the badge read as the tile and the
+    styles were impossible to tell apart. Note the absurdity the middle row created: the
+    *shorter* 500dp screen showed a *larger* tile than the 600dp one. At 1 row this tier
+    gets a 278px tile, the largest of the three, which is right — the strip has 99dp of
+    height to spend and one style is worth showing properly.
+
+    panel_color_grid_rows — height budget, not readability. A swatch is a hardcoded 26dp
+    in layout_color_item.xml and the palette RecyclerViews are wrap_content, so the
+    swatch measures exactly 78px in every tier no matter what this is set to; the row
+    count only multiplies the strip's height by 32dp a row. The defect it caused here is
+    the one values/integers.xml already documents for the compact tier: at 2 rows the
+    palette ate the whole panel and Stroke's "Border width" slider sat entirely below the
+    bottom edge, unreachable. One row gives that 32dp back and the slider returns. At
+    h640dp four rows still leave the slider on screen, so that tier is left alone.
 -->
 <resources>
-    <integer name="panel_color_grid_rows">2</integer>
-    <integer name="panel_preset_grid_rows">2</integer>
+    <integer name="panel_color_grid_rows">1</integer>
+    <integer name="panel_preset_grid_rows">1</integer>
 </resources>
