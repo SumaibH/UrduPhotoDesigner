@@ -15,13 +15,31 @@ import android.util.LruCache
 import androidx.core.content.res.ResourcesCompat
 import com.webscare.urducanvas.R
 import com.webscare.urducanvas.common.canvas.enums.LabelShape
+import com.webscare.urducanvas.data.model.PresetCategory
+import com.webscare.urducanvas.data.model.TextPreset
 import com.webscare.urducanvas.data.model.TextStylePreset
+import com.webscare.urducanvas.data.repository.TextPresetsRepository
 import kotlin.math.min
 
 object TextStyleThumbnailRenderer {
 
     /** The box every thumbnail is drawn in, and the unit the drawing code is written in. */
     private const val THUMB_PX = 180
+
+    /** What a style tile spells out. One word, so the effects are what the eye reads. */
+    private const val SAMPLE_TEXT = "اردو"
+    private const val SAMPLE_TEXT_SIZE = 58f
+
+    /** The two plates a lockup card can sit on, and how far their corners are rounded. */
+    private val PANEL_LIGHT = Color.parseColor("#F2F3F0")
+    private val PANEL_DARK = Color.parseColor("#1E211F")
+    private const val PANEL_RADIUS = 12f
+
+    /** Above this mean luminance the ink needs the dark plate to be visible at all. */
+    private const val LIGHT_INK_THRESHOLD = 0.62f
+
+    /** Below this a line is a smudge rather than a word, so it stops shrinking. */
+    private const val MIN_LAYER_TEXT_PX = 9f
 
     private val thumbnailCache = LruCache<String, Bitmap>(200)
 
@@ -61,8 +79,6 @@ object TextStyleThumbnailRenderer {
         customTypeface: Typeface? = null,
         sizePx: Int = THUMB_PX
     ): Bitmap {
-        val width = THUMB_PX
-        val height = THUMB_PX
         val bitmap = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         // Everything below is written against the 180pt box the tiles use. Drawing
@@ -74,17 +90,205 @@ object TextStyleThumbnailRenderer {
             canvas.scale(s, s)
         }
 
-        // Authentic font (use selected custom typeface or fallback to default canvas font)
-        val urduTypeface = customTypeface ?: try {
-            ResourcesCompat.getFont(context, R.font.default_canvas) ?: Typeface.DEFAULT_BOLD
-        } catch (e: Exception) {
-            Typeface.DEFAULT_BOLD
+        drawStyledText(
+            canvas = canvas,
+            preset = preset,
+            text = SAMPLE_TEXT,
+            typeface = customTypeface ?: defaultTypeface(context),
+            textSizePx = SAMPLE_TEXT_SIZE,
+            centerX = THUMB_PX / 2f,
+            centerY = THUMB_PX / 2f,
+            boxW = THUMB_PX.toFloat(),
+            boxH = THUMB_PX.toFloat()
+        )
+        return bitmap
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Lockups — several styled lines arranged into one card
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Renders [preset]'s whole lockup onto a card.
+     *
+     * Cached by id and size. The key also carries how many of the preset's fonts were
+     * on disk at render time, so when a download finishes the card re-renders against
+     * the real face instead of keeping the fallback it was drawn with — without having
+     * to hunt down and evict individual entries.
+     */
+    fun getCachedOrGenerateLockup(
+        context: Context,
+        preset: TextPreset,
+        typefaces: Map<String, Typeface>,
+        widthPx: Int,
+        heightPx: Int
+    ): Bitmap {
+        val key = "lockup_${preset.id}_${widthPx}x${heightPx}_${typefaces.size}"
+        thumbnailCache.get(key)?.let { return it }
+
+        val bmp = generateLockupThumbnail(context, preset, typefaces, widthPx, heightPx)
+        thumbnailCache.put(key, bmp)
+        return bmp
+    }
+
+    private fun generateLockupThumbnail(
+        context: Context,
+        preset: TextPreset,
+        typefaces: Map<String, Typeface>,
+        widthPx: Int,
+        heightPx: Int
+    ): Bitmap {
+        val bitmap = Bitmap.createBitmap(
+            widthPx.coerceAtLeast(1), heightPx.coerceAtLeast(1), Bitmap.Config.ARGB_8888
+        )
+        val canvas = Canvas(bitmap)
+
+        val fallback = defaultTypeface(context)
+        val boxW = bitmap.width.toFloat()
+        val boxH = bitmap.height.toFloat()
+
+        // Resolved once, because the panel has to be chosen from them before anything
+        // is drawn on it.
+        val styles = preset.layers.map { layer ->
+            TextPresetsRepository.resolveLayerStyle(context, layer)
+                ?: TextStylePreset.none(PresetCategory.MINIMAL)
         }
 
-        val text = "اردو"
+        // The panel. Presets are text only — nothing here reaches the canvas — but a
+        // lockup drawn on nothing is unreadable half the time, and so is one drawn on a
+        // plate of the wrong tone: the catalogue runs from white letterpress to black
+        // minimal, and a single neutral card makes one end of that range disappear. So
+        // the plate is picked against the lockup's own ink rather than fixed, and the
+        // card reads as a finished post either way.
+        val panelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = if (wantsDarkPanel(styles)) PANEL_DARK else PANEL_LIGHT
+        }
+        canvas.drawRoundRect(
+            RectF(0f, 0f, bitmap.width.toFloat(), bitmap.height.toFloat()),
+            PANEL_RADIUS, PANEL_RADIUS, panelPaint
+        )
+
+        preset.layers.forEachIndexed { index, layer ->
+            // A style that no longer resolves leaves the line unstyled rather than
+            // dropping it — the words are most of what the card is for.
+            val style = styles[index]
+            val typeface = layer.fontId?.let { typefaces[it] } ?: fallback
+
+            // The authored width is a fraction of the box, so the size is solved rather
+            // than authored: measure the line at a reference size and scale by how far
+            // off the target it lands. One measure, no search loop.
+            val target = boxW * layer.widthPct
+            val probe = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                textSize = SAMPLE_TEXT_SIZE
+                this.typeface = typeface
+            }
+            val measured = probe.measureText(layer.text)
+            val solvedSize = if (measured > 0f) {
+                (SAMPLE_TEXT_SIZE * (target / measured)).coerceIn(MIN_LAYER_TEXT_PX, boxH * 0.6f)
+            } else SAMPLE_TEXT_SIZE
+
+            canvas.withRotationAbout(layer.rotation, boxW * layer.xPct, boxH * layer.yPct) {
+                drawStyledText(
+                    canvas = canvas,
+                    preset = style,
+                    text = layer.text,
+                    typeface = typeface,
+                    textSizePx = solvedSize,
+                    centerX = boxW * layer.xPct,
+                    centerY = boxH * layer.yPct,
+                    boxW = boxW,
+                    boxH = boxH
+                )
+            }
+        }
+        return bitmap
+    }
+
+    /**
+     * Whether every line in a lockup wants the dark plate.
+     *
+     * Only if every one does. A card carries one plate, and a dark line on a dark plate
+     * disappears completely, while a light line on a light plate usually survives on its
+     * shadow and stroke — so a lockup that mixes the two gets the light plate, which is
+     * also the rest of the panel's colour.
+     *
+     * What "wants dark" means, per style:
+     *  - a glow does. An outer glow is light bleeding past the letter, and on a light
+     *    plate there is nothing for it to bleed into.
+     *  - light ink with no dark contour does. Gold, white neon, pale metal — nothing in
+     *    them draws the letterform except the fill itself.
+     *  - light ink *with* a dark contour does not. A white letterpress is read by its
+     *    dark stroke, not its fill; put it on black and the stroke is what vanishes.
+     */
+    private fun wantsDarkPanel(styles: List<TextStylePreset>): Boolean {
+        if (styles.isEmpty()) return false
+        return styles.all { style ->
+            if (style.hasOuterGlow && style.outerGlowRadius > 0f) return@all true
+
+            // Gradients are read by the middle of the ramp: a metal runs dark at both
+            // ends and it is the highlight band that the eye takes as its colour.
+            val fill = style.textGradient?.colors?.let { it[it.size / 2] }
+                ?: style.textColor?.takeIf { it != Color.TRANSPARENT }
+                ?: return@all false
+            if (luminance(fill) <= LIGHT_INK_THRESHOLD) return@all false
+
+            val contour = style.strokeColor?.takeIf { style.strokeWidth > 0f }
+            contour == null || luminance(contour) > LIGHT_INK_THRESHOLD
+        }
+    }
+
+    /** Perceived brightness, 0..1. Green reads far lighter than blue at the same value. */
+    private fun luminance(color: Int): Float =
+        (0.2126f * Color.red(color) + 0.7152f * Color.green(color) + 0.0722f * Color.blue(color)) / 255f
+
+    /** Runs [block] with the canvas rotated about a point, then restores it. */
+    private inline fun Canvas.withRotationAbout(degrees: Float, px: Float, py: Float, block: () -> Unit) {
+        if (degrees == 0f) {
+            block()
+            return
+        }
+        val saved = save()
+        rotate(degrees, px, py)
+        block()
+        restoreToCount(saved)
+    }
+
+    private fun defaultTypeface(context: Context): Typeface = try {
+        ResourcesCompat.getFont(context, R.font.default_canvas) ?: Typeface.DEFAULT_BOLD
+    } catch (e: Exception) {
+        Typeface.DEFAULT_BOLD
+    }
+
+    /**
+     * Draws one line of text wearing one style, centred on ([centerX], [centerY]).
+     *
+     * Every effect the catalogue can express is drawn here, in the order they stack —
+     * label, extrusions, shadow and glow, strokes, the fill, then the inner glow. It was
+     * the body of the tile renderer and drew a fixed sample word at the middle of a fixed
+     * box; a lockup is several of these at different places and sizes, so the text, the
+     * face, the size and the position all became arguments. The tile is now just the case
+     * where there is one of them, in the middle.
+     *
+     * [boxW] and [boxH] bound the label plate, which is the only effect that has an
+     * extent of its own rather than following the glyphs.
+     */
+    private fun drawStyledText(
+        canvas: Canvas,
+        preset: TextStylePreset,
+        text: String,
+        typeface: Typeface,
+        textSizePx: Float,
+        centerX: Float,
+        centerY: Float,
+        boxW: Float,
+        boxH: Float
+    ) {
+        val width = boxW
+        val height = boxH
+
         val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            textSize = 58f
-            typeface = urduTypeface
+            textSize = textSizePx
+            this.typeface = typeface
             textAlign = Paint.Align.CENTER
         }
 
@@ -92,8 +296,9 @@ object TextStyleThumbnailRenderer {
         val fontMetrics = textPaint.fontMetrics
         val textHeight = fontMetrics.descent - fontMetrics.ascent
 
-        val cx = width / 2f
-        val cy = height / 2f - (fontMetrics.ascent + fontMetrics.descent) / 2f
+        val cx = centerX
+        // Callers hand over the centre of the line; drawText wants its baseline.
+        val cy = centerY - (fontMetrics.ascent + fontMetrics.descent) / 2f
 
         // ── LAYER 0: LABEL BACKGROUND ─────────────────────────────────────────
         if (preset.hasLabel) {
@@ -361,7 +566,6 @@ object TextStyleThumbnailRenderer {
             canvas.drawText(text, cx, cy, innerGlowPaint)
         }
 
-        return bitmap
     }
 
     private fun drawLabelShape(canvas: Canvas, shape: LabelShape, rect: RectF, paint: Paint) {

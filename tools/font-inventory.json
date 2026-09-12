@@ -1,0 +1,1375 @@
+{
+  "_note": "A snapshot of the fonts table, read off a device, so that validate-presets.js can check a preset layer fontId against something. The app gets its real font list from the server at runtime; this file is never shipped or read by the app. It is short of the full catalogue (228 of 261) because it was recovered by scanning the SQLite file rather than querying it, which is why an id missing from it is a warning and not an error. The display categories presets draw on are complete: Nastaleeq 6, Elegant 15, Decorated 9.",
+  "_captured": "2026-09-12",
+  "_count": 228,
+  "fonts": [
+    {
+      "file_name": "AA Sameer Rafiya Unicode Regular - [UrduFonts.com].ttf",
+      "font_name": "Aa Sameer Rafiya Unicode Regular",
+      "font_category": "Decorated",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "AA Sameer Sagar.ttf",
+      "font_name": "Aa Sameer Sagar",
+      "font_category": "Condensed",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "AA Sameer Shamok - [UrduFonts.com].ttf",
+      "font_name": "Aa Sameer Shamok",
+      "font_category": "Decorated",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "aa-sameer-almas-regular-1.ttf",
+      "font_name": "Aa Sameer Almas Regular 1",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "aa-sameer-bassam-bold-regular-1.ttf",
+      "font_name": "Aa Sameer Bassam Bold Regular 1",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "aa-sameer-divangiry-regular-1.ttf",
+      "font_name": "Aa Sameer Divangiry Regular 1",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "aa-sameer-kelk-regular-1.ttf",
+      "font_name": "Aa Sameer Kelk Regular 1",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "aadil-regular-1.ttf",
+      "font_name": "Aadil Regular 1",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Abdo Line.otf",
+      "font_name": "Abdo Line",
+      "font_category": "Wide",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Advertising Script Bold Trial.ttf",
+      "font_name": "Advertising Script Bold Trial",
+      "font_category": "Script",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Advertising Script Monoline Trial.ttf",
+      "font_name": "Advertising Script Monoline Trial",
+      "font_category": "Script",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Akaju_demo.otf",
+      "font_name": "Akaju Demo",
+      "font_category": "Bold",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Akaju_Thin_demo.otf",
+      "font_name": "Akaju Thin Demo",
+      "font_category": "Thin",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Al Qalam Alvi Nastaleeq.TTF",
+      "font_name": "Al Qalam Alvi Nastaleeq",
+      "font_category": "Nastaleeq",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Al Qalam Hassan.ttf",
+      "font_name": "Al Qalam Hassan",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Al Qalam Naqsh.ttf",
+      "font_name": "Al Qalam Naqsh",
+      "font_category": "Bold",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Al Qalam Shahjahan.ttf",
+      "font_name": "Al Qalam Shahjahan",
+      "font_category": "Bold",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Al Qalam Shahzaib.ttf",
+      "font_name": "Al Qalam Shahzaib",
+      "font_category": "Bold",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "AlFars 7 Kodak.ttf",
+      "font_name": "Alfars 7 Kodak",
+      "font_category": "Round",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "alfars-10-badriya-regular-1.ttf",
+      "font_name": "Alfars 10 Badriya Regular 1",
+      "font_category": "Condensed",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "alfars-15-farnaz-regular-1.ttf",
+      "font_name": "Alfars 15 Farnaz Regular 1",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "alfars-19-abshar-regular-1.ttf",
+      "font_name": "Alfars 19 Abshar Regular 1",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "alfars-6-kamran-bold-regular-1.ttf",
+      "font_name": "Alfars 6 Kamran Bold Regular 1",
+      "font_category": "Handwriting",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "alfont_com_ITC-Handel-Gothic-Arabic-Bold.ttf",
+      "font_name": "Alfont Com Itc Handel Gothic Arabic Bold",
+      "font_category": "Modern",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "AlQalam Abuzar Regular.ttf",
+      "font_name": "Alqalam Abuzar Regular",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "AlQalam Fahad Regular.ttf",
+      "font_name": "Alqalam Fahad Regular",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "AlQalam Irzan.ttf",
+      "font_name": "Alqalam Irzan",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "AlQalam Ishtiaq Regular.ttf",
+      "font_name": "Alqalam Ishtiaq Regular",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "AlQalam Makki Regular.ttf",
+      "font_name": "Alqalam Makki Regular",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "AlQalam Mehfil Regular.ttf",
+      "font_name": "Alqalam Mehfil Regular",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "AlQalam Mujeeb.ttf",
+      "font_name": "Alqalam Mujeeb",
+      "font_category": "Round",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "AlQalam Quran.ttf",
+      "font_name": "Alqalam Quran",
+      "font_category": "Quran",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "AlQalam Shakir Regular.ttf",
+      "font_name": "Alqalam Shakir Regular",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "AlQalam Shamil Regular.ttf",
+      "font_name": "Alqalam Shamil Regular",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "AlQalam Tahir.ttf",
+      "font_name": "Alqalam Tahir",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "alqalam-amjad-alvi-regular-1.ttf",
+      "font_name": "Alqalam Amjad Alvi Regular 1",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "alqalam-irzan-regular-1.ttf",
+      "font_name": "Alqalam Irzan Regular 1",
+      "font_category": "Decorated",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "alqalam-ishtiaq-regular-1.ttf",
+      "font_name": "Alqalam Ishtiaq Regular 1",
+      "font_category": "Condensed",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "alqalam-kashif-outline-regular-1.ttf",
+      "font_name": "Alqalam Kashif Outline Regular",
+      "font_category": "Outline",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "alqalam-khat-e-kamal-regular-1.ttf",
+      "font_name": "Alqalam Khat E Kamal Regular 1",
+      "font_category": "Bold",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "alqalam-khat-e-sumbali-regular-1.ttf",
+      "font_name": "Alqalam Khat E Sumbali Regular 1",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "alqalam-shamil-regular-1.ttf",
+      "font_name": "Alqalam Shamil Regular 1",
+      "font_category": "Round",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "alqalam-shekastah-regular-1.ttf",
+      "font_name": "Alqalam Shekastah Regular 1",
+      "font_category": "Handwriting",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "alqalam-tafseer-regular-1.ttf",
+      "font_name": "Alqalam Tafseer Regular 1",
+      "font_category": "Decorated",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "AlQlam_Sadaf.ttf",
+      "font_name": "Alqlam Sadaf",
+      "font_category": "Decorated",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Ananda Personal Use.ttf",
+      "font_name": "Ananda Personal Use",
+      "font_category": "Script",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Anchorage Script Press.otf",
+      "font_name": "Anchorage Script Press",
+      "font_category": "Script",
+      "font_language": "English"
+    },
+    {
+      "file_name": "AndradePro-Script.otf",
+      "font_name": "Andradepro Script",
+      "font_category": "Script",
+      "font_language": "English"
+    },
+    {
+      "file_name": "ApexNew-Bold.otf",
+      "font_name": "Apexnew Bold",
+      "font_category": "Bold",
+      "font_language": "English"
+    },
+    {
+      "file_name": "ApexNew-Book.otf",
+      "font_name": "Apexnew Book",
+      "font_category": "Regular",
+      "font_language": "English"
+    },
+    {
+      "file_name": "ApexNew-Light.otf",
+      "font_name": "Apexnew Light",
+      "font_category": "Thin",
+      "font_language": "English"
+    },
+    {
+      "file_name": "AppleTree1.ttf",
+      "font_name": "Appletree1",
+      "font_category": "Elegant",
+      "font_language": "English"
+    },
+    {
+      "file_name": "arif-regular-1.ttf",
+      "font_name": "Arif Regular 1",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Arif.ttf",
+      "font_name": "Arif",
+      "font_category": "Wide",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "ARKHIP_FONT.OTF",
+      "font_name": "Arkhip Font",
+      "font_category": "Elegant",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Aseer Unicode Aseer Unicode.ttf",
+      "font_name": "Aseer Unicode Aseer Unicode",
+      "font_category": "Bold",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Atelas_PersonalUseOnly.ttf",
+      "font_name": "Atelas Personaluseonly",
+      "font_category": "Script",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Attari_Mahal.ttf",
+      "font_name": "Attari Mahal",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Attari_Qamar.ttf",
+      "font_name": "Attari Qamar",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Attari_Salees.ttf",
+      "font_name": "Attari Salees",
+      "font_category": "Bold",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "attari-kofi-manqash-regular-1.ttf",
+      "font_name": "Attari Kofi Manqash Regular 1",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Autograf_PersonalUseOnly.ttf",
+      "font_name": "Autograf Personaluseonly",
+      "font_category": "Script",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Autography.otf",
+      "font_name": "Autography",
+      "font_category": "Script",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Awad Unicode Awad Unicode.ttf",
+      "font_name": "Awad Unicode Awad Unicode",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Bahij .ttf",
+      "font_name": "Bahij",
+      "font_category": "Round",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Baloo Bhaijaan 2 Medium - [UrduFonts.com].ttf",
+      "font_name": "Baloo Bhaijaan 2 Medium",
+      "font_category": "Round",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Baloo Bhaijaan 2 Regular.ttf",
+      "font_name": "Baloo Bhaijaan 2 Regular",
+      "font_category": "Thin",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Baloo Bhaijaan2 Extra Bold .ttf",
+      "font_name": "Baloo Bhaijaan2 Extra Bold",
+      "font_category": "Bold",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Bieta Light - [UrduFonts.com].ttf",
+      "font_name": "Bieta Light",
+      "font_category": "Thin",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Bieta Regular - [UrduFonts.com].ttf",
+      "font_name": "Bieta Regular",
+      "font_category": "Condensed",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Blacksword.otf",
+      "font_name": "Blacksword",
+      "font_category": "Script",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Cairo Black.ttf",
+      "font_name": "Cairo Black",
+      "font_category": "Bold",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Cinzel-Bold.ttf",
+      "font_name": "Cinzel Bold",
+      "font_category": "Bold",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Cinzel-Regular.ttf",
+      "font_name": "Cinzel Regular",
+      "font_category": "Thin",
+      "font_language": "English"
+    },
+    {
+      "file_name": "CinzelDecorative-Black.ttf",
+      "font_name": "Cinzeldecorative Black",
+      "font_category": "Bold",
+      "font_language": "English"
+    },
+    {
+      "file_name": "CinzelDecorative-Regular.ttf",
+      "font_name": "Cinzeldecorative Regular",
+      "font_category": "Elegant",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Damavand DemiBold.ttf",
+      "font_name": "Damavand Demibold",
+      "font_category": "Wide",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Damavand Heavy.ttf",
+      "font_name": "Damavand Heavy",
+      "font_category": "Bold",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Damavand Light.ttf",
+      "font_name": "Damavand Light",
+      "font_category": "Thin",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "DG Gaded Extra Bold.ttf",
+      "font_name": "Dg Gaded Extra Bold",
+      "font_category": "Bold",
+      "font_language": "English"
+    },
+    {
+      "file_name": "DG Gaded Thin.ttf",
+      "font_name": "Dg Gaded Thin",
+      "font_category": "Thin",
+      "font_language": "English"
+    },
+    {
+      "file_name": "diwani-bent-regular-1.ttf",
+      "font_name": "Diwani Bent Regular 1",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "diwani-letter-regular-1.ttf",
+      "font_name": "Diwani Letter Regular 1",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "DIWANLTR.TTF",
+      "font_name": "Diwanltr",
+      "font_category": "Condensed",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "DMSans_18pt-ExtraLight.ttf",
+      "font_name": "Dmsans 18pt Extralight",
+      "font_category": "Thin",
+      "font_language": "English"
+    },
+    {
+      "file_name": "DMSans_24pt-Black.ttf",
+      "font_name": "Dmsans 24pt Black",
+      "font_category": "Bold",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Doran ExtraBold.ttf",
+      "font_name": "Doran Extrabold",
+      "font_category": "Bold",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Doran Thin.ttf",
+      "font_name": "Doran Thin",
+      "font_category": "Thin",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Dotted Nastaliq.ttf",
+      "font_name": "Dotted Nastaliq",
+      "font_category": "Dotted",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "DUBAI-MEDIUM.TTF",
+      "font_name": "Dubai Medium",
+      "font_category": "Modern",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Ebham Unicode Ebham Unicode.ttf",
+      "font_name": "Ebham Unicode Ebham Unicode",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Electron.ttf",
+      "font_name": "Electron",
+      "font_category": "Tech",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Elgethy.ttf",
+      "font_name": "Elgethy",
+      "font_category": "Thin",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Elgraine-Black.otf",
+      "font_name": "Elgraine Black",
+      "font_category": "Bold",
+      "font_language": "English"
+    },
+    {
+      "file_name": "elmessiri-regular.otf",
+      "font_name": "Elmessiri Regular",
+      "font_category": "Elegant",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Emirates Group Regular.ttf",
+      "font_name": "Emirates Group Regular",
+      "font_category": "Elegant",
+      "font_language": "English"
+    },
+    {
+      "file_name": "EncodeSans-Bold.ttf",
+      "font_name": "Encodesans Bold",
+      "font_category": "Bold",
+      "font_language": "English"
+    },
+    {
+      "file_name": "EncodeSans-Regular.ttf",
+      "font_name": "Encodesans Regular",
+      "font_category": "Regular",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Esphimere.otf",
+      "font_name": "Esphimere",
+      "font_category": "Regular",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Exo2-Regular.ttf",
+      "font_name": "Exo2 Regular",
+      "font_category": "Regular",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Exo2-Thin.ttf",
+      "font_name": "Exo2 Thin",
+      "font_category": "Thin",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+      "font_name": "Faiz Lahori Nastaleeq Regular",
+      "font_category": "Nastaleeq",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Fanni.ttf",
+      "font_name": "Fanni",
+      "font_category": "Handwriting",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "gandhara-suls-regular-1.ttf",
+      "font_name": "Gandhara Suls Regular 1",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Gotham-Book.ttf",
+      "font_name": "Gotham Book",
+      "font_category": "Regular",
+      "font_language": "English"
+    },
+    {
+      "file_name": "GothamRnd-Bold.otf",
+      "font_name": "Gothamrnd Bold",
+      "font_category": "Bold",
+      "font_language": "English"
+    },
+    {
+      "file_name": "GothamThin.otf",
+      "font_name": "Gothamthin",
+      "font_category": "Thin",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Gulzar-Regular.ttf",
+      "font_name": "Gulzar Regular",
+      "font_category": "Nastaleeq",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Helvetica Neue LT Arabic 55.ttf",
+      "font_name": "Helvetica Neue Lt Arabic 55",
+      "font_category": "Modern",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Helvetica NeueLT Light.ttf",
+      "font_name": "Helvetica Neuelt Light",
+      "font_category": "Thin",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Ibteda.ttf",
+      "font_name": "Ibteda",
+      "font_category": "Dotted",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "IRANSansX Black.ttf",
+      "font_name": "Iransansx Black",
+      "font_category": "Bold",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "IRANSansX Thin.ttf",
+      "font_name": "Iransansx Thin",
+      "font_category": "Thin",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Jaben Unicode Jaben Unicode.ttf",
+      "font_name": "Jaben Unicode Jaben Unicode",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Jadeer Bold.otf",
+      "font_name": "Jadeer Bold",
+      "font_category": "Bold",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Jadeer Regular - [UrduFonts.com].otf",
+      "font_name": "Jadeer Regular",
+      "font_category": "Thin",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Jameel Noori Kasheeda .ttf",
+      "font_name": "Jameel Noori Kasheeda",
+      "font_category": "Wide",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Jameel Noori Nastaleeq .ttf",
+      "font_name": "Jameel Noori Nastaleeq",
+      "font_category": "Nastaleeq",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Jazeel Bold.otf",
+      "font_name": "Jazeel Bold",
+      "font_category": "Bold",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Jazeel Regular - [UrduFonts.com].otf",
+      "font_name": "Jazeel Regular",
+      "font_category": "Modern",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Jeko Regular.ttf",
+      "font_name": "Jeko Regular",
+      "font_category": "Regular",
+      "font_language": "English"
+    },
+    {
+      "file_name": "KacstDecorative Medium.ttf",
+      "font_name": "Kacstdecorative Medium",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "kafeel-unicode-regular-1.ttf",
+      "font_name": "Kafeel Unicode Regular 1",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Labeb Unicode Labeb Unicode.ttf",
+      "font_name": "Labeb Unicode Labeb Unicode",
+      "font_category": "Bold",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Lalezar.otf",
+      "font_name": "Lalezar",
+      "font_category": "Bold",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Lateef-ExtraBold.ttf",
+      "font_name": "Lateef Extrabold",
+      "font_category": "Bold",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Lateef-ExtraLight.ttf",
+      "font_name": "Lateef Extralight",
+      "font_category": "Thin",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Lateef-Regular.ttf",
+      "font_name": "Lateef Regular",
+      "font_category": "Nastaleeq",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Lato-Bold.ttf",
+      "font_name": "Lato Bold",
+      "font_category": "Bold",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Lato-Regular.ttf",
+      "font_name": "Lato Regular",
+      "font_category": "Regular",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Lato-Thin.ttf",
+      "font_name": "Lato Thin",
+      "font_category": "Thin",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Lavish.ttf",
+      "font_name": "Lavish",
+      "font_category": "Elegant",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Lemonada Light.ttf",
+      "font_name": "Lemonada Light",
+      "font_category": "Thin",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Luxia-Display.otf",
+      "font_name": "Luxia Display",
+      "font_category": "Elegant",
+      "font_language": "English"
+    },
+    {
+      "file_name": "makkah-contour-unicode-regular-1.ttf",
+      "font_name": "Makkah Contour Unicode Regular 1",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "MB Mufti Muhammad Raheem Sikadari.ttf",
+      "font_name": "Mb Mufti Muhammad Raheem Sikadari",
+      "font_category": "Condensed",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "MB Sarem Muhammad Bux Kaladi 1.0.ttf",
+      "font_name": "Mb Sarem Muhammad Bux Kaladi 1 0",
+      "font_category": "Decorated",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "MB Sarem Rizwan Gul.ttf",
+      "font_name": "Mb Sarem Rizwan Gul",
+      "font_category": "Decorated",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Mehrajan Thin.ttf",
+      "font_name": "Mehrajan Thin",
+      "font_category": "Thin",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Mj Ghalam 1 Regular- [UrduFonts.com].ttf",
+      "font_name": "Mj Ghalam 1 Regular",
+      "font_category": "Handwriting",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "MontecatiniPro-Ampio.ttf",
+      "font_name": "Montecatinipro Ampio",
+      "font_category": "Regular",
+      "font_language": "English"
+    },
+    {
+      "file_name": "MontecatiniPro-LargoLight.ttf",
+      "font_name": "Montecatinipro Largolight",
+      "font_category": "Thin",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Montserrat-Light.ttf",
+      "font_name": "Montserrat Light",
+      "font_category": "Thin",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Montserrat-Regular.ttf",
+      "font_name": "Montserrat Regular",
+      "font_category": "Regular",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Mothanna-Bold.ttf",
+      "font_name": "Mothanna Bold",
+      "font_category": "Round",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Museo100-Regular_0.otf",
+      "font_name": "Museo100 Regular 0",
+      "font_category": "Thin",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Museo300-Regular.otf",
+      "font_name": "Museo300 Regular",
+      "font_category": "Elegant",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Museo900-Regular_0.otf",
+      "font_name": "Museo900 Regular 0",
+      "font_category": "Bold",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Nameh - [UrduFonts.com].ttf",
+      "font_name": "Nameh",
+      "font_category": "Condensed",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Nephilm.otf",
+      "font_name": "Nephilm",
+      "font_category": "Elegant",
+      "font_language": "English"
+    },
+    {
+      "file_name": "NewberySansPro-ExpandedRegular.ttf",
+      "font_name": "Newberysanspro Expandedregular",
+      "font_category": "Regular",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Nexa Bold.otf",
+      "font_name": "Nexa Bold",
+      "font_category": "Bold",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Nexa-Light.otf",
+      "font_name": "Nexa Light",
+      "font_category": "Thin",
+      "font_language": "English"
+    },
+    {
+      "file_name": "NexaBlack.otf",
+      "font_name": "Nexablack",
+      "font_category": "Bold",
+      "font_language": "English"
+    },
+    {
+      "file_name": "NexaRegular.otf",
+      "font_name": "Nexaregular",
+      "font_category": "Regular",
+      "font_language": "English"
+    },
+    {
+      "file_name": "NizarCoconKurdishRegular.ttf",
+      "font_name": "Nizarcoconkurdishregular",
+      "font_category": "Round",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "NooreHira.ttf",
+      "font_name": "Noorehira",
+      "font_category": "Quran",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "NotoNastaliqUrdu-Bold.ttf",
+      "font_name": "Notonastaliqurdu Bold",
+      "font_category": "Bold",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "NotoNastaliqUrdu-Regular.ttf",
+      "font_name": "Notonastaliqurdu Regular",
+      "font_category": "Nastaleeq",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "NotoSansArabic_ExtraCondensed-Light.ttf",
+      "font_name": "Notosansarabic Extracondensed Light",
+      "font_category": "Condensed",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "NotoSansArabic-Medium.ttf",
+      "font_name": "Notosansarabic Medium",
+      "font_category": "Modern",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "NotoSansArabicUI-ExtraCondensedThin.ttf",
+      "font_name": "Notosansarabicui Extracondensedthin",
+      "font_category": "Thin",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "NOUVELLE_VAGUE_FINAL.TTF",
+      "font_name": "Nouvelle Vague Final",
+      "font_category": "Bold",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Novecentosanswide-DemiBold.otf",
+      "font_name": "Novecentosanswide Demibold",
+      "font_category": "Bold",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Novecentosanswide-Light.otf",
+      "font_name": "Novecentosanswide Light",
+      "font_category": "Thin",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Nunito-Medium.ttf",
+      "font_name": "Nunito Medium",
+      "font_category": "Rounded",
+      "font_language": "English"
+    },
+    {
+      "file_name": "old-antic-bold-regular-1.ttf",
+      "font_name": "Old Antic Bold Regular 1",
+      "font_category": "Bold",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "old-antic-outline-shaded-regular-1.ttf",
+      "font_name": "Old Antic Outline Shaded Regular 1",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "OptimumBold.ttf",
+      "font_name": "Optimumbold",
+      "font_category": "Bold",
+      "font_language": "English"
+    },
+    {
+      "file_name": "pala.ttf",
+      "font_name": "Pala",
+      "font_category": "Elegant",
+      "font_language": "English"
+    },
+    {
+      "file_name": "palab.ttf",
+      "font_name": "Palab",
+      "font_category": "Bold",
+      "font_language": "English"
+    },
+    {
+      "file_name": "PDMS Pencil.ttf",
+      "font_name": "Pdms Pencil",
+      "font_category": "Handwriting",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "PF-DIN-Text-Arabic.otf",
+      "font_name": "Pf Din Text Arabic",
+      "font_category": "Condensed",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Poppins-Regular.ttf",
+      "font_name": "Poppins Regular",
+      "font_category": "Regular",
+      "font_language": "English"
+    },
+    {
+      "file_name": "PortadaARA_var-Upright.ttf",
+      "font_name": "Portadaara Var Upright",
+      "font_category": "Modern",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "PortadaARA-Extrabold.otf",
+      "font_name": "Portadaara Extrabold",
+      "font_category": "Bold",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "PortadaARA-Thin.otf",
+      "font_name": "Portadaara Thin",
+      "font_category": "Thin",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "qadree-regular-1.ttf",
+      "font_name": "Qadree Regular 1",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "QUARTZO-demo.ttf",
+      "font_name": "Quartzo Demo",
+      "font_category": "Bold",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Quicksand_Bold.otf",
+      "font_name": "Quixksand",
+      "font_category": "Bold",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Quicksand_Light.otf",
+      "font_name": "Quicksand Light",
+      "font_category": "Thin",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Quizma_Thin_Demo.otf",
+      "font_name": "Quizma Thin Demo",
+      "font_category": "Thin",
+      "font_language": "English"
+    },
+    {
+      "file_name": "RawengulkBold.otf",
+      "font_name": "Rawengulkbold",
+      "font_category": "Bold",
+      "font_language": "English"
+    },
+    {
+      "file_name": "RawengulkPcs.ttf",
+      "font_name": "Rawengulkpcs",
+      "font_category": "Thin",
+      "font_language": "English"
+    },
+    {
+      "file_name": "RawengulkSans-094.otf",
+      "font_name": "Rawengulksans 094",
+      "font_category": "Thin",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Resalaty-Regular.ttf",
+      "font_name": "Resalaty Regular",
+      "font_category": "Handwriting",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "riyaz-unicode-regular-1.ttf",
+      "font_name": "Riyaz Unicode Regular 1",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "rouqa-unicode-regular-1.ttf",
+      "font_name": "Rouqa Unicode Regular 1",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Runalto.otf",
+      "font_name": "Runalto",
+      "font_category": "Elegant",
+      "font_language": "English"
+    },
+    {
+      "file_name": "SackersGothicStd-Light.otf",
+      "font_name": "Sackersgothicstd Light",
+      "font_category": "Thin",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Sarem Habib.ttf",
+      "font_name": "Sarem Habib",
+      "font_category": "Wide",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Sarem Hasnain.ttf",
+      "font_name": "Sarem Hasnain",
+      "font_category": "Wide",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Sarem M Azam.ttf",
+      "font_name": "Sarem M Azam",
+      "font_category": "Bold",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Sarem Muzaffar- [UrduFonts.com].ttf",
+      "font_name": "Sarem Muzaffar",
+      "font_category": "Modern",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "sarem tabbasum sindhi fonts 23.ttf",
+      "font_name": "Sarem Tabbasum Sindhi Fonts 23",
+      "font_category": "Wide",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Sarem-Murtaza-Naz-Regular.ttf",
+      "font_name": "Sarem Murtaza Naz Regular",
+      "font_category": "Decorated",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Sarem-Naseer-Regular.ttf",
+      "font_name": "Sarem Naseer Regular",
+      "font_category": "Decorated",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Scriptina Pro.otf",
+      "font_name": "Scriptina Pro",
+      "font_category": "Script",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Serenity Demo.ttf",
+      "font_name": "Serenity Demo",
+      "font_category": "Script",
+      "font_language": "English"
+    },
+    {
+      "file_name": "SF Arabic Rounded Regular.ttf",
+      "font_name": "Sf Arabic Rounded Regular",
+      "font_category": "Round",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "SF-Pro-Rounded-Medium.otf",
+      "font_name": "Sf Pro Rounded Medium",
+      "font_category": "Rounded",
+      "font_language": "English"
+    },
+    {
+      "file_name": "SF-Pro-Text-Ultralight.otf",
+      "font_name": "Sf Pro Text Ultralight",
+      "font_category": "Elegant",
+      "font_language": "English"
+    },
+    {
+      "file_name": "SFArabicRounded-Regular.ttf",
+      "font_name": "Sfarabicrounded Regular",
+      "font_category": "Modern",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Shilia W23 430 Regular.ttf",
+      "font_name": "Shilia W23 430 Regular",
+      "font_category": "Condensed",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Shilla.ttf",
+      "font_name": "Shilla",
+      "font_category": "Bold",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "SourceCodePro-ExtraLight.otf",
+      "font_name": "Sourcecodepro Extralight",
+      "font_category": "Thin",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Swissra Condensed Normal - [UrduFonts.com].otf",
+      "font_name": "Swissra Condensed Normal",
+      "font_category": "Condensed",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Swissra Medium [TheFontsMaster.com].otf",
+      "font_name": "Swissra Medium",
+      "font_category": "Modern",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Swissra Thin.otf",
+      "font_name": "Swissra Thin",
+      "font_category": "Thin",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Talat Unicode Talat Unicode.ttf",
+      "font_name": "Talat Unicode Talat Unicode",
+      "font_category": "Bold",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Tawasul - [UrduFonts.com].otf",
+      "font_name": "Tawasul",
+      "font_category": "Bold",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Tenderness.otf",
+      "font_name": "Tenderness",
+      "font_category": "Elegant",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Trajan Pro.ttf",
+      "font_name": "Trajan Pro",
+      "font_category": "Elegant",
+      "font_language": "English"
+    },
+    {
+      "file_name": "TSMorabaat-Regular.otf",
+      "font_name": "Tsmorabaat Regular",
+      "font_category": "Tech",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "UL Sajid Heading.ttf",
+      "font_name": "Ul Sajid Heading",
+      "font_category": "Bold",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Ulbilaloutline.ttf",
+      "font_name": "Ulbilaloutline",
+      "font_category": "Outline",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Univia W03 Bold.otf",
+      "font_name": "Univia W03 Bold",
+      "font_category": "Bold",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Univia W03 Book.otf",
+      "font_name": "Univia W03 Book",
+      "font_category": "Regular",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Univia W03 Light.otf",
+      "font_name": "Univia W03 Light",
+      "font_category": "Thin",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Unwan.ttf",
+      "font_name": "Unwan",
+      "font_category": "Wide",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "Urdu Najd.ttf",
+      "font_name": "Urdu Najd",
+      "font_category": "Wide",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "VisbyRoundCF-DemiBold.otf",
+      "font_name": "Visbyroundcf Demibold",
+      "font_category": "Rounded",
+      "font_language": "English"
+    },
+    {
+      "file_name": "VisbyRoundCF-Heavy.ttf",
+      "font_name": "Visbyroundcf Heavy",
+      "font_category": "Bold",
+      "font_language": "English"
+    },
+    {
+      "file_name": "XB Kayhan Pook Regular - [UrduFonts.com].ttf",
+      "font_name": "Xb Kayhan Pook Regular",
+      "font_category": "Outline",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "xp-vosta-bold-1.ttf",
+      "font_name": "Xp Vosta Bold 1",
+      "font_category": "Bold",
+      "font_language": "Urdu"
+    },
+    {
+      "file_name": "youngfinesse_regular.otf",
+      "font_name": "Youngfinesse Regular",
+      "font_category": "Elegant",
+      "font_language": "English"
+    },
+    {
+      "file_name": "YoureInvited.otf",
+      "font_name": "Youreinvited",
+      "font_category": "Thin",
+      "font_language": "English"
+    },
+    {
+      "file_name": "Zafar Zafar.ttf",
+      "font_name": "Zafar Zafar",
+      "font_category": "Regular",
+      "font_language": "Urdu"
+    }
+  ]
+}

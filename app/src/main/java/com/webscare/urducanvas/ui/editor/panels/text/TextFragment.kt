@@ -52,6 +52,7 @@ import com.webscare.urducanvas.data.model.TextPresetCategory
 import com.webscare.urducanvas.data.model.PresetCategory
 import com.webscare.urducanvas.data.model.TextStylePreset
 import com.webscare.urducanvas.data.repository.RecentsStore
+import com.webscare.urducanvas.data.repository.TextPresetsRepository
 import com.webscare.urducanvas.data.repository.TextStylesRepository
 import android.content.res.ColorStateList
 import com.webscare.urducanvas.ui.editor.panels.text.styles.TextStylesMainAdapter
@@ -96,6 +97,9 @@ class TextFragment : Fragment(), PreviewHostOwner {
 
     private var isStylesMode: Boolean = false
     private var stylesDrill: StylesDrill = StylesDrill.NONE
+
+    /** Faces already loaded off disk for lockup cards, by font file name. */
+    private val typefaceCache = mutableMapOf<String, Typeface>()
     private var selectedPresetGroup: String = GROUP_ALL
     private var selectedPresetCategory: String? = null
 
@@ -203,7 +207,9 @@ class TextFragment : Fragment(), PreviewHostOwner {
                     breadcrumb = getString(R.string.presets),
                     expanded = isPanelExpanded
                 ) { picked -> applyPresetToCanvas(picked) }
-            }
+            },
+            onLockupClick = { lockup -> insertLockup(lockup) },
+            typefaceFor = { fileName -> typefaceForFontFile(fileName) }
         ) { preset ->
             applyPresetToCanvas(preset)
         }
@@ -220,6 +226,33 @@ class TextFragment : Fragment(), PreviewHostOwner {
         }
         fontsAdapter.isExpanded = isPanelExpanded
         stylesAdapter.isExpanded = isPanelExpanded
+    }
+
+    /**
+     * The face [fileName] names, if it is downloaded — otherwise null, and the card
+     * renders in the fallback.
+     *
+     * Cached because it is asked once per lockup layer on every bind, and the answer
+     * involves touching the filesystem. Cleared when the font list changes, which is the
+     * only way a name that resolved to nothing starts resolving to something.
+     */
+    private fun typefaceForFontFile(fileName: String): Typeface? {
+        typefaceCache[fileName]?.let { return it }
+        val path = mainViewModel.localFonts.value
+            .firstOrNull { it.file_name == fileName }
+            ?.file_path
+            ?.takeIf { it.isNotBlank() && java.io.File(it).exists() }
+            ?: return null
+        return try {
+            Typeface.createFromFile(path)?.also { typefaceCache[fileName] = it }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private fun insertLockup(preset: com.webscare.urducanvas.data.model.TextPreset) {
+        RecentsStore.record(requireContext(), RecentsStore.Kind.PRESET, preset.id)
+        viewModel.addTextPreset(preset, requireContext())
     }
 
     private fun applyPresetToCanvas(preset: TextStylePreset) {
@@ -1577,12 +1610,37 @@ class TextFragment : Fragment(), PreviewHostOwner {
         val ctx = requireContext()
         val allPresets = TextStylesRepository.getAllPresets(ctx)
         val catalogueStyles = allPresets.filter { it.category != PresetCategory.MY_STYLES }
+        val q = currentQuery.trim().lowercase()
+
+        // Lockups first, because two of the shelves hold them instead of styles and the
+        // grid takes one kind or the other per shelf. Only "All" mixes, and it does that
+        // by concatenating — a lockup card and a style card share a tile and a size.
+        if (stylesDrill == StylesDrill.PRESETS ||
+            (stylesDrill == StylesDrill.NONE && selectedPresetGroup == GROUP_PRESETS)
+        ) {
+            val lockups = when {
+                stylesDrill == StylesDrill.NONE -> TextPresetsRepository.getAllPresets(ctx)
+                selectedPresetCategory == null || selectedPresetCategory == TAB_ALL ->
+                    TextPresetsRepository.getAllPresets(ctx)
+                selectedPresetCategory == TAB_RECENTS ->
+                    TextPresetsRepository.findPresetsByIds(ctx, RecentsStore.ids(ctx, RecentsStore.Kind.PRESET))
+                else -> TextPresetCategory.fromDisplayName(selectedPresetCategory)
+                    ?.let { TextPresetsRepository.getPresetsByCategory(ctx, it) }
+                    ?: TextPresetsRepository.getAllPresets(ctx)
+            }
+            val filtered = if (q.isEmpty()) lockups else lockups.filter { p ->
+                p.name.lowercase().contains(q) ||
+                        p.category.displayName.lowercase().contains(q) ||
+                        p.layers.any { it.text.contains(q) }
+            }
+            stylesAdapter.submitLockups(filtered) {
+                binding.fontsRV.scrollToPosition(0)
+            }
+            return
+        }
 
         val filteredByCategory = when (stylesDrill) {
-            // Inside Presets. The lockup catalogue does not exist yet — the shelf is
-            // built and reachable so the rest of it has somewhere to land, and until
-            // then every category here is legitimately empty rather than broken.
-            StylesDrill.PRESETS -> emptyList()
+            StylesDrill.PRESETS -> emptyList() // handled above
 
             StylesDrill.STYLES -> when {
                 selectedPresetCategory == null || selectedPresetCategory == TAB_ALL -> catalogueStyles
@@ -1599,24 +1657,18 @@ class TextFragment : Fragment(), PreviewHostOwner {
                 }
             }
 
-            // The group strip. "All" is the mixed feed of styles and presets; with no
-            // presets to mix in yet it is the style catalogue, and gains the second
-            // card type when the lockups land.
-            StylesDrill.NONE -> when (selectedPresetGroup) {
-                GROUP_ALL -> catalogueStyles
-                GROUP_STYLES -> catalogueStyles
-                GROUP_PRESETS -> emptyList()
-                else -> catalogueStyles
-            }
+            // The group strip. Presets is handled above; All and Styles both show the
+            // style catalogue, and All will grow the lockups into the same feed once
+            // there is enough content for a mixed list to read as one thing.
+            StylesDrill.NONE -> catalogueStyles
         }
 
-        val q = currentQuery.trim().lowercase()
         val finalFiltered = if (q.isEmpty()) filteredByCategory else {
             filteredByCategory.filter { p ->
                 p.name.lowercase().contains(q) || p.category.displayName.lowercase().contains(q)
             }
         }
-        stylesAdapter.submitList(ArrayList(finalFiltered)) {
+        stylesAdapter.submitStyles(finalFiltered) {
             binding.fontsRV.scrollToPosition(0)
         }
     }

@@ -1,0 +1,68 @@
+[
+  {
+    "id": "ramadan_001",
+    "name": "Ramadan Mubarak — Stacked Gold",
+    "aspect": 1.0,
+    "layers": [
+      { "text": "رمضان", "fontId": "Jameel Noori Nastaleeq .ttf", "styleId": "gold_001",
+        "xPct": 0.50, "yPct": 0.38, "widthPct": 0.72, "rotation": 0, "align": "CENTER" },
+      { "text": "مبارک", "fontId": "Jameel Noori Nastaleeq .ttf", "styleId": "gold_001",
+        "override": { "textGradientColors": ["#FFF3C4", "#E8C877", "#B98A2E"] },
+        "xPct": 0.50, "yPct": 0.64, "widthPct": 0.50, "rotation": 0, "align": "CENTER" }
+    ]
+  },
+  {
+    "id": "ramadan_002",
+    "name": "Ramadan Kareem — Illuminated",
+    "aspect": 1.0,
+    "layers": [
+      { "text": "رمضان کریم", "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_001",
+        "xPct": 0.50, "yPct": 0.46, "widthPct": 0.84, "rotation": 0, "align": "CENTER" },
+      { "text": "خوش آمدید", "fontId": "Gulzar-Regular.ttf", "styleId": "minimal_001",
+        "xPct": 0.50, "yPct": 0.70, "widthPct": 0.42, "rotation": 0, "align": "CENTER" }
+    ]
+  },
+  {
+    "id": "ramadan_003",
+    "name": "Mah-e-Ramadan — Emerald Script",
+    "aspect": 1.0,
+    "layers": [
+      { "text": "ماہِ رمضان", "fontId": "Gulzar-Regular.ttf", "styleId": "calligraphy_004",
+        "xPct": 0.50, "yPct": 0.42, "widthPct": 0.78, "rotation": 0, "align": "CENTER" },
+      { "text": "المبارک", "fontId": "NotoNastaliqUrdu-Regular.ttf", "styleId": "gold_002",
+        "xPct": 0.50, "yPct": 0.66, "widthPct": 0.46, "rotation": 0, "align": "CENTER" }
+    ]
+  },
+  {
+    "id": "ramadan_004",
+    "name": "Shab-e-Qadr — Lapis Nastaliq",
+    "aspect": 1.0,
+    "layers": [
+      { "text": "شبِ قدر", "fontId": "Jameel Noori Nastaleeq .ttf", "styleId": "calligraphy_002",
+        "xPct": 0.50, "yPct": 0.50, "widthPct": 0.68, "rotation": 0, "align": "CENTER" }
+    ]
+  },
+  {
+    "id": "ramadan_005",
+    "name": "Ramadan Mubarak — Small Over Big",
+    "aspect": 1.0,
+    "layers": [
+      { "text": "مبارک", "fontId": "Lateef-Regular.ttf", "styleId": "minimal_003",
+        "xPct": 0.50, "yPct": 0.32, "widthPct": 0.34, "rotation": 0, "align": "CENTER" },
+      { "text": "رمضان", "fontId": "Lateef-Regular.ttf", "styleId": "emboss_005",
+        "xPct": 0.50, "yPct": 0.58, "widthPct": 0.80, "rotation": 0, "align": "CENTER" }
+    ]
+  },
+  {
+    "id": "ramadan_006",
+    "name": "Alvida Mah-e-Ramadan — Sepia",
+    "aspect": 1.0,
+    "layers": [
+      { "text": "الوداع", "fontId": "alqalam-tafseer-regular-1.ttf", "styleId": "calligraphy_006",
+        "xPct": 0.50, "yPct": 0.36, "widthPct": 0.52, "rotation": 0, "align": "CENTER" },
+      { "text": "ماہِ رمضان", "fontId": "Jameel Noori Nastaleeq .ttf", "styleId": "calligraphy_006",
+        "xPct": 0.50, "yPct": 0.62, "widthPct": 0.76, "rotation": 0, "align": "CENTER" }
+    ]
+  }
+]

@@ -9,6 +9,7 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
 import android.graphics.Shader
+import android.graphics.Typeface
 import android.util.LruCache
 import android.view.LayoutInflater
 import android.view.View
@@ -26,8 +27,29 @@ import com.webscare.urducanvas.common.canvas.enums.LabelShape
 import androidx.core.view.isVisible
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
 import com.webscare.urducanvas.common.utils.Utils.addPressEffectWithLongClick
+import com.webscare.urducanvas.data.model.TextPreset
 import com.webscare.urducanvas.data.model.TextStylePreset
 import com.webscare.urducanvas.databinding.LayoutTextStylePresetItemBinding
+
+/**
+ * One tile in the text panel's grid: either a style or a whole lockup.
+ *
+ * The two share a grid because "All" is one feed of both, and because a user browsing
+ * for something to put on a canvas is not thinking about which of the two kinds of
+ * thing it is. They share a tile and a size; what differs is only what gets drawn in
+ * it and what a tap does.
+ */
+sealed class PanelCard {
+    abstract val id: String
+
+    data class Style(val style: TextStylePreset) : PanelCard() {
+        override val id: String get() = style.id
+    }
+
+    data class Lockup(val preset: TextPreset) : PanelCard() {
+        override val id: String get() = preset.id
+    }
+}
 
 class TextStylesMainAdapter(
     /**
@@ -37,8 +59,24 @@ class TextStylesMainAdapter(
      * parameter and the existing trailing-lambda call sites keep binding to it.
      */
     private val onPreviewRequested: (TextStylePreset) -> Unit = {},
+    /** Asked to insert a lockup. Separate from [onPresetClick]: it drops several elements, not paint. */
+    private val onLockupClick: (TextPreset) -> Unit = {},
+    /**
+     * The face a lockup layer should be drawn in, by [com.webscare.urducanvas.data.model.FontEntity.file_name],
+     * or null when that font is not on disk — the renderer then falls back, so the card
+     * still reads and upgrades itself once the download finishes.
+     */
+    private val typefaceFor: (String) -> Typeface? = { null },
     private val onPresetClick: (TextStylePreset) -> Unit
-) : ListAdapter<TextStylePreset, TextStylesMainAdapter.PresetViewHolder>(DiffCallback()) {
+) : ListAdapter<PanelCard, TextStylesMainAdapter.PresetViewHolder>(DiffCallback()) {
+
+    /** Submits styles, for the callers that only ever have styles. */
+    fun submitStyles(styles: List<TextStylePreset>, commitCallback: Runnable? = null) =
+        submitList(styles.map { PanelCard.Style(it) }, commitCallback ?: Runnable {})
+
+    /** Submits lockups. */
+    fun submitLockups(presets: List<TextPreset>, commitCallback: Runnable? = null) =
+        submitList(presets.map { PanelCard.Lockup(it) }, commitCallback ?: Runnable {})
 
     var slideOffset: Float = 0f
     var recyclerViewWidth: Int = 0
@@ -79,18 +117,19 @@ class TextStylesMainAdapter(
         val binding = LayoutTextStylePresetItemBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
-        return PresetViewHolder(binding, this, onPreviewRequested, onPresetClick)
+        return PresetViewHolder(binding, this, onPreviewRequested, onLockupClick, typefaceFor, onPresetClick)
     }
 
     override fun onBindViewHolder(holder: PresetViewHolder, position: Int) {
-        val preset = getItem(position)
-        holder.bind(preset, selectedPresetId, slideOffset, recyclerViewWidth, recyclerViewPadding)
+        holder.bind(getItem(position), selectedPresetId, slideOffset, recyclerViewWidth, recyclerViewPadding)
     }
 
     class PresetViewHolder(
         private val binding: LayoutTextStylePresetItemBinding,
         private val adapter: TextStylesMainAdapter,
         private val onPreviewRequested: (TextStylePreset) -> Unit,
+        private val onLockupClick: (TextPreset) -> Unit,
+        private val typefaceFor: (String) -> Typeface?,
         private val onPresetClick: (TextStylePreset) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
 
@@ -99,7 +138,7 @@ class TextStylesMainAdapter(
         val titleTxt: TextView get() = binding.presetTitleText
 
         fun bind(
-            preset: TextStylePreset,
+            card: PanelCard,
             selectedPresetId: String?,
             slideOffset: Float,
             rvWidth: Int,
@@ -108,15 +147,25 @@ class TextStylesMainAdapter(
             titleTxt.visibility = View.GONE
             previewImg.visibility = View.VISIBLE
 
-            val isSelected = preset.id == selectedPresetId
+            val isSelected = card.id == selectedPresetId
             val strokePx = (1.5f * cardRoot.context.resources.displayMetrics.density + 0.5f).toInt()
             cardRoot.strokeWidth = if (isSelected) strokePx else 0
             cardRoot.strokeColor = ContextCompat.getColor(cardRoot.context, R.color.appColor)
 
-            val bmp = TextStyleThumbnailRenderer.getCachedOrGenerateThumbnail(cardRoot.context, preset)
-            previewImg.setImageBitmap(bmp)
-
+            // Sized before the bitmap is asked for: a lockup is rendered at the tile's
+            // real pixel size, and asking before layout would draw it for the wrong box.
             updateSize(slideOffset, rvWidth, rvPadding)
+
+            when (card) {
+                is PanelCard.Style -> bindStyle(card.style)
+                is PanelCard.Lockup -> bindLockup(card.preset)
+            }
+        }
+
+        private fun bindStyle(preset: TextStylePreset) {
+            previewImg.setImageBitmap(
+                TextStyleThumbnailRenderer.getCachedOrGenerateThumbnail(cardRoot.context, preset)
+            )
 
             // One rule everywhere: long-press opens the preview only while collapsed,
             // and the eye button is what does it once there is room to draw one.
@@ -139,6 +188,28 @@ class TextStylesMainAdapter(
                 isVisible = adapter.isExpanded
                 addPressEffect { onPreviewRequested(preset) }
             }
+        }
+
+        private fun bindLockup(preset: TextPreset) {
+            val lp = cardRoot.layoutParams
+            val side = lp?.width?.takeIf { it > 0 } ?: TILE_FALLBACK_PX
+            val height = lp?.height?.takeIf { it > 0 } ?: side
+
+            // Only the faces this lockup actually asks for, so a card is not rebuilt
+            // every time some unrelated font finishes downloading.
+            val typefaces = preset.fontIds.mapNotNull { id ->
+                typefaceFor(id)?.let { id to it }
+            }.toMap()
+
+            previewImg.setImageBitmap(
+                TextStyleThumbnailRenderer.getCachedOrGenerateLockup(
+                    cardRoot.context, preset, typefaces, side, height
+                )
+            )
+
+            cardRoot.addPressEffect { onLockupClick(preset) }
+            // No preview sheet for lockups yet — the eye would open nothing.
+            binding.previewEye.isVisible = false
         }
 
         fun updateSize(slideOffset: Float, rvWidth: Int, rvPadding: Int) {
@@ -196,11 +267,16 @@ class TextStylesMainAdapter(
         }
     }
 
-    class DiffCallback : DiffUtil.ItemCallback<TextStylePreset>() {
-        override fun areItemsTheSame(oldItem: TextStylePreset, newItem: TextStylePreset): Boolean =
-            oldItem.id == newItem.id
+    class DiffCallback : DiffUtil.ItemCallback<PanelCard>() {
+        override fun areItemsTheSame(oldItem: PanelCard, newItem: PanelCard): Boolean =
+            oldItem::class == newItem::class && oldItem.id == newItem.id
 
-        override fun areContentsTheSame(oldItem: TextStylePreset, newItem: TextStylePreset): Boolean =
+        override fun areContentsTheSame(oldItem: PanelCard, newItem: PanelCard): Boolean =
             oldItem == newItem
+    }
+
+    companion object {
+        /** Used only if a tile is bound before it has been measured; layout corrects it. */
+        private const val TILE_FALLBACK_PX = 180
     }
 }

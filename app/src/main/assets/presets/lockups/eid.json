@@ -1,0 +1,67 @@
+[
+  {
+    "id": "eid_001",
+    "name": "Eid Mubarak — Imperial Gold",
+    "aspect": 1.0,
+    "layers": [
+      { "text": "عید", "fontId": "Jameel Noori Nastaleeq .ttf", "styleId": "gold_005",
+        "xPct": 0.50, "yPct": 0.38, "widthPct": 0.44, "rotation": 0, "align": "CENTER" },
+      { "text": "مبارک", "fontId": "Jameel Noori Nastaleeq .ttf", "styleId": "gold_005",
+        "xPct": 0.50, "yPct": 0.64, "widthPct": 0.66, "rotation": 0, "align": "CENTER" }
+    ]
+  },
+  {
+    "id": "eid_002",
+    "name": "Eid-ul-Fitr Mubarak — Rose Gold",
+    "aspect": 1.0,
+    "layers": [
+      { "text": "عید الفطر", "fontId": "Gulzar-Regular.ttf", "styleId": "gold_003",
+        "xPct": 0.50, "yPct": 0.42, "widthPct": 0.80, "rotation": 0, "align": "CENTER" },
+      { "text": "مبارک", "fontId": "Gulzar-Regular.ttf", "styleId": "calligraphy_005",
+        "xPct": 0.50, "yPct": 0.68, "widthPct": 0.44, "rotation": 0, "align": "CENTER" }
+    ]
+  },
+  {
+    "id": "eid_003",
+    "name": "Eid-ul-Adha Mubarak — Emerald",
+    "aspect": 1.0,
+    "layers": [
+      { "text": "عید الاضحیٰ", "fontId": "Faiz Lahori Nastaleeq Regular - [UrduFonts.com].ttf",
+        "styleId": "calligraphy_004",
+        "xPct": 0.50, "yPct": 0.44, "widthPct": 0.86, "rotation": 0, "align": "CENTER" },
+      { "text": "مبارک", "fontId": "NotoNastaliqUrdu-Regular.ttf", "styleId": "gold_001",
+        "xPct": 0.50, "yPct": 0.70, "widthPct": 0.40, "rotation": 0, "align": "CENTER" }
+    ]
+  },
+  {
+    "id": "eid_004",
+    "name": "Chand Raat Mubarak — Night",
+    "aspect": 1.0,
+    "layers": [
+      { "text": "چاند رات", "fontId": "Jameel Noori Nastaleeq .ttf", "styleId": "neon_006",
+        "xPct": 0.50, "yPct": 0.40, "widthPct": 0.72, "rotation": 0, "align": "CENTER" },
+      { "text": "مبارک", "fontId": "Lateef-Regular.ttf", "styleId": "neon_001",
+        "xPct": 0.50, "yPct": 0.66, "widthPct": 0.42, "rotation": 0, "align": "CENTER" }
+    ]
+  },
+  {
+    "id": "eid_005",
+    "name": "Eid Saeed — One Line",
+    "aspect": 1.0,
+    "layers": [
+      { "text": "عید سعید", "fontId": "AlQlam_Sadaf.ttf", "styleId": "calligraphy_003",
+        "xPct": 0.50, "yPct": 0.50, "widthPct": 0.78, "rotation": 0, "align": "CENTER" }
+    ]
+  },
+  {
+    "id": "eid_006",
+    "name": "Eid Mubarak — Offset Diagonal",
+    "aspect": 1.0,
+    "layers": [
+      { "text": "عید", "fontId": "Sarem-Naseer-Regular.ttf", "styleId": "threed_003",
+        "xPct": 0.36, "yPct": 0.34, "widthPct": 0.36, "rotation": -6, "align": "CENTER" },
+      { "text": "مبارک", "fontId": "Sarem-Naseer-Regular.ttf", "styleId": "threed_003",
+        "xPct": 0.60, "yPct": 0.64, "widthPct": 0.56, "rotation": -6, "align": "CENTER" }
+    ]
+  }
+]

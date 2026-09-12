@@ -3,9 +3,12 @@ package com.webscare.urducanvas.data.repository
 import android.content.Context
 import android.graphics.Color
 import com.google.gson.Gson
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
 import com.webscare.urducanvas.common.canvas.enums.LabelShape
 import com.webscare.urducanvas.common.canvas.model.GradientItem
+import com.webscare.urducanvas.common.utils.GradientPresets
 import com.webscare.urducanvas.data.model.PresetCategory
 import com.webscare.urducanvas.data.model.TextStylePreset
 import java.io.InputStreamReader
@@ -17,12 +20,17 @@ object TextStylesRepository {
     private val gson = Gson()
 
     private val cachedPresets: MutableList<TextStylePreset> = mutableListOf()
+
+    /** Each style's JSON as loaded, by id — what a preset layer's override is merged onto. */
+    private val rawStyleJson: MutableMap<String, JsonObject> = mutableMapOf()
     private var isLoadedFromJson = false
 
     private data class TextStylePresetJson(
         val id: String = "",
         val name: String = "",
         val category: String = "THREE_D",
+        /** Index into [GradientPresets.defaultList]; an alternative to spelling a ramp out inline. */
+        val gradientId: Int? = null,
         val textColor: String? = null,
         val textGradientColors: List<String>? = null,
         val textGradientPositions: List<Float>? = null,
@@ -84,7 +92,8 @@ object TextStylesRepository {
         val labelStrokeColor: String? = null,
         val labelStrokeWidth: Float = 0f,
         val hasGlossHighlight: Boolean = false,
-        val hasFoldedRibbonFlaps: Boolean = false
+        val hasFoldedRibbonFlaps: Boolean = false,
+        val isPremium: Boolean = false
     )
 
     @Synchronized
@@ -92,98 +101,151 @@ object TextStylesRepository {
         if (isLoadedFromJson && cachedPresets.isNotEmpty()) return
 
         cachedPresets.clear()
+        rawStyleJson.clear()
         try {
             context.assets.open("presets/text_styles.json").use { inputStream ->
-                val reader = InputStreamReader(inputStream)
-                val type = object : TypeToken<List<TextStylePresetJson>>() {}.type
-                val rawList: List<TextStylePresetJson>? = gson.fromJson(reader, type)
+                // Read as a JSON array rather than straight into the typed list, because
+                // each entry is wanted both ways: typed, to build the catalogue, and raw,
+                // so a preset layer's `override` can be merged onto it field by field
+                // before it is deserialised. Merging before rather than after is what lets
+                // an override name any of the fifty-odd style fields — including ones
+                // added to the format after this code was written.
+                val rawArray = gson.fromJson(InputStreamReader(inputStream), JsonArray::class.java)
 
-                if (!rawList.isNullOrEmpty()) {
-                    val parsedList = rawList.map { item ->
-                        val textGradient = if (!item.textGradientColors.isNullOrEmpty()) {
-                            val colors = item.textGradientColors.mapNotNull { parseColorSafe(it) }
-                            val positions = item.textGradientPositions ?: if (colors.size == 2) listOf(0f, 1f) else listOf(0f, 0.5f, 1f)
-                            GradientItem(
-                                colors = colors,
-                                positions = positions,
-                                angle = item.textGradientAngle
-                            )
-                        } else null
-
-                        val labelGradient = if (!item.labelGradientColors.isNullOrEmpty()) {
-                            val colors = item.labelGradientColors.mapNotNull { parseColorSafe(it) }
-                            val positions = if (colors.size == 2) listOf(0f, 1f) else listOf(0f, 0.5f, 1f)
-                            GradientItem(
-                                colors = colors,
-                                positions = positions,
-                                angle = 90f
-                            )
-                        } else null
-
-                        TextStylePreset(
-                            id = item.id,
-                            name = item.name,
-                            category = parseCategorySafe(item.category),
-                            textColor = parseColorSafe(item.textColor),
-                            textGradient = textGradient,
-                            strokeColor = parseColorSafe(item.strokeColor),
-                            strokeWidth = item.strokeWidth,
-                            hasUnderStroke = item.hasUnderStroke,
-                            underStrokeColor = parseColorSafe(item.underStrokeColor),
-                            underStrokeWidth = item.underStrokeWidth,
-                            has3dExtrude = item.has3dExtrude,
-                            extrudeColor = parseColorSafe(item.extrudeColor),
-                            extrudeDepth = item.extrudeDepth,
-                            extrudeDx = item.extrudeDx,
-                            extrudeDy = item.extrudeDy,
-                            hasDoubleExtrude = item.hasDoubleExtrude,
-                            extrudeStep2Color = parseColorSafe(item.extrudeStep2Color),
-                            extrudeStep2Depth = item.extrudeStep2Depth,
-                            extrudeStep2Dx = item.extrudeStep2Dx,
-                            extrudeStep2Dy = item.extrudeStep2Dy,
-                            hasAnaglyph = item.hasAnaglyph,
-                            anaglyphOffset = item.anaglyphOffset,
-                            anaglyphColor1 = parseColorSafe(item.anaglyphColor1),
-                            anaglyphColor2 = parseColorSafe(item.anaglyphColor2),
-                            hasBevel = item.hasBevel,
-                            bevelHighlightColor = parseColorSafe(item.bevelHighlightColor),
-                            bevelShadowColor = parseColorSafe(item.bevelShadowColor),
-                            bevelDepth = item.bevelDepth,
-                            hasEmboss = item.hasEmboss,
-                            isDebossed = item.isDebossed,
-                            embossDepth = item.embossDepth,
-                            embossHighlightColor = parseColorSafe(item.embossHighlightColor),
-                            embossShadowColor = parseColorSafe(item.embossShadowColor),
-                            hasOuterGlow = item.hasOuterGlow,
-                            outerGlowColor = parseColorSafe(item.outerGlowColor),
-                            outerGlowRadius = item.outerGlowRadius,
-                            outerGlowOpacity = item.outerGlowOpacity,
-                            hasInnerGlow = item.hasInnerGlow,
-                            innerGlowColor = parseColorSafe(item.innerGlowColor),
-                            innerGlowRadius = item.innerGlowRadius,
-                            innerGlowOpacity = item.innerGlowOpacity,
-                            shadowColor = parseColorSafe(item.shadowColor),
-                            shadowRadius = item.shadowRadius,
-                            shadowDx = item.shadowDx,
-                            shadowDy = item.shadowDy,
-                            shadowOpacity = item.shadowOpacity,
-                            hasLabel = item.hasLabel,
-                            labelShape = parseShapeSafe(item.labelShape),
-                            labelColor = parseColorSafe(item.labelColor) ?: Color.TRANSPARENT,
-                            labelGradient = labelGradient,
-                            labelSecondaryColor = parseColorSafe(item.labelSecondaryColor),
-                            labelStrokeColor = parseColorSafe(item.labelStrokeColor),
-                            labelStrokeWidth = item.labelStrokeWidth,
-                            hasGlossHighlight = item.hasGlossHighlight,
-                            hasFoldedRibbonFlaps = item.hasFoldedRibbonFlaps
-                        )
-                    }
-                    cachedPresets.addAll(parsedList)
-                    isLoadedFromJson = true
+                rawArray?.forEach { element ->
+                    val obj = element as? JsonObject ?: return@forEach
+                    val item = gson.fromJson(obj, TextStylePresetJson::class.java) ?: return@forEach
+                    obj.get("id")?.asString?.let { rawStyleJson[it] = obj }
+                    cachedPresets.add(toPreset(item))
                 }
+                if (cachedPresets.isNotEmpty()) isLoadedFromJson = true
             }
         } catch (e: Exception) {
             e.printStackTrace()
+        }
+    }
+
+    /**
+     * Maps one catalogue entry onto the model.
+     *
+     * Pulled out of [ensurePresetsLoaded] so that a style merged with a preset layer's
+     * `override` goes through exactly the same mapping the catalogue did — a preset must
+     * never be able to render differently from the style it names.
+     */
+    private fun toPreset(item: TextStylePresetJson): TextStylePreset {
+        // A style may name a gradient from the shared catalogue instead of
+        // spelling one out. Worth having because the inline form here cannot
+        // express what the catalogue can: it has no type field, so a style's
+        // own gradient is always linear, while the catalogue carries the
+        // radial and sweep ramps — and sweep is what makes gold read as
+        // turned metal rather than painted. Inline colours still win when
+        // both are present, so naming a gradient is additive.
+        val catalogueGradient = item.gradientId
+            ?.let { GradientPresets.defaultList.getOrNull(it) }
+
+        val textGradient = if (!item.textGradientColors.isNullOrEmpty()) {
+            val colors = item.textGradientColors.mapNotNull { parseColorSafe(it) }
+            val positions = item.textGradientPositions ?: if (colors.size == 2) listOf(0f, 1f) else listOf(0f, 0.5f, 1f)
+            GradientItem(
+                colors = colors,
+                positions = positions,
+                angle = item.textGradientAngle
+            )
+        } else catalogueGradient
+
+        val labelGradient = if (!item.labelGradientColors.isNullOrEmpty()) {
+            val colors = item.labelGradientColors.mapNotNull { parseColorSafe(it) }
+            val positions = if (colors.size == 2) listOf(0f, 1f) else listOf(0f, 0.5f, 1f)
+            GradientItem(
+                colors = colors,
+                positions = positions,
+                angle = 90f
+            )
+        } else null
+
+        return TextStylePreset(
+            id = item.id,
+            name = item.name,
+            category = parseCategorySafe(item.category),
+            textColor = parseColorSafe(item.textColor),
+            textGradient = textGradient,
+            strokeColor = parseColorSafe(item.strokeColor),
+            strokeWidth = item.strokeWidth,
+            hasUnderStroke = item.hasUnderStroke,
+            underStrokeColor = parseColorSafe(item.underStrokeColor),
+            underStrokeWidth = item.underStrokeWidth,
+            has3dExtrude = item.has3dExtrude,
+            extrudeColor = parseColorSafe(item.extrudeColor),
+            extrudeDepth = item.extrudeDepth,
+            extrudeDx = item.extrudeDx,
+            extrudeDy = item.extrudeDy,
+            hasDoubleExtrude = item.hasDoubleExtrude,
+            extrudeStep2Color = parseColorSafe(item.extrudeStep2Color),
+            extrudeStep2Depth = item.extrudeStep2Depth,
+            extrudeStep2Dx = item.extrudeStep2Dx,
+            extrudeStep2Dy = item.extrudeStep2Dy,
+            hasAnaglyph = item.hasAnaglyph,
+            anaglyphOffset = item.anaglyphOffset,
+            anaglyphColor1 = parseColorSafe(item.anaglyphColor1),
+            anaglyphColor2 = parseColorSafe(item.anaglyphColor2),
+            hasBevel = item.hasBevel,
+            bevelHighlightColor = parseColorSafe(item.bevelHighlightColor),
+            bevelShadowColor = parseColorSafe(item.bevelShadowColor),
+            bevelDepth = item.bevelDepth,
+            hasEmboss = item.hasEmboss,
+            isDebossed = item.isDebossed,
+            embossDepth = item.embossDepth,
+            embossHighlightColor = parseColorSafe(item.embossHighlightColor),
+            embossShadowColor = parseColorSafe(item.embossShadowColor),
+            hasOuterGlow = item.hasOuterGlow,
+            outerGlowColor = parseColorSafe(item.outerGlowColor),
+            outerGlowRadius = item.outerGlowRadius,
+            outerGlowOpacity = item.outerGlowOpacity,
+            hasInnerGlow = item.hasInnerGlow,
+            innerGlowColor = parseColorSafe(item.innerGlowColor),
+            innerGlowRadius = item.innerGlowRadius,
+            innerGlowOpacity = item.innerGlowOpacity,
+            shadowColor = parseColorSafe(item.shadowColor),
+            shadowRadius = item.shadowRadius,
+            shadowDx = item.shadowDx,
+            shadowDy = item.shadowDy,
+            shadowOpacity = item.shadowOpacity,
+            hasLabel = item.hasLabel,
+            labelShape = parseShapeSafe(item.labelShape),
+            labelColor = parseColorSafe(item.labelColor) ?: Color.TRANSPARENT,
+            labelGradient = labelGradient,
+            labelSecondaryColor = parseColorSafe(item.labelSecondaryColor),
+            labelStrokeColor = parseColorSafe(item.labelStrokeColor),
+            labelStrokeWidth = item.labelStrokeWidth,
+            hasGlossHighlight = item.hasGlossHighlight,
+            hasFoldedRibbonFlaps = item.hasFoldedRibbonFlaps,
+            isPremium = item.isPremium
+        )
+    }
+
+    /**
+     * Resolves a preset layer's [styleId], with [override] merged over it.
+     *
+     * Returns null when the id names nothing — see [findPresetById] for why that is a
+     * null and not a substitute. An override with no style to sit on is also null: an
+     * override is an adjustment to a named style, not a style in its own right.
+     *
+     * The merge happens on the JSON, before deserialising, so an override may name any
+     * field the catalogue format has — including ones added after this code was written.
+     */
+    fun resolveStyle(context: Context, styleId: String?, override: JsonObject?): TextStylePreset? {
+        if (styleId.isNullOrBlank()) return null
+        if (override == null || override.size() == 0) return findPresetById(context, styleId)
+
+        ensurePresetsLoaded(context)
+        val base = rawStyleJson[styleId] ?: return findPresetById(context, styleId)
+        return try {
+            val merged = base.deepCopy()
+            override.entrySet().forEach { (key, value) -> merged.add(key, value) }
+            toPreset(gson.fromJson(merged, TextStylePresetJson::class.java))
+        } catch (e: Exception) {
+            // A malformed override costs the user the adjustment, not the layer.
+            findPresetById(context, styleId)
         }
     }
 
