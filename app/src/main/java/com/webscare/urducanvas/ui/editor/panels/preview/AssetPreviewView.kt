@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.PorterDuff
 import android.graphics.Typeface
+import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.LayoutInflater
@@ -15,11 +16,16 @@ import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 import com.webscare.urducanvas.R
 import com.webscare.urducanvas.common.utils.Constants
 import com.webscare.urducanvas.common.utils.SvgLoader
 import com.webscare.urducanvas.common.utils.Utils.addPressEffect
 import com.webscare.urducanvas.common.utils.isDarkModeEnabled
+import com.webscare.urducanvas.common.utils.startShimmerSoft
 import com.webscare.urducanvas.data.model.FontEntity
 import com.webscare.urducanvas.databinding.ViewAssetPreviewBinding
 import java.io.File
@@ -49,7 +55,10 @@ class AssetPreviewView @JvmOverloads constructor(
     private var asset: PreviewAsset? = null
     private var expanded = false
 
+    private val zoom = PreviewZoom(binding.previewPaper, binding.zoomLayer)
+
     init {
+        zoom.attach()
         binding.breadcrumbChip.addPressEffect { onBack?.invoke() }
         binding.primaryAction.addPressEffect { asset?.let { onPrimaryAction?.invoke(it) } }
         binding.shareAction.addPressEffect { asset?.let { onShare?.invoke(it) } }
@@ -69,6 +78,9 @@ class AssetPreviewView @JvmOverloads constructor(
     fun show(asset: PreviewAsset, expanded: Boolean, primaryLabel: String) {
         this.asset = asset
         this.expanded = expanded
+        // A new asset always starts at life size; carrying the last one's zoom over
+        // would open the preview already halfway into something else.
+        zoom.reset()
 
         binding.breadcrumbLabel.text = asset.breadcrumb
         binding.previewTitle.text = asset.title
@@ -123,14 +135,55 @@ class AssetPreviewView @JvmOverloads constructor(
 
         is PreviewAsset.Picture -> {
             showImageOnly()
+            startLoading()
             Glide.with(this)
                 .load(com.webscare.urducanvas.ui.editor.panels.images.resolveUrl(asset.entity))
+                .listener(shimmerStopper)
                 .into(binding.assetImage)
         }
 
         is PreviewAsset.Rendered -> {
             showImageOnly()
+            // Shapes and presets arrive already drawn; an emoji is still in the
+            // renderer, and sends its bitmap along in a moment.
+            if (asset.bitmap == null) startLoading() else finishLoading()
             binding.assetImage.setImageBitmap(asset.bitmap)
+        }
+    }
+
+    /** The bitmap for a [PreviewAsset.Rendered] that was still being drawn at [show]. */
+    fun setRenderedBitmap(bitmap: android.graphics.Bitmap?) {
+        if (asset !is PreviewAsset.Rendered) return
+        binding.assetImage.setImageBitmap(bitmap)
+        finishLoading()
+    }
+
+    // ── Loading ──────────────────────────────────────────────────────────────
+
+    private fun startLoading() {
+        binding.assetShimmer.isVisible = true
+        binding.assetShimmer.startShimmerSoft(context.isDarkModeEnabled())
+    }
+
+    private fun finishLoading() {
+        binding.assetShimmer.stopShimmer()
+        binding.assetShimmer.setShimmer(null)
+        binding.assetShimmer.isVisible = false
+    }
+
+    /** Both of Glide's endings mean the shimmer has done its job. */
+    private val shimmerStopper = object : RequestListener<Drawable> {
+        override fun onLoadFailed(
+            e: GlideException?, model: Any?, target: Target<Drawable>, isFirstResource: Boolean
+        ): Boolean {
+            finishLoading(); return false
+        }
+
+        override fun onResourceReady(
+            resource: Drawable, model: Any, target: Target<Drawable>?,
+            dataSource: DataSource, isFirstResource: Boolean
+        ): Boolean {
+            finishLoading(); return false
         }
     }
 
@@ -179,6 +232,8 @@ class AssetPreviewView @JvmOverloads constructor(
             return
         }
 
+        // The face is on the device, so the specimen draws this frame.
+        finishLoading()
         binding.assetImage.isVisible = false
         binding.fontSample.isVisible = true
         binding.fontSample.typeface = local
@@ -221,8 +276,11 @@ class AssetPreviewView @JvmOverloads constructor(
 
         if (relative.isNotEmpty()) {
             val url = Constants.BASE_URL_GLIDE + relative
+            startLoading()
             if (relative.endsWith(".svg", ignoreCase = true)) {
-                val scope = findViewTreeLifecycleOwner()?.lifecycleScope ?: return
+                val scope = findViewTreeLifecycleOwner()?.lifecycleScope ?: run {
+                    finishLoading(); return
+                }
                 SvgLoader.load(
                     url = url,
                     imageView = binding.assetImage,
@@ -230,18 +288,20 @@ class AssetPreviewView @JvmOverloads constructor(
                     cachedXml = null,
                     maxPx = 1024,
                     applyWhiteTint = dark
-                ) { _, _ -> }
+                ) { _, _ -> finishLoading() }
             } else {
-                Glide.with(this).load(url).into(binding.assetImage)
+                Glide.with(this).load(url).listener(shimmerStopper).into(binding.assetImage)
             }
             return
         }
 
         val absolute = font.font_image?.takeIf { it.isNotBlank() }
         if (absolute != null) {
-            Glide.with(this).load(absolute).into(binding.assetImage)
+            startLoading()
+            Glide.with(this).load(absolute).listener(shimmerStopper).into(binding.assetImage)
         } else {
             binding.assetImage.setImageResource(R.drawable.ic_font_thumbnail)
+            finishLoading()
         }
     }
 

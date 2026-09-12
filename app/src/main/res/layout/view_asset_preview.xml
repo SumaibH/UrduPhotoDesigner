@@ -9,7 +9,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:background="@android:color/transparent"
     android:orientation="vertical">
 
@@ -98,31 +98,53 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
         android:paddingStart="12dp"
-        android:paddingTop="10dp"
+        android:paddingTop="8dp"
         android:paddingEnd="12dp"
-        android:paddingBottom="12dp">
+        android:paddingBottom="10dp">
 
-        <!-- Well + paper: the asset shown the way it sits on the canvas -->
+        <!--
+            Well + paper: the asset shown the way it sits on the canvas.
+
+            The minimum lives here rather than on the card. Putting it on the card
+            padded the whole sheet out to a fixed height and left the slack as dead
+            white below the buttons; on the well it goes where it was meant to — into
+            the artwork.
+        -->
         <FrameLayout
             android:id="@+id/previewWell"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:minHeight="200dp"
             android:background="@drawable/bg_preview_well"
             android:padding="10dp">
 
             <LinearLayout
                 android:id="@+id/previewPaper"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="180dp"
                 android:background="@drawable/bg_preview_paper"
+                android:clipChildren="true"
+                android:clipToPadding="true"
                 android:gravity="center"
                 android:orientation="vertical"
                 android:padding="8dp">
+
+                <!--
+                    Everything the paper shows, in one layer so a pinch can scale the
+                    lot together — the specimen with its alphabet rows, or the image.
+                    The paper stays put and clips, so a zoomed asset is cropped by the
+                    page rather than spilling over the well.
+                -->
+                <LinearLayout
+                    android:id="@+id/zoomLayer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/fontSample"
@@ -181,7 +203,28 @@
                     android:scaleType="fitCenter"
                     android:visibility="gone" />
 
+                </LinearLayout>
+
             </LinearLayout>
+
+            <!--
+                Covers the paper until the asset has actually arrived. Assets here come
+                off the network or out of a renderer, so without this the page sits
+                blank and reads as broken rather than as loading.
+            -->
+            <com.facebook.shimmer.ShimmerFrameLayout
+                android:id="@+id/assetShimmer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_preview_shimmer_block" />
+
+            </com.facebook.shimmer.ShimmerFrameLayout>
 
         </FrameLayout>
 
@@ -190,7 +233,7 @@
             android:id="@+id/chipRow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="8dp"
             app:chipSpacingHorizontal="6dp"
             app:chipSpacingVertical="6dp"
             app:singleLine="false" />
@@ -200,7 +243,7 @@
             android:id="@+id/sampleInput"
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="8dp"
             android:background="@drawable/bg_search_pill"
             android:fontFamily="@font/regular"
             android:hint="@string/preview_type_your_words"

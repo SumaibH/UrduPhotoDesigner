@@ -62,17 +62,23 @@ fun Fragment.showEmojiPreview(
     val host = findPreviewHost() ?: return
     val grid = adapter ?: return
     val context = context ?: return
+
+    // Open on the shimmer straight away and fill the mark in when the renderer is
+    // done. Waiting for the bitmap first meant a long-press did nothing visible for
+    // as long as the render took, which reads as a press that missed.
+    host.show(
+        asset = PreviewAsset.Rendered(breadcrumb, meta.name, null),
+        primaryLabel = primaryLabel,
+        expanded = expanded,
+        onPrimary = { viewLifecycleOwner.lifecycleScope.launch { grid.selectEmoji(meta) } }
+    )
+
     viewLifecycleOwner.lifecycleScope.launch {
         val bitmap = withContext(Dispatchers.IO) {
             EmojiBitmapRenderer.render(context, meta.char, sizePx = EmojiAdapter.PREVIEW_RENDER_PX)
         }
         if (view == null) return@launch
-        host.show(
-            asset = PreviewAsset.Rendered(breadcrumb, meta.name, bitmap),
-            primaryLabel = primaryLabel,
-            expanded = expanded,
-            onPrimary = { viewLifecycleOwner.lifecycleScope.launch { grid.selectEmoji(meta) } }
-        )
+        host.setRenderedBitmap(bitmap)
     }
 }
 

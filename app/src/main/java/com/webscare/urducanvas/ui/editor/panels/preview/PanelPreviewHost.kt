@@ -100,6 +100,11 @@ class PanelPreviewHost(
         sheet?.setExpanded(expanded)
     }
 
+    /** Hands over a rendered asset that was still being drawn when the sheet opened. */
+    fun setRenderedBitmap(bitmap: android.graphics.Bitmap?) {
+        sheet?.setRenderedBitmap(bitmap)
+    }
+
     /** Progress on the preview's own download button. */
     fun setDownloading(active: Boolean) {
         sheet?.setDownloading(active)

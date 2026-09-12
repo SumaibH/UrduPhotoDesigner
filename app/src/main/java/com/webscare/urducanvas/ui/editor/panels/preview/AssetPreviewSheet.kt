@@ -3,10 +3,13 @@ package com.webscare.urducanvas.ui.editor.panels.preview
 import android.app.Dialog
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowInsets
+import android.view.WindowInsetsController
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -49,22 +52,51 @@ class AssetPreviewSheet : BottomSheetDialogFragment() {
     private var pendingDownloading: Boolean? = null
     private var pendingDownloaded: Boolean? = null
 
+    /** Set when a rendered asset arrives before the view exists to show it. */
+    private var pendingRenderedBitmap: android.graphics.Bitmap? = null
+
     // The app's existing modal-sheet theme: transparent surface and edge-to-edge, which is
     // what lets the card below draw its own rounded shape and sit clear of the edges.
     override fun getTheme(): Int = R.style.CustomBottomSheetDialog
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState) as BottomSheetDialog
+        // One listener only — a dialog keeps the last one set, so these cannot be
+        // registered separately.
         dialog.setOnShowListener {
             // Open at full height. A peek would show the chips and hide the artwork, which
             // is the half of the preview worth opening it for.
             dialog.behavior.state = BottomSheetBehavior.STATE_EXPANDED
             dialog.behavior.skipCollapsed = true
+            forceImmersiveMode()
         }
         // The card draws its own rounded surface; the window behind it must not add a
         // square one, or the corners are filled in.
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         return dialog
+    }
+
+    /**
+     * Keeps the navigation bar hidden for this window, matching the editor underneath.
+     * Re-applied whenever the system shows it again, which it does on any transient
+     * swipe.
+     */
+    private fun forceImmersiveMode() {
+        val window = dialog?.window ?: return
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            window.insetsController?.apply {
+                hide(WindowInsets.Type.navigationBars())
+                systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            }
+        } else {
+            @Suppress("DEPRECATION")
+            window.decorView.systemUiVisibility =
+                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                        View.SYSTEM_UI_FLAG_FULLSCREEN or
+                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        }
     }
 
     override fun onCreateView(
@@ -77,7 +109,6 @@ class AssetPreviewSheet : BottomSheetDialogFragment() {
             clipToOutline = true
             isClickable = true
             isFocusable = true
-            minimumHeight = (PREVIEW_MIN_DP * d).toInt()
         }
         preview = view
 
@@ -119,12 +150,15 @@ class AssetPreviewSheet : BottomSheetDialogFragment() {
         view.show(bound.asset, bound.expanded, bound.primaryLabel)
         pendingDownloading?.let(view::setDownloading)
         pendingDownloaded?.let(view::setDownloaded)
+        pendingRenderedBitmap?.let(view::setRenderedBitmap)
         return container
     }
 
     /** Re-points an already-open sheet at a new asset without closing and reopening it. */
     fun rebind(bound: Binding) {
         binding = bound
+        // Belongs to the asset that was showing, not this one.
+        pendingRenderedBitmap = null
         val view = preview ?: return
         view.onPrimaryAction = { picked ->
             bound.onPrimary(picked)
@@ -137,6 +171,15 @@ class AssetPreviewSheet : BottomSheetDialogFragment() {
 
     fun setExpanded(expanded: Boolean) {
         preview?.setExpanded(expanded)
+    }
+
+    /**
+     * Hands over a rendered asset that was still being drawn when the sheet opened.
+     * Held if the view is not up yet, the same way the download state is.
+     */
+    fun setRenderedBitmap(bitmap: android.graphics.Bitmap?) {
+        pendingRenderedBitmap = bitmap
+        preview?.setRenderedBitmap(bitmap)
     }
 
     fun setDownloading(active: Boolean) {
@@ -168,14 +211,8 @@ class AssetPreviewSheet : BottomSheetDialogFragment() {
     companion object {
         const val TAG = "asset_preview_sheet"
 
-        /**
-         * How tall the card has to be for the preview to read: the well and paper need to
-         * be worth looking at above the chips, the sample field and the actions row.
-         */
-        private const val PREVIEW_MIN_DP = 360
-
         /** How far the card is held off the screen edges. */
         private const val SIDE_INSET_DP = 10f
-        private const val BOTTOM_INSET_DP = 12f
+        private const val BOTTOM_INSET_DP = 8f
     }
 }
