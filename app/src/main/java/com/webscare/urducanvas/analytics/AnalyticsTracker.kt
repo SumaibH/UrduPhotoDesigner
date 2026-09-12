@@ -24,6 +24,25 @@ class AnalyticsTracker @Inject constructor(
 
     private val firebaseAnalytics: FirebaseAnalytics = FirebaseAnalytics.getInstance(context)
 
+    init {
+        // Default parameters ride on every event the SDK sends, including the ones it
+        // collects by itself — screen_view, session_start, first_open, user_engagement.
+        //
+        // Stamping the two bundles this class builds covers only what the app logs, so a
+        // dev build's auto-collected events were still arriving in the production stream
+        // with no `traffic_type` on them at all, where the internal-traffic filter could
+        // never match and exclude them. Verified on a device: the app's own events carried
+        // the parameter and `screen_view(_vs)`, which the SDK logs itself, did not.
+        //
+        // Same condition as [stampTrafficType], so a prod release build still sends
+        // nothing: that build must never mark real users' traffic as internal.
+        if (!BuildConfig.IS_PROD_LOGIC || BuildConfig.DEBUG) {
+            firebaseAnalytics.setDefaultEventParameters(
+                Bundle().apply { putString(Params.TRAFFIC_TYPE, Values.TRAFFIC_INTERNAL) }
+            )
+        }
+    }
+
     companion object {
         private const val TAG = "AnalyticsTracker"
 
